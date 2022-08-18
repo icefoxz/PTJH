@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using BattleM;
-using MyBox;
 using UnityEngine;
 using Visual.BattleUi;
 
@@ -64,7 +63,8 @@ namespace Test
             [SerializeField] private WeaponFieldSo 武器;
             [SerializeField] private ArmorFieldSo 防具;
             [SerializeField] private bool 暗器与武器是同一个;
-            [ConditionalField(nameof(暗器与武器是同一个), true)] [SerializeField] private WeaponFieldSo 暗器;
+            //[ConditionalField(nameof(暗器与武器是同一个), true)] 
+            [SerializeField] private WeaponFieldSo 暗器;
             private bool IsWeaponFling => 暗器与武器是同一个;
             public IWeapon Weapon => 武器;
             public IWeapon Fling => IsWeaponFling ? 武器 : 暗器;

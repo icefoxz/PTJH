@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using MyBox;
 using Visual.BaseUi;
 
 public class TempoSliderController : PrefabController<TempoSliderUi>
@@ -23,7 +22,8 @@ public class TempoSliderController : PrefabController<TempoSliderUi>
 
     public void UpdateSlider(IEnumerable<(int combatId,float value)> updateList)
     {
-        updateList.ForEach(s => Sliders[s.combatId].UpdateSlider(s.value));
+        foreach (var(combatId,value) in updateList) 
+            Sliders[combatId].UpdateSlider(value);
     }
     public override void ResetUi()
     {
