@@ -135,6 +135,9 @@ namespace BattleM
                 case FightFragment.Types.Exhausted:
                     sb.Append($"{e.Unit.Name}【倒地失去意识！】{StatusLog(e.Unit)}".Sb().Color(Color.DodgerBlue));
                     break;
+                case FightFragment.Types.SwitchTarget:
+                    sb.Append($"{e.Unit.Name}【换攻击目标.】".Sb().Color(Color.Orange));
+                    break;
                 case FightFragment.Types.None:
                 case FightFragment.Types.Consume:
                 case FightFragment.Types.Attack:

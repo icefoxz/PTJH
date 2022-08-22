@@ -9,7 +9,7 @@ public class CombatUnitSo : ScriptableObject,ICombatUnit
     public int Position { get; }
     public int StandingPoint { get; }
     public string Name { get; }
-    public bool IsDeath { get; }
+    public bool IsExhausted { get; }
     public int Distance(ICombatInfo target)
     {
         throw new System.NotImplementedException();

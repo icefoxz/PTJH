@@ -57,6 +57,10 @@ namespace Visual.BattleUi
                     eve =>
                     {
                         eventAnim += () => FragmentPlayer.OnEventAnim(eve);
+                    },
+                    swi =>
+                    {
+                        eventAnim += () => FragmentPlayer.OnSwitchTarget(swi);
                     });
                 FragmentPlayer.OnFragmentUpdate();
                 

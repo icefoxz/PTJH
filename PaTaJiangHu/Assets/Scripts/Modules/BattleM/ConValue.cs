@@ -22,8 +22,9 @@ namespace BattleM
 
         public void Add(int value)
         {
+            if (Max <= 0) return;
             Value += value;
-            if (Max > 0) Value = Math.Clamp(Value, 0, Max);
+            Value = Math.Clamp(Value, 0, Max);
         }
 
         public int Squeeze(int value)

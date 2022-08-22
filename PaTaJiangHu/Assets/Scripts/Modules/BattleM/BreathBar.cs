@@ -69,12 +69,10 @@ namespace BattleM
         public void ClearDodge() => Dodge = null;
         public void SetRecover(IForceForm form) => Recover = form;
         /// <summary>
-        /// 气息条逻辑，根据气息节数触发战斗事件
+        /// 消费气息条
         /// </summary>
         /// <param name="breathes"></param>
-        /// <param name="recoverCallback"></param>
-        /// <param name="combatCallback"></param>
-        public void BreathConsume(int breathes, Action<IForceForm> recoverCallback, Action<IDodgeForm, ICombatForm> combatCallback)
+        public void BreathConsume(int breathes)
         {
             LastRound = Round.Current;
             Charge(breathes);
@@ -93,7 +91,7 @@ namespace BattleM
             if (Charged >= Recover?.Breath) //先执行调息
             {
                 Charge(-Recover.Breath);
-                recoverCallback?.Invoke(Recover);
+                //recoverCallback?.Invoke(Recover);
                 Recover = null;
             }
 
@@ -102,7 +100,7 @@ namespace BattleM
             var dodgeBreath = Dodge?.Breath ?? 0;
             var breath = combatBreath + dodgeBreath;
             Charge(-breath);
-            combatCallback?.Invoke(Dodge, Combat);
+            //combatCallback?.Invoke(Dodge, Combat);
             Dodge = null;
             Combat = null;
         }

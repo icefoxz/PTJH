@@ -60,6 +60,21 @@ namespace BattleM
 
         public override Types Type { get; }
     }
+    public record SwitchTargetRecord: FightFragment
+    {
+        public static SwitchTargetRecord Instance(ICombatUnit t, int targetId) =>
+            new(t.CombatId, targetId);
+        public int TargetId { get; }
+        public override int CombatId { get; }
+        public override Types Type => Types.SwitchTarget;
+
+        private SwitchTargetRecord(int combatId, int targetId)
+        {
+            CombatId = combatId;
+            TargetId = targetId;
+        }
+
+    }
 
     public record ConsumeRecord : FightFragment, IConsumeRecord
     {
@@ -455,7 +470,8 @@ namespace BattleM
             Action<AttackRecord> onAttack,
             Action<DodgeRecord> onDodge,
             Action<ParryRecord> onParry,
-            Action<EventRecord> onEvent);
+            Action<EventRecord> onEvent,
+            Action<SwitchTargetRecord> onSwitchTarget);
     }
     public abstract record FightFragment : IFightFragment
     {
@@ -505,7 +521,8 @@ namespace BattleM
             /// <summary>
             /// 等待
             /// </summary>
-            Wait
+            Wait,
+            SwitchTarget
         }
         public int Index { get; private set; }
         public abstract Types Type { get; }
@@ -524,7 +541,8 @@ namespace BattleM
             Action<AttackRecord> onAttack,
             Action<DodgeRecord> onDodge,
             Action<ParryRecord> onParry,
-            Action<EventRecord> onEvent)
+            Action<EventRecord> onEvent,
+            Action<SwitchTargetRecord> onSwitchTarget)
         {
             switch (Type)
             {
@@ -550,6 +568,9 @@ namespace BattleM
                 case Types.Exhausted:
                 case Types.Wait:
                     onEvent?.Invoke((EventRecord)this);
+                    break;
+                case Types.SwitchTarget:
+                    onSwitchTarget?.Invoke((SwitchTargetRecord)this);
                     break;
                 case Types.None:
                 default:

@@ -107,8 +107,8 @@ namespace Visual.BattleUi
         private void BreathUpdate()
         {
             var combatUnits = Stage.GetCombatUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
-            var firstCombat = combatUnits[0];
             var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
+            //var firstCombat = combatUnits[0];
             for (var i = 0; i < combatUnits.Count; i++)
             {
                 var combat = combatUnits[i];
@@ -223,6 +223,7 @@ namespace Visual.BattleUi
                 FightFragment.Types.Parry => string.Empty,
                 FightFragment.Types.Dodge => string.Empty,
                 FightFragment.Types.Position => string.Empty,
+                FightFragment.Types.SwitchTarget => string.Empty,
                 FightFragment.Types.TryEscape => "欲想逃跑...",
                 FightFragment.Types.Fling => "投掷暗器!",
                 FightFragment.Types.Escaped => "逃走了!",
@@ -280,6 +281,12 @@ namespace Visual.BattleUi
             UpdateCombatUnit(par.CombatId, $"架-【{par.Form.Name}】");
         }
         public void OnEventAnim(FightFragment eve) => UpdateCombatUnit(eve.CombatId, GetEventName(eve));
+        public void OnSwitchTarget(SwitchTargetRecord swi)
+        {
+            var target = Stage.GetCombatUnit(swi.TargetId);
+            UpdateCombatUnit(swi.CombatId,$"盯上了【{target.Name}】");
+        }
+
         public void OnFragmentUpdate()
         {
             foreach (var stance in Stances) stance.UpdateUi();
@@ -333,6 +340,11 @@ namespace Visual.BattleUi
         /// </summary>
         /// <param name="eve"></param>
         void OnEventAnim(FightFragment eve);
+        /// <summary>
+        /// 切换目标
+        /// </summary>
+        /// <param name="swi"></param>
+        void OnSwitchTarget(SwitchTargetRecord swi);
         /// <summary>
         /// 每个片段的更新，一般上用来直接更新状态Ui
         /// </summary>

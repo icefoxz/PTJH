@@ -16,7 +16,7 @@ namespace BattleM
         int Position { get; }
         int StandingPoint { get; }
         string Name { get; }
-        bool IsDeath { get; }
+        bool IsExhausted { get; }
         int Distance(ICombatInfo target);
     }
     /// <summary>
@@ -120,6 +120,7 @@ namespace BattleM
         public event Action<ConsumeRecord<ICombatForm>> OnCombatConsume;
         public event Action<ConsumeRecord> OnConsume;
         public event Action<EventRecord> OnFightEvent;
+        public event Action<SwitchTargetRecord> OnSwitchTargetEvent;
         #endregion
 
         private CombatManager Mgr { get; set; }
@@ -180,7 +181,7 @@ namespace BattleM
         public void ChangeTarget(ICombatInfo target) => Target = target;
         public void BreathCharge(int charge)
         {
-            WaitingRecovery();
+            OnIdleRecovery();
             if (charge <= 0) return;
             _breathBar.Charge(charge);
         }
@@ -202,6 +203,13 @@ namespace BattleM
                 _breathBar.SetPlan(BattleM.BreathBar.Plans.Surrender);
                 return;
             }
+
+            if (Target == null || Target.IsExhausted) //切换对手
+            {
+                Mgr.SetTargetFor(this);
+                SwitchTargetEvent();
+            }
+
             var combatForm = GetCombatForm();//获取攻击招式
             var dodgeForm = GetDodgeForm();//获取身法
             var isReachable = IsCombatRange() || dodgeForm != null;
@@ -228,6 +236,7 @@ namespace BattleM
                 var forceForm = CheckHealthForm();
                 if (forceForm == null)//如果状态不允许等待下一个回合
                 {
+                    _breathBar.SetBusy(1);//暂时状态不允许+1硬直
                     _breathBar.SetPlan(BattleM.BreathBar.Plans.Wait);
                     return;
                 }
@@ -289,24 +298,24 @@ namespace BattleM
             switch (_breathBar.Plan)
             {
                 case BattleM.BreathBar.Plans.Attack:
+                    OnBattle(_breathBar.Dodge, _breathBar.Combat);
+                    break;
                 case BattleM.BreathBar.Plans.Recover:
-                    _breathBar.BreathConsume(breathes, OnRecovery, OnBattle);
+                    OnRecovery(_breathBar.Recover);
                     break;
                 case BattleM.BreathBar.Plans.Wait:
-                    WaitingRecovery();
+                    OnIdleRecovery();
                     break;
                 case BattleM.BreathBar.Plans.Surrender:
-                    _breathBar.BreathConsume(breathes, OnRecovery, OnEscape);
+                    OnEscape(_breathBar.Dodge, _breathBar.Combat);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            _breathBar.BreathConsume(breathes);
         }
         #endregion
-        public void WaitingRecovery()
-        {
-            OnNonCombatRecover(0, 0, 5);
-        }
+        private void OnIdleRecovery() => OnNonCombatRecover(0, 0, 5);
 
         #region Battle
         private void OnBattle(IDodgeForm dodge, ICombatForm combat)
@@ -332,39 +341,19 @@ namespace BattleM
         {
             if(Mgr.Judge == CombatManager.Judgment.Duel)
             {
-                OnFightEvent?.Invoke(EventRecord.Instance(this, FightFragment.Types.TryEscape));
                 dodge ??= PickDodge();
+                var isSuccess = Round.OnTryEscape(this, dodge);
                 OnDodge(dodge, true);
-                SetBusy(1);
-                var tar = Mgr.GetAliveCombatUnit(Target);
-                var avoidEscape = Target.Distance(this) <= 3;
-
-                if (tar.Target != this)
-                    avoidEscape = tar.FlingToAvoidEscape(dodge);
-
-                if (avoidEscape)
+                if (!isSuccess)
                 {
                     Mgr.CheckExhausted();
                     return;
                 }
             }
-            OnFightEvent?.Invoke(EventRecord.Instance(this,FightFragment.Types.Escaped));
-            Mgr.RemoveUnit(this);
+            OnFightEvent?.Invoke(EventRecord.Instance(this, FightFragment.Types.Escaped));
+            Mgr.RemoveAlive(this);
         }
         
-        private bool FlingToAvoidEscape(IDodgeForm dodge)
-        {
-            if (Equipment.Fling != null)
-            {
-                var combat = PickCombat();
-                var isAvoidEscape = Round.FlingOnTargetEscape(this, Target, combat, dodge);
-                Equipment.FlingConsume();
-                return isAvoidEscape;
-            }
-
-            return false;
-        }
-
         #endregion
 
         #region Recover
@@ -448,6 +437,9 @@ namespace BattleM
             });
             OnConsume?.Invoke(rec);
         }
+
+        public void SwitchTargetEvent() =>
+            OnSwitchTargetEvent?.Invoke(SwitchTargetRecord.Instance(this, Target.CombatId));
         public void ExhaustedAction()
         {
             OnFightEvent?.Invoke(EventRecord.Instance(this, FightFragment.Types.Exhausted));

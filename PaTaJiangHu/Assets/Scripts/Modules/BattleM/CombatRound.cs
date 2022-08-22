@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 using Random = System.Random;
 
 namespace BattleM
@@ -24,7 +25,7 @@ namespace BattleM
         /// <summary>
         /// 战斗对手映像，key = 单位， Value = 目标
         /// </summary>
-        private Dictionary<ICombatInfo, CombatUnit> UnitMap { get; } =
+        private Dictionary<ICombatInfo, CombatUnit> AliveMap { get; } =
             new Dictionary<ICombatInfo, CombatUnit>();
 
         public IReadOnlyList<CombatUnit> AllUnits { get; }
@@ -32,7 +33,7 @@ namespace BattleM
         public Judgment Judge { get; }
         public int WinningStance => AliveStances.Count() == 1 ? AliveStances.Single() : -1;
         public IEnumerable<int> AliveStances =>
-            UnitMap.Where(u => !u.Value.IsExhausted).Select(u => u.Key.StandingPoint).Distinct();
+            AliveMap.Where(u => !u.Value.IsExhausted).Select(u => u.Key.StandingPoint).Distinct();
         //战斗单位的辨识Id
         private int CombatId { get; set; }
         public CombatManager(IEnumerable<CombatUnit> combats,Judgment judgment)
@@ -50,39 +51,44 @@ namespace BattleM
 
         }
 
-        public IEnumerable<CombatUnit> GetAliveCombatUnits() => UnitMap.Values.Where(c => !c.IsExhausted);
-        public CombatUnit GetAliveCombatUnit(ICombatInfo unit) => UnitMap.TryGetValue(unit, out var tg) ? tg : null;
+        public IEnumerable<CombatUnit> GetAliveCombatUnits() => AliveMap.Values;
+        public CombatUnit GetAliveCombatUnit(ICombatInfo unit) => AliveMap.TryGetValue(unit, out var tg) ? tg : null;
         public CombatUnit GetFromAllUnits(int combatId) => AllUnits.Single(u => u.CombatId == combatId);
-        public void RemoveUnit(ICombatInfo unit)
+        public CombatUnit GetTargetedUnit(CombatUnit escapee) =>
+            AliveMap.Values
+                .Where(c => c.Target == escapee && c.Equipment.Fling?.FlingTimes > 0)
+                .OrderBy(c => c.Distance(escapee)).FirstOrDefault();
+        public void RemoveAlive(ICombatInfo unit)
         {
-            UnitMap.Remove(unit);
+            AliveMap.Remove(unit);
             UpdateFightEnd();
         }
 
         public void CheckExhausted()
         {
-            foreach (var unit in UnitMap.Values.ToArray())
+            foreach (var unit in AliveMap.Values.ToArray())
             {
                 if (!unit.IsExhausted) continue;
                 unit.ExhaustedAction();
+                AliveMap.Remove(unit);
             }
             UpdateFightEnd();
         }
 
         private void UpdateFightEnd()
         {
-            if (UnitMap.Where(c => !c.Value.IsExhausted)
+            if (AliveMap.Where(c => !c.Value.IsExhausted)
                     .GroupBy(u => u.Key.StandingPoint).Count() <= 1)
                 IsFightEnd = true;
         }
 
-        public void AddUnit(CombatUnit combat) => UnitMap.Add(combat, combat);
+        public void AddUnit(CombatUnit combat) => AliveMap.Add(combat, combat);
 
         public void SetTargetFor(CombatUnit op)
         {
-            if (UnitMap.TryGetValue(op.Target, out _))
+            if (AliveMap.TryGetValue(op.Target, out _))
                 return;
-            var target = UnitMap.Values.OrderBy(_ => Random.Next(10))
+            var target = AliveMap.Values.OrderBy(_ => Random.Next(10))
                 .FirstOrDefault(u => u.StandingPoint != op.StandingPoint && !u.IsExhausted);
             if (target == null)
             {
@@ -91,9 +97,10 @@ namespace BattleM
             }
             op.ChangeTarget(target);
         }
+
     }
     /// <summary>
-    /// 单个战斗回合处理器
+    /// 单个战斗回合处理器,处理战斗的事件逻辑
     /// </summary>
     public class CombatRound : IRound
     {
@@ -101,16 +108,12 @@ namespace BattleM
         public int Current { get; set; }
         
         public int MinEscapeRounds { get; private set; }
-        private event Action<(ICombatUnit unit,IParryForm parryForm, ParryFormula parryFormula)> OnParryAction;
-        private event Action<(ICombatUnit unit,IDodgeForm dodge, DodgeFormula dodgeFormula)> OnDodgeAction;
-        private event Action<(ICombatUnit op, IConsumeRecord tar, ICombatForm combat, DamageFormula damageFormula, bool isFling)> OnAttackAction;
-        public CombatManager Mgr { get; }
+        private CombatManager Mgr { get; }
         public CombatRound(CombatManager manager,int minEscapeRounds,bool preInit)
         {
             MinEscapeRounds = minEscapeRounds;
             var pos = 0;
             Mgr = manager;
-            AddRecords();
             foreach (var combat in manager.AllUnits)
             {
                 pos++;
@@ -123,12 +126,6 @@ namespace BattleM
                 combat.SetPosition(pos);
                 manager.AddUnit(combat);
             };
-            void AddRecords()
-            {
-                OnAttackAction += AttackActionRecord;
-                OnParryAction += ParryActionRecord;
-                OnDodgeAction += DodgeActionRecord;
-            }
         }
 
         public void AdjustCombatDistance(CombatUnit obj ,ICombatInfo target, bool isEscape)
@@ -180,7 +177,7 @@ namespace BattleM
         /// <param name="combat"></param>
         /// <param name="dodge"></param>
         /// <returns></returns>
-        public bool FlingOnTargetEscape(CombatUnit op, ICombatInfo target, ICombatForm combat,
+        private bool FlingOnTargetEscape(CombatUnit op, ICombatInfo target, ICombatForm combat,
             IDodgeForm dodge)
         {
             var escapee = Mgr.GetAliveCombatUnit(target);
@@ -193,7 +190,7 @@ namespace BattleM
                 if (dodgeFormula.IsSuccess)
                 {
                     escapee.DodgeFromAttack(dodge);
-                    OnDodgeAction?.Invoke((escapee, dodge, dodgeFormula));
+                    RecDodgeAction(escapee, dodge, dodgeFormula);
                     isAvoidEscape = false;
                 }
                 else
@@ -206,7 +203,7 @@ namespace BattleM
                     var parryForm = escapee.PickParry();
                     var parryFormula = InstanceParryFormula(op, escapee, parryForm);
 
-                    OnParryAction?.Invoke((escapee, parryForm, parryFormula));
+                    RecParryAction(escapee, parryForm, parryFormula);
 
                     if (parryFormula.IsSuccess)
                     {
@@ -221,7 +218,7 @@ namespace BattleM
                     escapee.SufferDamage(sufferDmg, op.WeaponInjuryType);
                 }
             });
-            OnAttackAction?.Invoke((op, consume, combat, damageFormula, true));
+            RecAttackAction(op, consume, combat, damageFormula, true);
             return isAvoidEscape;
         }
 
@@ -235,7 +232,7 @@ namespace BattleM
             var consume = ConsumeRecord.Instance();
             consume.Set(tg, () =>
             {
-                OnDodgeAction?.Invoke((tg, tgDodge, dodgeFormula));
+                RecDodgeAction(tg, tgDodge, dodgeFormula);
                 if (dodgeFormula.IsSuccess)
                 {
                     tg.DodgeFromAttack(tgDodge);
@@ -251,7 +248,7 @@ namespace BattleM
                 var parryForm = tg.PickParry();
                 var parryFormula = InstanceParryFormula(offender, tg, parryForm);
 
-                OnParryAction?.Invoke((tg, parryForm, parryFormula));
+                RecParryAction(tg, parryForm, parryFormula);
 
                 if (parryFormula.IsSuccess)
                 {
@@ -263,7 +260,7 @@ namespace BattleM
                 tg.SetBusy(combat.TarBusy); //攻击打入硬直
                 offender.SetBusy(combat.OffBusy); //攻击方招式硬直
             });
-            OnAttackAction?.Invoke((offender, consume, combat, damageFormula, false));
+            RecAttackAction(offender, consume, combat, damageFormula, false);
         }
 
         private int GetArmor(CombatUnit tg)
@@ -288,7 +285,6 @@ namespace BattleM
             fighters.ForEach(f => f.CombatPlan());
             fighters.Sort();
             var combat = fighters.First();
-            Mgr.SetTargetFor(combat);
             fighters.Remove(combat);
             var breathes = combat.BreathBar.TotalBreath;
             combat.Action(breathes);
@@ -304,44 +300,38 @@ namespace BattleM
         #region ConsumeRecord
         private void SubscribeRecords(CombatUnit unit)
         {
-            unit.OnCombatConsume += CombatConsume;
-            unit.OnDodgeConsume += DodgeConsume;
-            unit.OnRecoverConsume += RecoveryConsume;
-            unit.OnConsume += OnConsume;
-            unit.OnFightEvent += OnFightEvent;
+            unit.OnCombatConsume += RecCombatConsume;
+            unit.OnDodgeConsume += RecDodgeConsume;
+            unit.OnRecoverConsume += RecRecoveryConsume;
+            unit.OnConsume += RecConsume;
+            unit.OnFightEvent += RecFightEvent;
+            unit.OnSwitchTargetEvent += RecSwitchTargetEvent;
         }
 
-        private void DodgeActionRecord((ICombatUnit unit, IDodgeForm dodge, DodgeFormula dodgeFormula) obj)
-        {
-            (ICombatUnit unit, IDodgeForm dodge, DodgeFormula dodgeFormula) = obj;
+        private void RecDodgeAction(ICombatUnit unit, IDodgeForm dodge, DodgeFormula dodgeFormula) =>
             CurrentRoundRecord.Add(new DodgeRecord(unit, dodge, dodgeFormula));
-        }
-        private void ParryActionRecord((ICombatUnit unit, IParryForm parryForm, ParryFormula parryFormula) obj)
-        {
-            (ICombatUnit unit, IParryForm parryForm, ParryFormula parryFormula) = obj;
+        private void RecParryAction(ICombatUnit unit, IParryForm parryForm, ParryFormula parryFormula) =>
             CurrentRoundRecord.Add(new ParryRecord(unit, parryForm, parryFormula));
-        }
-
-        private void AttackActionRecord((ICombatUnit op,IConsumeRecord tar,ICombatForm combat, DamageFormula damageFormula,bool isFling) obj)
-        {
-            (ICombatUnit op,IConsumeRecord tar ,ICombatForm combat, DamageFormula damageFormula,bool isFling) = obj;
+        private void RecAttackAction(ICombatUnit op, IConsumeRecord tar, ICombatForm combat,
+            DamageFormula damageFormula, bool isFling) =>
             CurrentRoundRecord.Add(new AttackRecord(op, tar, combat, damageFormula, isFling));
-        }
 
         private void UnsubscribeRecords(CombatUnit unit)
         {
-            unit.OnCombatConsume -= CombatConsume;
-            unit.OnDodgeConsume -= DodgeConsume;
-            unit.OnRecoverConsume -= RecoveryConsume;
-            unit.OnConsume -= OnConsume;
-            unit.OnFightEvent -= OnFightEvent;
+            unit.OnCombatConsume -= RecCombatConsume;
+            unit.OnDodgeConsume -= RecDodgeConsume;
+            unit.OnRecoverConsume -= RecRecoveryConsume;
+            unit.OnConsume -= RecConsume;
+            unit.OnFightEvent -= RecFightEvent;
+            unit.OnSwitchTargetEvent -= RecSwitchTargetEvent;
         }
 
-        void OnFightEvent(EventRecord @event) => CurrentRoundRecord.Add(@event);
-        void OnConsume(ConsumeRecord consume) => CurrentRoundRecord.Add(consume);
-        void CombatConsume(ConsumeRecord<ICombatForm> consume) => CurrentRoundRecord.Add(consume);
-        void DodgeConsume(ConsumeRecord<IDodgeForm> consume) => CurrentRoundRecord.Add(consume);
-        void RecoveryConsume(ConsumeRecord<IForceForm> consume) => CurrentRoundRecord.Add(consume);
+        void RecSwitchTargetEvent(SwitchTargetRecord obj) => CurrentRoundRecord.Add(obj);
+        void RecFightEvent(EventRecord @event) => CurrentRoundRecord.Add(@event);
+        void RecConsume(ConsumeRecord consume) => CurrentRoundRecord.Add(consume);
+        void RecCombatConsume(ConsumeRecord<ICombatForm> consume) => CurrentRoundRecord.Add(consume);
+        void RecDodgeConsume(ConsumeRecord<IDodgeForm> consume) => CurrentRoundRecord.Add(consume);
+        void RecRecoveryConsume(ConsumeRecord<IForceForm> consume) => CurrentRoundRecord.Add(consume);
         #endregion
 
         private FightRoundRecord CurrentRoundRecord { get; set; }
@@ -360,5 +350,30 @@ namespace BattleM
             DodgeFormula.Instance(form.Dodge, tg.Agility, op.Distance(tg), tg.IsBusy, Randomize());
 
         private static int Randomize() => Random.Next(1, 101);
+
+        /// <summary>
+        /// true = success escape
+        /// </summary>
+        /// <param name="escapee"></param>
+        /// <param name="dodge"></param>
+        /// <returns></returns>
+        public bool OnTryEscape(CombatUnit escapee, IDodgeForm dodge)
+        {
+            escapee.SetBusy(1);//尝试逃走+1硬直
+            RecFightEvent(EventRecord.Instance(escapee, FightFragment.Types.TryEscape));
+            var tar = Mgr.GetTargetedUnit(escapee);
+            if (tar != null)
+            {
+                if (tar.Distance(escapee) <= 4)
+                {
+                    var combat = tar.PickCombat();
+                    tar.Equipment.FlingConsume();
+                    var isSuccessAttack = FlingOnTargetEscape(escapee, tar, combat, dodge);
+                    return !isSuccessAttack;
+                }
+            }
+            return true;
+        }
+
     }
 }
