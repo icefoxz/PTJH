@@ -23,7 +23,7 @@ namespace BattleM
         public void Add(int value)
         {
             Value += value;
-            Value = Math.Clamp(Value, 0, Max);
+            if (Max > 0) Value = Math.Clamp(Value, 0, Max);
         }
 
         public int Squeeze(int value)

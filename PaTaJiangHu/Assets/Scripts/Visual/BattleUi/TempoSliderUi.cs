@@ -2,22 +2,25 @@ using UnityEngine;
 using UnityEngine.UI;
 using Visual.BaseUi;
 
-public class TempoSliderUi : UiBase
+namespace Visual.BattleUi
 {
-    [SerializeField] private Slider slider;
-    [SerializeField] private Text _nameText;
-
-    public void UpdateSlider(float value) => slider.value = value;
-    public void Init(string text)
+    public class TempoSliderUi : UiBase
     {
-        ResetSlider();
-        _nameText.text = text;
-    }
+        [SerializeField] private Slider slider;
+        [SerializeField] private Text _nameText;
 
-    public override void ResetUi()
-    {
-        ResetSlider();
-        _nameText.text = string.Empty;
+        public void UpdateSlider(float value) => slider.value = value;
+        public void Init(string text)
+        {
+            ResetSlider();
+            _nameText.text = text;
+        }
+
+        public override void ResetUi()
+        {
+            ResetSlider();
+            _nameText.text = string.Empty;
+        }
+        private void ResetSlider() => slider.value = 0;
     }
-    private void ResetSlider() => slider.value = 0;
 }

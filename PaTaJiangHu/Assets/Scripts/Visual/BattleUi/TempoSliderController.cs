@@ -1,33 +1,35 @@
-using System;
 using System.Collections.Generic;
 using Visual.BaseUi;
 
-public class TempoSliderController : PrefabController<TempoSliderUi>
+namespace Visual.BattleUi
 {
-    private Dictionary<int,TempoSliderUi> Sliders { get; set; }
-    public void Init()
+    public class TempoSliderController : PrefabController<TempoSliderUi>
     {
-        Sliders = new Dictionary<int, TempoSliderUi>();
-        BaseInit(false);
-    }
-    public void Add(int combatId,string text)
-    {
-        AddUi(s =>
+        private Dictionary<int,TempoSliderUi> Sliders { get; set; }
+        public void Init()
         {
-            s.Init(text);
-            Sliders.Add(combatId, s);
-            s.Show();
-        });
-    }
+            Sliders = new Dictionary<int, TempoSliderUi>();
+            BaseInit(false);
+        }
+        public void Add(int combatId,string text)
+        {
+            AddUi(s =>
+            {
+                s.Init(text);
+                Sliders.Add(combatId, s);
+                s.Show();
+            });
+        }
 
-    public void UpdateSlider(IEnumerable<(int combatId,float value)> updateList)
-    {
-        foreach (var(combatId,value) in updateList) 
-            Sliders[combatId].UpdateSlider(value);
-    }
-    public override void ResetUi()
-    {
-        Sliders.Clear();
-        RemoveList();
+        public void UpdateSlider(IEnumerable<(int combatId,float value)> updateList)
+        {
+            foreach (var(combatId,value) in updateList) 
+                Sliders[combatId].UpdateSlider(value);
+        }
+        public override void ResetUi()
+        {
+            Sliders.Clear();
+            RemoveList();
+        }
     }
 }

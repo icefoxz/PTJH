@@ -25,7 +25,7 @@ namespace BattleM
                 .Insert(0, "【回合").Append("】")
                 .Color(Color.HotPink)
                 .AppendLine(rec.IsFightEnd ? "【战斗结束】" : string.Empty);
-            foreach (var unit in units)
+            foreach (var unit in units.OrderBy(c=>c.Breath))
             {
                 round.AppendLine($"{unit.Name}[位:{unit.Position}]{StatusLog(unit)}".Sb().Color(Color.White)
                     .ToString());

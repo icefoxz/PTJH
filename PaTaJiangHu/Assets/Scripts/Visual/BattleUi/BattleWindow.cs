@@ -38,8 +38,11 @@ namespace Visual.BattleUi
         [SerializeField] private StickmanSceneController _stickmanScene;
         [SerializeField] private RectTransform _mainCanvas;
         [SerializeField] private TempoSliderController _sliderController;
+        //[SerializeField] private BattleOrderController _battleOrderController;
+        [SerializeField] private BattleStatusBarController _battleStatusBarController;
         //[SerializeField] private FightStage[] Stages;
-
+        //private IBattleOrderController BattleOrderController => _battleOrderController;
+        private IBattleStatusBarController BattleStatusBarController => _battleStatusBarController;
         private BattleStanceUi[] Stances { get; set; }
         public BattleStage Stage { get; set; }
         private CombatTempoController TempoController { get; set; }
@@ -48,6 +51,8 @@ namespace Visual.BattleUi
         public void Init(UnityAction<bool> battleResultCallback)
         {
             _sliderController.Init();
+            //BattleOrderController.Init();
+            BattleStatusBarController.Init();
             OnBattleResultCallback = isWin => battleResultCallback?.Invoke(isWin);
             Stances = new[] { StanceA, StanceB };
             foreach (var stance in Stances) stance.Init();
@@ -86,7 +91,14 @@ namespace Visual.BattleUi
             Stage.OnBattleFinalize += OnBattleFinalize;
             Stage.OnEveryRound += OnEveryRound;
             PlayerCombatId = player.CombatId;
-            list.ForEach(c => _sliderController.Add(c.CombatId, c.Name));
+            var maxBreath = list.Sum(c => c.BreathBar.TotalBreath);
+            list.ForEach(c =>
+            {
+                BattleStatusBarController.AddUi(c.StandingPoint, c.CombatId,
+                    ui => ui.Set(c.Name, c.Status, c.BreathBar.TotalBreath, maxBreath));
+                _sliderController.Add(c.CombatId, c.Name);
+            });
+            //BattleOrderController.UpdateOrder(list.Select(c => (c.CombatId, c.Name, c.BreathBar.TotalBreath)).ToArray());
             InitStickmans(list);
             BreathUpdate();
             TempoController = new CombatTempoController(this);
@@ -94,8 +106,28 @@ namespace Visual.BattleUi
 
         private void BreathUpdate()
         {
-            var combatUnits = Stage.GetCombatUnits().ToArray();
+            var combatUnits = Stage.GetCombatUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
+            var firstCombat = combatUnits[0];
+            var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
+            for (var i = 0; i < combatUnits.Count; i++)
+            {
+                var combat = combatUnits[i];
+                BattleStatusBarController.UpdateBreath(combat.CombatId, combat.BreathBar.TotalBreath, maxBreath);
+                //var doubleBreathes = firstCombat.BreathBar.TotalBreath * 2;
+                //if (i == combatUnits.Count -1)
+                //{
+                //    if (doubleBreathes < combat.BreathBar.TotalBreath)
+                //        combatUnits.Insert(i, firstCombat);
+                //    else 
+                //        combatUnits.Add(firstCombat);
+                //    break;
+                //}
+                //if (doubleBreathes >= combat.BreathBar.TotalBreath) continue;
+                //combatUnits.Insert(i, firstCombat);
+                //break;
+            }
             var total = combatUnits.Sum(c => c.BreathBar.TotalBreath);
+            //BattleOrderController.UpdateOrder(combatUnits.Select(c => (c.CombatId, c.Name, c.BreathBar.TotalBreath)).ToArray());
             _sliderController.UpdateSlider(combatUnits.Select(c => (c.CombatId, 1f * c.BreathBar.TotalBreath / total)));
         }
 
@@ -179,6 +211,7 @@ namespace Visual.BattleUi
                 after.Tp.Value - before.Tp.Value,
                 after.Mp.Value - before.Mp.Value
             );
+            BattleStatusBarController.UpdateStatus(after.CombatId, after.Hp, after.Tp, after.Mp);
         }
         private static string GetEventName(IFightFragment eve)
         {
