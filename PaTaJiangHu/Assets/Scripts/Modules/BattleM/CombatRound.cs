@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 using Random = System.Random;
 
 namespace BattleM
@@ -142,21 +141,21 @@ namespace BattleM
             if (isEscape) newPos = AdjustDistance(obj, target, false);
             switch (obj.Equipment.Armed)
             {
-                case Way.Armed.Unarmed when !obj.IsCombatRange():
-                case Way.Armed.Short when !obj.IsCombatRange():
+                case Way.Armed.Unarmed when !obj.IsTargetRange():
+                case Way.Armed.Short when !obj.IsTargetRange():
                     newPos = obj.Distance(target) < 1 ? AdjustDistance(obj,target, false) : AdjustDistance(obj,target, true);
                     break;
-                case Way.Armed.Sword when !obj.IsCombatRange():
-                case Way.Armed.Blade when !obj.IsCombatRange():
+                case Way.Armed.Sword when !obj.IsTargetRange():
+                case Way.Armed.Blade when !obj.IsTargetRange():
                     newPos = obj.Distance(target) < 2 ? AdjustDistance(obj, target, false) : AdjustDistance(obj, target, true);
                     break;
-                case Way.Armed.Stick when !obj.IsCombatRange():
-                case Way.Armed.Whip when !obj.IsCombatRange():
+                case Way.Armed.Stick when !obj.IsTargetRange():
+                case Way.Armed.Whip when !obj.IsTargetRange():
                     newPos = obj.Distance(target) < 3 ? AdjustDistance(obj, target, false) : AdjustDistance(obj, target, true);
                     break;
                 case Way.Armed.Fling:
                 {
-                    if (obj.IsCombatRange() && obj.Distance(target) < 3) 
+                    if (obj.IsTargetRange() && obj.Distance(target) < 3) 
                         newPos = AdjustDistance(obj, target, false);
                     break;
                 }
@@ -275,21 +274,25 @@ namespace BattleM
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public FightRoundRecord NextRound()
+        public FightRoundRecord NextRound(IEnumerable<int> skipPlanIds)
         {
             CurrentRoundRecord = new FightRoundRecord(Current);
             var list = Mgr.GetAliveCombatUnits().ToList();
             var fighters = list.ToList();
             fighters.ForEach(SubscribeRecords);
-
-            fighters.ForEach(f => f.CombatPlan());
-            fighters.Sort();
-            var combat = fighters.First();
-            fighters.Remove(combat);
-            var breathes = combat.BreathBar.TotalBreath;
-            combat.Action(breathes);
-
-            Mgr.CheckExhausted();
+            foreach (var unit in fighters.Where(c => !skipPlanIds.Contains(c.CombatId))) 
+                unit.AutoCombatPlan();
+            var actionUnits = fighters.Where(c => c.Plan != CombatPlans.Wait).ToList();
+            actionUnits.Sort();
+            var combat = actionUnits.FirstOrDefault();
+            var breathes = 10;
+            if(combat != null)
+            {
+                fighters.Remove(combat);
+                breathes = combat.BreathBar.TotalBreath;
+                combat.Action(breathes);
+                Mgr.CheckExhausted();
+            }
             foreach (var unit in fighters) unit.BreathCharge(breathes);
 
             list.ToList().ForEach(UnsubscribeRecords);

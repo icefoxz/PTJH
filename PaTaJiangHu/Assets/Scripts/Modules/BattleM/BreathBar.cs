@@ -17,7 +17,6 @@ namespace BattleM
         IList<int> Busies { get; }
         public int LastRound { get; }
     }
-
     /// <summary>
     /// 气息节点，所有战斗动作都有必须继承这个
     /// </summary>
@@ -29,15 +28,7 @@ namespace BattleM
     {
         private readonly List<int> _busies;
 
-        public enum Plans
-        {
-            Attack,
-            Recover,
-            Wait,
-            Surrender
-        }
-
-        public Plans Plan { get; private set; }
+        public CombatPlans Plan { get; private set; }
         public ICombatForm Combat { get; private set; }
         public IDodgeForm Dodge { get; private set; }
         public IForceForm Recover { get; private set; }
@@ -54,13 +45,14 @@ namespace BattleM
             }
         }
         public int LastRound { get; private set; }
+
         public BreathBar(IRound round)
         {
             Round = round;
             _busies = new List<int>();
         }
 
-        public void SetPlan(Plans plan) => Plan = plan;
+        public void SetPlan(CombatPlans plan) => Plan = plan;
         public void SetBusy(int busy) => _busies.Add(busy);
         public void Charge(int charge) => Charged += charge;
         public void SetCombat(ICombatForm form) => Combat = form;

@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using Visual.BaseUi;
+using Visual.BattleUi.Input;
 
 namespace Visual.BattleUi
 {
@@ -38,6 +39,7 @@ namespace Visual.BattleUi
         [SerializeField] private StickmanSceneController _stickmanScene;
         [SerializeField] private RectTransform _mainCanvas;
         [SerializeField] private TempoSliderController _sliderController;
+        [SerializeField] private PlayerStrategyController _playerStrategyController;
         //[SerializeField] private BattleOrderController _battleOrderController;
         [SerializeField] private BattleStatusBarController _battleStatusBarController;
         //[SerializeField] private FightStage[] Stages;
@@ -46,11 +48,20 @@ namespace Visual.BattleUi
         private BattleStanceUi[] Stances { get; set; }
         public BattleStage Stage { get; set; }
         private CombatTempoController TempoController { get; set; }
-        private int PlayerCombatId { get; set; } = -1;
+        private CombatUnit Player { get; set; }
+        private bool IsAutoRound { get; set; }
         private event UnityAction<bool> OnBattleResultCallback;
         public void Init(UnityAction<bool> battleResultCallback)
         {
             _sliderController.Init();
+            _playerStrategyController.Init(new (CombatUnit.Strategies strategy, UnityAction action)[]
+            {
+                (CombatUnit.Strategies.Steady, () => PlayerSetStrategy(CombatUnit.Strategies.Steady)),
+                (CombatUnit.Strategies.Hazard, () => PlayerSetStrategy(CombatUnit.Strategies.Hazard)),
+                (CombatUnit.Strategies.Defend, () => PlayerSetStrategy(CombatUnit.Strategies.Defend)),
+                (CombatUnit.Strategies.RunAway, () => PlayerSetStrategy(CombatUnit.Strategies.RunAway)),
+                (CombatUnit.Strategies.DeathFight, () => PlayerSetStrategy(CombatUnit.Strategies.DeathFight))
+            }, PlayerAttackPlan, PlayerExertPlan, PlayerWaitPlan,OnSwitchControl);
             //BattleOrderController.Init();
             BattleStatusBarController.Init();
             OnBattleResultCallback = isWin => battleResultCallback?.Invoke(isWin);
@@ -62,35 +73,66 @@ namespace Visual.BattleUi
             Hide();
             ResetLocalPos();
         }
+
+        private void OnSwitchControl(bool isManual)
+        {
+            IsAutoRound = !isManual;
+            StartAutoRound();
+        }
+
+        private void PlayerWaitPlan()
+        {
+            Player.WaitPlan();
+            NextRound();
+        }
+
+        private void PlayerExertPlan(IForceForm force)
+        {
+            Player.ExertPlan(force);
+            NextRound();
+        }
+
+        private void PlayerAttackPlan(ICombatForm combat, IDodgeForm dodge)
+        {
+            Player.AttackPlan(combat, dodge);
+            NextRound();
+        }
+
+        private void PlayerSetStrategy(CombatUnit.Strategies steady)
+        {
+            Player.SetStrategy(steady);
+        }
+
         private void OnBattleFinalize(int winningStance)
         {
             Stage.OnBattleFinalize -= OnBattleFinalize;
             Stage.OnEveryRound -= OnEveryRound;
-            PlayerCombatId = -1;
             _stickmanScene.ResetUi();
             foreach (var stance in Stances) stance.ResetUi();
             OnBattleResultCallback?.Invoke(winningStance == 0);
+            Player = null;
+            Debug.Log("战斗结束！");
         }
         public void BattleSetup((int, CombatUnit)[] roles, CombatManager.Judgment judgment)
         {
             var list = new List<CombatUnit>();
-            CombatUnit player = null;
+            IsAutoRound = false;
+            Player = null;
             for (var index = 0; index < roles.Length; index++)
             {
                 var (stance, combatUnit) = roles[index];
-                if (index == 0) player = combatUnit;
+                if (index == 0) Player = combatUnit;
                 combatUnit.SetStandingPoint(stance);
                 list.Add(combatUnit);
                 var stanceUi = Stances[stance];
                 stanceUi.AddCombatUnit(combatUnit);
             }
             RoundText.text = string.Empty;
-            if (player == null)
+            if (Player == null)
                 throw new NullReferenceException($"{nameof(BattleSetup)}:找不到玩家单位,游戏不支持无玩家的战斗模式!");
             Stage = new BattleStage(list.ToArray(), judgment, _minEscapeRounds);
             Stage.OnBattleFinalize += OnBattleFinalize;
             Stage.OnEveryRound += OnEveryRound;
-            PlayerCombatId = player.CombatId;
             var maxBreath = list.Sum(c => c.BreathBar.TotalBreath);
             list.ForEach(c =>
             {
@@ -99,8 +141,10 @@ namespace Visual.BattleUi
                 _sliderController.Add(c.CombatId, c.Name);
             });
             //BattleOrderController.UpdateOrder(list.Select(c => (c.CombatId, c.Name, c.BreathBar.TotalBreath)).ToArray());
+            _playerStrategyController.SetPlayer(Player);
             InitStickmans(list);
             BreathUpdate();
+            OnSwitchControl(!IsAutoRound);
             TempoController = new CombatTempoController(this);
         }
 
@@ -171,20 +215,26 @@ namespace Visual.BattleUi
             } //直接返回胜利
 
             StopAllCoroutines();
-            StartCoroutine(AutoFight());
+            StartCoroutine(AutoFightRoutine());
         }
-        public void NextRound() => Stage.NextRound();
-        private IEnumerator AutoFight()
+        public void NextRound()
+        {
+            Stage.NextRound(new[] { Player.CombatId });
+            if (Stage.IsFightEnd) OnBattleFinalize(Stage.WinningStance);
+        }
+
+        private IEnumerator AutoFightRoutine()
         {
             do
             {
-                Stage.NextRound();
+                if (!IsAutoRound) yield break;
+                Stage.NextRound(Array.Empty<int>());
                 yield return new WaitForSeconds(_autoRoundSecs);
             } while (!Stage.IsFightEnd);
 
             OnBattleFinalize(Stage.WinningStance);
-            Debug.Log("战斗结束！");
         }
+
         private void OnEveryRound(FightRoundRecord rec)
         {
             StartCoroutine(UpdateUis(rec));
@@ -258,7 +308,7 @@ namespace Visual.BattleUi
             GetCombatAnimUi(pos.Unit.CombatId)
                 .SetAction(pos.Unit.CombatId, Stickman.Anims.Dodge);
             var combatUnit = Stage.GetCombatUnit(unitId);
-            _stickmanScene.AutoPlace(stickman, target, combatUnit, unitId == PlayerCombatId, UpdateStickmanOrientation);
+            _stickmanScene.AutoPlace(stickman, target, combatUnit, unitId == Player.CombatId, UpdateStickmanOrientation);
         }
 
         public void OnStatusUpdate(IStatusRecord before, IStatusRecord after) => UpdateStatus(before, after);

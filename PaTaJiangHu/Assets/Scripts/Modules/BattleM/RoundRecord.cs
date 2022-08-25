@@ -285,9 +285,9 @@ namespace BattleM
         /// <summary>
         /// 内功转化率
         /// </summary>
-        public int MpCount => (int)(MpRateAlign * MpRate);
+        public float MpRatio => MpRateAlign * MpRate;
         //
-        public int Finalize => (Strength + WeaponDamage) + Mp * MpCount;
+        public int Finalize => (Strength + WeaponDamage) + (int)(Mp * MpRatio);
 
         private DamageFormula(int strength, int weaponDamage, int mp, int mpRate)
         {
@@ -300,7 +300,7 @@ namespace BattleM
         public static DamageFormula Instance(int strength, int weaponDamage, int mp, int mpRate) =>
             new(strength, weaponDamage, mp, mpRate);
 
-        public override string ToString() => $"伤:{Finalize},武器({WeaponDamage})+[内:{Mp}({MpRate})={MpCount}]";
+        public override string ToString() => $"伤:{Finalize},武器({WeaponDamage})+[内:{Mp}({MpRate})={MpRatio}]";
     }
     /// <summary>
     /// 护甲公式
@@ -320,8 +320,8 @@ namespace BattleM
         /// 内力转化
         /// </summary>
         public int MpRate;
-        public int MpCount => (int)(Mp * MpRateAlign * MpRate);
-        public int Finalize => Armor + MpCount;
+        public int MpArmor => (int)(Mp * MpRateAlign * MpRate);
+        public int Finalize => Armor + MpArmor;
 
         private ArmorFormula(int armor, int mp, int mpRate)
         {
@@ -330,7 +330,36 @@ namespace BattleM
             MpRate = mpRate;
         }
         public static ArmorFormula Instance(int armor, int mp, int mpRate) => new(armor, mp, mpRate);
-        public override string ToString() => $"免:{Finalize}\n甲({Armor})内:{Mp}({MpRate})={MpCount}";
+        public override string ToString() => $"防:{Finalize}\n甲({Armor})内:{Mp}({MpRate})={MpArmor}";
+    }
+
+    public struct ExertFormula
+    {
+        private const float MpRateAlign = 0.1f;
+        /// <summary>
+        /// 内力使用
+        /// </summary>
+        public int Mp;
+        /// <summary>
+        /// 息补充
+        /// </summary>
+        public int Breath;
+        /// <summary>
+        /// 内力转化
+        /// </summary>
+        public int MpRate;
+        public float MpRatio => MpRateAlign * MpRate;
+        public int Finalize => (int)((Mp + Breath) * MpRatio);
+
+        private ExertFormula(int mp, int breath, int mpRate)
+        {
+            Mp = mp;
+            Breath = breath;
+            MpRate = mpRate;
+        }
+
+        public static ExertFormula Instance(int mp, int breath, int mpRate) => new(mp, breath, mpRate);
+        public override string ToString() => $"回:{Finalize}\n息({Breath})+内({Mp})转({MpRate}){MpRatio:F}";
     }
 
     public sealed record DodgeRecord : FightFragment, IDodgeRecord

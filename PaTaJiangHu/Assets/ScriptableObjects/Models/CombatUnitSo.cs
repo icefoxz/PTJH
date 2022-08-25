@@ -15,6 +15,16 @@ public class CombatUnitSo : ScriptableObject,ICombatUnit
         throw new System.NotImplementedException();
     }
 
+    public bool IsCombatRange(ICombatInfo unit)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool IsTargetRange()
+    {
+        throw new System.NotImplementedException();
+    }
+
     public int Strength { get; }
     public int Agility { get; }
     public ICombatStatus Status { get; }
@@ -33,6 +43,11 @@ public class CombatUnitSo : ScriptableObject,ICombatUnit
     }
 
     public void SetCombatId(int combatId)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public bool IsCombatFormAvailable(ICombatForm form)
     {
         throw new System.NotImplementedException();
     }

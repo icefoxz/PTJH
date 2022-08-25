@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine.Events;
 
@@ -20,14 +21,14 @@ namespace BattleM
             Round = new CombatRound(CombatManager, minEscapeRounds, false);
         }
 
-        public void NextRound()
+        public void NextRound(IEnumerable<int> skipPlanIds)
         {
             if (IsFightEnd)
             {
                 OnBattleFinalize?.Invoke(WinningStance);
                 return;
             }
-            var rec = Round.NextRound();
+            var rec = Round.NextRound(skipPlanIds);
             OnEveryRound?.Invoke(rec);
         }
     }
