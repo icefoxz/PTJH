@@ -1,24 +1,32 @@
 using BattleM;
-using Systems.Utls;
 using UnityEngine;
 using UnityEngine.UI;
 using Visual.BaseUi;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Status
 {
     public class ConValueSliderUi : UiBase
     {
         [SerializeField] private Slider _hpSlider;
-        [SerializeField] private RectTransform _maxConRect;
+        [SerializeField] private Slider _maxSlider;
 
         public void Set(IConditionValue con)
         {
-            _hpSlider.value = 1f * con.Value / con.Fix;
-            _maxConRect.SetRight(1f * con.Max / con.Fix * _maxConRect.rect.xMax);
+            SetValue(con.Value, con.Max);
+            SetSlider(_maxSlider, con.Max, con.Fix);
+        }
+
+        public void SetValue(int value, int max)
+        {
+            SetSlider(_hpSlider, value, max);
+        }
+        public static void SetSlider(Slider slider,int value,int max)
+        {
+            slider.value = 1f * value / max;
         }
         public override void ResetUi()
         {
-            _maxConRect.SetRight(0);
+            _maxSlider.value = 1f;
             _hpSlider.value = 1;
         }
     }

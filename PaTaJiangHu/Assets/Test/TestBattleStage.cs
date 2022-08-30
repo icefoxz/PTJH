@@ -17,7 +17,7 @@ namespace Test
         {
             BattleWindow.Show();
             BattleWindow.BattleSetup(GetCombatUnit(), CombatManager.Judgment.Duel);
-            BattleWindow.StartAutoRound();
+            BattleWindow.StartBattle();
         }
         private (int, CombatUnit)[] GetCombatUnit() => _battleUnits.Select(b => (Stance: b.立场, b.InstanceCombatUnit())).ToArray();
         private void OnBattleResult(bool isWin)

@@ -7,7 +7,7 @@ namespace Visual.BattleUi.Input
 {
     public class SkillFormUi : UiBase
     {
-        [SerializeField] private Button _button;
+        [SerializeField] private PointerButton _button;
         [SerializeField] private Text _title;
         [SerializeField] private Text _mp;
         [SerializeField] private Text _tp;
@@ -16,6 +16,11 @@ namespace Visual.BattleUi.Input
         [SerializeField] private Text _tarBusy;
         [SerializeField] private Outline _outLine;
 
+        public void Init(UnityAction onPointerDown)
+        {
+            _button.OnPointerDownEvent.RemoveAllListeners();
+            _button.OnPointerDownEvent.AddListener(_ => onPointerDown.Invoke());
+        }
         public void Set(UnityAction onclickAction, string title, string breath, string mp = null, string tp = null,
             string tarBusy = null, string opBusy = null)
         {

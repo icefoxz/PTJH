@@ -21,15 +21,17 @@ namespace BattleM
             Round = new CombatRound(CombatManager, minEscapeRounds, false);
         }
 
-        public void NextRound(IEnumerable<int> skipPlanIds)
+        public void NextRound(bool autoPlan)
         {
             if (IsFightEnd)
             {
                 OnBattleFinalize?.Invoke(WinningStance);
                 return;
             }
-            var rec = Round.NextRound(skipPlanIds);
+            var rec = Round.NextRound(autoPlan);
             OnEveryRound?.Invoke(rec);
         }
+
+        public void PrePlan() => Round.CombatPlan(Array.Empty<int>());
     }
 }

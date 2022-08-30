@@ -2,6 +2,7 @@ using System;
 using BattleM;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using Visual.BaseUi;
 
 namespace Visual.BattleUi.Input
@@ -17,11 +18,12 @@ namespace Visual.BattleUi.Input
         [SerializeField] private ManualFormInputUi _manualInput;
         [SerializeField] private StrategyBarController _strategyBar;
         private ICombatUnit CombatUnit { get; set; }
+
         public void Init((CombatUnit.Strategies strategy,UnityAction action)[]strategies, 
-            Action<ICombatForm,IDodgeForm> onAttackAction,
-            Action<IForceForm> onExertAction,
-            Action onIdleAction,
-            Action<bool> onManualAutoSwitchAction)
+            UnityAction<ICombatForm> onAttackAction,
+            UnityAction<IForceForm> onExertAction,
+            UnityAction onIdleAction,
+            UnityAction<bool> onManualAutoSwitchAction)
         {
             _strategySwitch.Init(isManual=>
             {
@@ -39,6 +41,7 @@ namespace Visual.BattleUi.Input
                 });
             }
         }
+
         private string GetText(CombatUnit.Strategies strategy)
         {
             return strategy switch
@@ -59,28 +62,71 @@ namespace Visual.BattleUi.Input
             switch (mode)
             {
                 case Modes.Auto:
-                _manualInput.ResetUi();
-                _manualInput.Hide();
-                _strategyBar.Show();
+                    _manualInput.ResetUi();
+                    _manualInput.Hide();
+                    _strategyBar.Show();
                     break;
                 case Modes.Manual:
-                _manualInput.Set(CombatUnit);
-                _strategyBar.Hide();
+                    UpdateFormUis();
+                    _strategyBar.Hide();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
             }
         }
+        private event UnityAction OnPointerUp;
+        private event UnityAction<IForceForm> OnForcePointerDown;
+        private event UnityAction<ICombatForm> OnCombatPointerDown;
+        private event UnityAction OnIdlePointerDown;
+        public void SetPlayer(ICombatUnit player, 
+            UnityAction<ICombatForm> onCombatPointerDown,
+            UnityAction<IForceForm> onForcePointerDown,
+            UnityAction onIdle,
+            UnityAction onPointerCancel)
+        {
+            OnCombatPointerDown = combat =>
+            {
+                IsListeningCancel = true;
+                onCombatPointerDown.Invoke(combat);
+            };
+            OnForcePointerDown = force =>
+            {
+                IsListeningCancel = true;
+                onForcePointerDown.Invoke(force);
+            };
+            OnIdlePointerDown = () =>
+            {
+                IsListeningCancel = true;
+                onIdle.Invoke();
+            };
+            OnPointerUp = () =>
+            {
+                IsListeningCancel = false;
+                onPointerCancel.Invoke();
+            };
+            CombatUnit = player;
+            UpdateFormUis();
+        }
 
+        private bool IsListeningCancel { get; set; }
+
+        private void UpdateFormUis()
+        {
+            _manualInput.SetCombat(CombatUnit, OnCombatPointerDown);
+            _manualInput.SetForce(CombatUnit, OnForcePointerDown);
+            _manualInput.SetIdle(OnIdlePointerDown);
+        }
         public override void ResetUi()
         {
             throw new NotImplementedException();
         }
 
-        public void SetPlayer(ICombatUnit player)
+        void Update()
         {
-            CombatUnit = player;
-            _manualInput.Set(CombatUnit);
+            if (UnityEngine.Input.GetMouseButtonUp(0) && IsListeningCancel)
+            {
+                OnPointerUp?.Invoke();
+            }
         }
     }
 }

@@ -9,162 +9,80 @@ namespace Visual.BattleUi.Input
 {
     public class ManualFormInputUi : UiBase
     {
-        private enum Modes
-        {
-            Attack,
-            Exert
-        }
-        [SerializeField] private SkillFormView skillFormView;
-        [SerializeField] private SkillFormView dodgeFormView;
-        [SerializeField] private Button CombatTabBtn;
-        [SerializeField] private Button ExertTabBtn;
-        [SerializeField] private CombatTab _combatTab;
-        [SerializeField] private ExertTab _exertTab;
-        [Serializable] private class CombatTab
-        {
-            [SerializeField] public Button combatButton;
-            [SerializeField] public GameObject tabPanel;
-            [SerializeField] public GameObject body;
+        [SerializeField] private SkillFormView combatFormView;
+        [SerializeField] private SkillFormView forceFormView;
+        [SerializeField] private PointerButton idleButton;
 
-            public void Init(UnityAction onAttackClick)
-            {
-                combatButton.onClick.AddListener(onAttackClick);
-            }
-            public void SetMode(Modes mode)
-            {
-                body.gameObject.SetActive(mode == Modes.Attack);
-                tabPanel.gameObject.SetActive(mode != Modes.Attack);
-            }
-        }
-        [Serializable] private class ExertTab
-        {
-            [SerializeField] public GameObject tabPanel;
-            [SerializeField] private Button exertButton;
-            [SerializeField] private Button idleButton;
-            [SerializeField] private GameObject body;
-            public void Init(UnityAction onAttackClick,UnityAction onIdleClick)
-            {
-                exertButton.onClick.AddListener(onAttackClick);
-                idleButton.onClick.AddListener(onIdleClick);
-            }
-            public void SetMode(Modes mode)
-            {
-                body.gameObject.SetActive(mode == Modes.Exert);
-                tabPanel.gameObject.SetActive(mode != Modes.Exert);
-            }
-        }
+        private event Action<IForceForm> OnExertAction;
+        private event Action<ICombatForm> OnAttackAction;
 
-        private IDodgeForm SelectedDodge { get; set; }
-        private ICombatForm SelectedCombat { get; set; }
-        private IForceForm SelectedForce { get; set; }
-        private ICombatUnit CombatUnit { get; set; }
-        public void Init(Action<ICombatForm,IDodgeForm> onAttackAction,
+        public void Init(Action<ICombatForm> onAttackAction,
             Action<IForceForm> onExertAction,
             Action onIdleAction)
         {
-            skillFormView.Init();
-            dodgeFormView.Init();
-            _combatTab.Init(() =>
-            {
-                onAttackAction.Invoke(SelectedCombat, SelectedDodge);
-                ResetUi();
-            });
-            _exertTab.Init(() =>
-                {
-                    onExertAction.Invoke(SelectedForce);
-                    ResetUi();
-                },
-                () =>
-                {
-                    onIdleAction?.Invoke();
-                    ResetUi();
-                });
-            CombatTabBtn.onClick.AddListener(() => SetCombat(CombatUnit));
-            ExertTabBtn.onClick.AddListener(() => SetExert(CombatUnit));
+            combatFormView.Init();
+            forceFormView.Init();
+            idleButton.onClick.AddListener(onIdleAction.Invoke);
+            OnAttackAction = onAttackAction;
+            OnExertAction = onExertAction;
         }
 
-        private void SetMode(Modes mode)
+        public void SetIdle(UnityAction idleAction)
         {
-            dodgeFormView.ResetUi();
-            skillFormView.ResetUi();
-            _combatTab.SetMode(mode);
-            _exertTab.SetMode(mode);
+            idleButton.OnPointerDownEvent.RemoveAllListeners();
+            idleButton.OnPointerDownEvent.AddListener(_=>idleAction.Invoke());
         }
-
-        public void Set(ICombatUnit combatUnit)
+        public void SetCombat(ICombatUnit unit, UnityAction<ICombatForm> onPointerDown)
         {
-            CombatUnit = combatUnit;
-            SetCombat(combatUnit);
-            Show();
-        }
-
-        private void SetCombat(ICombatUnit unit)
-        {
-            SetMode(Modes.Attack);
             var combatSkill = unit.CombatSkill;
-            var dodgeSkill = unit.DodgeSkill;
-            if(!unit.IsTargetRange())
-            {
-                for (var i = 0; i < dodgeSkill.Forms.Count; i++)
-                {
-                    var form = dodgeSkill.Forms[i];
-                    dodgeFormView.AddOption(ui =>
-                    {
-                        ui.Set(() =>
-                        {
-                            dodgeFormView.SetSelected(ui);
-                            SelectedDodge = form;
-                        }, form.Name, form.Breath.ToString(), form.Mp.ToString(), form.Qi.ToString());
-                    });
-                }
-
-                dodgeFormView.Show();
-            }
-
             for (var i = 0; i < combatSkill.Combats.Count; i++)
             {
                 var form = combatSkill.Combats[i];
                 var isReady = unit.IsCombatFormAvailable(form);
-                skillFormView.AddOption(ui =>
+                combatFormView.AddOption(ui =>
                 {
+                    ui.Init(() => onPointerDown.Invoke(form));
                     ui.Interaction(isReady);
                     if (isReady)
                         ui.Set(() =>
                             {
-                                skillFormView.SetSelected(ui);
-                                SelectedCombat = form;
+                                combatFormView.SetSelected(ui);
+                                OnAttackAction?.Invoke(form);
                             }, form.Name, form.Breath.ToString(), form.Mp.ToString(), form.Qi.ToString(),
                             form.TarBusy.ToString(),
                             form.OffBusy.ToString());
                 });
-                skillFormView.Show();
+                combatFormView.Show();
             }
+
+            Show();
         }
-        private void SetExert(ICombatUnit unit)
+
+        public void SetForce(ICombatUnit unit, UnityAction<IForceForm> onPointerDown)
         {
-            SetMode(Modes.Exert);
             for (var i = 0; i < unit.ForceSkill.Forms.Count; i++)
             {
                 var form = unit.ForceSkill.Forms[i];
-                skillFormView.AddOption(ui =>
+                forceFormView.AddOption(ui =>
                 {
+                    ui.Init(() => onPointerDown.Invoke(form));
                     ui.Set(() =>
                     {
-                        skillFormView.SetSelected(ui);
-                        SelectedForce = form;
+                        forceFormView.SetSelected(ui);
+                        OnExertAction?.Invoke(form);
                     }, form.Name, form.Breath.ToString());
                 });
-                skillFormView.Show();
+                forceFormView.Show();
             }
+
+            Show();
         }
 
         public override void ResetUi()
         {
-            SelectedForce = null;
-            SelectedCombat = null;
-            SelectedDodge = null;
-            skillFormView.ResetUi();
-            dodgeFormView.ResetUi();
+            combatFormView.ResetUi();
+            forceFormView.ResetUi();
         }
+
     }
 }

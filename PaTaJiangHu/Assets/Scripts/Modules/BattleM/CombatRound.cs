@@ -103,6 +103,7 @@ namespace BattleM
     /// </summary>
     public class CombatRound : IRound
     {
+        private bool _isPlan;
         private static Random Random { get; } = new(DateTime.Now.Millisecond);
         public int Current { get; set; }
         
@@ -269,19 +270,33 @@ namespace BattleM
             return formula.Finalize;
         }
 
+        public IList<CombatUnit> CombatPlan(IEnumerable<int> skipPlanIds)
+        {
+            _isPlan = true;
+            var fighters = Mgr.GetAliveCombatUnits().ToList();
+            foreach (var unit in fighters.Where(c => !skipPlanIds.Contains(c.CombatId))) unit.AutoCombatPlan();
+            fighters.Sort();
+            return fighters;
+        }
+
         /// <summary>
         /// 每个回合的战斗执行
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public FightRoundRecord NextRound(IEnumerable<int> skipPlanIds)
+        public FightRoundRecord NextRound(bool autoPlan)
         {
+            if (!autoPlan && !_isPlan)
+                throw new InvalidOperationException($"{nameof(NextRound)}:手动回合必须先执行一次{nameof(CombatPlan)}才可以实现回合。");
             CurrentRoundRecord = new FightRoundRecord(Current);
-            var list = Mgr.GetAliveCombatUnits().ToList();
-            var fighters = list.ToList();
-            fighters.ForEach(SubscribeRecords);
-            foreach (var unit in fighters.Where(c => !skipPlanIds.Contains(c.CombatId))) 
-                unit.AutoCombatPlan();
+            var allUnits = autoPlan ? CombatPlan(Array.Empty<int>()) : Mgr.GetAliveCombatUnits().ToList();
+            return ProcessRound(allUnits);
+        }
+
+        private FightRoundRecord ProcessRound(IList<CombatUnit> allUnits)
+        {
+            foreach (var unit in allUnits) SubscribeRecords(unit);
+            var fighters = allUnits.ToList();
             var actionUnits = fighters.Where(c => c.Plan != CombatPlans.Wait).ToList();
             actionUnits.Sort();
             var combat = actionUnits.FirstOrDefault();
@@ -294,9 +309,9 @@ namespace BattleM
                 Mgr.CheckExhausted();
             }
             foreach (var unit in fighters) unit.BreathCharge(breathes);
-
-            list.ToList().ForEach(UnsubscribeRecords);
+            allUnits.ToList().ForEach(UnsubscribeRecords);
             Current++;
+            _isPlan = false;
             return CurrentRoundRecord;
         }
 

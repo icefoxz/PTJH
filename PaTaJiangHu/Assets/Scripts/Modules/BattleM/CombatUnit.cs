@@ -208,7 +208,7 @@ namespace BattleM
             {
                 if (Mgr.GetAliveCombatUnit(Target).IsEscapeCondition) //如果对方打算逃跑，可以等待或恢复
                 {
-                    TryRecover();
+                    TryRecoverPlan();
                     return;
                 }
                 _breathBar.SetPlan(CombatPlans.Surrender);
@@ -227,7 +227,7 @@ namespace BattleM
             var isRecoverNeed = CheckRecover();
             if (isRecoverNeed)
             {
-                TryRecover();
+                TryRecoverPlan();
                 return;
             }
 
@@ -241,7 +241,7 @@ namespace BattleM
             WaitPlan();
             return;
 
-            void TryRecover()
+            void TryRecoverPlan()
             {
                 var forceForm = CheckHealthForm();
                 if (forceForm == null)//如果状态不允许等待下一个回合
@@ -327,6 +327,7 @@ namespace BattleM
         #endregion
 
         #region Action
+
         /// <summary>
         /// 开始战斗
         /// </summary>
@@ -337,21 +338,33 @@ namespace BattleM
             switch (_breathBar.Plan)
             {
                 case CombatPlans.Attack:
-                    OnBattle(_breathBar.Dodge, _breathBar.Combat);
-                    break;
+                    {
+                        if (Target != null)
+                        {
+                            OnBattle(_breathBar.Dodge, _breathBar.Combat);
+                            _breathBar.BreathConsume(breathes);
+                        }
+                    }
+                    return;
                 case CombatPlans.Recover:
-                    OnRecovery(ForceSkill, _breathBar.Recover);
-                    break;
+                    {
+                        OnRecovery(ForceSkill, _breathBar.Recover);
+                        _breathBar.BreathConsume(breathes);
+                    }
+                    return;
                 case CombatPlans.Wait:
-                    break;
+                    return;
                 case CombatPlans.Surrender:
-                    OnEscape(_breathBar.Dodge, _breathBar.Combat);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                    {
+                        if (Target == null) return;
+                        OnEscape(_breathBar.Dodge, _breathBar.Combat);
+                        _breathBar.BreathConsume(breathes);
+                    }
+                    return;
             }
-            _breathBar.BreathConsume(breathes);
+            throw new ArgumentOutOfRangeException(nameof(_breathBar.Plan), $"{_breathBar.Plan}");
         }
+
         #endregion
         private void OnIdleRecovery(int charge) => OnNonCombatRecover(0, 0, charge);
 

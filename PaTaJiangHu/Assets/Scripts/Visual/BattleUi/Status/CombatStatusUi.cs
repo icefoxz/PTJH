@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Visual.BaseUi;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Status
 {
     public class CombatStatusUi : UiBase
     {
@@ -14,12 +14,11 @@ namespace Visual.BattleUi
         [SerializeField] private Text _tpText;
         [SerializeField] private ConValueSliderUi _mpSliderUi;
         [SerializeField] private Text _mpText;
-        [SerializeField] private Slider _breathSlider;
-        [SerializeField] private Text _breathText;
-        [SerializeField] private Image loseImage;
+        //[SerializeField] private Slider _breathSlider;
+        //[SerializeField] private Text _breathText;
+        //[SerializeField] private Image loseImage;
 
-        public void Set(string title, ICombatStatus stat, int breath,
-            int maxBreath)
+        public void Set(string title, ICombatStatus stat)
         {
             var hp = stat.Hp;
             var tp = stat.Tp;
@@ -31,31 +30,36 @@ namespace Visual.BattleUi
             SetConText(_tpText, tp);
             _mpSliderUi.Set(mp);
             SetConText(_mpText, mp);
-            SetBreath(breath, maxBreath);
+            //SetBreath(breath, maxBreath);
         }
 
-        private static void SetConText(Text com, IConditionValue con) => com.text = $"【{con?.Value}/{con?.Max}】";
-        public void SetLosePanel(bool isLose) => loseImage.gameObject.SetActive(isLose);
+        private static void SetConText(Text com, IConditionValue con) => com.text = $"{con?.Value}/{con?.Max}";
+        //public void SetLosePanel(bool isLose) => loseImage.gameObject.SetActive(isLose);
         public override void ResetUi()
         {
             _nameText.text = string.Empty;
-            SetBreath(1, 1);
+            //SetBreath(1, 1);
             _hpSliderUi.ResetUi();
             SetConText(_hpText, default);
             _tpSliderUi.ResetUi();
             SetConText(_tpText, default);
             _mpSliderUi.ResetUi();
             SetConText(_mpText, default);
-            SetLosePanel(false);
+            //SetLosePanel(false);
         }
 
-        public void SetBreath(int breath, int maxBreath)
+        //public void SetBreath(int breath, int maxBreath)
+        //{
+        //    if (maxBreath == 0) maxBreath = 1;
+        //    _breathSlider.value = 1f * breath / maxBreath;
+        //    _breathText.text = $"({breath})";
+        //}
+        public void UpdateStatus(int hp,int fixHp, int tp,int fixTp, int mp,int fixMp)
         {
-            if (maxBreath == 0) maxBreath = 1;
-            _breathSlider.value = 1f * breath / maxBreath;
-            _breathText.text = $"({breath})";
+            _hpSliderUi.SetValue(hp, fixHp);
+            _tpSliderUi.SetValue(tp, fixTp);
+            _mpSliderUi.SetValue(mp, fixMp);
         }
-
         public void UpdateStatus(IConditionValue hp, IConditionValue tp, IConditionValue mp)
         {
             _hpSliderUi.Set(hp);

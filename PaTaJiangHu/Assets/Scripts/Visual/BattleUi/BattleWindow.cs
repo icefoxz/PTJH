@@ -8,6 +8,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using Visual.BaseUi;
 using Visual.BattleUi.Input;
+using Visual.BattleUi.Status;
 
 namespace Visual.BattleUi
 {
@@ -22,8 +23,7 @@ namespace Visual.BattleUi
         void BattleSetup((int,CombatUnit)[] roles, CombatManager.Judgment judgment);
         void ResetUi();
         void Show();
-        void StartAutoRound();
-        void NextRound();
+        void StartBattle();
     }
 
     public class BattleWindow : UiBase, IBattleWindow,ICombatFragmentPlayer
@@ -40,6 +40,7 @@ namespace Visual.BattleUi
         [SerializeField] private RectTransform _mainCanvas;
         [SerializeField] private TempoSliderController _sliderController;
         [SerializeField] private PlayerStrategyController _playerStrategyController;
+        [SerializeField] private BreathViewUi _breathView;
         //[SerializeField] private BattleOrderController _battleOrderController;
         [SerializeField] private BattleStatusBarController _battleStatusBarController;
         //[SerializeField] private FightStage[] Stages;
@@ -61,7 +62,7 @@ namespace Visual.BattleUi
                 (CombatUnit.Strategies.Defend, () => PlayerSetStrategy(CombatUnit.Strategies.Defend)),
                 (CombatUnit.Strategies.RunAway, () => PlayerSetStrategy(CombatUnit.Strategies.RunAway)),
                 (CombatUnit.Strategies.DeathFight, () => PlayerSetStrategy(CombatUnit.Strategies.DeathFight))
-            }, PlayerAttackPlan, PlayerExertPlan, PlayerWaitPlan,OnSwitchControl);
+            }, PlayerAttackPlan, PlayerExertPlan, PlayerWaitPlan, OnSwitchControl);
             //BattleOrderController.Init();
             BattleStatusBarController.Init();
             OnBattleResultCallback = isWin => battleResultCallback?.Invoke(isWin);
@@ -77,25 +78,25 @@ namespace Visual.BattleUi
         private void OnSwitchControl(bool isManual)
         {
             IsAutoRound = !isManual;
-            StartAutoRound();
+            StartBattle();
         }
 
         private void PlayerWaitPlan()
         {
             Player.WaitPlan();
-            NextRound();
+            ManualRound();
         }
 
         private void PlayerExertPlan(IForceForm force)
         {
             Player.ExertPlan(force);
-            NextRound();
+            ManualRound();
         }
 
-        private void PlayerAttackPlan(ICombatForm combat, IDodgeForm dodge)
+        private void PlayerAttackPlan(ICombatForm combat)
         {
-            Player.AttackPlan(combat, dodge);
-            NextRound();
+            Player.AttackPlan(combat, Player.BreathBar.Dodge);
+            ManualRound();
         }
 
         private void PlayerSetStrategy(CombatUnit.Strategies steady)
@@ -137,42 +138,70 @@ namespace Visual.BattleUi
             list.ForEach(c =>
             {
                 BattleStatusBarController.AddUi(c.StandingPoint, c.CombatId,
-                    ui => ui.Set(c.Name, c.Status, c.BreathBar.TotalBreath, maxBreath));
+                    ui => ui.Set(c.Name, c.Status));
                 _sliderController.Add(c.CombatId, c.Name);
             });
             //BattleOrderController.UpdateOrder(list.Select(c => (c.CombatId, c.Name, c.BreathBar.TotalBreath)).ToArray());
-            _playerStrategyController.SetPlayer(Player);
+            _playerStrategyController.SetPlayer(Player, 
+                PresetCombat, 
+                PresetForce,
+                PresetIdle,
+                PresetCancel);
             InitStickmans(list);
             BreathUpdate();
             OnSwitchControl(!IsAutoRound);
             TempoController = new CombatTempoController(this);
+            PresetCancel();
+        }
+
+        private void PresetCancel()
+        {
+            _breathView.ClearActionForms();
+            BattleStatusBarController.UpdateStatus(Player.CombatId, Player.Status.Hp, Player.Status.Tp,
+                Player.Status.Mp);
+            BreathUpdate();
+        }
+
+        private void PresetIdle()
+        {
+            _breathView.SetIdle();
+            UpdateBreath(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+        }
+
+        private void PresetForce(IForceForm form)
+        {
+            _breathView.SetForce(form);
+            UpdateBreath(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+        }
+
+        private void PresetCombat(ICombatForm form)
+        {
+            _breathView.SetCombat(form);
+            var status = Player.Status;
+            BattleStatusBarController.UpdateStatus(Player.CombatId,
+                status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Qi,
+                status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
+            var dodgeBreath = Player.BreathBar.Dodge?.Breath ?? 0;
+            UpdateBreath(dodgeBreath + form.Breath,
+                Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
 
         private void BreathUpdate()
         {
             var combatUnits = Stage.GetCombatUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
+            var playerBreath = Player.BreathBar.TotalBreath;
             var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
-            //var firstCombat = combatUnits[0];
-            for (var i = 0; i < combatUnits.Count; i++)
-            {
-                var combat = combatUnits[i];
-                BattleStatusBarController.UpdateBreath(combat.CombatId, combat.BreathBar.TotalBreath, maxBreath);
-                //var doubleBreathes = firstCombat.BreathBar.TotalBreath * 2;
-                //if (i == combatUnits.Count -1)
-                //{
-                //    if (doubleBreathes < combat.BreathBar.TotalBreath)
-                //        combatUnits.Insert(i, firstCombat);
-                //    else 
-                //        combatUnits.Add(firstCombat);
-                //    break;
-                //}
-                //if (doubleBreathes >= combat.BreathBar.TotalBreath) continue;
-                //combatUnits.Insert(i, firstCombat);
-                //break;
-            }
+            UpdateBreath(playerBreath, maxBreath);
             var total = combatUnits.Sum(c => c.BreathBar.TotalBreath);
-            //BattleOrderController.UpdateOrder(combatUnits.Select(c => (c.CombatId, c.Name, c.BreathBar.TotalBreath)).ToArray());
             _sliderController.UpdateSlider(combatUnits.Select(c => (c.CombatId, 1f * c.BreathBar.TotalBreath / total)));
+            var breathBar = Player.BreathBar;
+            _breathView.Set(breathBar.TotalBusies, breathBar.Dodge);
+        }
+
+        private void UpdateBreath(int playerBreath,int maxBreath)
+        {
+            var targetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
+            BattleStatusBarController.UpdateBreath(playerBreath, targetBreath, maxBreath);
         }
 
         private IEnumerable<CombatUnitUi> GetAllCombatUis() => Stances.SelectMany(s => s.CombatUnitUis);
@@ -206,7 +235,8 @@ namespace Visual.BattleUi
                 _stickmanScene.UpdateStickmanOrientation(stickman, target);
             }
         }
-        public void StartAutoRound()
+
+        public void StartBattle()
         {
             if (Stage.WinningStance >= 0) //如果已有胜负(考虑到战斗单位不足问题)
             {
@@ -214,26 +244,39 @@ namespace Visual.BattleUi
                 return;
             } //直接返回胜利
 
+            if (!IsAutoRound)
+            {
+                Stage.PrePlan();
+                BreathUpdate();
+                return;
+            }
             StopAllCoroutines();
             StartCoroutine(AutoFightRoutine());
-        }
-        public void NextRound()
-        {
-            Stage.NextRound(new[] { Player.CombatId });
-            if (Stage.IsFightEnd) OnBattleFinalize(Stage.WinningStance);
-        }
 
-        private IEnumerator AutoFightRoutine()
-        {
-            do
+            IEnumerator AutoFightRoutine()
             {
-                if (!IsAutoRound) yield break;
-                Stage.NextRound(Array.Empty<int>());
-                yield return new WaitForSeconds(_autoRoundSecs);
-            } while (!Stage.IsFightEnd);
+                do
+                {
+                    if (!IsAutoRound) yield break;
+                    Stage.NextRound(true);
+                    yield return new WaitForSeconds(_autoRoundSecs);
+                } while (!Stage.IsFightEnd);
 
-            OnBattleFinalize(Stage.WinningStance);
+                OnBattleFinalize(Stage.WinningStance);
+            }
         }
+
+        private void ManualRound()
+        {
+            Stage.NextRound(false);
+            if (Stage.IsFightEnd)
+            {
+                OnBattleFinalize(Stage.WinningStance);
+                return;
+            }
+            Stage.PrePlan();
+        }
+
 
         private void OnEveryRound(FightRoundRecord rec)
         {

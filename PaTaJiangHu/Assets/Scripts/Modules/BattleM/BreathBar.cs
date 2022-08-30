@@ -10,6 +10,10 @@ namespace BattleM
     public interface IBreathBar : IComparable<IBreathBar>
     {
         int TotalBreath { get; }
+        int IdleBreath { get; }
+        int ExertBreath { get; }
+        int CombatBreath { get; }
+        int TotalBusies { get; }
         ICombatForm Combat { get; }
         IDodgeForm Dodge { get; }
         IForceForm Recover { get; }
@@ -24,6 +28,7 @@ namespace BattleM
     {
         int Breath { get; }
     }
+
     public class BreathBar : IBreathBar
     {
         private readonly List<int> _busies;
@@ -39,11 +44,21 @@ namespace BattleM
         {
             get
             {
-                if (Recover != null)//优先执行调息
-                    return Busies.Sum(b => b) + Recover.Breath - Charged;
-                return Busies.Sum(b => b) + (Combat?.Breath ?? 0) + (Dodge?.Breath ?? 0) - Charged;
+                switch (Plan)
+                {
+                    case CombatPlans.Attack: return CombatBreath;
+                    case CombatPlans.Recover: return ExertBreath;
+                    case CombatPlans.Wait:
+                    case CombatPlans.Surrender: return IdleBreath;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
+        public int IdleBreath => TotalBusies - Charged;
+        public int ExertBreath => TotalBusies + Recover?.Breath ?? 0 - Charged;
+        public int CombatBreath => TotalBusies + (Combat?.Breath ?? 0) + (Dodge?.Breath ?? 0) - Charged;
+        public int TotalBusies => Busies.Sum(b => b);
         public int LastRound { get; private set; }
 
         public BreathBar(IRound round)
@@ -76,13 +91,13 @@ namespace BattleM
                     var value = _busies[0];
                     if (value > Charged) break;
                     _busies.RemoveAt(0);
-                    Charge(-value);
+                    Charge(value);
                 }
             }
 
             if (Charged >= Recover?.Breath) //先执行调息
             {
-                Charge(-Recover.Breath);
+                Charge(Recover.Breath);
                 //recoverCallback?.Invoke(Recover);
                 Recover = null;
             }
@@ -91,7 +106,7 @@ namespace BattleM
             var combatBreath = Combat?.Breath ?? 0;
             var dodgeBreath = Dodge?.Breath ?? 0;
             var breath = combatBreath + dodgeBreath;
-            Charge(-breath);
+            Charge(breath);
             //combatCallback?.Invoke(Dodge, Combat);
             Dodge = null;
             Combat = null;
