@@ -91,7 +91,7 @@ namespace BattleM
                     var value = _busies[0];
                     if (value > Charged) break;
                     _busies.RemoveAt(0);
-                    Charge(value);
+                    Charge(-value);
                 }
             }
 
