@@ -106,7 +106,7 @@ namespace BattleM
             var combatBreath = Combat?.Breath ?? 0;
             var dodgeBreath = Dodge?.Breath ?? 0;
             var breath = combatBreath + dodgeBreath;
-            Charge(breath);
+            Charge(-breath);
             //combatCallback?.Invoke(Dodge, Combat);
             Dodge = null;
             Combat = null;
