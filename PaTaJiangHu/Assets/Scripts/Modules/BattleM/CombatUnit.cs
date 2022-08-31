@@ -341,15 +341,15 @@ namespace BattleM
                     {
                         if (Target != null)
                         {
-                            OnBattle(_breathBar.Dodge, _breathBar.Combat);
                             _breathBar.BreathConsume(breathes);
+                            OnBattle(_breathBar.Dodge, _breathBar.Combat);
                         }
                     }
                     return;
                 case CombatPlans.Recover:
                     {
-                        OnRecovery(ForceSkill, _breathBar.Recover);
                         _breathBar.BreathConsume(breathes);
+                        OnRecovery(ForceSkill, _breathBar.Recover);
                     }
                     return;
                 case CombatPlans.Wait:
@@ -357,8 +357,8 @@ namespace BattleM
                 case CombatPlans.Surrender:
                     {
                         if (Target == null) return;
-                        OnEscape(_breathBar.Dodge, _breathBar.Combat);
                         _breathBar.BreathConsume(breathes);
+                        OnEscape(_breathBar.Dodge, _breathBar.Combat);
                     }
                     return;
             }

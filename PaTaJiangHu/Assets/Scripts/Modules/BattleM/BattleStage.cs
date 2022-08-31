@@ -8,6 +8,7 @@ namespace BattleM
     {
         private CombatManager CombatManager { get; set; }
         public IEnumerable<CombatUnit> GetCombatUnits() => CombatManager.AllUnits;
+        public IEnumerable<CombatUnit> GetAliveUnits() => CombatManager.GetAliveCombatUnits();
         public CombatUnit GetCombatUnit(int combatId) => CombatManager.GetFromAllUnits(combatId);
         public bool IsFightEnd => CombatManager.IsFightEnd;
         public int WinningStance => CombatManager.WinningStance;

@@ -43,6 +43,8 @@ namespace Visual.BattleUi
         [SerializeField] private BreathViewUi _breathView;
         //[SerializeField] private BattleOrderController _battleOrderController;
         [SerializeField] private BattleStatusBarController _battleStatusBarController;
+        [SerializeField] private BreathDrumUi _breathDrumUi;
+
         //[SerializeField] private FightStage[] Stages;
         //private IBattleOrderController BattleOrderController => _battleOrderController;
         private IBattleStatusBarController BattleStatusBarController => _battleStatusBarController;
@@ -84,18 +86,21 @@ namespace Visual.BattleUi
         private void PlayerWaitPlan()
         {
             Player.WaitPlan();
+            CurrentBreathUpdate();
             ManualRound();
         }
 
         private void PlayerExertPlan(IForceForm force)
         {
             Player.ExertPlan(force);
+            CurrentBreathUpdate();
             ManualRound();
         }
 
         private void PlayerAttackPlan(ICombatForm combat)
         {
             Player.AttackPlan(combat, Player.BreathBar.Dodge);
+            CurrentBreathUpdate();
             ManualRound();
         }
 
@@ -148,7 +153,7 @@ namespace Visual.BattleUi
                 PresetIdle,
                 PresetCancel);
             InitStickmans(list);
-            BreathUpdate();
+            CurrentBreathUpdate();
             OnSwitchControl(!IsAutoRound);
             TempoController = new CombatTempoController(this);
             PresetCancel();
@@ -156,22 +161,22 @@ namespace Visual.BattleUi
 
         private void PresetCancel()
         {
-            _breathView.ClearActionForms();
+            CurrentBreathView();
             BattleStatusBarController.UpdateStatus(Player.CombatId, Player.Status.Hp, Player.Status.Tp,
                 Player.Status.Mp);
-            BreathUpdate();
+            CurrentBreathUpdate();
         }
 
         private void PresetIdle()
         {
             _breathView.SetIdle();
-            UpdateBreath(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+            UpdatePlayerBreath(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
 
         private void PresetForce(IForceForm form)
         {
             _breathView.SetForce(form);
-            UpdateBreath(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+            UpdatePlayerBreath(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
 
         private void PresetCombat(ICombatForm form)
@@ -182,26 +187,26 @@ namespace Visual.BattleUi
                 status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Qi,
                 status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
             var dodgeBreath = Player.BreathBar.Dodge?.Breath ?? 0;
-            UpdateBreath(dodgeBreath + form.Breath,
+            UpdatePlayerBreath(dodgeBreath + form.Breath,
                 Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
 
-        private void BreathUpdate()
+        private void CurrentBreathUpdate()
         {
-            var combatUnits = Stage.GetCombatUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
+            var combatUnits = Stage.GetAliveUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
             var playerBreath = Player.BreathBar.TotalBreath;
             var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
-            UpdateBreath(playerBreath, maxBreath);
+            UpdatePlayerBreath(playerBreath, maxBreath);
             var total = combatUnits.Sum(c => c.BreathBar.TotalBreath);
             _sliderController.UpdateSlider(combatUnits.Select(c => (c.CombatId, 1f * c.BreathBar.TotalBreath / total)));
             var breathBar = Player.BreathBar;
             _breathView.Set(breathBar.TotalBusies, breathBar.Dodge);
         }
 
-        private void UpdateBreath(int playerBreath,int maxBreath)
+        private void UpdatePlayerBreath(int playerBreath,int maxBreath)
         {
             var targetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
-            BattleStatusBarController.UpdateBreath(playerBreath, targetBreath, maxBreath);
+            _breathDrumUi.UpdateBreath(playerBreath, targetBreath, maxBreath);
         }
 
         private IEnumerable<CombatUnitUi> GetAllCombatUis() => Stances.SelectMany(s => s.CombatUnitUis);
@@ -247,7 +252,8 @@ namespace Visual.BattleUi
             if (!IsAutoRound)
             {
                 Stage.PrePlan();
-                BreathUpdate();
+                CurrentBreathView();
+                CurrentBreathUpdate();
                 return;
             }
             StopAllCoroutines();
@@ -266,8 +272,32 @@ namespace Visual.BattleUi
             }
         }
 
+        private void CurrentBreathView()
+        {
+            _breathView.Set(Player.BreathBar.TotalBusies, Player.BreathBar.Dodge);
+            switch (Player.Plan)
+            {
+                case CombatPlans.Attack:
+                    _breathView.SetCombat(Player.BreathBar.Combat);
+                    break;
+                case CombatPlans.Recover:
+                    _breathView.SetForce(Player.BreathBar.Recover);
+                    break;
+                case CombatPlans.Wait:
+                case CombatPlans.Surrender:
+                    _breathView.SetIdle();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         private void ManualRound()
         {
+            lastPlayerBreath = Player.BreathBar.TotalBreath;
+            lastTargetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
+            lastMaxBreath = Stage.GetAliveUnits().Sum(c => c.BreathBar.TotalBreath);
+            UpdateLastBreath();
             Stage.NextRound(false);
             if (Stage.IsFightEnd)
             {
@@ -275,19 +305,26 @@ namespace Visual.BattleUi
                 return;
             }
             Stage.PrePlan();
+            CurrentBreathView();
         }
+        private int lastPlayerBreath;
+        private int lastTargetBreath;
+        private int lastMaxBreath;
 
+        private void UpdateLastBreath() =>
+            _breathDrumUi.UpdateBreath(lastPlayerBreath, lastTargetBreath, lastMaxBreath);
 
         private void OnEveryRound(FightRoundRecord rec)
         {
             StartCoroutine(UpdateUis(rec));
             _battleLogger.NextRound(Stage.GetCombatUnits(), rec);
-            BreathUpdate();
         }
         private IEnumerator UpdateUis(FightRoundRecord rec)
         {
             RoundText.text = rec.Round.ToString();
+            yield return _breathDrumUi.PlaySlider(() => { });
             yield return TempoController.Play(rec);
+            CurrentBreathUpdate();
         }
         private BattleStanceUi GetCombatAnimUi(int combatId) => Stances.Single(s => s.HandledIds.Contains(combatId));
         private void UpdateCombatUnit(int combatId, string popText)

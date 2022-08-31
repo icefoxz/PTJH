@@ -95,21 +95,28 @@ namespace BattleM
                 }
             }
 
-            if (Charged >= Recover?.Breath) //先执行调息
+            var consume = 0;
+            switch (Plan)
             {
-                Charge(Recover.Breath);
-                //recoverCallback?.Invoke(Recover);
-                Recover = null;
+                case CombatPlans.Attack:
+                    //执行攻击之类
+                    var combatBreath = Combat?.Breath ?? 0;
+                    var dodgeBreath = Dodge?.Breath ?? 0;
+                    consume = combatBreath + dodgeBreath;
+                    break;
+                case CombatPlans.Recover:
+                    if (Charged >= Recover?.Breath) 
+                        consume = Recover.Breath;
+                    break;
+                case CombatPlans.Wait:
+                    break;
+                case CombatPlans.Surrender:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
-            //执行攻击之类
-            var combatBreath = Combat?.Breath ?? 0;
-            var dodgeBreath = Dodge?.Breath ?? 0;
-            var breath = combatBreath + dodgeBreath;
-            Charge(-breath);
-            //combatCallback?.Invoke(Dodge, Combat);
-            Dodge = null;
-            Combat = null;
+            Charge(-consume);
         }
         public int CompareTo(IBreathBar other) => TotalBreath.CompareTo(other.TotalBreath);
         public override string ToString() => $"气息条({TotalBreath - Charged})【硬直：{Busies.Sum():D}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Recover?.Name}({Recover?.Breath})】";
