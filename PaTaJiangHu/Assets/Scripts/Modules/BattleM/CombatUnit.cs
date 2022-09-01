@@ -9,7 +9,9 @@ namespace BattleM
     public enum CombatPlans
     {
         Attack,
-        Recover,
+        RecoverHp,
+        RecoverTp,
+        Exert,
         Wait,
         Surrender
     }
@@ -101,6 +103,9 @@ namespace BattleM
         public void SetStrategy(Strategies strategy) => Strategy = strategy;
         public void SetCombatId(int combatId) => CombatId = combatId;
         public IEquipment Equipment { get; }
+        /// <summary>
+        /// 是否逃跑状态，如果死战会一直返回false
+        /// </summary>
         public bool IsEscapeCondition
         {
             get
@@ -208,9 +213,20 @@ namespace BattleM
             {
                 if (Mgr.GetAliveCombatUnit(Target).IsEscapeCondition) //如果对方打算逃跑，可以等待或恢复
                 {
-                    TryRecoverPlan();
-                    return;
-                }
+                    var hpLow = CheckRecoverNeed(Status.Hp);
+                    var tpLow = CheckRecoverNeed(Status.Tp);
+                    if (hpLow)
+                    {
+                        TryRecoverPlan(CombatPlans.RecoverHp);
+                        return;
+                    }
+
+                    if (tpLow)
+                    {
+                        TryRecoverPlan(CombatPlans.RecoverTp);
+                        return;
+                    }
+                }//如果对方没有打算逃跑，己方准备认输模式(逃跑，认输)
                 _breathBar.SetPlan(CombatPlans.Surrender);
                 return;
             }
@@ -224,10 +240,17 @@ namespace BattleM
             var combatForm = GetCombatForm();//获取攻击招式
             var dodgeForm = GetDodgeForm();//获取身法
             var isReachable = IsTargetRange() || dodgeForm != null;
-            var isRecoverNeed = CheckRecover();
-            if (isRecoverNeed)
+            var isHpRecoverNeed = CheckRecoverNeed(Status.Hp);
+            var isTpRecoverNeed = CheckRecoverNeed(Status.Tp);
+            if (isHpRecoverNeed)
             {
-                TryRecoverPlan();
+                TryRecoverPlan(CombatPlans.RecoverHp);
+                return;
+            }
+
+            if (isTpRecoverNeed)
+            {
+                TryRecoverPlan(CombatPlans.RecoverTp);
                 return;
             }
 
@@ -241,7 +264,7 @@ namespace BattleM
             WaitPlan();
             return;
 
-            void TryRecoverPlan()
+            void TryRecoverPlan(CombatPlans recoverPlan)
             {
                 var forceForm = CheckHealthForm();
                 if (forceForm == null)//如果状态不允许等待下一个回合
@@ -251,24 +274,37 @@ namespace BattleM
                     WaitPlan();
                     return;
                 }
-                ExertPlan(forceForm);
+
+                switch (recoverPlan)
+                {
+                    case CombatPlans.RecoverHp: RecoverHpPlan(forceForm); return;
+                    case CombatPlans.RecoverTp: RecoverTpPlan(forceForm); return;
+                    case CombatPlans.Attack:
+                    case CombatPlans.Exert:
+                    case CombatPlans.Wait:
+                    case CombatPlans.Surrender:
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(recoverPlan), recoverPlan, null);
+                }
             }
 
-            bool CheckRecover()
+            bool CheckRecoverNeed(IGameCondition gameCondition)
             {
                 //回气策略
                 switch (Strategy)
                 {
-                    case Strategies.Steady when Status.Mp.Value > 10 && IsLower(0.4f, Status):
-                    case Strategies.Hazard when Status.Mp.Value > 10 && IsLower(0.2f, Status):
-                    case Strategies.Defend when Status.Mp.Value > 10 && IsLower(0.8f, Status):
-                    case Strategies.RunAway when Status.Mp.Value > 10 && IsLower(0.8f, Status):
-                    case Strategies.DeathFight when Status.Mp.Value > 10 && IsLower(0.4f, Status):
+                    case Strategies.Steady when Status.Mp.Value > 10 && LowerThan(0.4f, gameCondition):
+                    case Strategies.Hazard when Status.Mp.Value > 10 && LowerThan(0.2f, gameCondition):
+                    case Strategies.Defend when Status.Mp.Value > 10 && LowerThan(0.8f, gameCondition):
+                    case Strategies.RunAway when Status.Mp.Value > 10 && LowerThan(0.8f, gameCondition):
+                    case Strategies.DeathFight when Status.Mp.Value > 10 && LowerThan(0.4f, gameCondition):
                         return true;
                     default:
                         return false;
                 }
             }
+
+            bool LowerThan(float ratio, IGameCondition con) => con.ValueMaxRatio < ratio;
         }
 
         public void AttackPlan(ICombatForm combat,IDodgeForm dodge)
@@ -281,10 +317,25 @@ namespace BattleM
         {
             _breathBar.SetPlan(CombatPlans.Wait);
         }
+
+        public void RecoverHpPlan(IForceForm forceForm)
+        {
+            _breathBar.SetRecover(forceForm);
+            _breathBar.SetPlan(CombatPlans.RecoverHp);
+        }
+
+        public void RecoverTpPlan(IForceForm forceForm)
+        {
+            _breathBar.SetRecover(forceForm);
+            _breathBar.SetPlan(CombatPlans.RecoverTp);
+        }
+
         public void ExertPlan(IForceForm force)
         {
+            //todo: 暂时没有特殊招方式
+            throw new NotImplementedException();
             _breathBar.SetRecover(force);
-            _breathBar.SetPlan(CombatPlans.Recover);
+            _breathBar.SetPlan(CombatPlans.RecoverHp);
         }
 
         private IForceForm CheckHealthForm()
@@ -346,10 +397,16 @@ namespace BattleM
                         }
                     }
                     return;
-                case CombatPlans.Recover:
+                case CombatPlans.RecoverHp:
                     {
                         _breathBar.BreathConsume(breathes);
-                        OnRecovery(ForceSkill, _breathBar.Recover);
+                        Recovery(Status.Hp, ForceSkill, _breathBar.Recover);
+                    }
+                    return;
+                case CombatPlans.RecoverTp:
+                    {
+                        _breathBar.BreathConsume(breathes);
+                        Recovery(Status.Tp, ForceSkill, _breathBar.Recover);
                     }
                     return;
                 case CombatPlans.Wait:
@@ -361,6 +418,9 @@ namespace BattleM
                         OnEscape(_breathBar.Dodge, _breathBar.Combat);
                     }
                     return;
+                case CombatPlans.Exert:
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             throw new ArgumentOutOfRangeException(nameof(_breathBar.Plan), $"{_breathBar.Plan}");
         }
@@ -421,28 +481,34 @@ namespace BattleM
             OnConsume?.Invoke(rec);
         }
 
-        private void OnRecovery(IForce force, IForceForm forceForm)
+        private void Recovery(IGameCondition con, IForce force, IForceForm forceForm)
         {
             var rec = ConsumeRecord<IForceForm>.Instance(forceForm);
             rec.Set(this, () =>
             {
-                var list = new[] { Status.Hp, Status.Tp };
-                var totalGap = Status.Hp.Max - Status.Hp.Value + Status.Tp.Max - Status.Tp.Value;
-                var mp = Math.Min(totalGap, Status.Mp.Value);
-                var exert = ExertFormula.Instance(mp, forceForm.Breath, force.MpRate);
-                var final = exert.Finalize;
-                foreach (var con in list.OrderBy(c => c.ValueMaxRatio))
-                {
-                    if (final <= 0) break;
-                    var gap = con.Max - con.Value;
-                    var recover = Math.Min(gap, final);
-                    con.Add(recover);
-                    final -= recover;
-                }
+                //var list = new[] { Status.Hp, Status.Tp };
+                //var totalGap = Status.Hp.Max - Status.Hp.Value + Status.Tp.Max - Status.Tp.Value;
+                //var mp = Math.Min(totalGap, Status.Mp.Value);
+                //var exert = ExertFormula.Instance(mp, forceForm.Breath, force.MpRate);
+                //var final = exert.Finalize;
+                //foreach (var con in list.OrderBy(c => c.ValueMaxRatio))
+                //{
+                //    if (final <= 0) break;
+                //    var gap = con.Max - con.Value;
+                //    var recover = Math.Min(gap, final);
+                //    con.Add(recover);
+                //    final -= recover;
+                //}
+                var gap = con.Max - con.Value; //差距值
+                var mpRequired = RecoverFormula.MpRequire(gap, force.MpRate, forceForm.Breath); //需要内力
+                var mp = Math.Min(mpRequired, Status.Mp.Value); //需要内力与剩余内力获取最低(内力不够的情况)
+                var formula = RecoverFormula.Instance(mp, forceForm.Breath, force.MpRate);
+                con.Add(formula.Finalize);
                 Status.Mp.Add(-mp);
             });
             OnRecoverConsume?.Invoke(rec);
         }
+
         #endregion
 
         private void OnDodge(IDodgeForm dodge, bool isEscape)
@@ -504,11 +570,6 @@ namespace BattleM
         {
             IsDeath = true;
             OnFightEvent?.Invoke(EventRecord.Instance(this, FightFragment.Types.Death));
-        }
-        private bool IsLower(float heathRatio, ICombatStatus status)
-        {
-            return status.Hp.ValueMaxRatio < heathRatio ||
-                   status.Tp.ValueMaxRatio < heathRatio;
         }
 
         private class BasicCombat : ICombatForm

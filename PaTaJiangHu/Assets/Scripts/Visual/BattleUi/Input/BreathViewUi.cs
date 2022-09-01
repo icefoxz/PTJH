@@ -11,22 +11,26 @@ namespace Visual.BattleUi.Input
         private enum ViewModes
         {
             Attack,
-            Exert,
+            Recover,
             Idle
         }
         [SerializeField] private Text _totalBreath;
         [SerializeField] private Text _busyValue;
+        [SerializeField] private Text _chargeValue;
         [SerializeField] private CombatFormUi _dodgeForm;
         [SerializeField] private CombatFormUi _combatForm;
         [SerializeField] private CombatFormUi _forceForm;
         private IDodgeForm DodgeForm { get; set; }
         private int Busy { get; set; }
+        private int Charge { get; set; }
 
-        public void Set(int busy, IDodgeForm dodgeForm)
+        public void Set(int busy,int charge ,IDodgeForm dodgeForm)
         {
             Busy = busy;
+            Charge = charge;
             DodgeForm = dodgeForm;
         }
+
 
         public void SetCombat(ICombatForm form)
         {
@@ -41,7 +45,7 @@ namespace Visual.BattleUi.Input
             SetForm<ICombatForm>(null, _combatForm);
             SetForm(form, _forceForm);
             SetForm<IDodgeForm>(null, _dodgeForm);
-            UpdateBreath(ViewModes.Exert, form);
+            UpdateBreath(ViewModes.Recover, form);
         }
 
         public void SetIdle()
@@ -76,9 +80,10 @@ namespace Visual.BattleUi.Input
         private void UpdateBreath<T>(ViewModes mode,T form) where T : IBreathNode
         {
             _busyValue.text = Busy.ToString();
+            _chargeValue.text = Charge.ToString();
             var dodgeBreath = mode == ViewModes.Attack ? DodgeForm?.Breath ?? 0 : 0;
             var actionBreath = form?.Breath ?? 0;
-            _totalBreath.text = (dodgeBreath + actionBreath + Busy).ToString();
+            _totalBreath.text = (dodgeBreath + actionBreath + Busy - Charge).ToString();
         }
 
 

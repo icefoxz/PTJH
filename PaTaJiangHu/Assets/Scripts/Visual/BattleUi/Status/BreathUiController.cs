@@ -1,13 +1,16 @@
+using System;
 using System.Collections;
+using BattleM;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using Visual.BaseUi;
+using Visual.BattleUi.Input;
 
 namespace Visual.BattleUi.Status
 {
-    public class BreathDrumUi : UiBase
+    public class BreathUiController : UiBase
     {
         [SerializeField] private Slider leftSlider;
         [SerializeField] private Text leftText;
@@ -15,7 +18,37 @@ namespace Visual.BattleUi.Status
         [SerializeField] private Text rightText;
         [SerializeField] private Image _drumImage;
         [SerializeField] private float _moveSecs = 1f;
-        public void UpdateBreath(int left, int right, int maxBreath)
+        [SerializeField] private BreathViewUi _leftView;
+        [SerializeField] private BreathViewUi _rightView;
+
+        public void SetBreathView(IBreathBar left, IBreathBar right)
+        {
+            SetPlan(_leftView, left);
+            SetPlan(_rightView, right);
+        }
+
+        private void SetPlan(BreathViewUi view, IBreathBar bar)
+        {
+            view.Set(bar.TotalBusies, bar.Charged, bar.Dodge);
+            switch (bar.Plan)
+            {
+                case CombatPlans.Attack:
+                    view.SetCombat(bar.Combat);
+                    break;
+                case CombatPlans.RecoverHp:
+                case CombatPlans.RecoverTp:
+                    view.SetForce(bar.Recover);
+                    break;
+                case CombatPlans.Wait:
+                case CombatPlans.Surrender:
+                    view.SetIdle();
+                    break;
+                case CombatPlans.Exert:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        public void UpdateDrum(int left, int right, int maxBreath)
         {
             if (maxBreath <= 0)
             {

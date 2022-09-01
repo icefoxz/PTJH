@@ -38,12 +38,11 @@ namespace Visual.BattleUi
         [SerializeField] private int _minEscapeRounds = 10;
         [SerializeField] private StickmanSceneController _stickmanScene;
         [SerializeField] private RectTransform _mainCanvas;
-        [SerializeField] private TempoSliderController _sliderController;
         [SerializeField] private PlayerStrategyController _playerStrategyController;
-        [SerializeField] private BreathViewUi _breathView;
+        //[SerializeField] private BreathViewUi _breathView;
         //[SerializeField] private BattleOrderController _battleOrderController;
         [SerializeField] private BattleStatusBarController _battleStatusBarController;
-        [SerializeField] private BreathDrumUi _breathDrumUi;
+        [SerializeField] private BreathUiController _breathUi;
 
         //[SerializeField] private FightStage[] Stages;
         //private IBattleOrderController BattleOrderController => _battleOrderController;
@@ -52,11 +51,10 @@ namespace Visual.BattleUi
         public BattleStage Stage { get; set; }
         private CombatTempoController TempoController { get; set; }
         private CombatUnit Player { get; set; }
-        private bool IsAutoRound { get; set; }
+        private bool IsAutoRound { get; set; } = true;
         private event UnityAction<bool> OnBattleResultCallback;
         public void Init(UnityAction<bool> battleResultCallback)
         {
-            _sliderController.Init();
             _playerStrategyController.Init(new (CombatUnit.Strategies strategy, UnityAction action)[]
             {
                 (CombatUnit.Strategies.Steady, () => PlayerSetStrategy(CombatUnit.Strategies.Steady)),
@@ -64,7 +62,7 @@ namespace Visual.BattleUi
                 (CombatUnit.Strategies.Defend, () => PlayerSetStrategy(CombatUnit.Strategies.Defend)),
                 (CombatUnit.Strategies.RunAway, () => PlayerSetStrategy(CombatUnit.Strategies.RunAway)),
                 (CombatUnit.Strategies.DeathFight, () => PlayerSetStrategy(CombatUnit.Strategies.DeathFight))
-            }, PlayerAttackPlan, PlayerExertPlan, PlayerWaitPlan, OnSwitchControl);
+            }, PlayerAttackPlan, PlayerExertPlan, PlayerRecHp,PlayerRecTp);
             //BattleOrderController.Init();
             BattleStatusBarController.Init();
             OnBattleResultCallback = isWin => battleResultCallback?.Invoke(isWin);
@@ -77,10 +75,15 @@ namespace Visual.BattleUi
             ResetLocalPos();
         }
 
-        private void OnSwitchControl(bool isManual)
+        #region PlayerCommands
+        private void PlayerRecTp()
         {
-            IsAutoRound = !isManual;
-            StartBattle();
+            throw new NotImplementedException();
+        }
+
+        private void PlayerRecHp()
+        {
+            throw new NotImplementedException();
         }
 
         private void PlayerWaitPlan()
@@ -108,21 +111,28 @@ namespace Visual.BattleUi
         {
             Player.SetStrategy(steady);
         }
+        #endregion
 
+        #region BattleRound
         private void OnBattleFinalize(int winningStance)
         {
-            Stage.OnBattleFinalize -= OnBattleFinalize;
             Stage.OnEveryRound -= OnEveryRound;
-            _stickmanScene.ResetUi();
-            foreach (var stance in Stances) stance.ResetUi();
-            OnBattleResultCallback?.Invoke(winningStance == 0);
-            Player = null;
-            Debug.Log("战斗结束！");
+
+            StartCoroutine(FinalizeBattle(winningStance));
+
+            IEnumerator FinalizeBattle(int win)
+            {
+                yield return new WaitForSeconds(2);
+                _stickmanScene.ResetUi();
+                foreach (var stance in Stances) stance.ResetUi();
+                OnBattleResultCallback?.Invoke(win == 0);
+                Player = null;
+                Debug.Log("战斗结束！");
+            }
         }
         public void BattleSetup((int, CombatUnit)[] roles, CombatManager.Judgment judgment)
         {
             var list = new List<CombatUnit>();
-            IsAutoRound = false;
             Player = null;
             for (var index = 0; index < roles.Length; index++)
             {
@@ -137,58 +147,108 @@ namespace Visual.BattleUi
             if (Player == null)
                 throw new NullReferenceException($"{nameof(BattleSetup)}:找不到玩家单位,游戏不支持无玩家的战斗模式!");
             Stage = new BattleStage(list.ToArray(), judgment, _minEscapeRounds);
-            Stage.OnBattleFinalize += OnBattleFinalize;
             Stage.OnEveryRound += OnEveryRound;
             var maxBreath = list.Sum(c => c.BreathBar.TotalBreath);
             list.ForEach(c =>
             {
                 BattleStatusBarController.AddUi(c.StandingPoint, c.CombatId,
                     ui => ui.Set(c.Name, c.Status));
-                _sliderController.Add(c.CombatId, c.Name);
             });
             //BattleOrderController.UpdateOrder(list.Select(c => (c.CombatId, c.Name, c.BreathBar.TotalBreath)).ToArray());
             _playerStrategyController.SetPlayer(Player, 
                 PresetCombat, 
                 PresetForce,
-                PresetIdle,
                 PresetCancel);
             InitStickmans(list);
             CurrentBreathUpdate();
-            OnSwitchControl(!IsAutoRound);
             TempoController = new CombatTempoController(this);
             PresetCancel();
         }
+        public void StartBattle()
+        {
+            if (Stage.IsFightEnd) //如果已有胜负(考虑到战斗单位不足问题)
+            {
+                OnBattleFinalize(Stage.WinningStance);
+                return;
+            } //直接返回胜利
 
+            if (!IsAutoRound)
+            {
+                Stage.PrePlan();
+                CurrentBreathUpdate();
+                return;
+            }
+            Stage.NextRound(true);
+        }
+        private void OnEveryRound(FightRoundRecord rec)
+        {
+            _battleLogger.NextRound(Stage.GetCombatUnits(), rec);
+            StartCoroutine(UpdateUis(rec));
+
+            IEnumerator UpdateUis(FightRoundRecord r)
+            {
+                RoundText.text = r.Round.ToString();
+                CurrentBreathUpdate();
+                yield return _breathUi.PlaySlider(() => { });
+                yield return TempoController.Play(r);
+                StartBattle();//自动回合
+            }
+        }
+        private void ManualRound()
+        {
+            lastPlayerBreath = Player.BreathBar.TotalBreath;
+            lastTargetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
+            lastMaxBreath = Stage.GetAliveUnits().Sum(c => c.BreathBar.TotalBreath);
+            UpdateLastBreath();
+            Stage.NextRound(false);
+            if (Stage.IsFightEnd)
+            {
+                OnBattleFinalize(Stage.WinningStance);
+                return;
+            }
+            Stage.PrePlan();
+            CurrentBreathUpdate();
+        }
+        #endregion
+
+        #region BreathViewUi Preset
         private void PresetCancel()
         {
-            CurrentBreathView();
             BattleStatusBarController.UpdateStatus(Player.CombatId, Player.Status.Hp, Player.Status.Tp,
                 Player.Status.Mp);
             CurrentBreathUpdate();
         }
-
         private void PresetIdle()
         {
-            _breathView.SetIdle();
-            UpdatePlayerBreath(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+            //_breathView.SetIdle();
+            UpdateDrum(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
-
         private void PresetForce(IForceForm form)
         {
-            _breathView.SetForce(form);
-            UpdatePlayerBreath(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+            //_breathView.SetForce(form);
+            UpdateDrum(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
-
         private void PresetCombat(ICombatForm form)
         {
-            _breathView.SetCombat(form);
+            //_breathView.SetCombat(form);
             var status = Player.Status;
             BattleStatusBarController.UpdateStatus(Player.CombatId,
                 status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Qi,
                 status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
             var dodgeBreath = Player.BreathBar.Dodge?.Breath ?? 0;
-            UpdatePlayerBreath(dodgeBreath + form.Breath,
+            UpdateDrum(dodgeBreath + form.Breath,
                 Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+        }
+        #endregion
+
+        #region BreathView Update
+        private int lastPlayerBreath;
+        private int lastTargetBreath;
+        private int lastMaxBreath;
+
+        private void UpdateLastBreath()
+        {
+            _breathUi.UpdateDrum(lastPlayerBreath, lastTargetBreath, lastMaxBreath);
         }
 
         private void CurrentBreathUpdate()
@@ -196,19 +256,17 @@ namespace Visual.BattleUi
             var combatUnits = Stage.GetAliveUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
             var playerBreath = Player.BreathBar.TotalBreath;
             var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
-            UpdatePlayerBreath(playerBreath, maxBreath);
-            var total = combatUnits.Sum(c => c.BreathBar.TotalBreath);
-            _sliderController.UpdateSlider(combatUnits.Select(c => (c.CombatId, 1f * c.BreathBar.TotalBreath / total)));
-            var breathBar = Player.BreathBar;
-            _breathView.Set(breathBar.TotalBusies, breathBar.Dodge);
+            UpdateDrum(playerBreath, maxBreath);
+            _breathUi.SetBreathView(Player.BreathBar, Stage.GetCombatUnit(Player.Target.CombatId).BreathBar);
         }
-
-        private void UpdatePlayerBreath(int playerBreath,int maxBreath)
+        private void UpdateDrum(int playerBreath,int maxBreath)
         {
             var targetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
-            _breathDrumUi.UpdateBreath(playerBreath, targetBreath, maxBreath);
+            _breathUi.UpdateDrum(playerBreath, targetBreath, maxBreath);
         }
+        #endregion
 
+        #region CombatUi Update
         private IEnumerable<CombatUnitUi> GetAllCombatUis() => Stances.SelectMany(s => s.CombatUnitUis);
         private CombatUnitUi GetCombatUi(int combatId) => GetAllCombatUis().Single(c => c.CombatId == combatId);
         private void InitStickmans(List<CombatUnit> list)
@@ -239,92 +297,6 @@ namespace Visual.BattleUi
                 var target = GetCombatUi(unit.Target.CombatId).Stickman;
                 _stickmanScene.UpdateStickmanOrientation(stickman, target);
             }
-        }
-
-        public void StartBattle()
-        {
-            if (Stage.WinningStance >= 0) //如果已有胜负(考虑到战斗单位不足问题)
-            {
-                OnBattleFinalize(Stage.WinningStance);
-                return;
-            } //直接返回胜利
-
-            if (!IsAutoRound)
-            {
-                Stage.PrePlan();
-                CurrentBreathView();
-                CurrentBreathUpdate();
-                return;
-            }
-            StopAllCoroutines();
-            StartCoroutine(AutoFightRoutine());
-
-            IEnumerator AutoFightRoutine()
-            {
-                do
-                {
-                    if (!IsAutoRound) yield break;
-                    Stage.NextRound(true);
-                    yield return new WaitForSeconds(_autoRoundSecs);
-                } while (!Stage.IsFightEnd);
-
-                OnBattleFinalize(Stage.WinningStance);
-            }
-        }
-
-        private void CurrentBreathView()
-        {
-            _breathView.Set(Player.BreathBar.TotalBusies, Player.BreathBar.Dodge);
-            switch (Player.Plan)
-            {
-                case CombatPlans.Attack:
-                    _breathView.SetCombat(Player.BreathBar.Combat);
-                    break;
-                case CombatPlans.Recover:
-                    _breathView.SetForce(Player.BreathBar.Recover);
-                    break;
-                case CombatPlans.Wait:
-                case CombatPlans.Surrender:
-                    _breathView.SetIdle();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void ManualRound()
-        {
-            lastPlayerBreath = Player.BreathBar.TotalBreath;
-            lastTargetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
-            lastMaxBreath = Stage.GetAliveUnits().Sum(c => c.BreathBar.TotalBreath);
-            UpdateLastBreath();
-            Stage.NextRound(false);
-            if (Stage.IsFightEnd)
-            {
-                OnBattleFinalize(Stage.WinningStance);
-                return;
-            }
-            Stage.PrePlan();
-            CurrentBreathView();
-        }
-        private int lastPlayerBreath;
-        private int lastTargetBreath;
-        private int lastMaxBreath;
-
-        private void UpdateLastBreath() =>
-            _breathDrumUi.UpdateBreath(lastPlayerBreath, lastTargetBreath, lastMaxBreath);
-
-        private void OnEveryRound(FightRoundRecord rec)
-        {
-            StartCoroutine(UpdateUis(rec));
-            _battleLogger.NextRound(Stage.GetCombatUnits(), rec);
-        }
-        private IEnumerator UpdateUis(FightRoundRecord rec)
-        {
-            RoundText.text = rec.Round.ToString();
-            yield return _breathDrumUi.PlaySlider(() => { });
-            yield return TempoController.Play(rec);
-            CurrentBreathUpdate();
         }
         private BattleStanceUi GetCombatAnimUi(int combatId) => Stances.Single(s => s.HandledIds.Contains(combatId));
         private void UpdateCombatUnit(int combatId, string popText)
@@ -363,6 +335,7 @@ namespace Visual.BattleUi
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+        #endregion
         public override void ResetUi() => Hide();
 
         #region ICombatFragment

@@ -11,27 +11,24 @@ namespace Visual.BattleUi.Input
     {
         [SerializeField] private SkillFormView combatFormView;
         [SerializeField] private SkillFormView forceFormView;
-        [SerializeField] private PointerButton idleButton;
+        [SerializeField] private Button recHpButton;
+        [SerializeField] private Button recTpButton;
 
-        private event Action<IForceForm> OnExertAction;
-        private event Action<ICombatForm> OnAttackAction;
+        private event UnityAction<IForceForm> OnExertAction;
+        private event UnityAction<ICombatForm> OnAttackAction;
 
-        public void Init(Action<ICombatForm> onAttackAction,
-            Action<IForceForm> onExertAction,
-            Action onIdleAction)
+        public void Init(UnityAction<ICombatForm> onAttackAction,
+            UnityAction<IForceForm> onExertAction,
+            UnityAction onRecHpAction, UnityAction onRecTpAction)
         {
             combatFormView.Init();
             forceFormView.Init();
-            idleButton.onClick.AddListener(onIdleAction.Invoke);
+            recHpButton.onClick.AddListener(onRecHpAction);
+            recTpButton.onClick.AddListener(onRecTpAction);
             OnAttackAction = onAttackAction;
             OnExertAction = onExertAction;
         }
 
-        public void SetIdle(UnityAction idleAction)
-        {
-            idleButton.OnPointerDownEvent.RemoveAllListeners();
-            idleButton.OnPointerDownEvent.AddListener(_=>idleAction.Invoke());
-        }
         public void SetCombat(ICombatUnit unit, UnityAction<ICombatForm> onPointerDown)
         {
             var combatSkill = unit.CombatSkill;

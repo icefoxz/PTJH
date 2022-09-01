@@ -87,7 +87,7 @@ namespace BattleM
 
             if (!par.ParryFormula.IsSuccess)
                 sb.AppendLine($"招架失败!招架值[{par.ParryFormula.Finalize}]随机[{par.ParryFormula.RandomValue}]");
-            else sb.Append("招架成功！".Sb().Color(Color.Yellow));
+            else sb.Append($"招架成功！招架值[{par.ParryFormula.Finalize}]随机[{par.ParryFormula.RandomValue}]".Sb().Color(Color.Yellow));
             sb.Append(UnitNamePos(par.Unit).Sb().Color(Color.LightGreen));
             sb.AppendLine(ParryLog(par.Form).Sb().Color(Color.LightBlue).ToString());
             sb.Append(par.ParryFormula.Sb().Color(Color.Yellow));

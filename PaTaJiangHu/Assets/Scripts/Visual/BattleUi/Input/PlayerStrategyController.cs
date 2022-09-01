@@ -14,7 +14,6 @@ namespace Visual.BattleUi.Input
             Auto,
             Manual
         }
-        [SerializeField] private ManualAutoSwitch _strategySwitch;
         [SerializeField] private ManualFormInputUi _manualInput;
         [SerializeField] private StrategyBarController _strategyBar;
         private ICombatUnit CombatUnit { get; set; }
@@ -22,15 +21,11 @@ namespace Visual.BattleUi.Input
         public void Init((CombatUnit.Strategies strategy,UnityAction action)[]strategies, 
             UnityAction<ICombatForm> onAttackAction,
             UnityAction<IForceForm> onExertAction,
-            UnityAction onIdleAction,
-            UnityAction<bool> onManualAutoSwitchAction)
+            UnityAction onRecHpAction,
+            UnityAction onRecTpAction)
         {
-            _strategySwitch.Init(isManual=>
-            {
-                OnStrategySwitch(isManual);
-                onManualAutoSwitchAction.Invoke(isManual);
-            });
-            _manualInput.Init(onAttackAction.Invoke, onExertAction.Invoke, onIdleAction.Invoke);
+            _manualInput.Init(onAttackAction.Invoke, onExertAction.Invoke, onRecHpAction.Invoke,
+                onRecTpAction.Invoke);
             _strategyBar.Init();
             foreach (var (strategy, action) in strategies)
             {
@@ -77,11 +72,10 @@ namespace Visual.BattleUi.Input
         private event UnityAction OnPointerUp;
         private event UnityAction<IForceForm> OnForcePointerDown;
         private event UnityAction<ICombatForm> OnCombatPointerDown;
-        private event UnityAction OnIdlePointerDown;
+        //private event UnityAction OnIdlePointerDown;
         public void SetPlayer(ICombatUnit player, 
             UnityAction<ICombatForm> onCombatPointerDown,
             UnityAction<IForceForm> onForcePointerDown,
-            UnityAction onIdle,
             UnityAction onPointerCancel)
         {
             OnCombatPointerDown = combat =>
@@ -94,11 +88,11 @@ namespace Visual.BattleUi.Input
                 IsListeningCancel = true;
                 onForcePointerDown.Invoke(force);
             };
-            OnIdlePointerDown = () =>
-            {
-                IsListeningCancel = true;
-                onIdle.Invoke();
-            };
+            //OnIdlePointerDown = () =>
+            //{
+            //    IsListeningCancel = true;
+            //    onIdle.Invoke();
+            //};
             OnPointerUp = () =>
             {
                 IsListeningCancel = false;
@@ -114,7 +108,7 @@ namespace Visual.BattleUi.Input
         {
             _manualInput.SetCombat(CombatUnit, OnCombatPointerDown);
             _manualInput.SetForce(CombatUnit, OnForcePointerDown);
-            _manualInput.SetIdle(OnIdlePointerDown);
+            //_manualInput.SetIdle(OnIdlePointerDown);
         }
         public override void ResetUi()
         {

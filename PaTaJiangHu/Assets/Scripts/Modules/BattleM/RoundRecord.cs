@@ -333,7 +333,7 @@ namespace BattleM
         public override string ToString() => $"防:{Finalize}\n甲({Armor})内:{Mp}({MpRate})={MpArmor}";
     }
 
-    public struct ExertFormula
+    public struct RecoverFormula
     {
         private const float MpRateAlign = 0.1f;
         /// <summary>
@@ -350,15 +350,21 @@ namespace BattleM
         public int MpRate;
         public float MpRatio => MpRateAlign * MpRate;
         public int Finalize => (int)((Mp + Breath) * MpRatio);
-
-        private ExertFormula(int mp, int breath, int mpRate)
+        /// <summary>
+        /// 公式反算，需要多少内力以达到gap最终值
+        /// </summary>
+        /// <param name="gap"></param>
+        /// <param name="mpRate"></param>
+        /// <param name="breath"></param>
+        /// <returns></returns>
+        private RecoverFormula(int mp, int breath, int mpRate)
         {
             Mp = mp;
             Breath = breath;
             MpRate = mpRate;
         }
-
-        public static ExertFormula Instance(int mp, int breath, int mpRate) => new(mp, breath, mpRate);
+        public static int MpRequire(int gap, int mpRate, int breath) => (int)(gap / (MpRateAlign * mpRate) - breath);
+        public static RecoverFormula Instance(int mp, int breath, int mpRate) => new(mp, breath, mpRate);
         public override string ToString() => $"回:{Finalize}\n息({Breath})+内({Mp})转({MpRate}){MpRatio:F}";
     }
 

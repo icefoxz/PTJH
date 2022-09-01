@@ -11,15 +11,17 @@ namespace BattleM
     {
         int TotalBreath { get; }
         int IdleBreath { get; }
-        int ExertBreath { get; }
+        int RecoverBreath { get; }
         int CombatBreath { get; }
         int TotalBusies { get; }
+        int Charged { get; }
         ICombatForm Combat { get; }
         IDodgeForm Dodge { get; }
         IForceForm Recover { get; }
         IRound Round { get; }
         IList<int> Busies { get; }
-        public int LastRound { get; }
+        CombatPlans Plan { get; }
+        int LastRound { get; }
     }
     /// <summary>
     /// 气息节点，所有战斗动作都有必须继承这个
@@ -44,19 +46,20 @@ namespace BattleM
         {
             get
             {
-                switch (Plan)
+                return Plan switch
                 {
-                    case CombatPlans.Attack: return CombatBreath;
-                    case CombatPlans.Recover: return ExertBreath;
-                    case CombatPlans.Wait:
-                    case CombatPlans.Surrender: return IdleBreath;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    CombatPlans.Attack => CombatBreath,
+                    CombatPlans.RecoverTp => RecoverBreath,
+                    CombatPlans.RecoverHp => RecoverBreath,
+                    CombatPlans.Wait => IdleBreath,
+                    CombatPlans.Surrender => IdleBreath,
+                    CombatPlans.Exert => throw new ArgumentOutOfRangeException(),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
         }
         public int IdleBreath => TotalBusies - Charged;
-        public int ExertBreath => TotalBusies + Recover?.Breath ?? 0 - Charged;
+        public int RecoverBreath => TotalBusies + Recover?.Breath ?? 0 - Charged;
         public int CombatBreath => TotalBusies + (Combat?.Breath ?? 0) + (Dodge?.Breath ?? 0) - Charged;
         public int TotalBusies => Busies.Sum(b => b);
         public int LastRound { get; private set; }
@@ -104,14 +107,15 @@ namespace BattleM
                     var dodgeBreath = Dodge?.Breath ?? 0;
                     consume = combatBreath + dodgeBreath;
                     break;
-                case CombatPlans.Recover:
+                case CombatPlans.RecoverHp:
+                case CombatPlans.RecoverTp:
                     if (Charged >= Recover?.Breath) 
                         consume = Recover.Breath;
                     break;
                 case CombatPlans.Wait:
-                    break;
                 case CombatPlans.Surrender:
                     break;
+                case CombatPlans.Exert:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -119,6 +123,6 @@ namespace BattleM
             Charge(-consume);
         }
         public int CompareTo(IBreathBar other) => TotalBreath.CompareTo(other.TotalBreath);
-        public override string ToString() => $"气息条({TotalBreath - Charged})【硬直：{Busies.Sum():D}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Recover?.Name}({Recover?.Breath})】";
+        public override string ToString() => $"气息条({TotalBreath})【硬直：{Busies.Sum():D}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Recover?.Name}({Recover?.Breath})】";
     }
 }
