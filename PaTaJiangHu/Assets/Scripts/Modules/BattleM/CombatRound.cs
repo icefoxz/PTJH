@@ -236,7 +236,7 @@ namespace BattleM
                 if (dodgeFormula.IsSuccess)
                 {
                     tg.DodgeFromAttack(tgDodge);
-                    AdjustCombatDistance(tg, offender, tg.IsEscapeCondition);
+                    AdjustCombatDistance(tg, offender, tg.IsSurrenderCondition);
 
                     return;
                 }

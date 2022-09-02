@@ -16,10 +16,13 @@ namespace Visual.BattleUi.Input
         }
         [SerializeField] private Text _totalBreath;
         [SerializeField] private Text _busyValue;
+        [SerializeField] private Image _busyObj;
         [SerializeField] private Text _chargeValue;
+        [SerializeField] private Image  _chargeObj;
         [SerializeField] private CombatFormUi _dodgeForm;
         [SerializeField] private CombatFormUi _combatForm;
         [SerializeField] private CombatFormUi _forceForm;
+        [SerializeField] private Image _respite;
         private IDodgeForm DodgeForm { get; set; }
         private int Busy { get; set; }
         private int Charge { get; set; }
@@ -79,11 +82,32 @@ namespace Visual.BattleUi.Input
 
         private void UpdateBreath<T>(ViewModes mode,T form) where T : IBreathNode
         {
-            _busyValue.text = Busy.ToString();
-            _chargeValue.text = Charge.ToString();
+            if (Busy >= Charge)
+            {
+                var busy = Busy - Charge;
+                _busyValue.text = Busy.ToString();
+                if (busy == 0)
+                {
+                    Display(false, _busyObj, _chargeObj);
+                }
+                else
+                {
+                    _busyValue.text = busy.ToString();
+                    Display(false, _chargeObj);
+                    Display(true, _busyObj);
+                }
+            }
+            else
+            {
+                var charge = Charge - Busy;
+                Display(false, _busyObj);
+                Display(true, _chargeObj);
+                _chargeValue.text = charge.ToString();
+            }
             var dodgeBreath = mode == ViewModes.Attack ? DodgeForm?.Breath ?? 0 : 0;
             var actionBreath = form?.Breath ?? 0;
             _totalBreath.text = (dodgeBreath + actionBreath + Busy - Charge).ToString();
+            Display(mode == ViewModes.Idle, _respite);
         }
 
 
@@ -95,6 +119,7 @@ namespace Visual.BattleUi.Input
             _dodgeForm.ResetUi();
             _combatForm.ResetUi();
             _forceForm.ResetUi();
+            Display(false, _respite);
         }
     }
 }

@@ -40,12 +40,10 @@ namespace Visual.BattleUi
         [SerializeField] private RectTransform _mainCanvas;
         [SerializeField] private PlayerStrategyController _playerStrategyController;
         //[SerializeField] private BreathViewUi _breathView;
-        //[SerializeField] private BattleOrderController _battleOrderController;
         [SerializeField] private BattleStatusBarController _battleStatusBarController;
         [SerializeField] private BreathUiController _breathUi;
 
         //[SerializeField] private FightStage[] Stages;
-        //private IBattleOrderController BattleOrderController => _battleOrderController;
         private IBattleStatusBarController BattleStatusBarController => _battleStatusBarController;
         private BattleStanceUi[] Stances { get; set; }
         public BattleStage Stage { get; set; }
@@ -63,7 +61,6 @@ namespace Visual.BattleUi
                 (CombatUnit.Strategies.RunAway, () => PlayerSetStrategy(CombatUnit.Strategies.RunAway)),
                 (CombatUnit.Strategies.DeathFight, () => PlayerSetStrategy(CombatUnit.Strategies.DeathFight))
             }, PlayerAttackPlan, PlayerExertPlan, PlayerRecHp,PlayerRecTp);
-            //BattleOrderController.Init();
             BattleStatusBarController.Init();
             OnBattleResultCallback = isWin => battleResultCallback?.Invoke(isWin);
             Stances = new[] { StanceA, StanceB };
@@ -154,7 +151,6 @@ namespace Visual.BattleUi
                 BattleStatusBarController.AddUi(c.StandingPoint, c.CombatId,
                     ui => ui.Set(c.Name, c.Status));
             });
-            //BattleOrderController.UpdateOrder(list.Select(c => (c.CombatId, c.Name, c.BreathBar.TotalBreath)).ToArray());
             _playerStrategyController.SetPlayer(Player, 
                 PresetCombat, 
                 PresetForce,
