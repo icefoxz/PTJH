@@ -25,10 +25,10 @@ namespace Visual.BattleUi.Status
             var mp = stat.Mp;
             _nameText.text = title;
             _hpSliderUi.Set(hp);
-            SetConText(_hpText, hp);
             _tpSliderUi.Set(tp);
-            SetConText(_tpText, tp);
             _mpSliderUi.Set(mp);
+            SetConText(_hpText, hp);
+            SetConText(_tpText, tp);
             SetConText(_mpText, mp);
             //SetBreath(breath, maxBreath);
         }
@@ -54,19 +54,26 @@ namespace Visual.BattleUi.Status
         //    _breathSlider.value = 1f * breath / maxBreath;
         //    _breathText.text = $"({breath})";
         //}
-        public void UpdateStatus(int hp,int fixHp, int tp,int fixTp, int mp,int fixMp)
+        public void UpdateSlider(int hp,int fixHp, int tp,int fixTp, int mp,int fixMp)
         {
             _hpSliderUi.SetValue(hp, fixHp);
             _tpSliderUi.SetValue(tp, fixTp);
             _mpSliderUi.SetValue(mp, fixMp);
         }
+
+        public void UpdateText(IConditionValue hp, IConditionValue tp, IConditionValue mp)
+        {
+            SetConText(_hpText, hp);
+            SetConText(_tpText, tp);
+            SetConText(_mpText, mp);
+        }
         public void UpdateStatus(IConditionValue hp, IConditionValue tp, IConditionValue mp)
         {
             _hpSliderUi.Set(hp);
-            SetConText(_hpText, hp);
             _tpSliderUi.Set(tp);
-            SetConText(_tpText, tp);
             _mpSliderUi.Set(mp);
+            SetConText(_hpText, hp);
+            SetConText(_tpText, tp);
             SetConText(_mpText, mp);
         }
     }

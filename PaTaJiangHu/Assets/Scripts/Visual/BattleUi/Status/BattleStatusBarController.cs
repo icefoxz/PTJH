@@ -15,6 +15,7 @@ namespace Visual.BattleUi.Status
         void ResetUi();
         void UpdateStatus(int combatId, int hp, int fixHp, int tp, int fixTp, int mp, int fixMp);
         void UpdateStatus(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp);
+        void UpdateText(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp);
     }
     public class BattleStatusBarController : UiBase, IBattleStatusBarController
     {
@@ -54,11 +55,15 @@ namespace Visual.BattleUi.Status
 
         public void UpdateStatus(int combatId,int hp, int fixHp, int tp, int fixTp, int mp, int fixMp)
         {
-            _map[combatId].UpdateStatus(hp, fixHp, tp, fixTp, mp, fixMp);
+            _map[combatId].UpdateSlider(hp, fixHp, tp, fixTp, mp, fixMp);
         }
         public void UpdateStatus(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp)
         {
             _map[combatId].UpdateStatus(hp, tp, mp);
+        }
+        public void UpdateText(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp)
+        {
+            _map[combatId].UpdateText(hp, tp, mp);
         }
     }
 }

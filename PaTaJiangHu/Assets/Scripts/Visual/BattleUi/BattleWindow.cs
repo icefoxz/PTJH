@@ -49,7 +49,6 @@ namespace Visual.BattleUi
         public BattleStage Stage { get; set; }
         private CombatTempoController TempoController { get; set; }
         private CombatUnit Player { get; set; }
-        private bool IsAutoRound { get; set; } = true;
         private event UnityAction<bool> OnBattleResultCallback;
         public void Init(UnityAction<bool> battleResultCallback)
         {
@@ -75,33 +74,35 @@ namespace Visual.BattleUi
         #region PlayerCommands
         private void PlayerRecTp()
         {
-            throw new NotImplementedException();
+            var forceForm = Player.GetForceForm();
+            Player.RecoverTpPlan(forceForm);
         }
 
         private void PlayerRecHp()
         {
-            throw new NotImplementedException();
+            var forceForm = Player.GetForceForm();
+            Player.RecoverHpPlan(forceForm);
         }
 
         private void PlayerWaitPlan()
         {
             Player.WaitPlan();
             CurrentBreathUpdate();
-            ManualRound();
+            //ManualRound();
         }
 
         private void PlayerExertPlan(IForceForm force)
         {
             Player.ExertPlan(force);
             CurrentBreathUpdate();
-            ManualRound();
+            //ManualRound();
         }
 
         private void PlayerAttackPlan(ICombatForm combat)
         {
             Player.AttackPlan(combat, Player.BreathBar.Dodge);
             CurrentBreathUpdate();
-            ManualRound();
+            //ManualRound();
         }
 
         private void PlayerSetStrategy(CombatUnit.Strategies steady)
@@ -167,44 +168,40 @@ namespace Visual.BattleUi
                 OnBattleFinalize(Stage.WinningStance);
                 return;
             } //直接返回胜利
-
-            if (!IsAutoRound)
-            {
-                Stage.PrePlan();
-                CurrentBreathUpdate();
-                return;
-            }
             Stage.NextRound(true);
         }
         private void OnEveryRound(FightRoundRecord rec)
         {
-            _battleLogger.NextRound(Stage.GetCombatUnits(), rec);
+            var units = Stage.GetCombatUnits().ToArray();
+            _battleLogger.NextRound(units, rec);
             StartCoroutine(UpdateUis(rec));
 
             IEnumerator UpdateUis(FightRoundRecord r)
             {
                 RoundText.text = r.Round.ToString();
+                foreach (var unit in units)
+                    BattleStatusBarController.UpdateText(unit.CombatId, unit.Status.Hp, unit.Status.Tp, unit.Status.Mp);
                 CurrentBreathUpdate();
                 yield return _breathUi.PlaySlider(() => { });
                 yield return TempoController.Play(r);
                 StartBattle();//自动回合
             }
         }
-        private void ManualRound()
-        {
-            lastPlayerBreath = Player.BreathBar.TotalBreath;
-            lastTargetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
-            lastMaxBreath = Stage.GetAliveUnits().Sum(c => c.BreathBar.TotalBreath);
-            UpdateLastBreath();
-            Stage.NextRound(false);
-            if (Stage.IsFightEnd)
-            {
-                OnBattleFinalize(Stage.WinningStance);
-                return;
-            }
-            Stage.PrePlan();
-            CurrentBreathUpdate();
-        }
+        //private void ManualRound()
+        //{
+        //    lastPlayerBreath = Player.BreathBar.TotalBreath;
+        //    lastTargetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
+        //    lastMaxBreath = Stage.GetAliveUnits().Sum(c => c.BreathBar.TotalBreath);
+        //    UpdateLastBreath();
+        //    Stage.NextRound(false);
+        //    if (Stage.IsFightEnd)
+        //    {
+        //        OnBattleFinalize(Stage.WinningStance);
+        //        return;
+        //    }
+        //    Stage.PrePlan();
+        //    CurrentBreathUpdate();
+        //}
         #endregion
 
         #region BreathViewUi Preset

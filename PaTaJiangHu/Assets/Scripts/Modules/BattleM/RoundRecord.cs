@@ -258,7 +258,12 @@ namespace BattleM
                                              $"硬({BusyAlign})," +
                                              $"距({Distance})={DistanceAlign}," +
                                              $"随({RandomValue})";
-
+        /// <summary>
+        /// 招架成功后伤害修正
+        /// </summary>
+        /// <param name="damage"></param>
+        /// <returns></returns>
+        public static int Damage(int damage) => (int)(damage * 0.2f);
     }
     /// <summary>
     /// 伤害公式

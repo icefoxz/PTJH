@@ -10,6 +10,13 @@ namespace BattleM
     {
         public int Current { get; }
     }
+
+    public record CombatSprite
+    {
+        public CombatUnit CombatUnit { get; set; }
+        public int Lasting { get; set; }
+        
+    }
     /// <summary>
     /// 战斗单位管理器
     /// </summary>
@@ -98,10 +105,36 @@ namespace BattleM
         }
 
     }
+
+    public interface ICombatRound
+    {
+        int Current { get; set; }
+        int MinEscapeRounds { get; }
+        void AdjustCombatDistance(CombatUnit obj ,ICombatInfo target, bool isEscape);
+
+        /// <summary>
+        /// true = success escape
+        /// </summary>
+        /// <param name="escapee"></param>
+        /// <param name="dodge"></param>
+        /// <returns></returns>
+        bool OnTryEscape(CombatUnit escapee, IDodgeForm dodge);
+
+        void OnAttack(CombatUnit offender, ICombatForm combat, ICombatInfo target);
+        IList<CombatUnit> CombatPlan(IEnumerable<int> skipPlanIds);
+
+        /// <summary>
+        /// 每个回合的战斗执行
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        FightRoundRecord NextRound(bool autoPlan);
+    }
+
     /// <summary>
     /// 单个战斗回合处理器,处理战斗的事件逻辑
     /// </summary>
-    public class CombatRound : IRound
+    public class CombatRound : IRound, ICombatRound
     {
         private bool _isPlan;
         private static Random Random { get; } = new(DateTime.Now.Millisecond);
@@ -170,6 +203,30 @@ namespace BattleM
         }
 
         /// <summary>
+        /// true = success escape
+        /// </summary>
+        /// <param name="escapee"></param>
+        /// <param name="dodge"></param>
+        /// <returns></returns>
+        public bool OnTryEscape(CombatUnit escapee, IDodgeForm dodge)
+        {
+            escapee.SetBusy(1);//尝试逃走+1硬直
+            RecFightEvent(EventRecord.Instance(escapee, FightFragment.Types.TryEscape));
+            var tar = Mgr.GetTargetedUnit(escapee);
+            if (tar != null)
+            {
+                if (tar.Distance(escapee) <= 4)
+                {
+                    var combat = tar.PickCombat();
+                    tar.Equipment.FlingConsume();
+                    var isSuccessAttack = FlingOnTargetEscape(escapee, tar, combat, dodge);
+                    return !isSuccessAttack;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
         /// true = isAvoidEscape, false = isDodge
         /// </summary>
         /// <param name="op"></param>
@@ -207,7 +264,7 @@ namespace BattleM
 
                     if (parryFormula.IsSuccess)
                     {
-                        sufferDmg = (int)(finalDamage * 0.2f); //防守修正
+                        sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
                         escapee.SufferDamage(sufferDmg, op.WeaponInjuryType);
                         escapee.SetBusy(combat.TarBusy);
                         op.SetBusy(combat.OffBusy);
@@ -252,7 +309,7 @@ namespace BattleM
 
                 if (parryFormula.IsSuccess)
                 {
-                    sufferDmg = (int)(finalDamage * 0.2f); //防守修正
+                    sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
                     offender.SetBusy(parryForm.OffBusy); //招架打入硬直
                 }
 
@@ -368,30 +425,5 @@ namespace BattleM
             DodgeFormula.Instance(form.Dodge, tg.Agility, op.Distance(tg), tg.IsBusy, Randomize());
 
         private static int Randomize() => Random.Next(1, 101);
-
-        /// <summary>
-        /// true = success escape
-        /// </summary>
-        /// <param name="escapee"></param>
-        /// <param name="dodge"></param>
-        /// <returns></returns>
-        public bool OnTryEscape(CombatUnit escapee, IDodgeForm dodge)
-        {
-            escapee.SetBusy(1);//尝试逃走+1硬直
-            RecFightEvent(EventRecord.Instance(escapee, FightFragment.Types.TryEscape));
-            var tar = Mgr.GetTargetedUnit(escapee);
-            if (tar != null)
-            {
-                if (tar.Distance(escapee) <= 4)
-                {
-                    var combat = tar.PickCombat();
-                    tar.Equipment.FlingConsume();
-                    var isSuccessAttack = FlingOnTargetEscape(escapee, tar, combat, dodge);
-                    return !isSuccessAttack;
-                }
-            }
-            return true;
-        }
-
     }
 }

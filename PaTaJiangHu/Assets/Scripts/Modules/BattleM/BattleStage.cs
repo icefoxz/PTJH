@@ -13,7 +13,7 @@ namespace BattleM
         public bool IsFightEnd => CombatManager.IsFightEnd;
         public int WinningStance => CombatManager.WinningStance;
         public event UnityAction<FightRoundRecord> OnEveryRound;
-        private CombatRound Round { get; set; }
+        private ICombatRound Round { get; set; }
 
         public BattleStage(CombatUnit[] units, CombatManager.Judgment judgment,int minEscapeRounds)
         {

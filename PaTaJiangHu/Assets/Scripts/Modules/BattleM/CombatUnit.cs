@@ -77,7 +77,7 @@ namespace BattleM
         private static Random Random { get; } = new(DateTime.Now.Millisecond);
 
         private BreathBar _breathBar;
-        private CombatRound Round { get; set; }
+        private ICombatRound Round { get; set; }
         private static readonly BasicDodge DefaultDodge = new();
         private static readonly BasicCombat DefaultCombat = new();
         private static readonly BasicParry DefaultParry = new();
@@ -380,7 +380,7 @@ namespace BattleM
         public bool IsCombatRange(ICombatInfo unit) => Equipment.Armed.InCombatRange(unit.Distance(this));
 
         //获取内功招式    
-        private IForceForm GetForceForm()
+        public IForceForm GetForceForm()
         {
             var force = ForceSkill.Forms.LastOrDefault() ?? DefaultForce.Forms.First();
             return Status.Mp.Value >= 10 ? force : null;

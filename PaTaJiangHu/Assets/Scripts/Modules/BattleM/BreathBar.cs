@@ -13,6 +13,7 @@ namespace BattleM
         int IdleBreath { get; }
         int RecoverBreath { get; }
         int CombatBreath { get; }
+        int BusyCharged { get; }
         int TotalBusies { get; }
         int Charged { get; }
         ICombatForm Combat { get; }
@@ -58,9 +59,10 @@ namespace BattleM
                 };
             }
         }
-        public int IdleBreath => TotalBusies - Charged;
-        public int RecoverBreath => TotalBusies + Recover?.Breath ?? 0 - Charged;
-        public int CombatBreath => TotalBusies + (Combat?.Breath ?? 0) + (Dodge?.Breath ?? 0) - Charged;
+        public int IdleBreath => BusyCharged;
+        public int RecoverBreath => Recover?.Breath ?? 0 + BusyCharged;
+        public int CombatBreath => (Combat?.Breath ?? 0) + (Dodge?.Breath ?? 0) + BusyCharged;
+        public int BusyCharged => TotalBusies - Charged;
         public int TotalBusies => Busies.Sum(b => b);
         public int LastRound { get; private set; }
 
