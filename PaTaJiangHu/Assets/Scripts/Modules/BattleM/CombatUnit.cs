@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
-using static Unity.VisualScripting.Member;
 
 namespace BattleM
 {
@@ -41,8 +39,9 @@ namespace BattleM
         ICombatStatus Status { get; }
         IBreathBar BreathBar { get; }
         IForce ForceSkill { get; }
-        IMartial CombatSkill { get; }
-        IDodge DodgeSkill { get; }
+        ICombatForm[] CombatForms { get; }
+        IParryForm[] ParryForms { get; }
+        IDodgeForm[] DodgeForms { get; }
         void SetStandingPoint(int standingPoint);
         void SetStrategy(CombatUnit.Strategies strategy);
         void SetCombatId(int combatId);
@@ -83,10 +82,15 @@ namespace BattleM
         private static readonly BasicParry DefaultParry = new();
         private static readonly BasicForce DefaultForce = new();
 
-        public static CombatUnit Instance(string name, int strength, int agility, ICombatStatus status, IForce forceSkill, IMartial combatSkill,
-            IDodge dodgeSkill, IEquip equip) => new(name, strength, agility, status, forceSkill, combatSkill, dodgeSkill, equip);
-        public static CombatUnit Instance(ICombatUnit o) => new(o.Name, o.Strength, o.Agility, o.Status.Clone(),
-            o.ForceSkill, o.CombatSkill, o.DodgeSkill, o.Equipment);
+        public static CombatUnit Instance(string name, int strength, int agility, ICombatStatus status,
+            IForce forceSkill, IMartial martial,
+            IDodge dodgeSkill, IEquip equip) => new(name, strength, agility, status, forceSkill,
+            martial.Combats.ToArray(), martial.Parries.ToArray(), dodgeSkill.Forms.ToArray(), equip);
+
+        public static CombatUnit Instance(ICombatUnit o) => new(o.Name, 
+            o.Strength, o.Agility, o.Status.Clone(),
+            o.ForceSkill, o.CombatForms, o.ParryForms, 
+            o.DodgeForms, o.Equipment);
         public int StandingPoint { get; private set; }
         public string Name { get; }
         public bool IsDeath { get; private set; }
@@ -97,8 +101,9 @@ namespace BattleM
         public ICombatStatus Status { get; }
         public IBreathBar BreathBar => _breathBar;
         public IForce ForceSkill { get; }
-        public IMartial CombatSkill { get; }
-        public IDodge DodgeSkill { get; }
+        public ICombatForm[] CombatForms { get; }
+        public IParryForm[] ParryForms { get; }
+        public IDodgeForm[] DodgeForms { get; }
         public void SetStandingPoint(int standingPoint) => StandingPoint = standingPoint;
         public void SetStrategy(Strategies strategy) => Strategy = strategy;
         public void SetCombatId(int combatId) => CombatId = combatId;
@@ -150,20 +155,23 @@ namespace BattleM
         public bool IsExhausted => IsDeath || Status.IsExhausted;
         public CombatPlans Plan => _breathBar.Plan;
 
-        public IDodgeForm PickDodge() => DodgeSkill?.Forms.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultDodge;
-        public ICombatForm PickCombat() => CombatSkill?.Combats.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultCombat;
-        public IParryForm PickParry() => CombatSkill?.Parries.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultParry;
+        public IDodgeForm PickDodge() => DodgeForms?.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultDodge;
+        public ICombatForm PickCombat() => CombatForms?.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultCombat;
+        public IParryForm PickParry() => ParryForms?.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultParry;
 
-        private CombatUnit(string name, int strength, int agility, ICombatStatus status, IForce forceSkill, IMartial combatSkill, IDodge dodgeSkill,
-            IEquip equip)
+        private CombatUnit(string name, int strength, int agility, 
+            ICombatStatus status, IForce forceSkill,
+            ICombatForm[] combatForms, IParryForm[] parryForms,
+            IDodgeForm[] dodgeForms, IEquip equip)
         {
             Name = name;
             Strength = strength;
             Agility = agility;
             Status = status;
             ForceSkill = forceSkill ?? DefaultForce;
-            CombatSkill = combatSkill;
-            DodgeSkill = dodgeSkill;
+            CombatForms = combatForms;
+            DodgeForms = dodgeForms;
+            ParryForms = parryForms;
             Equipment = new Equipment(equip);
         }
 
@@ -187,6 +195,7 @@ namespace BattleM
             _breathBar = new BreathBar(round);
             StandingPoint = standingPoint;
             Strategy = strategy;
+            BuffMgr = mgr.BuffMgr;
             ChangeTarget(target);
         }
 
@@ -201,6 +210,13 @@ namespace BattleM
             OnIdleRecovery(charge);
             _breathBar.Charge(charge);
         }
+
+        #region BuffManager
+        private CombatBuffManager BuffMgr { get; set; }
+        public IEnumerable<ICombatBuff> Buffs => BuffMgr.GetBuffs(CombatId);
+
+
+        #endregion
 
         #region CombatPlan
         /// <summary>
@@ -373,7 +389,7 @@ namespace BattleM
         public bool IsCombatFormAvailable(ICombatForm form)
         {
             return Status.Mp.Value > form.Mp &&
-                   Status.Tp.Value > form.Qi;
+                   Status.Tp.Value > form.Tp;
         }
 
         public bool IsTargetRange() => IsCombatRange(Target);
@@ -388,22 +404,22 @@ namespace BattleM
         //获取轻功招式
         private IDodgeForm GetDodgeForm()
         {
-            if (DodgeSkill != null && DodgeSkill.Forms.Any())
-                return DodgeSkill?.Forms
+            if (DodgeForms != null && DodgeForms.Any())
+                return DodgeForms?
                     .Where(d => d.Mp <= Status.Mp.Value) //先排除不够内力的招式
                     .OrderBy(_ => Random.Next(100)) //随机一式
                     .FirstOrDefault();
-            return Status.Tp.Value > DefaultDodge.Qi ? DefaultDodge : null;
+            return Status.Tp.Value > DefaultDodge.Tp ? DefaultDodge : null;
         }
         //获取战斗招式
         private ICombatForm GetCombatForm()
         {
-            if (CombatSkill != null && CombatSkill.Combats.Any())
-                return CombatSkill?.Combats
+            if (CombatForms != null && CombatForms.Any())
+                return CombatForms?
                     .Where(IsCombatFormAvailable) //先排除不够内力的招式
                     .OrderBy(_ => Random.Next(100)) //随机一式
                     .FirstOrDefault();
-            return Status.Tp.Value > DefaultCombat.Qi ? //如果找不到，直接用第一式
+            return Status.Tp.Value > DefaultCombat.Tp ? //如果找不到，直接用第一式
                 DefaultCombat : null;
         }
 
@@ -499,7 +515,6 @@ namespace BattleM
         #endregion
 
         #region Recover
-
         private void OnNonCombatRecover(int hp, int tp, int mp)
         {
             var rec = ConsumeRecord.Instance();
@@ -557,7 +572,7 @@ namespace BattleM
 
         private void ConsumeForm(IDepletionForm form)
         {
-            Status.Tp.Add(-form.Qi);
+            Status.Tp.Add(-form.Tp);
             Status.Mp.Add(-form.Mp);
         }
 
@@ -606,10 +621,11 @@ namespace BattleM
         private class BasicCombat : ICombatForm
         {
             public string Name => "王八拳";
-            public int Qi => 10;
+            public int Tp => 10;
             public int Mp => 0;
             public int Breath => 5;
             public int OffBusy => 0;
+            public ICombo Combo { get; }
             public int TarBusy => 0;
             public Way.Armed Armed => Way.Armed.Unarmed;
             public override string ToString() => Name;
@@ -617,7 +633,7 @@ namespace BattleM
         private class BasicDodge : IDodgeForm
         {
             public string Name => string.Empty;
-            public int Qi => 5;
+            public int Tp => 5;
             public int Mp => 0;
             public int Breath => 3;
             public int Dodge => 1;
@@ -626,7 +642,7 @@ namespace BattleM
         private class BasicParry : IParryForm
         {
             public string Name => string.Empty;
-            public int Qi => 5;
+            public int Tp => 5;
             public int Mp => 0;
             public int Parry => 1;
             public int OffBusy => 1;

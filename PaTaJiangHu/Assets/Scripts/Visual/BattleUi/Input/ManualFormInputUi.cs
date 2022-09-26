@@ -31,10 +31,10 @@ namespace Visual.BattleUi.Input
 
         public void SetCombat(ICombatUnit unit, UnityAction<ICombatForm> onPointerDown)
         {
-            var combatSkill = unit.CombatSkill;
-            for (var i = 0; i < combatSkill.Combats.Count; i++)
+            var forms = unit.CombatForms;
+            for (var i = 0; i < forms.Length; i++)
             {
-                var form = combatSkill.Combats[i];
+                var form = forms[i];
                 var isReady = unit.IsCombatFormAvailable(form);
                 combatFormView.AddOption(ui =>
                 {
@@ -45,7 +45,7 @@ namespace Visual.BattleUi.Input
                             {
                                 combatFormView.SetSelected(ui);
                                 OnAttackAction?.Invoke(form);
-                            }, form.Name, form.Breath.ToString(), form.Mp.ToString(), form.Qi.ToString(),
+                            }, form.Name, form.Breath.ToString(), form.Mp.ToString(), form.Tp.ToString(),
                             form.TarBusy.ToString(),
                             form.OffBusy.ToString());
                 });

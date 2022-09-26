@@ -69,7 +69,7 @@ namespace BattleM
         private static void DodgeRecordLog(DodgeRecord dod, StringBuilder sb)
         {
             string DodgeLog(IDodgeForm a) => FormLog(a) +
-                                             $"身({a.Dodge})内({a.Mp})气({a.Qi}))".Sb().Color(Color.Coral);
+                                             $"身({a.Dodge})内({a.Mp})气({a.Tp}))".Sb().Color(Color.Coral);
 
             if (!dod.DodgeFormula.IsSuccess)
                 sb.AppendLine($"闪避失败!闪避值[{dod.DodgeFormula.Finalize}]随机[{dod.DodgeFormula.RandomValue}]");
@@ -83,7 +83,7 @@ namespace BattleM
         private static void ParryRecordLog(ParryRecord par, StringBuilder sb)
         {
             string ParryLog(IParryForm a) => $"【{a.Name}】".Sb().Color(Color.LightSeaGreen).ToString() +
-                                             $"架({a.Parry})内({a.Mp})气({a.Qi})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
+                                             $"架({a.Parry})内({a.Mp})气({a.Tp})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
 
             if (!par.ParryFormula.IsSuccess)
                 sb.AppendLine($"招架失败!招架值[{par.ParryFormula.Finalize}]随机[{par.ParryFormula.RandomValue}]");
@@ -108,7 +108,7 @@ namespace BattleM
         private static void AttactRecordLog(AttackRecord att, StringBuilder sb)
         {
             string AttackLog(ICombatForm a) => FormLog(a) +
-                                                $"内({a.Mp})气({a.Qi})硬:己({a.OffBusy})敌({a.TarBusy})".Sb().Color(Color.Coral);
+                                                $"内({a.Mp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb().Color(Color.Coral);
 
             var u = att.Unit;
             if (att.Type == FightFragment.Types.Fling) sb.Append("【投掷暗器】".Sb().Color(Color.Red));
@@ -180,7 +180,7 @@ namespace BattleM
             var unit = CombatUnits.Single(u => u.CombatId == combat.CombatId);
             sb.Append(($"{combat.UnitName}攻击招式," + FormLog(combat.Form)).Sb().Color(Color.Orange)
                 .ToString());
-            sb.Append($"气:({combat.Form.Qi})内:({combat.Form.Mp})".Sb().Color(Color.Yellow));
+            sb.Append($"气:({combat.Form.Tp})内:({combat.Form.Mp})".Sb().Color(Color.Yellow));
 
             sb.AppendLine(ArmedKindLog(unit.Equipment.Armed).Sb().Color(Color.DarkOrange).ToString());
             sb.Append(

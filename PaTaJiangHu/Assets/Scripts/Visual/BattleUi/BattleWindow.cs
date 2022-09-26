@@ -226,7 +226,7 @@ namespace Visual.BattleUi
             //_breathView.SetCombat(form);
             var status = Player.Status;
             BattleStatusBarController.UpdateStatus(Player.CombatId,
-                status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Qi,
+                status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Tp,
                 status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
             var dodgeBreath = Player.BreathBar.Dodge?.Breath ?? 0;
             UpdateDrum(dodgeBreath + form.Breath,

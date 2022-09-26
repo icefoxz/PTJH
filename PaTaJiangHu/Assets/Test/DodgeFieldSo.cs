@@ -24,7 +24,7 @@ namespace Test
             [SerializeField] private int 使用息;
             [SerializeField] private int 身法值;
             public string Name => name;
-            public int Qi => 气消耗;
+            public int Tp => 气消耗;
             public int Mp => 内消耗;
             public int Breath => 使用息;
             public int Dodge => 身法值;

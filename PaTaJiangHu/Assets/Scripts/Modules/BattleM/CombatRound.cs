@@ -11,12 +11,6 @@ namespace BattleM
         public int Current { get; }
     }
 
-    public record CombatSprite
-    {
-        public CombatUnit CombatUnit { get; set; }
-        public int Lasting { get; set; }
-        
-    }
     /// <summary>
     /// 战斗单位管理器
     /// </summary>
@@ -33,17 +27,20 @@ namespace BattleM
         /// </summary>
         private Dictionary<ICombatInfo, CombatUnit> AliveMap { get; } =
             new Dictionary<ICombatInfo, CombatUnit>();
-
         public IReadOnlyList<CombatUnit> AllUnits { get; }
         public bool IsFightEnd { get; private set; }
         public Judgment Judge { get; }
         public int WinningStance => AliveStances.Count() == 1 ? AliveStances.Single() : -1;
         public IEnumerable<int> AliveStances =>
             AliveMap.Where(u => !u.Value.IsExhausted).Select(u => u.Key.StandingPoint).Distinct();
+
+        public CombatBuffManager BuffMgr { get; set; }
+
         //战斗单位的辨识Id
         private int CombatId { get; set; }
         public CombatManager(IEnumerable<CombatUnit> combats,Judgment judgment)
         {
+            BuffMgr = new CombatBuffManager();
             AllUnits = combats.ToList();
             Judge = judgment;
             foreach (var unit in AllUnits)
@@ -54,7 +51,6 @@ namespace BattleM
                     unit.SetStrategy(CombatUnit.Strategies.Hazard);
                 }
             }
-
         }
 
         public IEnumerable<CombatUnit> GetAliveCombatUnits() => AliveMap.Values;
@@ -76,6 +72,7 @@ namespace BattleM
             {
                 if (!unit.IsExhausted) continue;
                 unit.ExhaustedAction();
+                BuffMgr.RemoveAll(unit.CombatId);
                 AliveMap.Remove(unit);
             }
             UpdateFightEnd();
@@ -106,9 +103,8 @@ namespace BattleM
 
     }
 
-    public interface ICombatRound
+    public interface ICombatRound : IRound
     {
-        int Current { get; set; }
         int MinEscapeRounds { get; }
         void AdjustCombatDistance(CombatUnit obj ,ICombatInfo target, bool isEscape);
 
@@ -134,7 +130,7 @@ namespace BattleM
     /// <summary>
     /// 单个战斗回合处理器,处理战斗的事件逻辑
     /// </summary>
-    public class CombatRound : IRound, ICombatRound
+    public class CombatRound : ICombatRound
     {
         private bool _isPlan;
         private static Random Random { get; } = new(DateTime.Now.Millisecond);
@@ -287,35 +283,39 @@ namespace BattleM
             var dodgeFormula = InstanceDodgeFormula(offender, tg, tgDodge);
             var damageFormula = InstanceDamageFormula(offender, combat);
             var consume = ConsumeRecord.Instance();
+            var combo = combat.Combo?.Rates ?? new[] { 100 };
             consume.Set(tg, () =>
             {
-                RecDodgeAction(tg, tgDodge, dodgeFormula);
-                if (dodgeFormula.IsSuccess)
+                for (var i = 0; i < combo.Length; i++)
                 {
-                    tg.DodgeFromAttack(tgDodge);
-                    AdjustCombatDistance(tg, offender, tg.IsSurrenderCondition);
+                    var rate = combo[i];
+                    RecDodgeAction(tg, tgDodge, dodgeFormula);
+                    if (dodgeFormula.IsSuccess)
+                    {
+                        tg.DodgeFromAttack(tgDodge);
+                        AdjustCombatDistance(tg, offender, tg.IsSurrenderCondition);
+                        return;
+                    }
 
-                    return;
+                    var damage = (int)(damageFormula.Finalize * rate * 0.01);
+                    var armor = GetArmor(tg);
+                    var finalDamage = damage - armor;
+                    var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage;
+                    var parryForm = tg.PickParry();
+                    var parryFormula = InstanceParryFormula(offender, tg, parryForm);
+
+                    RecParryAction(tg, parryForm, parryFormula);
+
+                    if (parryFormula.IsSuccess)
+                    {
+                        sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
+                        offender.SetBusy(parryForm.OffBusy); //招架打入硬直
+                    }
+
+                    tg.SufferDamage(sufferDmg, offender.WeaponInjuryType); //伤害
+                    tg.SetBusy(combat.TarBusy); //攻击打入硬直
+                    offender.SetBusy(combat.OffBusy); //攻击方招式硬直
                 }
-
-                var damage = damageFormula.Finalize;
-                var armor = GetArmor(tg);
-                var finalDamage = damage - armor;
-                var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage;
-                var parryForm = tg.PickParry();
-                var parryFormula = InstanceParryFormula(offender, tg, parryForm);
-
-                RecParryAction(tg, parryForm, parryFormula);
-
-                if (parryFormula.IsSuccess)
-                {
-                    sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
-                    offender.SetBusy(parryForm.OffBusy); //招架打入硬直
-                }
-
-                tg.SufferDamage(sufferDmg, offender.WeaponInjuryType); //伤害
-                tg.SetBusy(combat.TarBusy); //攻击打入硬直
-                offender.SetBusy(combat.OffBusy); //攻击方招式硬直
             });
             RecAttackAction(offender, consume, combat, damageFormula, false);
         }
@@ -353,6 +353,7 @@ namespace BattleM
         private FightRoundRecord ProcessRound(IList<CombatUnit> allUnits)
         {
             foreach (var unit in allUnits) SubscribeRecords(unit);
+            Mgr.BuffMgr.OnRoundStart(this);
             var fighters = allUnits.ToList();
             var actionUnits = fighters.Where(c => c.Plan != CombatPlans.Wait).ToList();
             actionUnits.Sort();
@@ -367,6 +368,7 @@ namespace BattleM
             }
             foreach (var unit in fighters) unit.BreathCharge(breathes);
             allUnits.ToList().ForEach(UnsubscribeRecords);
+            Mgr.BuffMgr.OnRoundEnd(this);
             Current++;
             _isPlan = false;
             return CurrentRoundRecord;
@@ -412,17 +414,31 @@ namespace BattleM
         private FightRoundRecord CurrentRoundRecord { get; set; }
 
         //伤害公式
-        private static DamageFormula InstanceDamageFormula(CombatUnit op, ICombatForm combat) =>
-            DamageFormula.Instance(op.Strength, op.WeaponDamage, op.Status.Mp.Squeeze(combat.Mp),
-                op.ForceSkill.MpRate);
+        private DamageFormula InstanceDamageFormula(CombatUnit op, ICombatForm combat)
+        {
+            var opStrength = Mgr.BuffMgr.GetStrength(op, op.Strength);
+            var opWeaponDamage = Mgr.BuffMgr.GetWeaponDamage(op, op.WeaponDamage);
+            var mp = op.Status.Mp.Squeeze(combat.Mp);
+            var mpValue = Mgr.BuffMgr.GetExtraMpValue(op, mp);
+            return DamageFormula.Instance(opStrength, opWeaponDamage, mpValue, op.ForceSkill.MpRate);
+        }
 
         //招架公式
-        private static ParryFormula InstanceParryFormula(CombatUnit op, CombatUnit tg, IParryForm form) =>
-            ParryFormula.Instance(form.Parry, tg.Agility, tg.Strength, op.Distance(tg), tg.IsBusy, Randomize());
+        private ParryFormula InstanceParryFormula(CombatUnit op, CombatUnit tg, IParryForm form)
+        {
+            var tarStrength = Mgr.BuffMgr.GetStrength(tg, tg.Strength);
+            var tarAgility = Mgr.BuffMgr.GetAgility(tg, tg.Agility);
+            var tarParry = Mgr.BuffMgr.GetParry(tg, form.Parry);
+            return ParryFormula.Instance(tarParry, tarAgility, tarStrength, op.Distance(tg), tg.IsBusy, Randomize());
+        }
 
         //闪避公式
-        private static DodgeFormula InstanceDodgeFormula(CombatUnit op, CombatUnit tg, IDodgeForm form) =>
-            DodgeFormula.Instance(form.Dodge, tg.Agility, op.Distance(tg), tg.IsBusy, Randomize());
+        private DodgeFormula InstanceDodgeFormula(CombatUnit op, CombatUnit tg, IDodgeForm form)
+        {
+            var tarDodge = Mgr.BuffMgr.GetDodge(tg, form.Dodge);
+            var tarAgility = Mgr.BuffMgr.GetAgility(tg, tg.Agility);
+            return DodgeFormula.Instance(tarDodge, tarAgility, op.Distance(tg), tg.IsBusy, Randomize());
+        }
 
         private static int Randomize() => Random.Next(1, 101);
     }

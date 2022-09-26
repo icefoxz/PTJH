@@ -5,6 +5,47 @@ using System.Linq;
 namespace BattleM
 {
     /// <summary>
+    /// 特殊招式
+    /// </summary>
+    public interface IExert
+    {
+        /** 效果类型
+         * 1.连击(循环)
+         * 2.叠加(值++)
+         * 3.强化(力，敏，架，身)
+         * 4.打击目标(hp & tp,hp,tp,mp)
+         * 5.转化伤害(硬转,内转,气转,血转)(消耗转)
+         * 6.固加(力，敏，架，身)
+         */
+        /** 持久
+         * 1.回合制
+         * 2.消耗制(攻,受击,架,闪,移)
+         */
+        enum Effects
+        {
+            None,
+            /// <summary>
+            /// 叠加
+            /// </summary>
+            Stack,
+            /// <summary>
+            /// 硬直伤害
+            /// </summary>
+            BusyToDamage
+        }
+        int Combo { get; }
+        int Lasting { get; }
+        enum Harms
+        {
+            Default,
+            HpOnly,
+            TpOnly,
+            MpOnly
+        }
+
+        Harms Harm();
+    }
+    /// <summary>
     /// 所有招式的底层接口
     /// </summary>
     public interface ISkillForm
@@ -19,13 +60,25 @@ namespace BattleM
     {
         int TarBusy { get; }
         int OffBusy { get; }
+        ICombo Combo { get; }
     }
+    /// <summary>
+    /// 连击招式
+    /// </summary>
+    public interface ICombo
+    {
+        /// <summary>
+        /// 每个连击打出的伤害百分比
+        /// </summary>
+        int[] Rates { get; }
+    }
+
     /// <summary>
     /// 消耗类型的招式接口
     /// </summary>
     public interface IDepletionForm : ISkillForm
     {
-        int Qi { get; }
+        int Tp { get; }
         int Mp { get; }
     }
 
@@ -38,7 +91,7 @@ namespace BattleM
     public interface IParryForm : IDepletionForm
     {
         /// <summary>
-        /// 招架转化率
+        /// 招架值
         /// </summary>
         int Parry { get; }
 
@@ -48,7 +101,7 @@ namespace BattleM
     public interface IDodgeForm : IDepletionForm, IBreathNode
     {
         /// <summary>
-        /// 身法化率
+        /// 身法值
         /// </summary>
         int Dodge { get; }
     }
@@ -91,196 +144,5 @@ namespace BattleM
     public interface IDodge : ICombatSkill
     {
         IList<IDodgeForm> Forms { get; }
-    }
-    public class ForceSkill : IForce
-    {
-        private readonly List<IForceForm> _forms;
-
-        public static ForceSkill Instance(string name, int mpRate, int mpArmor, IList<IForceForm> forms) =>
-            new(name, mpRate, mpArmor, forms);
-
-        public static ForceSkill Instance(string name, int mpRate, int mpArmor) =>
-            new(name, mpRate, mpArmor, new List<IForceForm>());
-        public string Name { get; }
-        public int MpRate { get; }
-        public int MpArmor { get; }
-
-
-        public IList<IForceForm> Forms => _forms;
-
-        public ForceSkill(string name, int mpRate, int mpArmor, IList<IForceForm> forms)
-        {
-            Name = name;
-            MpRate = mpRate;
-            MpArmor = mpArmor;
-            _forms = forms.ToList();
-        }
-
-        public void AddForm(string name, int breath)
-        {
-            Forms.Add(new Form(name, breath));
-        }
-
-        private class Form : IForceForm
-        {
-            public string Name { get; }
-            public int Breath { get; }
-
-            public Form(string name, int breath)
-            {
-                Name = name;
-                Breath = breath;
-            }
-        }
-
-        public override string ToString() => Name;
-    }
-
-    public class Martial : IMartial
-    {
-
-        public static Martial Instance(string name, Way.Armed kind) =>
-            Instance(name, kind, Array.Empty<ICombatForm>(), Array.Empty<IParryForm>());
-        public static Martial Instance(string name, Way.Armed type, ICombatForm[] kungFuforms, IParryForm[] parryForms) =>
-            new(name, type, kungFuforms, parryForms);
-
-        private readonly List<ICombatForm> _combats;
-        private readonly List<IParryForm> _parries;
-        public string Name { get; }
-        public Way.Armed Armed { get; }
-
-        public IList<ICombatForm> Combats => _combats;
-
-        public IList<IParryForm> Parries => _parries;
-
-        private Martial(string name, Way.Armed kind, IList<ICombatForm> kungFuForms,IList<IParryForm> parryForms)
-        {
-            Name = name;
-            Armed = kind;
-            _combats = kungFuForms.ToList();
-            _parries = parryForms.ToList();
-        }
-
-        public void AddParryForm(string name, int parry, int busy, int tp, int mp) =>
-            _parries.Add(new ParryForm(name, parry, busy, tp, mp));
-
-        public void AddSwordForm(string name, int breath, int tp, int mp, int tarBusy, int offBusy) =>
-            _combats.Add(new WeaponForm(name, breath, tp, mp, tarBusy, offBusy, Way.Armed.Sword));
-
-        public void AddUnarmedForm(string name, int breath, int tp, int mp, int tarBusy, int offBusy) =>
-            _combats.Add(new UnarmedForm(name, breath, tp, mp, tarBusy, offBusy, Way.Armed.Unarmed));
-
-        private class FormBase
-        {
-            public string Name { get; protected set; }
-            public override string ToString() => Name;
-        }
-        /// <summary>
-        /// 招架招式
-        /// </summary>
-        private class ParryForm : FormBase, IParryForm
-        {
-            public int Parry { get; }
-            public int OffBusy { get; }
-            public int Qi { get; }
-            public int Mp { get; }
-
-            public ParryForm(string name, int parry, int busy, int tp, int mp)
-            {
-                Name = name;
-                Parry = parry;
-                OffBusy = busy;
-                Qi = tp;
-                Mp = mp;
-            }
-        }
-        /// <summary>
-        /// 武器(战斗)招式
-        /// </summary>
-        private class WeaponForm : FormBase, ICombatForm
-        {
-            public int Breath { get; }
-            public int Qi { get; }
-            public int Mp { get; }
-            public int TarBusy { get; }
-            public int OffBusy { get; }
-            public Way.Armed Armed { get; }
-
-            public WeaponForm(string name, int breath, int tp, int mp, int tarBusy, int offBusy, Way.Armed armedKinds)
-            {
-                Name = name;
-                Breath = breath;
-                Qi = tp;
-                Mp = mp;
-                TarBusy = tarBusy;
-                OffBusy = offBusy;
-                Armed = armedKinds;
-            }
-
-        }
-        /// <summary>
-        /// 空手(战斗)招式
-        /// </summary>
-        private class UnarmedForm : FormBase, ICombatForm
-        {
-            public int Breath { get; }
-            public int Qi { get; }
-            public int Mp { get; }
-            public int TarBusy { get; }
-            public int OffBusy { get; }
-            public Way.Armed Armed { get; }
-
-            public UnarmedForm(string name, int breath, int tp, int mp, int tarBusy, int offBusy, Way.Armed armedKinds)
-            {
-                Name = name;
-                Breath = breath;
-                Qi = tp;
-                Mp = mp;
-                TarBusy = tarBusy;
-                OffBusy = offBusy;
-                Armed = armedKinds;
-            }
-
-        }
-
-        public override string ToString() => Name;
-    }
-    public class DodgeSkill : IDodge
-    {
-        public static DodgeSkill Instance(string name) => Instance(name, Array.Empty<IDodgeForm>());
-        public static DodgeSkill Instance(string name, IList<IDodgeForm> forms) => new(name, forms);
-        private readonly List<IDodgeForm> _forms;
-
-        public string Name { get; }
-        public IList<IDodgeForm> Forms => _forms;
-
-        public DodgeSkill(string name, IEnumerable<IDodgeForm> list)
-        {
-            Name = name;
-            _forms = list.ToList();
-        }
-
-        public void AddForm(string name, int dodge, int breath, int tp, int mp) =>
-            _forms.Add(new Form(name, dodge, breath, tp, mp));
-
-        private class Form : IDodgeForm
-        {
-            public string Name { get; }
-            public int Dodge { get; }
-            public int Qi { get; }
-            public int Mp { get; }
-            public int Breath { get; }
-            public Form(string name, int dodge, int breath, int tp, int mp)
-            {
-                Name = name;
-                Dodge = dodge;
-                Mp = mp;
-                Qi = tp;
-                Breath = breath;
-            }
-
-        }
-
-        public override string ToString() => Name;
     }
 }
