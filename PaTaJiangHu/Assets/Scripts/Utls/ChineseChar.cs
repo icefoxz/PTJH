@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Systems.Utls
+namespace Utls
 {
     public static class ChineseChar
     {

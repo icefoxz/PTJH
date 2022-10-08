@@ -1,4 +1,4 @@
-﻿namespace Systems
+﻿namespace Data
 {
     public interface IDataElement : IIdElement
     {

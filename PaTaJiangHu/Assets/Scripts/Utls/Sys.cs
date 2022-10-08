@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using Random = System.Random;
 
-namespace Systems.Utls
+namespace Utls
 {
     public static class Sys
     {

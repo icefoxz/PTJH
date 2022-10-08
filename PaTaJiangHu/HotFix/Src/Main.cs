@@ -3,7 +3,7 @@
     /// <summary>
     /// 热更新主调用入口
     /// </summary>
-    public class Main
+    internal class Main
     {
         public static void Run()
         {

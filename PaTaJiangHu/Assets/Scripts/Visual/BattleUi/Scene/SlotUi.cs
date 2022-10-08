@@ -1,10 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
-using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Scene
 {
     public class SlotUi : MonoBehaviour
     {

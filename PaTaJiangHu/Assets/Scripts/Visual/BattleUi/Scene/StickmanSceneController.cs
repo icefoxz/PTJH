@@ -1,9 +1,9 @@
 using System;
 using BattleM;
-using Systems.Utls;
 using UnityEngine;
+using Utls;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Scene
 {
     /// <summary>
     /// 火柴人战斗场景控制器，控制火柴人位置的放置逻辑

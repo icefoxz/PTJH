@@ -3,7 +3,7 @@ using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Scene
 {
     /// <summary>
     /// 火柴人ui控制器

@@ -3,8 +3,9 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 using Visual.BaseUi;
+using Visual.BattleUi.Scene;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Status
 {
     public class CombatUnitUi : UiBase
     {

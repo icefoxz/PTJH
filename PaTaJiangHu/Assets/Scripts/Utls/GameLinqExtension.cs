@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Systems.Utls
+namespace Utls
 {
     public static class GameLinqExtension
     {

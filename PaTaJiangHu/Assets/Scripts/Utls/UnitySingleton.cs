@@ -21,7 +21,7 @@ namespace Utls
             }
         }
 
-        protected virtual void Awake()
+        private void Awake()
         {
             if (instance == null)
             {
@@ -32,6 +32,8 @@ namespace Utls
             {
                 Destroy(gameObject);
             }
+            OnAwake();
         }
+        protected virtual void OnAwake(){}
     }
 }

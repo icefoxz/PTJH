@@ -6,7 +6,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Scene
 {
     /// <summary>
     /// 战斗格控制器，管理战斗单位的移位，控制战斗场景与镜头的位置逻辑。

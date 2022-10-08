@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using BattleM;
 using Visual.BaseUi;
+using Visual.BattleUi.Scene;
 
-namespace Visual.BattleUi
+namespace Visual.BattleUi.Status
 {
     public class BattleStanceUi : PrefabController<CombatUnitUi>
     {

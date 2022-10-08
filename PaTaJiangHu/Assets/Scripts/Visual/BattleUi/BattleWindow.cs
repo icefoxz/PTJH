@@ -8,6 +8,7 @@ using UnityEngine.Events;
 using UnityEngine.UI;
 using Visual.BaseUi;
 using Visual.BattleUi.Input;
+using Visual.BattleUi.Scene;
 using Visual.BattleUi.Status;
 
 namespace Visual.BattleUi

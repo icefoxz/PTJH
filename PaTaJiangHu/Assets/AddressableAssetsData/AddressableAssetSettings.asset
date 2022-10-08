@@ -32,14 +32,11 @@ MonoBehaviour:
   m_ShaderBundleNaming: 0
   m_ShaderBundleCustomNaming: 
   m_MonoScriptBundleNaming: 0
-  m_CheckForContentUpdateRestrictionsOption: 0
   m_MonoScriptBundleCustomNaming: 
   m_RemoteCatalogBuildPath:
     m_Id: 10b8f60f1989811489733f5267126d95
   m_RemoteCatalogLoadPath:
     m_Id: b9f0ece62c357ba4ea4c68587bc8f28e
-  m_ContentStateBuildPathProfileVariableName: <default settings path>
-  m_CustomContentStateBuildPath: 
   m_ContentStateBuildPath: 
   m_BuildAddressablesWithPlayerBuild: 0
   m_overridePlayerVersion: 
@@ -51,6 +48,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 35dd2eaed1e77f14bbaf732a5de4a563, type: 2}
   - {fileID: 11400000, guid: 514dc49b36bc5324191ff084fc6e35be, type: 2}
   - {fileID: 11400000, guid: c8bdcb9ecaf09624dbda7e14a3e680a4, type: 2}
+  - {fileID: 11400000, guid: 52366c4c0e304cb4d848cc1e1d58cd7e, type: 2}
+  - {fileID: 11400000, guid: 17696a61640ea7d4e801ab08e8ab8b72, type: 2}
+  - {fileID: 11400000, guid: 10fac3b9116e9f346a6ce53ff5ff33ad, type: 2}
+  - {fileID: 11400000, guid: 587e9046d8283e5468581c550f6fee02, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -72,6 +73,20 @@ MonoBehaviour:
         m_Value: ServerData/[BuildTarget]
       - m_Id: b9f0ece62c357ba4ea4c68587bc8f28e
         m_Value: http://[PrivateIpAddress]:[HostingServicePort]
+    - m_InheritedParent: 
+      m_Id: 19ebb4af575c35644b649614f5e1c3bd
+      m_ProfileName: PataBlob
+      m_Values:
+      - m_Id: 1449ed863ca42e7458940a67d6b2d065
+        m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: 2ac73512b600bdc4893e0c47525fa977
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+      - m_Id: 502600b7502f81c42a7753de7b75a955
+        m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+      - m_Id: 10b8f60f1989811489733f5267126d95
+        m_Value: ServerData/[BuildTarget]
+      - m_Id: b9f0ece62c357ba4ea4c68587bc8f28e
+        m_Value: https://pata.blob.core.windows.net/assets
     m_ProfileEntryNames:
     - m_Id: 1449ed863ca42e7458940a67d6b2d065
       m_Name: BuildTarget
@@ -92,8 +107,11 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
-    - Texture
+    - Art
     - Audio
+    - Anim
+    - Prefab
+    - HotFix
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 0d87816dae4d1a740903dc980af49fd4, type: 2}
@@ -107,9 +125,66 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 038b416fa77a78a49b8bd7d9418d9781, type: 2}
   - {fileID: 11400000, guid: 467cc1a4667f1af4caf8c089c732f8a6, type: 2}
   - {fileID: 11400000, guid: c2022d5cd29357b4b97c33e1f7467c1c, type: 2}
-  m_ActiveProfileId: 2035451a072c13740a03f461567cb5da
+  m_ActiveProfileId: 19ebb4af575c35644b649614f5e1c3bd
   m_HostingServicesManager:
-    m_HostingServiceInfos: []
+    m_HostingServiceInfos:
+    - classRef: UnityEditor.AddressableAssets.HostingServices.HttpHostingService,
+        Unity.Addressables.Editor
+      dataStore:
+        m_SerializedData:
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Int32
+          m_Data: 50543
+          m_Key: HostingServicePort
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Int32
+          m_Data: 0
+          m_Key: HostingServiceUploadSpeed
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.String
+          m_Data: Library/com.unity.addressables/aa/Android/Android;ServerData/Android
+          m_Key: ContentRoot
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Boolean
+          m_Data: False
+          m_Key: IsEnabled
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.String
+          m_Data: Local Hosting 4
+          m_Key: DescriptiveName
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Int32
+          m_Data: 4
+          m_Key: InstanceId
+    - classRef: UnityEditor.AddressableAssets.HostingServices.HttpHostingService,
+        Unity.Addressables.Editor
+      dataStore:
+        m_SerializedData:
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Int32
+          m_Data: 57564
+          m_Key: HostingServicePort
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Int32
+          m_Data: 0
+          m_Key: HostingServiceUploadSpeed
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.String
+          m_Data: Library/com.unity.addressables/aa/Android/Android;ServerData/Android
+          m_Key: ContentRoot
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Boolean
+          m_Data: False
+          m_Key: IsEnabled
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.String
+          m_Data: Local Hosting 5
+          m_Key: DescriptiveName
+        - m_AssemblyName: mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
+          m_ClassName: System.Int32
+          m_Data: 5
+          m_Key: InstanceId
     m_Settings: {fileID: 11400000}
-    m_NextInstanceId: 0
-    m_RegisteredServiceTypeRefs: []
+    m_NextInstanceId: 6
+    m_RegisteredServiceTypeRefs:
+    - UnityEditor.AddressableAssets.HostingServices.HttpHostingService, Unity.Addressables.Editor

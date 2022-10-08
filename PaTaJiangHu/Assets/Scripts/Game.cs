@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Systems;
-using Systems.Utls;
+using Systems.Coroutines;
+using Systems.Messaging;
+using Systems.Updaters;
 using UnityEngine;
 using Utls;
 
@@ -11,45 +11,60 @@ using Utls;
 /// </summary>
 public class Game : UnitySingleton<Game>
 {
-    public static ResMgr ResMgr { get; private set; }
-    public static FrameUpdater Updater { get; private set; }
-    public void Init(ResMgr resMgr)
+    private static Canvas _sceneCanvas;
+    public static IlService IlService { get; private set; }
+    public static UiBuilder UiBuilder { get; private set; } = new UiBuilder();
+    public static IRes Res { get; private set; }
+    /// <summary>
+    /// 基于<see cref="MonoBehaviour"/>的Update方法(每帧)执行
+    /// </summary>
+    private static ObjectUpdater FrameUpdater { get; set; }
+    /// <summary>
+    /// 帧等待控制器
+    /// </summary>
+    public static UpdateAwaiterManager UpdateAwaiterMgr { get; private set; }
+    public static MessagingManager MessagingManager { get; private set; }
+    public static ICoroutineService CoService { get; private set; }
+    public static Canvas SceneCanvas
     {
-        this.Log();
-        ResMgr = resMgr;
-        Updater = new FrameUpdater();
+        get
+        {
+            if (_sceneCanvas) return _sceneCanvas;
+            _sceneCanvas = GameObject.FindGameObjectWithTag(Global.SceneCanvas).GetComponent<Canvas>();
+            if (!_sceneCanvas)
+                throw new NullReferenceException("Unable to find scene canvas!");
+            return _sceneCanvas;
+        }
+        private set => _sceneCanvas = value;
     }
+
+    public static bool IsInit { get; private set; }
+    public void Init(Res res, IlService ilService)
+    {
+        if (IsInit) throw new InvalidOperationException("Double Init!");
+        IsInit = true;
+        this.Log();
+        Res = res;
+        CoService = CoroutineService.Instance;
+        MessagingManager = new MessagingManager();
+        FrameUpdater = new ObjectUpdater();
+        HotFixHelper.Init(FrameUpdater);
+        UpdateAwaiterMgr = new UpdateAwaiterManager();
+        IlService = ilService;
+        //SceneCanvas = sceneCanvas;
+    }
+
+    /// <summary>
+    /// 完全初始化后，游戏开始的入口
+    /// </summary>
+    public static void Run()
+    {
+        Instance.Log();
+    }
+
     void Update()
     {
-        Updater?.Update();
-    }
-}
-
-public class FrameUpdater
-{
-    private List<(object obj, Action update)> MonoUpdates { get; } = new List<(object obj, Action update)>();
-
-    public void RegMonoUpdate(object obj, Action update)
-    {
-        if (MonoUpdates.Any(m => m.obj == obj))
-            throw new InvalidOperationException($"{obj} duplicated!");
-        MonoUpdates.Add((obj, update));
-    }
-
-    public void RemoveMonoUpdate(object className)
-    {
-        var mono = MonoUpdates.FirstOrDefault(m => m.obj == className);
-        if(mono == default)
-            throw new InvalidOperationException($"{className} not found!");
-        MonoUpdates.Remove(mono);
-    }
-
-    public void Update()
-    {
-        for (var i = 0; i < MonoUpdates.Count; i++)
-        {
-            var (_, updateMethod) = MonoUpdates[i];
-            updateMethod();
-        }
+        FrameUpdater?.Update();
+        UpdateAwaiterMgr.GameAwaitersUpdate();
     }
 }
