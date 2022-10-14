@@ -221,7 +221,7 @@ namespace BattleM
             {
                 Way.Armed.Unarmed => "空手",
                 Way.Armed.Sword => "剑法",
-                Way.Armed.Fling => "暗器",
+                //Way.Armed.Fling => "暗器",
                 Way.Armed.Blade => "刀法",
                 Way.Armed.Stick => "棍型",
                 Way.Armed.Whip => "鞭法",

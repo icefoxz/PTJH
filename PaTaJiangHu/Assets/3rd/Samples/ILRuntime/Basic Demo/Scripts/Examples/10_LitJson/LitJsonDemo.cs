@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Data.LitJson;
 using ILRuntime.CLR.TypeSystem;
 using ILRuntime.CLR.Method;
 using ILRuntime.Runtime.Enviorment;
@@ -75,7 +76,7 @@ public class LitJsonDemo : MonoBehaviour
         appdomain.UnityMainThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
 #endif
         //这里做一些ILRuntime的注册，这里我们对LitJson进行注册
-        LitJson.JsonMapper.RegisterILRuntimeCLRRedirection(appdomain);
+        JsonMapper.RegisterILRuntimeCLRRedirection(appdomain);
     }
 
     void OnHotFixLoaded()

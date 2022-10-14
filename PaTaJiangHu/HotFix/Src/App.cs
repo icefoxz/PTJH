@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Net.Http;
+using HotFix_Project.Data;
 using HotFix_Project.Managers;
 using Systems;
 using Systems.Coroutines;
@@ -19,7 +20,7 @@ namespace HotFix_Project
 
         public static void Init()
         {
-            Debug.Log($"{nameof(App)}.{nameof(Init)}! Ver 1.5");
+            Debug.Log($"{nameof(App)}.{nameof(Init)}! Ver 1.0");
             //初始化热更新工程框架模块：UI管理，事件订阅...
             
             Game.Run();
@@ -74,35 +75,34 @@ namespace HotFix_Project
         }
         private static void TestViewBag()
         {
-            var bags = Data.Views.TestViewBag.GetBags(1000);//最低开销
+            //var bags = Data.Views.TestViewBag.GetBags(1000);//最低开销
             //var bags = Data.Views.TestViewBag.GetObjects(1000);//第二，差第一的1倍
             //var bags = Data.Views.TestViewBag.GetJsons(1000);//与第二差不多。
-            foreach (var s in bags)
-            {
-                var bag = s;//ViewBag.ToObject<ViewBag>(s);
-                Debug.Log($"{bag.Name}");
-            }
-
+            //foreach (var s in bags)
+            //{
+            //    var bag = s;//ViewBag.ToObject<ViewBag>(s);
+            //    Debug.Log($"{bag.Name}");
+            //}
         }
         private static void TestButtonEvent()
         {
             var go = new GameObject("TestButton");
             go.transform.SetParent(Game.SceneCanvas.transform);
             var btn = go.AddComponent<Button>();
-            btn.OnClickAdd(() => Game.MessagingManager.Invoke(nameof(TestAction1), null));
-            Game.MessagingManager.RegEvent(nameof(TestAction1), TestAction1);
-            Game.MessagingManager.RegEvent(nameof(TestAction1), TestAction2);
-
-            void TestAction1(object[] args)
-            {
-                Debug.Log("Test1 Action Invoke!");
-                Game.MessagingManager.RemoveEvent(nameof(TestAction1), TestAction1);
-            }
-
-            void TestAction2(object[] args)
-            {
-                Debug.Log("Test2 Action Invoke!");
-            }
+            //btn.OnClickAdd(() => Game.MessagingManager.Invoke(nameof(TestAction1), null));
+            //Game.MessagingManager.RegEvent(nameof(TestAction1), TestAction1);
+            //Game.MessagingManager.RegEvent(nameof(TestAction1), TestAction2);
+            //
+            //void TestAction1(string args)
+            //{
+            //    Debug.Log("Test1 Action Invoke!");
+            //    Game.MessagingManager.RemoveEvent(nameof(TestAction1), TestAction1);
+            //}
+            //
+            //void TestAction2(string args)
+            //{
+            //    Debug.Log("Test2 Action Invoke!");
+            //}
         }
     }
 }

@@ -11,7 +11,11 @@ using ILRuntime.Runtime.Intepreter;
 using ILRuntime.Runtime.Stack;
 using ILRuntime.Reflection;
 using ILRuntime.CLR.Utils;
-
+#if DEBUG && !DISABLE_ILRUNTIME_DEBUG
+using AutoList = System.Collections.Generic.List<object>;
+#else
+using AutoList = ILRuntime.Other.UncheckedList<object>;
+#endif
 namespace ILRuntime.Runtime.Generated
 {
     unsafe class Server_Controllers_Adventures_Adventure_Binding
@@ -35,14 +39,11 @@ namespace ILRuntime.Runtime.Generated
             method = type.GetMethod("get_Units", flag, null, args, null);
             app.RegisterCLRMethodRedirection(method, get_Units_3);
 
-            args = new Type[]{};
-            method = type.GetConstructor(flag, null, args, null);
-            app.RegisterCLRMethodRedirection(method, Ctor_0);
 
         }
 
 
-        static StackObject* get_Events_0(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* get_Events_0(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;
@@ -54,10 +55,15 @@ namespace ILRuntime.Runtime.Generated
 
             var result_of_this_method = instance_of_this_method.Events;
 
+            object obj_result_of_this_method = result_of_this_method;
+            if(obj_result_of_this_method is CrossBindingAdaptorType)
+            {    
+                return ILIntepreter.PushObject(__ret, __mStack, ((CrossBindingAdaptorType)obj_result_of_this_method).ILInstance);
+            }
             return ILIntepreter.PushObject(__ret, __mStack, result_of_this_method);
         }
 
-        static StackObject* get_Progress_1(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* get_Progress_1(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;
@@ -74,7 +80,7 @@ namespace ILRuntime.Runtime.Generated
             return __ret + 1;
         }
 
-        static StackObject* get_Id_2(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* get_Id_2(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;
@@ -91,7 +97,7 @@ namespace ILRuntime.Runtime.Generated
             return __ret + 1;
         }
 
-        static StackObject* get_Units_3(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* get_Units_3(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;
@@ -106,16 +112,6 @@ namespace ILRuntime.Runtime.Generated
             return ILIntepreter.PushObject(__ret, __mStack, result_of_this_method);
         }
 
-
-        static StackObject* Ctor_0(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
-        {
-            ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
-            StackObject* __ret = ILIntepreter.Minus(__esp, 0);
-
-            var result_of_this_method = new Server.Controllers.Adventures.Adventure();
-
-            return ILIntepreter.PushObject(__ret, __mStack, result_of_this_method);
-        }
 
 
     }

@@ -11,7 +11,11 @@ using ILRuntime.Runtime.Intepreter;
 using ILRuntime.Runtime.Stack;
 using ILRuntime.Reflection;
 using ILRuntime.CLR.Utils;
-
+#if DEBUG && !DISABLE_ILRUNTIME_DEBUG
+using AutoList = System.Collections.Generic.List<object>;
+#else
+using AutoList = ILRuntime.Other.UncheckedList<object>;
+#endif
 namespace ILRuntime.Runtime.Generated
 {
     unsafe class Views_View_Binding
@@ -68,7 +72,7 @@ namespace ILRuntime.Runtime.Generated
         }
 
 
-        static StackObject* GetObject_0(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* GetObject_0(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;
@@ -92,7 +96,7 @@ namespace ILRuntime.Runtime.Generated
             return ILIntepreter.PushObject(__ret, __mStack, result_of_this_method);
         }
 
-        static StackObject* GetObject_1(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* GetObject_1(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;

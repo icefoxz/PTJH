@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using BattleM;
-using Data.Views;
-using LitJson;
+using Newtonsoft.Json.Linq;
 
 namespace Server.Controllers.Adventures
 {
@@ -28,20 +26,13 @@ namespace Server.Controllers.Adventures
         }
     }
 
-    public class AdvEvent : ObjectBag<AdvEvent>
+    public class AdvEvent 
     {
         public int Id { get; set; }//<--需要定义可以指定战斗(百位数为战斗,千位为固定战斗关卡)
         public int[] Options { get; set; }
-        public override void LoadParam(object[] args)
-        {
-            Id = (int)args[0];
-            Options = (int[])args[1];
-        }
-
-        public override object[] ToParam() => new object[] { Id, Options };
     }
 
-    public class Adventure : ObjectBag<Adventure>
+    public class Adventure
     {
         public int Id { get; set; }
         public AdvUnit[] Units { get; set; }
@@ -54,23 +45,6 @@ namespace Server.Controllers.Adventures
             Units = units;
         }
         public Adventure() { }
-
-        public override void LoadParam(object[] args)
-        {
-            Id = (int)args[0];
-            Units = (AdvUnit[])args[1];
-            Progress = (int)args[2];
-        }
-
-        public override object[] ToParam()
-        {
-            return new object[]
-            { 
-                Id, 
-                Units, 
-                Progress
-            };
-        }
     }
     public class UnitStatus 
     {

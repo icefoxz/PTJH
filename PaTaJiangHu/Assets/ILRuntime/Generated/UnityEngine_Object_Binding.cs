@@ -11,7 +11,11 @@ using ILRuntime.Runtime.Intepreter;
 using ILRuntime.Runtime.Stack;
 using ILRuntime.Reflection;
 using ILRuntime.CLR.Utils;
-
+#if DEBUG && !DISABLE_ILRUNTIME_DEBUG
+using AutoList = System.Collections.Generic.List<object>;
+#else
+using AutoList = ILRuntime.Other.UncheckedList<object>;
+#endif
 namespace ILRuntime.Runtime.Generated
 {
     unsafe class UnityEngine_Object_Binding
@@ -44,7 +48,7 @@ namespace ILRuntime.Runtime.Generated
             {
                 foreach(var m in lst)
                 {
-                    if(m.MatchGenericParameters(args, typeof(Views.View), typeof(Views.View)))
+                    if(m.MatchGenericParameters(args, typeof(Views.View), typeof(Views.View), typeof(UnityEngine.Transform)))
                     {
                         method = m.MakeGenericMethod(args);
                         app.RegisterCLRMethodRedirection(method, Instantiate_1);
@@ -58,7 +62,7 @@ namespace ILRuntime.Runtime.Generated
         }
 
 
-        static StackObject* Destroy_0(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* Destroy_0(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;
@@ -74,18 +78,22 @@ namespace ILRuntime.Runtime.Generated
             return __ret;
         }
 
-        static StackObject* Instantiate_1(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj)
+        static StackObject* Instantiate_1(ILIntepreter __intp, StackObject* __esp, AutoList __mStack, CLRMethod __method, bool isNewObj)
         {
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             StackObject* ptr_of_this_method;
-            StackObject* __ret = ILIntepreter.Minus(__esp, 1);
+            StackObject* __ret = ILIntepreter.Minus(__esp, 2);
 
             ptr_of_this_method = ILIntepreter.Minus(__esp, 1);
+            UnityEngine.Transform @parent = (UnityEngine.Transform)typeof(UnityEngine.Transform).CheckCLRTypes(StackObject.ToObject(ptr_of_this_method, __domain, __mStack), (CLR.Utils.Extensions.TypeFlags)0);
+            __intp.Free(ptr_of_this_method);
+
+            ptr_of_this_method = ILIntepreter.Minus(__esp, 2);
             Views.View @original = (Views.View)typeof(Views.View).CheckCLRTypes(StackObject.ToObject(ptr_of_this_method, __domain, __mStack), (CLR.Utils.Extensions.TypeFlags)0);
             __intp.Free(ptr_of_this_method);
 
 
-            var result_of_this_method = UnityEngine.Object.Instantiate<Views.View>(@original);
+            var result_of_this_method = UnityEngine.Object.Instantiate<Views.View>(@original, @parent);
 
             object obj_result_of_this_method = result_of_this_method;
             if(obj_result_of_this_method is CrossBindingAdaptorType)

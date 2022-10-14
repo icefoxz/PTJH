@@ -183,12 +183,12 @@ namespace BattleM
                 case Way.Armed.Whip when !obj.IsTargetRange():
                     newPos = obj.Distance(target) < 3 ? AdjustDistance(obj, target, false) : AdjustDistance(obj, target, true);
                     break;
-                case Way.Armed.Fling:
-                {
-                    if (obj.IsTargetRange() && obj.Distance(target) < 3) 
-                        newPos = AdjustDistance(obj, target, false);
-                    break;
-                }
+                //case Way.Armed.Fling:
+                //{
+                //    if (obj.IsTargetRange() && obj.Distance(target) < 3) 
+                //        newPos = AdjustDistance(obj, target, false);
+                //    break;
+                //}
                 //default:
                 //    throw new ArgumentOutOfRangeException(
                 //        $"{nameof(AdjustCombatDistance)}:{obj.Name}.{obj.Equipment.Armed},距离[{obj.Distance(target)}]，逻辑超出预期范围！");

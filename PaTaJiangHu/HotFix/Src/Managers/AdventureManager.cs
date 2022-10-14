@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using HotFix_Project.Serialization.LitJson;
 using HotFix_Project.Views.Bases;
 using Server;
 using Server.Controllers.Adventures;
@@ -24,10 +24,10 @@ namespace HotFix_Project.Managers
 
         public void Init()
         {
-            InitAdventure();
+            InitUi();
             EventReg();
         }
-        private void InitAdventure()
+        private void InitUi()
         {
             Game.UiBuilder.Build("view_adventure", (go, v) =>
             {
@@ -76,16 +76,15 @@ namespace HotFix_Project.Managers
         }
         private void EventReg()
         {
-            Game.MessagingManager.RegEvent(EventString.Adventure_Start, param =>
+            Game.MessagingManager.RegEvent(EventString.Test_AdventureStart, param =>
             {
-                Current = new Adventure();
-                Current.LoadParam(param);
+                Current = JsonMapper.ToObject<Adventure>(param);
                 AdWindow.Set(Current);
                 AdWindow.Display(true);
             });
-            Game.MessagingManager.RegEvent(EventString.Adventure_Event, param =>
+            Game.MessagingManager.RegEvent(EventString.Test_AdventureEvent, param =>
             {
-                Current.LoadParam(param);
+                Current = JsonMapper.ToObject<Adventure>(param);
                 AdWindow.Set(Current);
                 var e = Current.Events.LastOrDefault();
                 if (e != null)
@@ -107,9 +106,6 @@ namespace HotFix_Project.Managers
         {
             AdWindow.Display(false);
             ServiceCaller.Instance.AdventureNext(Current);
-            if (AdWindow.Progress % 2 == 0)
-                E1Window.Display(true);
-            else E2Window.Display(true);
         }
         private class Event2Ui : UiBase
         {
@@ -118,7 +114,7 @@ namespace HotFix_Project.Managers
             private Button Btn_select2 { get; }
 
             public Event2Ui(GameObject gameObject, Button btnSelect0, Button btnSelect1, Button btnSelect2) : base(
-                gameObject)
+                gameObject, false)
             {
                 Btn_select0 = btnSelect0;
                 Btn_select1 = btnSelect1;
@@ -134,7 +130,7 @@ namespace HotFix_Project.Managers
         {
             private Button Btn_invoke { get; }
 
-            public Event1Ui(GameObject gameObject, Button btnInvoke) : base(gameObject)
+            public Event1Ui(GameObject gameObject, Button btnInvoke) : base(gameObject,false)
             {
                 Btn_invoke = btnInvoke;
             }
@@ -151,19 +147,19 @@ namespace HotFix_Project.Managers
             private ScrollRect Scroll_units { get; }
             private View Prefab_unit { get; }
             public int Progress { get; set; }
-            private List<UnitUi> List { get; } = new List<UnitUi>();
+            //private List<UnitUi> List { get; } = new List<UnitUi>();
+            private ListViewUi<UnitUi> ListView { get; } 
             public Adventure Adventure { get; private set; }
 
             public AdventureUi(GameObject gameObject, Button btnNext, Text textProgress, ScrollRect scrollUnits,
-                View prefabUnit, Text textIntro) : base(gameObject)
+                View prefabUnit, Text textIntro) : base(gameObject, false)
             {
                 Btn_next = btnNext;
                 Text_progress = textProgress;
                 Scroll_units = scrollUnits;
                 Prefab_unit = prefabUnit;
                 Text_intro = textIntro;
-                foreach (var view in Scroll_units.content.GetComponentsInChildren<View>())
-                    view.gameObject.SetActive(false);
+                ListView = new ListViewUi<UnitUi>(Prefab_unit, Scroll_units.content.gameObject);
             }
 
             public void Set(Adventure adv)
@@ -185,27 +181,21 @@ namespace HotFix_Project.Managers
 
             private void SetUnits(AdvUnit[] units)
             {
-                ClearList();
-                foreach (var unit in units) InstanceUnitPrefab(unit);
+                ListView.ClearList(OnRemoveFromList);
+                foreach (var unit in units)
+                    ListView.Instance(view =>
+                    {
+                        var ui = new UnitUi(view);
+                        ui.Set(unit, OnSelectedUnit);
+                        ui.Display(true);
+                        return ui;
+                    });
             }
 
-            private void ClearList()
+            private void OnRemoveFromList(UnitUi ui)
             {
-                foreach (var ui in List)
-                {
-                    ui.Display(false);
-                    ui.Destroy();
-                }
-                List.Clear();
-            }
-
-            private void InstanceUnitPrefab(AdvUnit unit)
-            {
-                var view = Object.Instantiate(Prefab_unit, Scroll_units.content);
-                var ui = new UnitUi(view);
-                ui.Set(unit, OnSelectedUnit);
-                ui.Display(true);
-                List.Add(ui);
+                ui.Display(false);
+                ui.Destroy();
             }
 
             private void OnSelectedUnit(AdvUnit obj)
@@ -219,7 +209,7 @@ namespace HotFix_Project.Managers
                 private Text Text_name { get; }
                 private Text Text_hp { get; }
 
-                public UnitUi(View view) : base(view.gameObject)
+                public UnitUi(View view) : base(view.gameObject,true)
                 {
                     Btn_unit = view.GetObject<Button>("btn_unit");
                     Text_name = view.GetObject<Text>("text_name");

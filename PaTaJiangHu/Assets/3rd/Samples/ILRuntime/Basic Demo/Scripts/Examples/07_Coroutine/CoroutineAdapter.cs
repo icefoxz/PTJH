@@ -25,8 +25,7 @@ public class CoroutineAdapter : CrossBindingAdaptor
             //跨域继承只能有1个Adapter，因此应该尽量避免一个类同时实现多个外部接口，对于coroutine来说是IEnumerator<object>,IEnumerator和IDisposable，
             //ILRuntime虽然支持，但是一定要小心这种用法，使用不当很容易造成不可预期的问题
             //日常开发如果需要实现多个DLL外部接口，请在Unity这边先做一个基类实现那些个接口，然后继承那个基类
-            return new Type[]
-                { typeof(IEnumerator<int>), typeof(IEnumerator<object>), typeof(IEnumerator), typeof(IDisposable) };
+            return new Type[] { typeof(IEnumerator<object>), typeof(IEnumerator), typeof(IDisposable) };
         }
     }
 

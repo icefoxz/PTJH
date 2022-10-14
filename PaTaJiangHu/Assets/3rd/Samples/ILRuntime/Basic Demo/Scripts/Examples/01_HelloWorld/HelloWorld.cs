@@ -62,8 +62,10 @@ public class HelloWorld : MonoBehaviour
             Debug.LogError("加载热更DLL失败，请确保已经通过VS打开Assets/Samples/ILRuntime/1.6/Demo/HotFix_Project/HotFix_Project.sln编译过热更DLL");
         }
 
+        appdomain.DebugService.StartDebugService();
         InitializeILRuntime();
-        OnHotFixLoaded();
+        Debug.Log("Start Debug!");
+        //OnHotFixLoaded();
     }
 
     void InitializeILRuntime()
@@ -75,7 +77,7 @@ public class HelloWorld : MonoBehaviour
         //这里做一些ILRuntime的注册，HelloWorld示例暂时没有需要注册的
     }
 
-    void OnHotFixLoaded()
+    public void OnHotFixLoaded()
     {
         //HelloWorld，第一次方法调用
         appdomain.Invoke("HotFix_Project.InstanceClass", "StaticFunTest", null, null);

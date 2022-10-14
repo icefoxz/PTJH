@@ -11,6 +11,7 @@ namespace Utls
         public static bool RandomBool() => Random.NextDouble() >= 0.5;
     }
 
+
     public static class UnityDebugExtension
     {
         public static void Log<T>(this T gameObject, string message = null,

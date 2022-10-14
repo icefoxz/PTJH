@@ -9,7 +9,7 @@ namespace So
     [Serializable] public class WeaponFieldSo : ScriptableObject, IWeapon,IDataElement
     {
         [SerializeField] private string _name;
-        [SerializeField]private int id;
+        [SerializeField] private int id;
         [SerializeField] private Way.Armed 类型;
         [SerializeField] private int 伤害值;
         [SerializeField] private Weapon.Injuries 伤害类型;

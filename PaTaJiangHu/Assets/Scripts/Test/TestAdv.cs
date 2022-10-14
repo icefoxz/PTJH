@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Data.LitJson;
 using Server;
 using Server.Controllers.Adventures;
 using UnityEngine;
@@ -8,14 +9,11 @@ public class TestAdv : MonoBehaviour
 {
     [SerializeField] private AdventureUnit[] _units;
     private Adventure Current { get; set; }
-    public AdvUnit[] GetUnits() => _units.Select(u => u.GetUnit()).ToArray();
+    internal AdvUnit[] GetUnits() => _units.Select(u => u.GetUnit()).ToArray();
     public void AdventureStart(int id)
     {
-        Game.MessagingManager.RegEvent(EventString.Adventure_Start, arg =>
-        {
-            Current = new Adventure();
-            Current.LoadParam(arg);
-        });
+        Game.MessagingManager.RegEvent(EventString.Test_AdventureStart,
+            arg => Current = JsonMapper.ToObject<Adventure>(arg)); //ObjectBag.LoadParam<Adventure>(arg));
         ServiceCaller.Instance.StartAdventure(id, GetUnits());
     }
 

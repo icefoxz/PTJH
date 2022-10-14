@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using UnityEngine;
 
 namespace Utls
 {
@@ -39,8 +40,11 @@ namespace Utls
             {
                 return value == null ? null : JsonConvert.DeserializeObject<T>(value);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+#if DEBUG
+                Debug.Log($"Json Err:{e}");
+#endif
                 return null;
             }
         }
@@ -50,8 +54,11 @@ namespace Utls
             {
                 return value == null ? null : JsonConvert.DeserializeObject<T>(value, converters);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+#if DEBUG
+                Debug.Log($"Json Err:{e}");
+#endif
                 return null;
             }
         }
@@ -64,8 +71,11 @@ namespace Utls
                     ContractResolver = resolver
                 });
             }
-            catch (Exception)
+            catch (Exception e)
             {
+#if DEBUG
+                Debug.Log($"Json Err:{e}");
+#endif
                 return null;
             }
         }

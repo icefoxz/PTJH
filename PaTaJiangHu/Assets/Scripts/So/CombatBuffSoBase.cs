@@ -44,7 +44,6 @@ namespace So
 
         protected record CombatBuff : CombatBuffBase, IBuffInstance
         {
-
             public override int SpriteId { get; }
             public override int Stacks { get; }
             public override ICombatBuff.Consumptions Consumption { get; }

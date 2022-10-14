@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using LitJson;
 using UnityEngine;
+using JsonMapper = HotFix_Project.Serialization.LitJson.JsonMapper;
 
 namespace HotFix_Project
 {

@@ -1,5 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 using Views;
+using Object = UnityEngine.Object;
 
 namespace HotFix_Project.Views.Bases
 {
@@ -11,11 +14,45 @@ namespace HotFix_Project.Views.Bases
         protected GameObject gameObject { get; }
         protected Transform transform => gameObject.transform;
         protected Transform parent => gameObject.transform.parent;
-        protected UiBase(GameObject gameObject)
+        protected UiBase(GameObject gameObject,bool display)
         {
             this.gameObject = gameObject;
-            Display(false);
+            Display(display);
         }
         public void Display(bool display) => gameObject.SetActive(display);
+    }
+
+    internal class ListViewUi<T> : UiBase
+    {
+        private List<T> _list { get; } = new List<T>();
+        public IReadOnlyList<T> List => _list;
+        private View Prefab { get; }
+
+        public ListViewUi(View prefab, GameObject go, bool hideView = true) : base(go, true)
+        {
+            Prefab = prefab;
+            if (hideView) HideViews<Component>();
+        }
+
+        public void HideViews<TView>() where TView : Component
+        {
+            foreach (Transform view in transform)
+                view.gameObject.SetActive(false);
+        }
+
+        public T Instance(Func<View,T> func)
+        {
+            var obj = Object.Instantiate(Prefab, gameObject.transform);
+            obj.gameObject.SetActive(true);
+            var ui = func.Invoke(obj);
+            _list.Add(ui);
+            return ui;
+        }
+        public void ClearList(Action<T> onRemoveFromList)
+        {
+            foreach (var ui in _list) onRemoveFromList(ui);
+            _list.Clear();
+        }
+        public void Remove(T obj) => _list.Remove(obj);
     }
 }

@@ -19,7 +19,7 @@ namespace BattleM
             [InspectorName("棍型")] Stick,
             [InspectorName("短兵")] Short,
             [InspectorName("鞭法")] Whip,
-            [InspectorName("暗器")] Fling,
+            //[InspectorName("暗器")] Fling,
         }
         public enum Effect
         {
@@ -40,8 +40,8 @@ namespace BattleM
                 case Armed.Stick:
                 case Armed.Whip:
                     return distance == 3;
-                case Armed.Fling:
-                    return distance > 1;
+                //case Armed.Fling:
+                //    return distance > 1;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(armed), armed, null);
             }

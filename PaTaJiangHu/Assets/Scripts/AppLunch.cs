@@ -46,11 +46,13 @@ public class AppLunch : UnitySingleton<AppLunch>
         Res.Initialize(() => isResourceInit = true);
         yield return new WaitUntil(() => isResourceInit);
         yield return CheckHotFix();
+#if DEBUG
+        yield return ILRuntimeMgr.StartIlRuntimeServiceWithPdb(Debug.unityLogger);
+        IlRuntimeManager.StartDebug();
+#else
         var handle = Res.LoadAssetAsyncHandler<TextAsset>("Game");
         yield return handle;
         yield return ILRuntimeMgr.StartIlRuntimeService(handle.Result.bytes, Debug.unityLogger);
-#if DEBUG
-        IlRuntimeManager.StartDebug();
 #endif
         if(AutoStart) StartGame();
     }
