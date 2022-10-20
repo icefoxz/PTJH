@@ -67,6 +67,13 @@ namespace Server.Controllers.Adventures
             Hp.Value, Hp.Max, Hp.Fix,
             Tp.Value, Tp.Max, Tp.Fix,
             Mp.Value, Mp.Max, Mp.Fix);
+
+        public void Clone(ICombatStatus c)
+        {
+            Hp.Clone(c.Hp);
+            Mp.Clone(c.Mp);
+            Tp.Clone(c.Tp);
+        }
     }
 
     public class AdvUnit

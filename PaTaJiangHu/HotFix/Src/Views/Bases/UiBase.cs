@@ -28,13 +28,13 @@ namespace HotFix_Project.Views.Bases
         public IReadOnlyList<T> List => _list;
         private View Prefab { get; }
 
-        public ListViewUi(View prefab, GameObject go, bool hideView = true) : base(go, true)
+        public ListViewUi(View prefab, GameObject go, bool hideChildrenViews = true) : base(go, true)
         {
             Prefab = prefab;
-            if (hideView) HideViews<Component>();
+            if (hideChildrenViews) HideChildren();
         }
 
-        public void HideViews<TView>() where TView : Component
+        public void HideChildren()
         {
             foreach (Transform view in transform)
                 view.gameObject.SetActive(false);

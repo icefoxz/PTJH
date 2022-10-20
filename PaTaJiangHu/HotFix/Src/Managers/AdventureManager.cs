@@ -105,7 +105,7 @@ namespace HotFix_Project.Managers
         private void AdventureNext()
         {
             AdWindow.Display(false);
-            ServiceCaller.Instance.AdventureNext(Current);
+            TestCaller.Instance.AdventureNext(Current);
         }
         private class Event2Ui : UiBase
         {

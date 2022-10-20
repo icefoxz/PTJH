@@ -13,6 +13,10 @@ namespace BattleM
         public float ValueMaxRatio => 1f * Value / Max;
         public bool IsExhausted => Value <= 0;
 
+        public ConValue()
+        {
+            
+        }
         public ConValue(int fix, int max = -1, int value = -1)
         {
             Max = max < 0 ? fix : max;
@@ -24,7 +28,7 @@ namespace BattleM
         {
             if (Max <= 0) return;
             Value += value;
-            Value = Math.Clamp(Value, 0, Max);
+            ClampValue();
         }
 
         public int Squeeze(int value)
@@ -44,8 +48,7 @@ namespace BattleM
         public void SetMax(int max, bool alignValue = true)
         {
             Max = max;
-            if (Value > Max && alignValue)
-                Value = Max;
+            if (alignValue) ClampValue();
         }
 
         public void SetFix(int fix) => Fix = fix;
@@ -53,9 +56,13 @@ namespace BattleM
         public void AddMax(int value, bool alignValue = true)
         {
             Max += value;
-            if (Value > Max && alignValue)
-                Value = Max;
+            if (alignValue) ClampValue();
+        }
 
+        private void ClampValue()
+        {
+            Value = Math.Clamp(Value, 0, Max);
+            Max = Math.Clamp(Max, 0, Fix);
         }
 
         public void Clone(IConditionValue con)

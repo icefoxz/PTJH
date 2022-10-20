@@ -14,7 +14,7 @@ public class TestAdv : MonoBehaviour
     {
         Game.MessagingManager.RegEvent(EventString.Test_AdventureStart,
             arg => Current = JsonMapper.ToObject<Adventure>(arg)); //ObjectBag.LoadParam<Adventure>(arg));
-        ServiceCaller.Instance.StartAdventure(id, GetUnits());
+        TestCaller.Instance.StartAdventure(id, GetUnits());
     }
 
     [Serializable] private class AdventureUnit

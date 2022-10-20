@@ -4,4 +4,9 @@
     {
         public int Id { get; }
     }
+
+    public interface INameElement
+    {
+        public string Name { get; }
+    }
 }

@@ -35,7 +35,7 @@ namespace Utls
             //return rr;
         }
 
-        private static (T obj, int weight) ResolveWithZero<T>(T w) where T : IWeightElement =>
+        private static (T obj, int weight) ResolveWithZero<T>(T w,int randomWeight) where T : IWeightElement =>
             w.Weight > 0 ? (w, Sys.Random.Next(1, w.Weight)) : (w, 0);
     }
 }

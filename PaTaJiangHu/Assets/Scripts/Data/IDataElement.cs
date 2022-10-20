@@ -1,7 +1,6 @@
 ﻿namespace Data
 {
-    public interface IDataElement : IIdElement
+    public interface IDataElement : IIdElement, INameElement
     {
-        public string Name { get; }
     }
 }

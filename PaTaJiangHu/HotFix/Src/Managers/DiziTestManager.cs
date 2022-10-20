@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using BattleM;
 using HotFix_Project.Models.Charators;
 using HotFix_Project.Serialization.LitJson;
 using HotFix_Project.Views.Bases;
@@ -18,6 +20,7 @@ public class DiziTestManager
 {
     private DiziGenWindow GenWindow { get; set; }
     private StaminaCountWindow StaCountWindow { get; set; }
+    private MedicineTestWindow MedicineTest { get; set; }
     public void Init()
     {
         InitUi();
@@ -36,7 +39,7 @@ public class DiziTestManager
                 prefabAttribute: v.GetObject<View>("prefab_attribute"),
                 gradeViewContent: v.GetObject<Transform>("trans_gradeContent"),
                 gradePrefab: v.GetObject<View>("prefab_grade"));
-            GenWindow.SetButtons(ServiceCaller.Instance.OnGenerateDizi, () => GenWindow.Display(false));
+            GenWindow.SetButtons(TestCaller.Instance.OnGenerateDizi, () => GenWindow.Display(false));
         });
         Game.UiBuilder.Build("view_diziStamina", (go, v) =>
         {
@@ -59,17 +62,53 @@ public class DiziTestManager
                         st.MinPerStamina, 
                         SysTime.LocalFromUnixTicks(st.LastTicks));
                 };
-            StaCountWindow.SetButton(() => ServiceCaller.Instance.OnSetStamina(
+            StaCountWindow.SetButton(() => TestCaller.Instance.OnSetStamina(
                 StaCountWindow.InputStamina,
                 StaCountWindow.InputMinutes));
         });
+        Game.UiBuilder.Build("view_medicineFunction", (go, v) =>
+        {
+            MedicineTest = new MedicineTestWindow(go.GetComponent<View>(), id => TestCaller.Instance.UseMedicine(id));
+            MedicineTest.Set(MedicineTestWindow.Cons.Hp, TestCaller.Instance.SetHpValue, TestCaller.Instance.SetHpMax, TestCaller.Instance.SetHpFix);
+            MedicineTest.Set(MedicineTestWindow.Cons.Tp, TestCaller.Instance.SetTpValue, TestCaller.Instance.SetTpMax, TestCaller.Instance.SetTpFix);
+            MedicineTest.Set(MedicineTestWindow.Cons.Mp, TestCaller.Instance.SetMpValue, TestCaller.Instance.SetMpMax, TestCaller.Instance.SetMpFix);
+        });
     }
+
 
     private void EventReg()
     {
         Game.MessagingManager.RegEvent(EventString.Test_DiziGenerate, arg=> GenWindow.SetDizi(JsonMapper.ToObject<Dizi>(arg)));
         Game.MessagingManager.RegEvent(EventString.Test_DiziRecruit, _ => GenWindow.Display(true));
         Game.MessagingManager.RegEvent(EventString.Test_StaminaWindow, _ => StaCountWindow.Display(true));
+        Game.MessagingManager.RegEvent(EventString.Test_MedicineWindow, arg => MedicineTest.UpdateMedicines(arg));
+        Game.MessagingManager.RegEvent(EventString.Test_StatusUpdate, arg =>
+        {
+            var status = JsonMapper.ToObject<TestStatus>(arg);
+            MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, status.Hp);
+            MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, status.Mp);
+            MedicineTest.UpdateCon(MedicineTestWindow.Cons.Tp, status.Tp);
+            MedicineTest.Display(true);
+        });
+        Game.MessagingManager.RegEvent(EventString.Test_UpdateHp,
+            arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, JsonMapper.ToObject<ConValue>(arg)));
+        Game.MessagingManager.RegEvent(EventString.Test_UpdateTp,
+            arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Tp, JsonMapper.ToObject<ConValue>(arg)));
+        Game.MessagingManager.RegEvent(EventString.Test_UpdateMp,
+            arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, JsonMapper.ToObject<ConValue>(arg)));
+    }
+
+    private class TestStatus
+    {
+        public ConValue Hp { get; set; }
+        public ConValue Tp { get; set; }
+        public ConValue Mp { get; set; }
+        public bool IsExhausted { get; set; }
+    }
+    private class MedicineUi 
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
     private class DiziGenWindow : UiBase
     {
@@ -241,6 +280,174 @@ public class DiziTestManager
             Text_config.text = $"{minConfig.Hours}(小时){minConfig.Minutes}(分钟){minConfig.Seconds}(秒)";
             Text_last.text = lastTick.ToString("T");
             Text_stamina.text = currentStamina.ToString();
+        }
+    }
+    private class MedicineTestWindow : UiBase
+    {
+        private Transform Trans_con { get; }
+        private View Prefab_con { get; }
+        private ScrollRect Scroll_items { get; }
+        private View Prefab_item { get; }
+        private Button BtnUse { get; }
+
+        public MedicineTestWindow(View v,Action<int> onUseMedicineAction) : base(v.gameObject, false)
+        {
+            Trans_con = v.GetObject<Transform>("trans_con");
+            Prefab_con = v.GetObject<View>("prefab_con");
+            Scroll_items = v.GetObject<ScrollRect>("scroll_items");
+            Prefab_item = v.GetObject<View>("prefab_item");
+            BtnUse = v.GetObject<Button>("btn_use");
+            BtnUse.OnClickAdd(() => onUseMedicineAction(SelectedId));
+            ConListView = new ListViewUi<ConditionSetter>(Prefab_con, Trans_con.gameObject);
+            MedicineList = new ListViewUi<MedicineUi>(Prefab_item, Scroll_items.content.gameObject);
+            InitConListView();
+        }
+
+        private class ConditionSetter
+        {
+            private InputField Input { get; }
+            private Button Btn_setValue { get; }
+            private Button Btn_setMax { get; }
+            private Button Btn_setFix { get; }
+            private Text Text_title { get; }
+            private Text Text_value { get; }
+
+            public ConditionSetter(View prefab)
+            {
+                Input = prefab.GetObject<InputField>("input_con");
+                Btn_setValue = prefab.GetObject<Button>("btn_setValue");
+                Btn_setMax = prefab.GetObject<Button>("btn_setMax");
+                Btn_setFix = prefab.GetObject<Button>("btn_setFix");
+                Text_title = prefab.GetObject<Text>("text_title");
+                Text_value = prefab.GetObject<Text>("text_value");
+            }
+
+            public void Set(Action<int> setValueAction,Action<int> setMaxAction,Action<int> setFixAction)
+            {
+                Btn_setFix.OnClickAdd(()=>setFixAction?.Invoke(GetInputValue()));
+                Btn_setMax.OnClickAdd(()=>setMaxAction?.Invoke(GetInputValue()));
+                Btn_setValue.OnClickAdd(()=>setValueAction?.Invoke(GetInputValue()));
+            }
+
+            private int GetInputValue() => int.TryParse(Input.text, out var value) ? value : default;
+
+            public void UpdateText(string title, string conditionText)
+            {
+                Text_title.text = title;
+                Text_value.text = conditionText;
+            }
+        }
+        public enum Cons
+        {
+            Hp,
+            Tp,
+            Mp,
+        }
+        private ListViewUi<ConditionSetter> ConListView { get; }
+        private Dictionary<Cons,ConditionSetter> ConMap { get; } = new Dictionary<Cons,ConditionSetter>();
+        private ConValue Hp { get; set; }
+        private ConValue Mp { get; set; }
+        private ConValue Tp { get; set; }
+        private void InitConListView()
+        {
+            var cons = new[] { Cons.Hp, Cons.Tp, Cons.Mp };
+            foreach (var con in cons)
+            {
+                var setter = ConListView.Instance(v => new ConditionSetter(v));
+                ConMap.Add(con, setter);
+            }
+        }
+        public void Set(Cons con, 
+            Action<int> setValueAction, 
+            Action<int> setMaxAction, 
+            Action<int> setFixAction) =>
+            ConMap[con].Set(i =>
+            {
+                setValueAction(i);
+                var c = GetCon(con);
+                UpdateConText(con, c.Fix, value: i, c.Max, c.MaxRatio);
+            }, i =>
+            {
+                setMaxAction(i);
+                var c = GetCon(con);
+                UpdateConText(con, c.Fix, c.Value, max: i, c.MaxRatio);
+            }, i =>
+            {
+                setFixAction(i);
+                var c = GetCon(con);
+                UpdateConText(con, fix: i, c.Value, c.Max, c.MaxRatio);
+            });
+        private ConValue GetCon(Cons con)
+        {
+            return con switch
+            {
+                Cons.Hp => Hp,
+                Cons.Tp => Tp,
+                Cons.Mp => Mp,
+                _ => throw new ArgumentOutOfRangeException(nameof(con), con, null)
+            };
+        }
+        public void UpdateCon(Cons con, ConValue c)
+        {
+            switch (con)
+            {
+                case Cons.Hp: Hp = c; break;
+                case Cons.Tp: Tp = c; break;
+                case Cons.Mp: Mp = c; break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(con), con, null);
+            }
+            var max = c.Max;
+            var value = c.Value;
+            var fix = c.Fix;
+            UpdateConText(con, fix, value, max, 1f * max / fix);
+        }
+
+        private void UpdateConText(Cons con, int fix, int value, int max, float ratio)
+        {
+            var ratioText = (int)(ratio * 100);
+            ConMap[con].UpdateText($"{con}({fix})", $"{value}/{max}({ratioText}%)");
+        }
+
+        private int SelectedId { get; set; }
+        public void UpdateMedicines(string arg)
+        {
+            var list = JsonMapper.ToObject<DiziTestManager.MedicineUi[]>(arg).ToArray();
+            MedicineList.ClearList(ui =>
+            {
+                ui.Display(false);
+                ui.Destroy();
+            });
+            foreach (var m in list)
+                MedicineList.Instance(v => new MedicineUi(v, m.Name, ui =>
+                {
+                    SelectedId = m.Id;
+                    foreach (var medicineUi in MedicineList.List)
+                        medicineUi.SetSelected(ui == medicineUi);
+                }));
+        }
+
+        private ListViewUi<MedicineUi> MedicineList { get; }
+
+        private class MedicineUi : UiBase
+        {
+            private Text Text_title { get; }
+            private Image Img_selected { get; }
+            private Button Btn { get; }
+
+            public MedicineUi(View v, string title, Action<MedicineUi> onclickAction)
+                : base(v.gameObject, true)
+            {
+                Text_title = v.GetObject<Text>("text_title");
+                Img_selected = v.GetObject<Image>("img_selected");
+                Text_title.text = title;
+                Btn = v.gameObject.GetComponent<Button>();
+                Btn.OnClickAdd(() => onclickAction(this));
+                Display(true);
+            }
+
+            public void SetSelected(bool selected)=> Img_selected.gameObject.SetActive(selected);
+            public void Destroy() => Object.Destroy(gameObject);
         }
     }
 }
