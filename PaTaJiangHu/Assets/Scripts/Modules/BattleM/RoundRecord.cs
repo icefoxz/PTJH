@@ -142,6 +142,7 @@ namespace BattleM
     {
         private const float BusyAlignment = 0.5f;
         private const int DistanceAlignment = 10;
+        private const int MaxDodgeValue = 25;
         /// <summary>
         /// 身法
         /// </summary>
@@ -175,11 +176,12 @@ namespace BattleM
         /// <summary>
         /// 闪避值
         /// </summary>
-        public int DodgeCount => (Agility * (50 + Dodge) / 100) - 20;
+        public int DodgeCount => Agility + Dodge;
+
         /// <summary>
         /// 闪避值
         /// </summary>
-        public int Finalize => (int)((DodgeCount + DistanceAlign) * BusyAlign);
+        public int Finalize => Math.Clamp(DodgeCount, 0, MaxDodgeValue);
 
         public bool IsSuccess => Finalize > RandomValue;
         private DodgeFormula(int dodge, int agility, int distance, bool isBusy, int randomValue)
@@ -205,7 +207,7 @@ namespace BattleM
     public struct ParryFormula
     {
         private const float BusyAlignment = 0.5f;
-
+        private const int MaxParryValue = 50;
         /// <summary>
         /// 招架值
         /// </summary>
@@ -237,8 +239,8 @@ namespace BattleM
             2 => 10, //中距离
             _ => 0 //远距离
         };
-        public int ParryCount => (int)((Agility + Strength) / 2f * (50 + Parry * 10f) / 100);
-        public int Finalize => (int)((ParryCount + DistanceAlign) * BusyAlign);
+        public int ParryCount => Agility + Strength + Parry;
+        public int Finalize => Math.Clamp(ParryCount, 0, MaxParryValue);
         public bool IsSuccess => Finalize > RandomValue;
 
         private ParryFormula(int parry, int agility, int strength, int distance, bool isBusy, int randomValue)
@@ -263,7 +265,7 @@ namespace BattleM
         /// </summary>
         /// <param name="damage"></param>
         /// <returns></returns>
-        public static int Damage(int damage) => (int)(damage * 0.2f);
+        public static int Damage(int damage) => (int)(damage * 0.5f);
     }
     /// <summary>
     /// 伤害公式
@@ -313,6 +315,7 @@ namespace BattleM
     public struct ArmorFormula
     {
         private const float MpRateAlign = 0.1f;
+        private const int MaxArmorValue = 25;
         /// <summary>
         /// 装备护甲
         /// </summary>
@@ -326,7 +329,7 @@ namespace BattleM
         /// </summary>
         public int MpRate;
         public int MpArmor => (int)(Mp * MpRateAlign * MpRate);
-        public int Finalize => Armor + MpArmor;
+        public int Finalize => Math.Clamp(Armor + MpArmor,0,MaxArmorValue);
 
         private ArmorFormula(int armor, int mp, int mpRate)
         {

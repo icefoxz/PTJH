@@ -251,7 +251,7 @@ namespace BattleM
 
                     var damage = damageFormula.Finalize;
                     var armor = GetArmor(escapee);
-                    var finalDamage = damage - armor;
+                    var finalDamage = (int)(0.01f * damage * armor);
                     var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage;
                     var parryForm = escapee.PickParry();
                     var parryFormula = InstanceParryFormula(op, escapee, parryForm);
@@ -297,9 +297,9 @@ namespace BattleM
                         return;
                     }
 
-                    var damage = (int)(damageFormula.Finalize * rate * 0.01);
+                    var damage = (int)(0.01f * damageFormula.Finalize * rate);
                     var armor = GetArmor(tg);
-                    var finalDamage = damage - armor;
+                    var finalDamage = (int)(0.01f * damage * armor);
                     var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage;
                     var parryForm = tg.PickParry();
                     var parryFormula = InstanceParryFormula(offender, tg, parryForm);
