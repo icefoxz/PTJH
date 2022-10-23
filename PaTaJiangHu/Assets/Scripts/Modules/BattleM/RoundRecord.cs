@@ -292,7 +292,7 @@ namespace BattleM
         /// <summary>
         /// 内功转化率
         /// </summary>
-        public float MpRatio => MpRateAlign * MpRate;
+        public float MpRatio => 1 + MpRateAlign * MpRate;
         //
         public int Finalize => (Strength + WeaponDamage) + (int)(Mp * MpRatio);
 
@@ -328,7 +328,7 @@ namespace BattleM
         /// 内力转化
         /// </summary>
         public int MpRate;
-        public int MpArmor => (int)(Mp * MpRateAlign * MpRate);
+        public int MpArmor => (int)(Mp * (1 + (MpRateAlign * MpRate)));
         public int Finalize => Math.Clamp(Armor + MpArmor,0,MaxArmorValue);
 
         private ArmorFormula(int armor, int mp, int mpRate)
@@ -356,7 +356,7 @@ namespace BattleM
         /// 内力转化
         /// </summary>
         public int MpRate;
-        public float MpRatio => MpRateAlign * MpRate;
+        public float MpRatio => 1 + MpRateAlign * MpRate;
         public int Finalize => (int)((Mp + Breath) * MpRatio);
         /// <summary>
         /// 公式反算，需要多少内力以达到gap最终值
