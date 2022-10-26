@@ -27,7 +27,7 @@ namespace Utls
             var skipMin = clause.Min <= 0;
             var skipMax = clause.Max == 0;
             return (skipMin || value >= clause.Min) &&
-                   (skipMax || (includedMax ? value < clause.Max : value <= clause.Max));
+                   (skipMax || (includedMax ? value <= clause.Max : value < clause.Max));
         }
 
         public static bool InMinMaxRange(this IEnumerable<IMinMax> clauses, int value, bool includedMax = true) =>
@@ -48,7 +48,7 @@ namespace Utls
             var skipMin = clause.Min <= 0;
             var skipMax = clause.Max == 0;
             return (skipMin || value >= clause.Min) &&
-                   (skipMax || (includedMax ? value < clause.Max : value <= clause.Max));
+                   (skipMax || (includedMax ? value <= clause.Max : value < clause.Max));
         }
         public static bool InMinMaxRange(this IEnumerable<MinMaxInt> clauses, int value, bool includedMax = true) =>
             clauses.All(c => c.InMinMaxRange(value, includedMax));
@@ -67,7 +67,7 @@ namespace Utls
             var skipMin = clause.Min <= 0;
             var skipMax = clause.Max == 0;
             return (skipMin || value >= clause.Min) &&
-                   (skipMax || (includedMax ? value < clause.Max : value <= clause.Max));
+                   (skipMax || (includedMax ? value <= clause.Max : value < clause.Max));
         }
         public static bool InMinMaxRange(this IEnumerable<RangedInt> clauses, int value, bool includedMax = true) =>
             clauses.All(c => c.InMinMaxRange(value, includedMax));

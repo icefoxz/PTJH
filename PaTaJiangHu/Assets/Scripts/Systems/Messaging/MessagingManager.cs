@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Data.LitJson;
-using Newtonsoft.Json.Linq;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using Utls;
@@ -15,8 +13,16 @@ namespace Systems.Messaging
     {
         private Dictionary<string, Action<string>> EventMap { get; set; } = new Dictionary<string, Action<string>>();
 
-        public void Invoke(string eventName, object obj) => EventMap[eventName]
-            ?.Invoke(obj == null ? Json.Serialize(null) : Json.Serialize(obj));
+        public void Invoke(string eventName, object obj)
+        {
+            if (EventMap.ContainsKey(eventName))
+            {
+                var method = EventMap[eventName];
+                if (obj == null)
+                    method?.Invoke(null);
+                else method?.Invoke(Json.Serialize(obj));
+            }
+        }
 
         public void Invoke(string eventName, string args) =>
             EventMap[eventName]?.Invoke(string.IsNullOrEmpty(args) ? args : null);
@@ -38,7 +44,7 @@ namespace Systems.Messaging
         public static void OnClickAdd(this Button btn, Action action,bool removeAllListener = true)
         {
             if(removeAllListener) btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(new UnityAction(action));
+            btn.onClick.AddListener(action == null ? default : new UnityAction(action));
         }
     }
 }
