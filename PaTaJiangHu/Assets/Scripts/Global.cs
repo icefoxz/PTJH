@@ -5,8 +5,6 @@ public class Global
 
 public class EventString
 {
-    public const string Test_AdventureStart = "Test_AdventureStart";
-    public const string Test_AdventureEvent = "Test_AdventureEvent";
     public const string Test_DiziRecruit = "Test_DiziRecruit";
     public const string Test_DiziGenerate = "Test_DiziGenerate";
     public const string Test_StaminaWindow = "Test_StaminaWindow";
@@ -15,4 +13,6 @@ public class EventString
     public const string Test_UpdateMp = "Test_UpdateMp";
     public const string Test_MedicineWindow = "Test_MedicineWindow";
     public const string Test_StatusUpdate = "Test_StatusUpdate";
+    public const string Test_AdventureMap = "Test_AdventureMap";
+    public const string Test_AdvEventInvoke = "Test_EventInvoke";
 }

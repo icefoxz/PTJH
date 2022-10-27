@@ -36,6 +36,7 @@ namespace Systems
         {
             var handle = Addressables.InstantiateAsync(key);
             var obj = await handle.Task;
+            if (!obj) throw new NullReferenceException($"找不到资源：Key = {key}");
             if (parent) obj.transform.SetParent(parent);
             ResetObj(obj);
             return obj;

@@ -15,7 +15,8 @@ namespace BattleM
         int CombatBreath { get; }
         int BusyCharged { get; }
         int TotalBusies { get; }
-        int Charged { get; }
+        int LastCharged { get; }
+        int TotalCharged { get; }
         ICombatForm Combat { get; }
         IDodgeForm Dodge { get; }
         IForceForm Recover { get; }
@@ -42,7 +43,7 @@ namespace BattleM
         public IForceForm Recover { get; private set; }
         public IRound Round { get; }
         public IList<int> Busies => _busies;
-        public int Charged { get; private set; }
+        
         public int TotalBreath
         {
             get
@@ -62,9 +63,17 @@ namespace BattleM
         public int IdleBreath => BusyCharged;
         public int RecoverBreath => Recover?.Breath ?? 0 + BusyCharged;
         public int CombatBreath => (Combat?.Breath ?? 0) + (Dodge?.Breath ?? 0) + BusyCharged;
-        public int BusyCharged => TotalBusies - Charged;
+        public int BusyCharged => TotalBusies - TotalCharged;
+        /// <summary>
+        /// 总蓄力
+        /// </summary>
+        public int TotalCharged { get; private set; }
         public int TotalBusies => Busies.Sum(b => b);
         public int LastRound { get; private set; }
+        /// <summary>
+        /// 上次蓄力
+        /// </summary>
+        public int LastCharged { get; private set; }
 
         public BreathBar(IRound round)
         {
@@ -74,7 +83,12 @@ namespace BattleM
 
         public void SetPlan(CombatPlans plan) => Plan = plan;
         public void SetBusy(int busy) => _busies.Add(busy);
-        public void Charge(int charge) => Charged += charge;
+        public void Charge(int charge)
+        {
+            LastCharged = charge;
+            TotalCharged += charge;
+        }
+
         public void SetCombat(ICombatForm form) => Combat = form;
         public void ClearCombat() => Combat = null;
         public void SetDodge(IDodgeForm form) => Dodge = form;
@@ -94,7 +108,7 @@ namespace BattleM
                 for (var i = 0; i < busies; i++)
                 {
                     var value = _busies[0];
-                    if (value > Charged) break;
+                    if (value > TotalCharged) break;
                     _busies.RemoveAt(0);
                     Charge(-value);
                 }
@@ -111,7 +125,7 @@ namespace BattleM
                     break;
                 case CombatPlans.RecoverHp:
                 case CombatPlans.RecoverTp:
-                    if (Charged >= Recover?.Breath) 
+                    if (TotalCharged >= Recover?.Breath) 
                         consume = Recover.Breath;
                     break;
                 case CombatPlans.Wait:

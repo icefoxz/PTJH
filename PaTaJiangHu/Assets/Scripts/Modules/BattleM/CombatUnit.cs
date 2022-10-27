@@ -480,14 +480,14 @@ namespace BattleM
         {
             if (dodge != null)
             {
-                OnDodge(dodge, false);
+                OnDodge(dodge, false, true);
             }
             if (combat != null) OnCombat(combat);
         }
         private void OnCombat(ICombatForm combat)
         {
             var rec = ConsumeRecord<ICombatForm>.Instance(combat);
-            rec.Set(this, () => ConsumeForm(combat));
+            rec.Set(this, () => ConsumeForm(combat), true);
             OnCombatConsume?.Invoke(rec);
             Round.OnAttack(this, combat, Target);
         }
@@ -501,7 +501,7 @@ namespace BattleM
             {
                 dodge ??= PickDodge();
                 var isSuccess = Round.OnTryEscape(this, dodge);
-                OnDodge(dodge, true);
+                OnDodge(dodge, true, false);
                 if (!isSuccess)
                 {
                     Mgr.CheckExhausted();
@@ -523,7 +523,7 @@ namespace BattleM
                 Status.Hp.Add(hp);
                 Status.Tp.Add(tp);
                 Status.Mp.Add(mp);
-            });
+            }, false);
             OnConsume?.Invoke(rec);
         }
 
@@ -551,20 +551,20 @@ namespace BattleM
                 var formula = RecoverFormula.Instance(mp, forceForm.Breath, force.MpRate);
                 con.Add(formula.Finalize);
                 Status.Mp.Add(-mp);
-            });
+            }, true);
             OnRecoverConsume?.Invoke(rec);
         }
 
         #endregion
 
-        private void OnDodge(IDodgeForm dodge, bool isEscape)
+        private void OnDodge(IDodgeForm dodge, bool isEscape,bool isExecutor)
         {
             var rec = ConsumeRecord<IDodgeForm>.Instance(dodge);
             rec.Set(this, () =>
             {
                 ConsumeForm(dodge);
                 Round.AdjustCombatDistance(this, Target, isEscape);
-            });
+            }, isExecutor);
             OnDodgeConsume?.Invoke(rec);
         }
 
@@ -578,7 +578,7 @@ namespace BattleM
 
         public void DodgeFromAttack(IDodgeForm dodge)
         {
-            OnDodge(dodge, false);
+            OnDodge(dodge, false, false);
         }
 
         public void SufferDamage(int finalDamage, Weapon.Injuries kind)
@@ -602,7 +602,7 @@ namespace BattleM
                     default:
                         throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
                 }
-            });
+            }, false);
             OnConsume?.Invoke(rec);
         }
 

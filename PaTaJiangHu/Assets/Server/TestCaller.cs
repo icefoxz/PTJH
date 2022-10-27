@@ -9,14 +9,11 @@ using Server.Controllers.Characters;
 using Server.Controllers.Items;
 using UnityEngine;
 using Utls;
-using static Server.Controllers.Characters.DiziController;
 
 namespace Server
 {
-    public interface IServiceCaller : ISingletonDependency
+    public interface ITestCaller : ISingletonDependency
     {
-        void StartAdventure(int id, AdvUnit[] units);
-        void AdventureNext(Adventure adv);
         void OnGenerateDizi(int grade);
         void OnSetStamina(int minutePerSta, int currentStamina);
         void SetHpValue(int value);
@@ -29,11 +26,13 @@ namespace Server
         void SetMpMax(int value);
         void SetMpFix(int value);
         void UseMedicine(int id);
+        void OnStartMapEvent(int mapId);
+        void OnEventInvoke(int mapId, int index);
     }
     /// <summary>
     /// 请求中间管道。处理请求与事件的数据交互
     /// </summary>
-    public class TestCaller : DependencySingleton<IServiceCaller>, IServiceCaller
+    public class TestCaller : DependencySingleton<ITestCaller>, ITestCaller
     {
         //在测试模式中，controller是模拟服务器的数据控制器，在客户端使用都是直接向服务器请求的
         private AdventureController AdvController { get; set; }
@@ -42,6 +41,8 @@ namespace Server
         private DiziConfig DiziCfg => 弟子配置;
         [SerializeField] private ItemConfig 物品配置;
         private ItemConfig ItemCfg => 物品配置;
+        [SerializeField] private AdvConfigs 副本配置;
+        private AdvConfigs AdvConfig => 副本配置;
 
         protected override void OnAwake()
         {
@@ -52,15 +53,24 @@ namespace Server
                 DiziCfg.StaminaGenerator);
         }
 
-        public void StartAdventure(int id, AdvUnit[] units)
+        public void StartAdventureMaps()
         {
-            var adv = AdvController.InstanceAdventure(id, units);
-            Game.MessagingManager.Invoke(EventString.Test_AdventureStart, adv);
+            var list = AdvConfig.Maps.Select(map => AdvController.InstanceMapData(map)).ToList();
+            Game.MessagingManager.Invoke(EventString.Test_AdventureMap, list.ToArray());
         }
-        public void AdventureNext(Adventure adv)
+        public void OnEventInvoke(int mapId, int index)
         {
-            AdvController.NextEvent(adv);
-            Game.MessagingManager.Invoke(EventString.Test_AdventureEvent, adv);
+            var map = AdvConfig.Maps.First(m => m.Id == mapId);
+            var advEvent = map.AllEvents[index];
+            var eventData = AdvController.InstanceEventData(map, advEvent);
+            Game.MessagingManager.Invoke(EventString.Test_AdvEventInvoke, eventData);
+        }
+
+        public void OnStartMapEvent(int mapId)
+        {
+            var map = AdvConfig.Maps.First(m => m.Id == mapId);
+            var eventData = AdvController.InstanceEventData(map, map.StartEvent);
+            Game.MessagingManager.Invoke(EventString.Test_AdvEventInvoke, eventData);
         }
 
         public void OnGenerateDizi(int grade)
@@ -75,7 +85,7 @@ namespace Server
             DiziController.SetStamina(currentStamina, lastTicks);
         }
 
-        public UnitStatus TestStatus { get; } = new UnitStatus(100, 100, 100);
+        public UnitStatus TestStatus { get; } = new(100, 100, 100);
 
         private void SetCon(ConValue con, int value, string method)
         {
@@ -117,6 +127,11 @@ namespace Server
             Game.MessagingManager.Invoke(EventString.Test_StatusUpdate, cs);
         }
 
+        [Serializable]private class AdvConfigs
+        {
+            [SerializeField] private AdvMapSo[] 地图;
+            public AdvMapSo[] Maps => 地图;
+        }
         [Serializable]private class DiziConfig
         {
             [SerializeField] private LevelConfigSo 等级配置;

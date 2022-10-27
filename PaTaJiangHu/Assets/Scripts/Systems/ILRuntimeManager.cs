@@ -62,6 +62,7 @@ namespace Systems
             appdomain.DelegateManager.RegisterFunctionDelegate<string>();
             appdomain.DelegateManager.RegisterFunctionDelegate<bool>();
             appdomain.DelegateManager.RegisterFunctionDelegate<int>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<int, ValueTuple<string, Action>>();
             
             appdomain.DelegateManager.RegisterMethodDelegate<HttpResponseMessage>();
             appdomain.DelegateManager.RegisterMethodDelegate<object>();
@@ -71,9 +72,9 @@ namespace Systems
             appdomain.DelegateManager.RegisterMethodDelegate<object[]>();
             appdomain.DelegateManager.RegisterMethodDelegate<GameObject>();
             appdomain.DelegateManager.RegisterMethodDelegate<GameObject, IView>();
-            appdomain.DelegateManager.RegisterMethodDelegate<Adventure>();
             appdomain.DelegateManager.RegisterMethodDelegate<Newtonsoft.Json.Linq.JToken[]>();
-            appdomain.DelegateManager.RegisterFunctionDelegate<int, ValueTuple<string, Action>>();
+            appdomain.DelegateManager.RegisterMethodDelegate<IView>();
+            appdomain.DelegateManager.RegisterMethodDelegate<ILTypeInstance>();
 
             appdomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appdomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());

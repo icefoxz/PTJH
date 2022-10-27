@@ -2,7 +2,6 @@
 using Data;
 using MyBox;
 using So;
-using UnityEditor;
 using UnityEngine;
 
 namespace Server.Controllers.Adventures
@@ -10,6 +9,7 @@ namespace Server.Controllers.Adventures
     public interface IGameItem
     {
         int Id { get; }
+        string Name { get; }
         int Amount { get; }
     }
     public interface IGameReward
@@ -93,6 +93,7 @@ namespace Server.Controllers.Adventures
             [ConditionalField(true, nameof(TryUseSo))] [SerializeField] private ScrollSoBase 残卷;
             [SerializeField] private int 数量 = 1;
             public int Id => _id;
+            public string Name => _name;
             public int Amount => 数量;
             private Kinds Kind => _kind;
 

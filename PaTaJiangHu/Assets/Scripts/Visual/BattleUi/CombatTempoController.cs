@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using BattleM;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Visual.BattleUi
 {
@@ -10,6 +12,8 @@ namespace Visual.BattleUi
     /// </summary>
     public class CombatTempoController
     {
+        private float positionSecs = 0.4f;
+        private float executeSecs = 1f;
         private ICombatFragmentPlayer FragmentPlayer { get; }
         public CombatTempoController(ICombatFragmentPlayer fragmentPlayer)
         {
@@ -18,68 +22,183 @@ namespace Visual.BattleUi
 
         public IEnumerator Play(FightRoundRecord rec)
         {
-            Action consumeAnim = null;
-            Action statusUpdate = null;
-            Action positionAnim = null;
-            Action attackAnim = null;
-            Action respondAnim = null;
-            Action eventAnim = null;
+            var placingPos = false;
+            var attackExecution = false;
+            var posTween = DOTween.Sequence().Pause();
+            var exeTween = DOTween.Sequence().Pause();
+            var eventTween = DOTween.Sequence().Pause();
+            var respondTween = DOTween.Sequence().Pause();
             foreach (var fragment in rec.Records)
             {
-                fragment.OnRec(con =>
+                switch (fragment.Type)
+                {
+                    case FightFragment.Types.Consume:
                     {
-                        consumeAnim = ()=> FragmentPlayer.OnConsumeAnim(con);
-                        statusUpdate += () => FragmentPlayer.OnStatusUpdate(con.Before, con.After);
-                        eventAnim += () => FragmentPlayer.OnEventAnim(con);
-                    }, pos =>
+                        var con = (ConsumeRecord)fragment;
+                        if (con.IsExecutor)
+                        {
+                            exeTween.AppendCallback(() =>
+                            {
+                                FragmentPlayer.OnConsumeAnim(con);
+                                FragmentPlayer.OnStatusUpdate(con.Before, con.After);
+                                FragmentPlayer.OnEventAnim(con);
+                            });
+                        }
+                        else
+                        {
+                            respondTween.AppendCallback(() =>
+                            {
+                                FragmentPlayer.OnConsumeAnim(con);
+                                FragmentPlayer.OnStatusUpdate(con.Before, con.After);
+                                FragmentPlayer.OnEventAnim(con);
+                            });
+                        }
+                        break;
+                    }
+                    case FightFragment.Types.Position:
                     {
-                        positionAnim = ()=> FragmentPlayer.OnReposAnim(pos);
-                        eventAnim += () => FragmentPlayer.OnEventAnim(pos);
-                    },
-                    att =>
+                        var pos = (PositionRecord)fragment;
+                        placingPos = true;
+                        posTween.AppendCallback(() =>
+                        {
+                            FragmentPlayer.OnReposAnim(pos);
+                            FragmentPlayer.OnEventAnim(pos);
+                        });
+                        break;
+                    }
+                    case FightFragment.Types.Attack:
+                    case FightFragment.Types.Fling:
                     {
-                        attackAnim =()=> FragmentPlayer.OnAttackAnim(att);
-                        respondAnim =()=> FragmentPlayer.OnSufferAnim(att);
-                        eventAnim += () => FragmentPlayer.OnEventAnim(att);
-                    },
-                    dod =>
+                        var att = (AttackRecord)fragment;
+                        attackExecution = true;
+                        exeTween.AppendCallback(() =>
+                        {
+                            FragmentPlayer.OnAttackAnim(att);
+                            FragmentPlayer.OnEventAnim(att);
+                            if(rec.Respond is FightFragment.Types.None)
+                                FragmentPlayer.OnSufferAnim(att);
+                        });
+                        break;
+                    }
+                    case FightFragment.Types.Parry:
                     {
-                        if (!dod.DodgeFormula.IsSuccess) return;
-                        respondAnim =()=> FragmentPlayer.OnDodgeAnim(dod);
-                        eventAnim += () => FragmentPlayer.OnEventAnim(dod);
-                    },
-                    par =>
+                        var par = (ParryRecord)fragment;
+                        if (!par.ParryFormula.IsSuccess) break;
+                        respondTween.AppendCallback(() =>
+                        {
+                            FragmentPlayer.OnParryAnim(par);
+                            FragmentPlayer.OnEventAnim(par);
+                        });
+                        break;
+                    }
+                    case FightFragment.Types.Dodge:
                     {
-                        if (!par.ParryFormula.IsSuccess) return;
-                        respondAnim = () => FragmentPlayer.OnParryAnim(par);
-                        eventAnim += () => FragmentPlayer.OnEventAnim(par);
-                    },
-                    eve =>
+                        var dod = (DodgeRecord)fragment;
+                        if (!dod.DodgeFormula.IsSuccess) break;
+                        respondTween.AppendCallback(() =>
+                        {
+                            FragmentPlayer.OnDodgeAnim(dod);
+                            FragmentPlayer.OnEventAnim(dod);
+                        });
+                        break;
+                    }
+                    case FightFragment.Types.TryEscape:
+                    case FightFragment.Types.Escaped:
+                    case FightFragment.Types.Death:
+                    case FightFragment.Types.Exhausted:
+                    case FightFragment.Types.Wait:
                     {
-                        eventAnim += () => FragmentPlayer.OnEventAnim(eve);
-                    },
-                    swi =>
+                        var wait = (EventRecord)fragment;
+                        eventTween.AppendCallback(() => FragmentPlayer.OnEventAnim(wait));
+                        break;
+                    }
+                    case FightFragment.Types.SwitchTarget:
                     {
-                        eventAnim += () => FragmentPlayer.OnSwitchTarget(swi);
-                    });
-                FragmentPlayer.OnFragmentUpdate();
-                
+                        var switchTar = (SwitchTargetRecord)fragment;
+                        eventTween.AppendCallback(()=>FragmentPlayer.OnSwitchTarget(switchTar));
+                        break;
+                    }
+                    case FightFragment.Types.None:
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
-            eventAnim?.Invoke();
-            consumeAnim?.Invoke();
-            if (positionAnim !=null)
+            FragmentPlayer.OnFragmentUpdate();
+            if (placingPos)
             {
-                positionAnim();
-                yield return new WaitForSeconds(0.4f);
-            }
-            statusUpdate?.Invoke();
-            if (attackAnim!=null)
-            {
-                attackAnim.Invoke();
-                respondAnim?.Invoke();
-                yield return new WaitForSeconds(0.6f);
+                yield return posTween.Play().WaitForCompletion();
+                yield return new WaitForSeconds(positionSecs);
             }
 
+            yield return eventTween.Play().WaitForCompletion();
+            if (!attackExecution) yield break;
+            yield return exeTween.Append(respondTween).Play().WaitForCompletion();
+            yield return new WaitForSeconds(executeSecs);
         }
+        
+        //public IEnumerator PlayExecute(FightRoundRecord rec)
+        //{
+        //    var consumeAnim = new UnityEvent();
+        //    var statusUpdate = new UnityEvent();
+        //    var positionAnim = new UnityEvent();
+        //    var placingPos = false;
+        //    var attackAnim = new UnityEvent();
+        //    var attackExecution = false;
+        //    var respondAnim = new UnityEvent();
+        //    var eventAnim = new UnityEvent();
+        //    foreach (var fragment in rec.Records)
+        //    {
+        //        fragment.OnRec(con =>
+        //            {
+        //                consumeAnim.AddListener(() => FragmentPlayer.OnConsumeAnim(con));
+        //                statusUpdate.AddListener(() => FragmentPlayer.OnStatusUpdate(con.Before, con.After));
+        //                eventAnim.AddListener(() => FragmentPlayer.OnEventAnim(con));
+        //            }, pos =>
+        //            {
+        //                placingPos = true;
+        //                positionAnim.AddListener(() => FragmentPlayer.OnReposAnim(pos));
+        //                eventAnim.AddListener(() => FragmentPlayer.OnEventAnim(pos));
+        //            },
+        //            att =>
+        //            {
+        //                attackExecution = true;
+        //                attackAnim.AddListener(() => FragmentPlayer.OnAttackAnim(att));
+        //                attackAnim.AddListener(() => FragmentPlayer.OnSufferAnim(att));
+        //                eventAnim.AddListener(() => FragmentPlayer.OnEventAnim(att));
+        //            },
+        //            dod =>
+        //            {
+        //                if (!dod.DodgeFormula.IsSuccess) return;
+        //                respondAnim.RemoveAllListeners();
+        //                respondAnim.AddListener(() => FragmentPlayer.OnDodgeAnim(dod));
+        //                eventAnim.AddListener(() => FragmentPlayer.OnEventAnim(dod));
+        //            },
+        //            par =>
+        //            {
+        //                if (!par.ParryFormula.IsSuccess) return;
+        //                respondAnim.RemoveAllListeners();
+        //                respondAnim.AddListener(() => FragmentPlayer.OnParryAnim(par));
+        //                eventAnim.AddListener(() => FragmentPlayer.OnEventAnim(par));
+        //            },
+        //            eve => { eventAnim.AddListener(() => FragmentPlayer.OnEventAnim(eve)); },
+        //            swi => { eventAnim.AddListener(() => FragmentPlayer.OnSwitchTarget(swi)); });
+        //        FragmentPlayer.OnFragmentUpdate();
+
+        //    }
+
+        //    eventAnim.Invoke();
+        //    consumeAnim.Invoke();
+        //    if (placingPos)
+        //    {
+        //        positionAnim.Invoke();
+        //        yield return new WaitForSeconds(positionSecs);
+        //    }
+
+        //    statusUpdate.Invoke();
+        //    if (!attackExecution) yield break;
+        //    respondAnim.Invoke();
+        //    attackAnim.Invoke();
+        //    yield return new WaitForSeconds(executeSecs);
+        //}
     }
 }

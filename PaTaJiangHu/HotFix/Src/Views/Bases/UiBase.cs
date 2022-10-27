@@ -28,7 +28,7 @@ namespace HotFix_Project.Views.Bases
         public IReadOnlyList<T> List => _list;
         private View Prefab { get; }
 
-        public ListViewUi(View prefab, GameObject go, bool hideChildrenViews = true) : base(go, true)
+        public ListViewUi(View prefab, GameObject contentGo, bool hideChildrenViews = true) : base(contentGo, true)
         {
             Prefab = prefab;
             if (hideChildrenViews) HideChildren();

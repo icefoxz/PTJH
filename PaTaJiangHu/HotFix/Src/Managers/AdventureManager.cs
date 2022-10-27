@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using HotFix_Project.Serialization.LitJson;
 using HotFix_Project.Views.Bases;
 using Server;
 using Server.Controllers.Adventures;
@@ -17,214 +17,550 @@ namespace HotFix_Project.Managers
     /// </summary>
     internal class AdventureManager
     {
-        private AdventureUi AdWindow { get; set; }
-        private Event1Ui E1Window { get; set; }
-        private Event2Ui E2Window { get; set; }
-        private Adventure Current { get; set; }
+        private TestMap AdvMap { get; set; }
+        private TestEvent EventWindow { get; set; }
 
         public void Init()
         {
             InitUi();
             EventReg();
         }
+
         private void InitUi()
         {
-            Game.UiBuilder.Build("view_adventure", (go, v) =>
-            {
-                AdWindow = new AdventureUi(go,
-                    v.GetObject<Button>("btn_next"),
-                    v.GetObject<Text>("text_progress"),
-                    v.GetObject<ScrollRect>("scroll_units"),
-                    v.GetObject<View>("prefab_unit"),
-                    v.GetObject<Text>("text_intro"));
-                AdWindow.SetNext(AdventureNext);
-            });
-            Game.UiBuilder.Build("view_event1", (go, v) =>
-            {
-                E1Window = new Event1Ui(go,
-                    v.GetObject<Button>("btn_invoke"));
-                E1Window.Display(false);
-                E1Window.SetInvokeAction(() =>
-                {
-                    AdWindow.Display(true);
-                    E1Window.Display(false);
-                });
-            });
-            Game.UiBuilder.Build("view_event2", (go, v) =>
-            {
-                E2Window = new Event2Ui(go,
-                    v.GetObject<Button>("btn_select0"),
-                    v.GetObject<Button>("btn_select1"),
-                    v.GetObject<Button>("btn_select2"));
-                E2Window.Display(false);
-                E2Window.SetSelect0(() =>
-                {
-                    AdWindow.Display(true);
-                    E2Window.Display(false);
-                });
-                E2Window.SetSelect1(() =>
-                {
-                    AdWindow.Display(true);
-                    E2Window.Display(false);
-                });
-                E2Window.SetSelect2(() =>
-                {
-                    AdWindow.Display(true);
-                    E2Window.Display(false);
-                });
-            });
+            Game.UiBuilder.Build("view_testEvent",
+                v => EventWindow = new TestEvent(v, TestCaller.Instance.OnEventInvoke));
+            Game.UiBuilder.Build("view_testMap", v => AdvMap = new TestMap(v, EventWindow));
         }
+
         private void EventReg()
         {
-            Game.MessagingManager.RegEvent(EventString.Test_AdventureStart, param =>
+            Game.MessagingManager.RegEvent(EventString.Test_AdventureMap, arg =>
             {
-                Current = JsonMapper.ToObject<Adventure>(param);
-                AdWindow.Set(Current);
-                AdWindow.Display(true);
+                var list = LJson.ToObject<AdventureController.Map[]>(arg, true);
+                AdvMap.UpdateMap(list);
+                AdvMap.Display(true);
             });
-            Game.MessagingManager.RegEvent(EventString.Test_AdventureEvent, param =>
+            Game.MessagingManager.RegEvent(EventString.Test_AdvEventInvoke, arg =>
             {
-                Current = JsonMapper.ToObject<Adventure>(param);
-                AdWindow.Set(Current);
-                var e = Current.Events.LastOrDefault();
-                if (e != null)
+                var advEvent = LJson.ToObject<AdventureController.AdvEvent>(arg, true);
+                EventWindow.PromptEvent(advEvent.AdvType, arg);
+            });
+        }
+
+        private class TestMap : UiBase
+        {
+            private enum Modes
+            {
+                None,
+                Preview,
+                Process
+            }
+            private ScrollRect Scroll_map { get; }
+            private View Prefab_map { get; }
+            private Button Btn_startEvent { get; }
+
+            private EventProcess Process { get; }
+            private EventPreview Preview { get; }
+            private ListViewUi<MapUi> Maps { get; }
+            private TestEvent EventWindow { get; }
+            
+            private void SetMode(Modes mode)
+            {
+                Preview.Display(mode == Modes.Preview);
+                Process.Display(mode == Modes.Process);
+            }
+            private void SetNextEvent(Action onStartEventAction) => Btn_startEvent.OnClickAdd(onStartEventAction);
+            private void UpdateEventPreview(string[] events)
+            {
+                Preview.RefreshEvents(events);
+                SetMode(Modes.Preview);
+            }
+            private void OnMapSelected(MapUi selectedUi)
+            {
+                foreach (var ui in Maps.List) 
+                    ui.SetSelected(ui == selectedUi);
+            }
+
+            public TestMap(IView v, TestEvent eventWindow) : base(v.GameObject, false)
+            {
+                Scroll_map = v.GetObject<ScrollRect>("scroll_map");
+                Prefab_map = v.GetObject<View>("prefab_map");
+                Btn_startEvent = v.GetObject<Button>("btn_startEvent");
+                Preview = new EventPreview(v.GetObject<View>("view_eventPreview"));
+                Process = new EventProcess(v.GetObject<View>("view_eventProcess"));
+                Maps = new ListViewUi<MapUi>(Prefab_map, Scroll_map.content.gameObject);
+                EventWindow = eventWindow;
+            }
+
+            //public void SetEvent(AdventureController.AdvEvent advEvent, string arg)
+            //{
+            //    Process.ClearEvents();
+            //    Process.AddProcessEvent($"{advEvent.Name}", () => EventWindow.PromptEvent(advEvent.AdvType, arg));
+            //    SetMode(Modes.Process);
+            //}
+            public void UpdateMap(AdventureController.Map[] list)
+            {
+                Maps.ClearList(m => m.Destroy());
+                foreach (var m in list)
                 {
-                    AdWindow.Display(false);
-                    switch (e.Id)
+                    var events = m.AllEvents;
+                    Maps.Instance(v => new MapUi(v, m.Name, selectedUi =>
                     {
-                        case 0:
-                            E1Window.Display(true);
-                            break;
-                        case 1:
-                            E2Window.Display(true);
-                            break;
+                        UpdateEventPreview(events);
+                        OnMapSelected(selectedUi);
+                        SetNextEvent(() => TestCaller.Instance.OnStartMapEvent(m.Id));
+                    }));
+                }
+                SetMode(Modes.None);
+            }
+
+            private class EventPreview : UiBase
+            {
+                private ScrollRect Next_event { get; }
+                private View Prefab_nextEvent { get; }
+                private ListViewUi<EventBtnUi> EventBtnList { get; }
+
+                public EventPreview(IView v) : base(v.GameObject,true)
+                {
+                    Next_event = v.GetObject<ScrollRect>("scroll_nextEvent");
+                    Prefab_nextEvent = v.GetObject<View>("prefab_nextEvent");
+                    EventBtnList = new ListViewUi<EventBtnUi>(Prefab_nextEvent, Next_event.content.gameObject);
+                }
+
+                public void RefreshEvents(string[] events)
+                {
+                    EventBtnList.ClearList(e => e.Destroy());
+                    foreach (var title in events) 
+                        EventBtnList.Instance(v => new EventBtnUi(v, title, null));
+
+                }
+                private class EventBtnUi : UiBase
+                {
+                    private Text Text_title { get; }
+                    private Button Btn { get; }
+                    public EventBtnUi(IView v,string title,Action onclickAction) : base(v.GameObject, true)
+                    {
+                        Text_title = v.GetObject<Text>("text_eventTitle");
+                        Btn = v.GameObject.GetComponent<Button>();
+                        Text_title.text = title;
+                        Btn.OnClickAdd(onclickAction);
+                    }
+
+                    public void Destroy()
+                    {
+                        Display(false);
+                        Object.Destroy(gameObject);
                     }
                 }
-            });
-        }
-        private void AdventureNext()
-        {
-            AdWindow.Display(false);
-            TestCaller.Instance.AdventureNext(Current);
-        }
-        private class Event2Ui : UiBase
-        {
-            private Button Btn_select0 { get; }
-            private Button Btn_select1 { get; }
-            private Button Btn_select2 { get; }
-
-            public Event2Ui(GameObject gameObject, Button btnSelect0, Button btnSelect1, Button btnSelect2) : base(
-                gameObject, false)
-            {
-                Btn_select0 = btnSelect0;
-                Btn_select1 = btnSelect1;
-                Btn_select2 = btnSelect2;
             }
-
-            public void SetSelect0(Action action) => Btn_select0.OnClickAdd(action);
-            public void SetSelect1(Action action) => Btn_select1.OnClickAdd(action);
-            public void SetSelect2(Action action) => Btn_select2.OnClickAdd(action);
-        }
-
-        private class Event1Ui : UiBase
-        {
-            private Button Btn_invoke { get; }
-
-            public Event1Ui(GameObject gameObject, Button btnInvoke) : base(gameObject,false)
+            private class EventProcess : UiBase
             {
-                Btn_invoke = btnInvoke;
-            }
+                private Transform Trans_processContent { get; }
+                private View Prefab_interaction { get; }
 
-            public void SetInvokeAction(Action action) => Btn_invoke.OnClickAdd(action);
+                private ListViewUi<InteractionUi> InteractListView { get; }
+                public EventProcess(IView v) : base(v.GameObject, true)
+                {
+                    Trans_processContent = v.GetObject<Transform>("trans_processContent");
+                    Prefab_interaction = v.GetObject<View>("prefab_interaction");
+                    InteractListView = new ListViewUi<InteractionUi>(Prefab_interaction, Trans_processContent.gameObject);
+                }
 
-        }
+                public void AddProcessEvent(string title, Action onclickAction) =>
+                    InteractListView.Instance(v => new InteractionUi(v, title, onclickAction));
 
-        private class AdventureUi : UiBase
-        {
-            private Button Btn_next { get; }
-            private Text Text_progress { get; }
-            private Text Text_intro { get; }
-            private ScrollRect Scroll_units { get; }
-            private View Prefab_unit { get; }
-            public int Progress { get; set; }
-            //private List<UnitUi> List { get; } = new List<UnitUi>();
-            private ListViewUi<UnitUi> ListView { get; } 
-            public Adventure Adventure { get; private set; }
+                private class InteractionUi : UiBase
+                {
+                    private Button Btn_interaction { get; }
+                    private Text Text_interaction { get; }
 
-            public AdventureUi(GameObject gameObject, Button btnNext, Text textProgress, ScrollRect scrollUnits,
-                View prefabUnit, Text textIntro) : base(gameObject, false)
-            {
-                Btn_next = btnNext;
-                Text_progress = textProgress;
-                Scroll_units = scrollUnits;
-                Prefab_unit = prefabUnit;
-                Text_intro = textIntro;
-                ListView = new ListViewUi<UnitUi>(Prefab_unit, Scroll_units.content.gameObject);
-            }
-
-            public void Set(Adventure adv)
-            {
-                Adventure = adv;
-                UpdateProgress(adv.Progress);
-                Text_intro.text = $"这是冒险任务[{adv.Id}]!";
-                SetUnits(adv.Units);
-            }
-
-
-            public void SetNext(Action action) => Btn_next.OnClickAdd(action);
-
-            private void UpdateProgress(int progress)
-            {
-                Progress = progress;
-                Text_progress.text = Progress.ToString();
-            }
-
-            private void SetUnits(AdvUnit[] units)
-            {
-                ListView.ClearList(OnRemoveFromList);
-                foreach (var unit in units)
-                    ListView.Instance(view =>
+                    public InteractionUi(IView v, string title, Action onclickAction) : base(
+                        v.GameObject, true)
                     {
-                        var ui = new UnitUi(view);
-                        ui.Set(unit, OnSelectedUnit);
-                        ui.Display(true);
-                        return ui;
+                        Btn_interaction = v.GetObject<Button>("btn_interaction");
+                        Text_interaction = v.GetObject<Text>("text_interaction");
+                        Text_interaction.text = title;
+                        Btn_interaction.OnClickAdd(onclickAction);
+                    }
+
+                    public void Destroy()
+                    {
+                        Display(false);
+                        Object.Destroy(gameObject);
+                    }
+                }
+
+                public void ClearEvents() => InteractListView.ClearList(ui => ui.Destroy());
+            }
+            private class MapUi : UiBase
+            {
+                private Text Text_title { get; }
+                private Image Img_selected { get; }
+                private Button Button { get; }
+                public MapUi(IView v,string title,Action<MapUi> onClickAction) : base(v.GameObject, true)
+                {
+                    Text_title = v.GetObject<Text>("text_title");
+                    Img_selected = v.GetObject<Image>("img_selected");
+                    Button = v.GameObject.GetComponent<Button>();
+                    Text_title.text = title;
+                    Button.OnClickAdd(() => onClickAction(this));
+                }
+
+                public void Destroy()
+                {
+                    Display(false);
+                    Object.Destroy(gameObject);
+                }
+
+                public void SetSelected(bool selected) => Img_selected.gameObject.SetActive(selected);
+            }
+        }
+        private class TestEvent : UiBase
+        {
+            private StoryEvent StoryEventView { get; }
+            private OptionEvent OptionEventView { get; }
+            private QuitEvent QuitEventView { get; }
+            private DialogEvent DialogEventView { get; }
+            private BattleEvent BattleEventView { get; }
+            private RewardEvent RewardEventView { get; }
+
+            private event Action<int, int> OnNextEvent;
+            private void WindowDisplay(AdvTypes advType)
+            {
+                StoryEventView.Display(advType == AdvTypes.Story);
+                OptionEventView.Display(advType is AdvTypes.Option or AdvTypes.Term or AdvTypes.Pool);
+                QuitEventView.Display(advType == AdvTypes.Quit);
+                DialogEventView.Display(advType == AdvTypes.Dialog);
+                BattleEventView.Display(advType == AdvTypes.Battle);
+                RewardEventView.Display(advType == AdvTypes.Reward);
+            }
+
+            public TestEvent(IView v,Action<int,int> nextEventAction) : base(v.GameObject, false)
+            {
+                StoryEventView = new StoryEvent(v.GetObject<View>("view_story"));
+                OptionEventView = new OptionEvent(v.GetObject<View>("view_options"));
+                QuitEventView = new QuitEvent(v.GetObject<View>("view_quit"));
+                DialogEventView = new DialogEvent(v.GetObject<View>("view_dialog"));
+                BattleEventView = new BattleEvent(v.GetObject<View>("view_battle"));
+                RewardEventView = new RewardEvent(v.GetObject<View>("view_reward"));
+                OnNextEvent = nextEventAction;
+            }
+
+            public void PromptEvent(AdvTypes advType, string arg)
+            {
+                Display(true);
+                switch (advType)
+                {
+                    case AdvTypes.Story:
+                    {
+                        var storyEvent = LJson.ToObject<AdventureController.StoryEvent>(arg, true);
+                        var nextIndex = storyEvent.NextIndexes.First();
+                        StoryEventView.Set(storyEvent.Name, storyEvent.Story,
+                            () => OnNextEvent?.Invoke(storyEvent.MapId, nextIndex));
+                        break;
+                    }
+                    case AdvTypes.Option:
+                    case AdvTypes.Term:
+                    case AdvTypes.Pool:
+                    {
+                        var optionEvent = LJson.ToObject<AdventureController.OptionEvent>(arg, true);
+                        OptionEventView.Set(optionEvent.Name, optionEvent.Story);
+                        for (var i = 0; i < optionEvent.Options.Length; i++)
+                        {
+                            var title = optionEvent.Options[i];
+                            var nextId = optionEvent.NextIndexes[i];
+                            OptionEventView.AddOption(title, () => OnNextEvent?.Invoke(optionEvent.MapId, nextId));
+                        }
+                        break;
+                    }
+                    case AdvTypes.Quit:
+                    {
+                        var advEvent = LJson.ToObject<AdventureController.AdvEvent>(arg, true);
+                        QuitEventView.Set(advEvent.Name, () => Display(false));
+                        break;
+                    }
+                    case AdvTypes.Dialog:
+                    {
+                        var dialogEvent = LJson.ToObject<AdventureController.DialogEvent>(arg, true);
+                        var nextIndex = dialogEvent.NextIndexes.First();
+                        DialogEventView.Set(dialogEvent, () => OnNextEvent?.Invoke(dialogEvent.MapId, nextIndex));
+                        break;
+                    }
+                    case AdvTypes.Battle:
+                    {
+                        var battleEvent = LJson.ToObject<AdventureController.BattleEvent>(arg, true);
+                        BattleEventView.Set(battleEvent.Name, battleEvent.ResultEvents, battleEvent.NextIndexes,
+                            eventIndex => OnNextEvent?.Invoke(battleEvent.MapId, eventIndex));
+                        break;
+                    }
+                    case AdvTypes.Reward:
+                    {
+                        var rewardEvent = LJson.ToObject<AdventureController.RewardEvent>(arg, true);
+                        RewardEventView.Set(rewardEvent.Name, rewardEvent.Rewards,
+                            () => OnNextEvent?.Invoke(rewardEvent.MapId, rewardEvent.NextIndexes.First()));
+                        break;
+                    }
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(advType), advType.ToString(), null);
+                }
+                WindowDisplay(advType);
+            }
+
+            private class StoryEvent : UiBase
+            {
+                private Text Text_story { get; }
+                private Text Text_title { get; }
+                private Button Btn_nextEvent { get; }
+
+                public StoryEvent(IView v) : base(v.GameObject, false)
+                {
+                    Text_story = v.GetObject<Text>("text_story");
+                    Text_title = v.GetObject<Text>("text_title");
+                    Btn_nextEvent = v.GetObject<Button>("btn_nextEvent");
+                }
+
+                public void Set(string title,string story,Action nextEventAction)
+                {
+                    Text_title.text = title;
+                    Text_story.text = story;
+                    Btn_nextEvent.OnClickAdd(() =>
+                    {
+                        nextEventAction();
+                        ResetUi();
                     });
-            }
-
-            private void OnRemoveFromList(UnitUi ui)
-            {
-                ui.Display(false);
-                ui.Destroy();
-            }
-
-            private void OnSelectedUnit(AdvUnit obj)
-            {
-                Debug.Log($"{obj.Name} 已选！");
-            }
-
-            private class UnitUi : UiBase
-            {
-                private Button Btn_unit { get; }
-                private Text Text_name { get; }
-                private Text Text_hp { get; }
-
-                public UnitUi(View view) : base(view.gameObject,true)
-                {
-                    Btn_unit = view.GetObject<Button>("btn_unit");
-                    Text_name = view.GetObject<Text>("text_name");
-                    Text_hp = view.GetObject<Text>("text_hp");
                 }
 
-                public void Set(AdvUnit advUnit, Action<AdvUnit> onclickAction)
+                private void ResetUi()
                 {
-                    Text_name.text = advUnit.Name;
-                    var hp = advUnit.Status.Hp;
-                    Text_hp.text = $"{hp.Value}/{hp.Max}";
-                    Btn_unit.OnClickAdd(() => onclickAction(advUnit));
+                    Text_title.text = string.Empty;
+                    Text_story.text = string.Empty;
+                }
+            }
+            private class OptionEvent : UiBase
+            {
+                private Text Text_title { get; }
+                private Text Text_story { get; }
+                private Transform Trans_optionContent { get; }
+                private View Prefab_option { get; }
+
+                private ListViewUi<OptionUi> OptionListView { get; }
+                public OptionEvent(IView v) : base(v.GameObject, false)
+                {
+                    Text_title = v.GetObject<Text>("text_title");
+                    Text_story = v.GetObject<Text>("text_story");
+                    Trans_optionContent = v.GetObject<Transform>("trans_optionContent");
+                    Prefab_option = v.GetObject<View>("prefab_option");
+                    OptionListView = new ListViewUi<OptionUi>(Prefab_option, Trans_optionContent.gameObject);
                 }
 
-                public void Destroy() => Object.Destroy(gameObject);
+                public void Set(string title, string story)
+                {
+                    Text_title.text = title;
+                    Text_story.text = story;
+                }
+
+                public void AddOption(string title, Action callbackAction)
+                {
+                    OptionListView.Instance(v => new OptionUi(v, title, () =>
+                    {
+                        OptionListView.ClearList(ui => ui.Destroy());
+                        callbackAction();
+                    }));
+                }
+
+                private class OptionUi : UiBase
+                {
+                    private Button Button_option { get; }
+                    private Text Text_title { get; }
+
+                    public OptionUi(View v, string text, Action onclickAction) : base(v.GameObject, true)
+                    {
+                        Text_title = v.GetObject<Text>("text_title");
+                        Button_option = v.GetObject<Button>("btn_option");
+                        Text_title.text = text;
+                        Button_option.OnClickAdd(onclickAction);
+                    }
+
+                    public void Destroy()
+                    {
+                        Display(false);
+                        Object.Destroy(gameObject);
+                    }
+                }
+            }
+            private class QuitEvent : UiBase
+            {
+                private Text Text_title { get; }
+                private Button Btn_exit { get; }
+                public QuitEvent(IView v) : base(v.GameObject, false)
+                {
+                    Text_title = v.GetObject<Text>("text_title");
+                    Btn_exit = v.GetObject<Button>("btn_exit");
+                }
+
+                public void Set(string title, Action onClickAction)
+                {
+                    Text_title.text = title;
+                    Btn_exit.OnClickAdd(onClickAction);
+                }
+            }
+            private class DialogEvent : UiBase
+            {
+                private Text Text_title { get; }
+                private Text Text_charName { get; }
+                private Text Text_dialog { get; }
+                private Button Btn_nextEvent { get; }
+                private Button Btn_nextDialog { get; }
+
+                private List<(int Id, string Name, string Message)> Dialog { get; set; } =
+                    new List<(int Id, string Name, string Message)>();
+                private void NextDialog()
+                {
+                    var d = Dialog[0];
+                    var name = d.Id switch
+                    {
+                        0 => "玩家",
+                        -1 => d.Name,
+                        _ => d.Id.ToString()
+                    };
+                    Text_charName.text = name;
+                    Text_dialog.text = d.Message;
+                    Dialog.RemoveAt(0);
+                    CheckDialog();
+                }
+                private void CheckDialog()
+                {
+                    var noDialog = Dialog.Count == 0;
+                    Btn_nextEvent.gameObject.SetActive(noDialog);
+                    Btn_nextDialog.gameObject.SetActive(!noDialog);
+                }
+
+                public DialogEvent(IView v) : base(v.GameObject, false)
+                {
+                    Text_title = v.GetObject<Text>("text_title");
+                    Text_charName = v.GetObject<Text>("text_charName");
+                    Text_dialog = v.GetObject<Text>("text_dialog");
+                    Btn_nextEvent = v.GetObject<Button>("btn_nextEvent");
+                    Btn_nextDialog = v.GetObject<Button>("btn_nextDialog");
+                    Btn_nextDialog.OnClickAdd(NextDialog);
+                }
+
+                public void Set(AdventureController.DialogEvent dialogEvent,Action onDialogComplete)
+                {
+                    Text_title.text = dialogEvent.Name;
+                    var array = new(int Id, string Name, string Message)[dialogEvent.Ids.Length];
+                    for (var i = 0; i < dialogEvent.Ids.Length; i++)
+                    {
+                        array[i].Id = dialogEvent.Ids[i];
+                        array[i].Name = dialogEvent.Names[i];
+                        array[i].Message = dialogEvent.Messages[i];
+                    }
+                    Dialog = array.ToList();
+                    Btn_nextEvent.OnClickAdd(() =>
+                    {
+                        onDialogComplete();
+                        ResetUi();
+                    });
+                    NextDialog();
+                }
+
+                private void ResetUi()
+                {
+                    Text_charName.text = string.Empty;
+                    Text_dialog.text = string.Empty;
+                    Text_dialog.text = string.Empty;
+                    Dialog.Clear();
+                }
+            }
+            private class BattleEvent : UiBase
+            {
+                private Text Text_brief { get; }
+                private Text Text_win { get; }
+                private Text Text_lose { get; }
+                private Text Text_kill { get; }
+                private Text Text_escape { get; }
+                private GameObject Obj_duel { get; }
+                private GameObject Obj_fight { get; }
+                private Button Btn_win { get; }
+                private Button Btn_lose { get; }
+                private Button Btn_kill { get; }
+                private Button Btn_escape { get; }
+
+                public BattleEvent(IView v) : base(v.GameObject, false)
+                {
+                    Text_brief = v.GetObject<Text>("text_brief");
+                    Obj_duel = v.GetObject("obj_duel");
+                    Obj_fight = v.GetObject("obj_fight");
+                    Btn_win = v.GetObject<Button>("btn_win");
+                    Btn_lose = v.GetObject<Button>("btn_lose");
+                    Btn_kill = v.GetObject<Button>("btn_kill");
+                    Btn_escape = v.GetObject<Button>("btn_escape");
+                    Text_win = v.GetObject<Text>("text_win");
+                    Text_lose = v.GetObject<Text>("text_lose");
+                    Text_kill = v.GetObject<Text>("text_kill");
+                    Text_escape = v.GetObject<Text>("text_escape");
+                }
+
+                public void Set(string brief, string[] nextEvents, int[] nextIds, Action<int> onNextEventAction)
+                {
+                    var isDuel = nextEvents.Length == 2;
+                    Text_brief.text = brief;
+                    Text_win.text = nextEvents[0];
+                    Text_lose.text = nextEvents[1];
+                    Btn_win.OnClickAdd(()=>onNextEventAction(nextIds[0]));
+                    Btn_lose.OnClickAdd(() => onNextEventAction(nextIds[1]));
+                    Obj_fight.gameObject.SetActive(!isDuel);
+                    if (isDuel) return;
+                    Text_kill.text = nextEvents[2];
+                    Text_escape.text = nextEvents[3];
+                    Btn_kill.OnClickAdd(() => onNextEventAction(nextIds[2]));
+                    Btn_escape.OnClickAdd(() => onNextEventAction(nextIds[3]));
+                }
+            }
+            private class RewardEvent : UiBase
+            {
+                private ScrollRect Scroll_reward { get; }
+                private Button Btn_nextEvent { get; }
+                private Text Text_title { get; }
+
+                private ListViewUi<ItemUi> ItemListView { get; }
+                public RewardEvent(IView v) : base(v.GameObject, false)
+                {
+                    Scroll_reward = v.GetObject<ScrollRect>("scroll_reward");
+                    Btn_nextEvent = v.GetObject<Button>("btn_nextEvent");
+                    Text_title = v.GetObject<Text>("text_title");
+                    var prefab = v.GetObject<View>("prefab_item");
+                    ItemListView = new ListViewUi<ItemUi>(prefab, Scroll_reward.content.gameObject);
+                }
+
+                private class ItemUi : UiBase
+                {
+                    private Text Text_message { get; }
+                    public ItemUi(IView v,string title) : base(v.GameObject, true)
+                    {
+                        Text_message = v.GetObject<Text>("text_message");
+                        Text_message.text = title;
+                    }
+
+                    public void Destroy()
+                    {
+                        Display(false);
+                        Object.Destroy(gameObject);
+                    }
+                }
+
+                public void Set(string title, string[] rewards, Action onclickAction)
+                {
+                    Text_title.text = title;
+                    foreach (var reward in rewards)
+                        ItemListView.Instance(v => new ItemUi(v, reward));
+                    Btn_nextEvent.OnClickAdd(() =>
+                    {
+                        onclickAction();
+                        ItemListView.ClearList(ui => ui.Destroy());
+                    });
+                }
             }
         }
     }
