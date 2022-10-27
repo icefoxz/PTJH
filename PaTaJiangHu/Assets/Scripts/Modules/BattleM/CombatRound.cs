@@ -242,13 +242,13 @@ namespace BattleM
             {
                 if (dodgeFormula.IsSuccess)
                 {
+                    RecRespond(FightFragment.Types.Dodge);
                     escapee.DodgeFromAttack(dodge);
                     RecDodgeAction(escapee, dodge, dodgeFormula);
                     isAvoidEscape = false;
                 }
                 else
                 {
-
                     var damage = damageFormula.Finalize;
                     var armor = GetArmor(escapee);
                     var finalDamage = damage - (int)(1f - armor * 0.01f);
@@ -260,6 +260,7 @@ namespace BattleM
 
                     if (parryFormula.IsSuccess)
                     {
+                        RecRespond(FightFragment.Types.Parry);
                         sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
                         escapee.SufferDamage(sufferDmg, op.WeaponInjuryType);
                         escapee.SetBusy(combat.TarBusy);
@@ -270,7 +271,7 @@ namespace BattleM
 
                     escapee.SufferDamage(sufferDmg, op.WeaponInjuryType);
                 }
-            });
+            }, true);
             RecAttackAction(op, consume, combat, damageFormula, true);
             return isAvoidEscape;
         }
@@ -292,6 +293,7 @@ namespace BattleM
                     RecDodgeAction(tg, tgDodge, dodgeFormula);
                     if (dodgeFormula.IsSuccess)
                     {
+                        RecRespond(FightFragment.Types.Dodge);
                         tg.DodgeFromAttack(tgDodge);
                         AdjustCombatDistance(tg, offender, tg.IsSurrenderCondition);
                         return;
@@ -308,6 +310,7 @@ namespace BattleM
 
                     if (parryFormula.IsSuccess)
                     {
+                        RecRespond(FightFragment.Types.Parry);
                         sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
                         offender.SetBusy(parryForm.OffBusy); //招架打入硬直
                     }
@@ -316,7 +319,7 @@ namespace BattleM
                     tg.SetBusy(combat.TarBusy); //攻击打入硬直
                     offender.SetBusy(combat.OffBusy); //攻击方招式硬直
                 }
-            });
+            }, true);
             RecAttackAction(offender, consume, combat, damageFormula, false);
         }
 
@@ -363,6 +366,7 @@ namespace BattleM
             {
                 fighters.Remove(combat);
                 breathes = combat.BreathBar.TotalBreath;
+                //CurrentRoundRecord.SetExecute(combat);
                 combat.Action(breathes);
                 Mgr.CheckExhausted();
             }
@@ -409,6 +413,7 @@ namespace BattleM
         void RecCombatConsume(ConsumeRecord<ICombatForm> consume) => CurrentRoundRecord.Add(consume);
         void RecDodgeConsume(ConsumeRecord<IDodgeForm> consume) => CurrentRoundRecord.Add(consume);
         void RecRecoveryConsume(ConsumeRecord<IForceForm> consume) => CurrentRoundRecord.Add(consume);
+        void RecRespond(FightFragment.Types type) => CurrentRoundRecord.SetRespond(type);
         #endregion
 
         private FightRoundRecord CurrentRoundRecord { get; set; }

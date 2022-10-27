@@ -81,6 +81,7 @@ namespace BattleM
         public static ConsumeRecord Instance() => new ConsumeRecord();
 
         public string UnitName { get; private set; }
+        public bool IsExecutor { get; private set; }
         public IStatusRecord Before { get; private set; }
         public IStatusRecord After { get; private set; }
         public override Types Type { get; } = Types.Consume;
@@ -89,9 +90,10 @@ namespace BattleM
         private void SetBefore(ICombatUnit unit) => Before = new StatusRecord(unit.CombatId,unit.Status, unit.BreathBar.TotalBreath);
         private void SetAfter(ICombatUnit unit) => After = new StatusRecord(unit.CombatId,unit.Status, unit.BreathBar.TotalBreath);
 
-        public void Set(ICombatUnit unit, Action action)
+        public void Set(ICombatUnit unit, Action action,bool isExecutor)
         {
             UnitName = unit.Name;
+            IsExecutor = isExecutor;
             SetBefore(unit);
             action.Invoke();
             SetAfter(unit);
@@ -508,13 +510,6 @@ namespace BattleM
         int Index { get; }
         FightFragment.Types Type { get; }
         FightFragment On<T>(Action<T> func) where T : IFightFragment;
-        void OnRec(Action<ConsumeRecord> onConsume,
-            Action<PositionRecord> onPositioning,
-            Action<AttackRecord> onAttack,
-            Action<DodgeRecord> onDodge,
-            Action<ParryRecord> onParry,
-            Action<EventRecord> onEvent,
-            Action<SwitchTargetRecord> onSwitchTarget);
     }
     public abstract record FightFragment : IFightFragment
     {
@@ -578,48 +573,6 @@ namespace BattleM
                 action(obj);
             return this;
         }
-
-        public void OnRec(Action<ConsumeRecord> onConsume,
-            Action<PositionRecord> onPositioning,
-            Action<AttackRecord> onAttack,
-            Action<DodgeRecord> onDodge,
-            Action<ParryRecord> onParry,
-            Action<EventRecord> onEvent,
-            Action<SwitchTargetRecord> onSwitchTarget)
-        {
-            switch (Type)
-            {
-                case Types.Consume:
-                    onConsume?.Invoke((ConsumeRecord)this);
-                    break;
-                case Types.Attack:
-                case Types.Fling:
-                    onAttack?.Invoke((AttackRecord)this);
-                    break;
-                case Types.Parry:
-                    onParry?.Invoke((ParryRecord)this);
-                    break;
-                case Types.Dodge:
-                    onDodge?.Invoke((DodgeRecord)this);
-                    break;
-                case Types.Position:
-                    onPositioning?.Invoke((PositionRecord)this);
-                    break;
-                case Types.TryEscape:
-                case Types.Escaped:
-                case Types.Death:
-                case Types.Exhausted:
-                case Types.Wait:
-                    onEvent?.Invoke((EventRecord)this);
-                    break;
-                case Types.SwitchTarget:
-                    onSwitchTarget?.Invoke((SwitchTargetRecord)this);
-                    break;
-                case Types.None:
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
     }
     public record FightRoundRecord
     {
@@ -627,7 +580,7 @@ namespace BattleM
         private int _index = 0;
         public bool IsFightEnd { get; private set; }
         public int Round { get; }
-
+        public  FightFragment.Types Respond { get; private set; }
         public IReadOnlyList<IFightFragment> Records => _records;
         
         public FightRoundRecord(int round)
@@ -638,10 +591,37 @@ namespace BattleM
 
         public void SetFightEnd() => IsFightEnd = true;
 
+        public void SetRespond(FightFragment.Types type)
+        {
+            if (Respond == FightFragment.Types.Dodge) return;
+            Respond = type;
+        }
+
         public void Add(FightFragment fragment)
         {
             fragment.SetIndex(_index++);
             _records.Add(fragment);
         }
+
+        //public void SetExecute(CombatUnit combat)
+        //{
+        //    switch (combat.Plan)
+        //    {
+        //        case CombatPlans.Attack:
+        //            combat.
+        //            break;
+        //        case CombatPlans.RecoverHp:
+        //            break;
+        //        case CombatPlans.RecoverTp:
+        //            break;
+        //        case CombatPlans.Exert:
+        //            break;
+        //        case CombatPlans.Surrender:
+        //            break;
+        //        case CombatPlans.Wait:
+        //        default:
+        //            throw new ArgumentOutOfRangeException();
+        //    }
+        //}
     }
 }

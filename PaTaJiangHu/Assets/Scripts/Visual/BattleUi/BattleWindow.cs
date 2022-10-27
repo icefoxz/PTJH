@@ -40,11 +40,11 @@ namespace Visual.BattleUi
         [SerializeField] private StickmanSceneController _stickmanScene;
         [SerializeField] private RectTransform _mainCanvas;
         [SerializeField] private PlayerStrategyController _playerStrategyController;
-        //[SerializeField] private BreathViewUi _breathView;
         [SerializeField] private BattleStatusBarController _battleStatusBarController;
         [SerializeField] private BreathUiController _breathUi;
+        [SerializeField] private CombatEventUi _leftCombatEventUi;
+        [SerializeField] private CombatEventUi _rightCombatEventUi;
 
-        //[SerializeField] private FightStage[] Stages;
         private IBattleStatusBarController BattleStatusBarController => _battleStatusBarController;
         private BattleStanceUi[] Stances { get; set; }
         public BattleStage Stage { get; set; }
@@ -248,10 +248,14 @@ namespace Visual.BattleUi
         private void CurrentBreathUpdate()
         {
             var combatUnits = Stage.GetAliveUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
-            var playerBreath = Player.BreathBar.TotalBreath;
+            var playerBreathBar = Player.BreathBar;
+            var targetBreathBar = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar;
+            var playerBreath = playerBreathBar.TotalBreath;
             var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
             UpdateDrum(playerBreath, maxBreath);
-            _breathUi.SetBreathView(Player.BreathBar, Stage.GetCombatUnit(Player.Target.CombatId).BreathBar);
+            _leftCombatEventUi.Set(playerBreathBar);
+            _rightCombatEventUi.Set(targetBreathBar);
+            _breathUi.SetBreathView(playerBreathBar, targetBreathBar);
         }
         private void UpdateDrum(int playerBreath,int maxBreath)
         {
@@ -361,19 +365,35 @@ namespace Visual.BattleUi
         public void OnStatusUpdate(IStatusRecord before, IStatusRecord after) => UpdateStatus(before, after);
         public void OnAttackAnim(AttackRecord att)
         {
+            GetCombatEventUi(att.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Attack);
             GetCombatAnimUi(att.Unit.CombatId)
                 .SetAction(att.Unit.CombatId, Stickman.Anims.Attack);
             UpdateCombatUnit(att.CombatId, $"攻-【{att.Form.Name}】:{att.DamageFormula.Finalize}");
         }
-        public void OnSufferAnim(AttackRecord att) => GetCombatAnimUi(att.Target.Before.CombatId)
-            .SetAction(att.Target.Before.CombatId, Stickman.Anims.Suffer);
+
+        private CombatEventUi GetCombatEventUi(int combatId)
+        {
+            var isPlayer = Player.CombatId == combatId;
+            var comEvent = isPlayer ? _leftCombatEventUi : _rightCombatEventUi;
+            return comEvent;
+        }
+
+        public void OnSufferAnim(AttackRecord att)
+        {
+            GetCombatEventUi(att.Target.Before.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Suffer);
+            GetCombatAnimUi(att.Target.Before.CombatId)
+                .SetAction(att.Target.Before.CombatId, Stickman.Anims.Suffer);
+        }
+
         public void OnDodgeAnim(DodgeRecord dod)
         {
+            GetCombatEventUi(dod.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Dodge);
             GetCombatAnimUi(dod.CombatId).SetAction(dod.CombatId, Stickman.Anims.Dodge);
             UpdateCombatUnit(dod.CombatId, $"闪-【{dod.Form.Name}】");
         }
         public void OnParryAnim(ParryRecord par)
         {
+            GetCombatEventUi(par.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Parry);
             GetCombatAnimUi(par.CombatId).SetAction(par.CombatId, Stickman.Anims.Parry);
             UpdateCombatUnit(par.CombatId, $"架-【{par.Form.Name}】");
         }

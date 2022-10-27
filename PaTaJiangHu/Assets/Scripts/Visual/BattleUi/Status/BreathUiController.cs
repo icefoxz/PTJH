@@ -29,18 +29,20 @@ namespace Visual.BattleUi.Status
 
         private void SetPlan(BreathViewUi view, IBreathBar bar)
         {
-            view.Set(bar.TotalBusies, bar.Charged, bar.Dodge);
             switch (bar.Plan)
             {
                 case CombatPlans.Attack:
+                    view.Set(bar.TotalBusies, bar.TotalCharged, bar.Dodge);
                     view.SetCombat(bar.Combat);
                     break;
                 case CombatPlans.RecoverHp:
                 case CombatPlans.RecoverTp:
+                    view.Set(bar.TotalBusies, bar.TotalCharged - bar.LastCharged, bar.Dodge);
                     view.SetForce(bar.Recover);
                     break;
                 case CombatPlans.Wait:
                 case CombatPlans.Surrender:
+                    view.Set(bar.TotalBusies, bar.TotalCharged - bar.LastCharged, bar.Dodge);
                     view.SetIdle();
                     break;
                 case CombatPlans.Exert:
