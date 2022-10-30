@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using BattleM;
 using DG.Tweening;
 using UnityEngine;
 
@@ -15,17 +16,20 @@ namespace Visual.BattleUi.Scene
         private const string AttackString = "attack";
         private const string ParryString = "parry";
         private const string DodgeString = "dodge";
+        private const string DeathString = "death";
         private const string SufferString = "suffer";
         public enum Anims
         {
             Attack,
             Parry,
             Dodge,
-            Suffer
+            Suffer,
+            Death
         }
-        public int CombatId { get; private set; }
-        public int TargetId { get; private set; }
-        public void Init(int combatId) => CombatId = combatId;
+        private CombatUnit _unit;
+        public int TargetId => _unit.Target?.CombatId ?? -1;
+        public int CombatId => _unit.CombatId;
+        public void Init(CombatUnit combatUnit) => _unit = combatUnit;
         public void SetAnim(Anims action)
         {
             var param = action switch
@@ -34,11 +38,11 @@ namespace Visual.BattleUi.Scene
                 Anims.Parry => ParryString,
                 Anims.Dodge => DodgeString,
                 Anims.Suffer => SufferString,
+                Anims.Death => DeathString,
                 _ => throw new ArgumentOutOfRangeException(nameof(action), action, null)
             };
             _anim.SetTrigger(param);
         }
-        public void SetTarget(int targetId) => TargetId = targetId;
 
         public void SetOriented(bool faceRight)
         {

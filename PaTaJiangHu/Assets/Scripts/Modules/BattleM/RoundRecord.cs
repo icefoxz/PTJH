@@ -1,30 +1,39 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BattleM
 {
-    public interface IAttackRecord 
+    public interface IAttackRecord
     {
-        IUnitRecord Unit { get; }
-        IConsumeRecord Target { get; }
+        int CombatId { get; }
+        //FightFragment.Types Type { get; }
+        IUnitInfo Unit { get; }
+        IUnitInfo Target { get; }
         ICombatForm Form { get; }
         DamageFormula DamageFormula { get; }
-    }
-    public interface IDodgeRecord
-    {
-        IUnitRecord Unit { get; }
-        IDodgeForm Form { get; }
         DodgeFormula DodgeFormula { get; }
-    }
-    public interface IParryRecord 
-    {
-        IUnitRecord Unit { get; }
-        IParryForm Form { get; }
         ParryFormula ParryFormula { get; }
+        ConsumeRecord<ICombatForm> AttackConsume { get; set; }
+        ConsumeRecord<IParryForm> ParryConsume { get; set; }
+        ConsumeRecord<IDodgeForm> DodgeConsume { get; set; }
     }
-    
-    public interface IUnitRecord : IStatusRecord
+    //public interface IDodgeRecord
+    //{
+    //    IUnitRecord Unit { get; }
+    //    IDodgeForm Form { get; }
+    //    DodgeFormula DodgeFormula { get; }
+    //}
+    //public interface IParryRecord 
+    //{
+    //    IUnitRecord Unit { get; }
+    //    IParryForm Form { get; }
+    //    ParryFormula ParryFormula { get; }
+    //}
+
+    public interface IUnitInfo
     {
+        int CombatId { get; }
         string Name { get; }
         int Strength { get; }
         int Agility { get; }
@@ -46,34 +55,43 @@ namespace BattleM
         IStatusRecord After { get; }
     }
 
-    public record EventRecord: FightFragment
+    public record SubEventRecord: FightFragment
     {
-        public static EventRecord Instance(ICombatUnit t, Types type) => new(t, type);
-        public IUnitRecord Unit { get; }
+        public enum EventTypes
+        {
+            None,
+            Death,
+        }
+        public static SubEventRecord Instance(ICombatUnit t, EventTypes type) => new(t, type);
+        public IUnitInfo Unit { get; }
+        public IStatusRecord Status { get; }
+        public EventTypes Type { get; }
         public override int CombatId => Unit.CombatId;
 
-        private EventRecord(ICombatUnit unit, Types type)
+        protected SubEventRecord(ICombatUnit unit, EventTypes type)
         {
             Unit = new UnitRecord(unit);
+            Status = new StatusRecord(unit.CombatId, unit.Status, unit.BreathBar.TotalBreath);
             Type = type;
         }
 
-        public override Types Type { get; }
+        //public override Types Type { get; }
     }
-    public record SwitchTargetRecord: FightFragment
+
+    public record SwitchTargetRecord : FightFragment
     {
-        public static SwitchTargetRecord Instance(ICombatUnit t, int targetId) =>
-            new(t.CombatId, targetId);
-        public int TargetId { get; }
-        public override int CombatId { get; }
-        public override Types Type => Types.SwitchTarget;
+        public static SwitchTargetRecord Instance(ICombatUnit unit, ICombatUnit target) =>
+            new(unit, target);
 
-        private SwitchTargetRecord(int combatId, int targetId)
+        public UnitRecord CombatUnit { get; }
+        public UnitRecord Target { get; }
+        public override int CombatId => CombatUnit.CombatId;
+
+        private SwitchTargetRecord(ICombatUnit combat, ICombatUnit target) 
         {
-            CombatId = combatId;
-            TargetId = targetId;
+            CombatUnit = new UnitRecord(combat);
+            Target = new UnitRecord(target);
         }
-
     }
 
     public record ConsumeRecord : FightFragment, IConsumeRecord
@@ -81,19 +99,17 @@ namespace BattleM
         public static ConsumeRecord Instance() => new ConsumeRecord();
 
         public string UnitName { get; private set; }
-        public bool IsExecutor { get; private set; }
         public IStatusRecord Before { get; private set; }
         public IStatusRecord After { get; private set; }
-        public override Types Type { get; } = Types.Consume;
+        //public override Types Type { get; } = Types.Consume;
         public override int CombatId => Before.CombatId;
 
         private void SetBefore(ICombatUnit unit) => Before = new StatusRecord(unit.CombatId,unit.Status, unit.BreathBar.TotalBreath);
         private void SetAfter(ICombatUnit unit) => After = new StatusRecord(unit.CombatId,unit.Status, unit.BreathBar.TotalBreath);
 
-        public void Set(ICombatUnit unit, Action action,bool isExecutor)
+        public void Set(ICombatUnit unit, Action action)
         {
             UnitName = unit.Name;
-            IsExecutor = isExecutor;
             SetBefore(unit);
             action.Invoke();
             SetAfter(unit);
@@ -120,6 +136,18 @@ namespace BattleM
         public override string ToString() => $"Hp{Hp},Tp{Tp},Mp{Mp}";
     }
 
+    public record RechargeRecord : FightFragment
+    {
+        public int Charge { get; }
+        public ConsumeRecord Consume { get; }
+        public override int CombatId => Consume.CombatId;
+
+        public RechargeRecord(int charge, ConsumeRecord consume)
+        {
+            Charge = charge;
+            Consume = consume;
+        }
+    }
     public record ConsumeRecord<T> : ConsumeRecord
     {
         public static ConsumeRecord<T> Instance(T form)
@@ -130,10 +158,32 @@ namespace BattleM
 
         public T Form { get; private set; }
 
+        public ConsumeRecord()
+        {
+            
+        }
+        public ConsumeRecord(T form)
+        {
+            Form = form;
+        }
+
         public ConsumeRecord<T> SetForm(T form)
         {
             Form = form;
             return this;
+        }
+    }
+
+    public record RecoveryRecord : ConsumeRecord<IForceForm>
+    {
+
+        public new static RecoveryRecord Instance(IForceForm form) => new(form);
+
+        public RecoveryRecord()
+        {
+        }
+        public RecoveryRecord(IForceForm form):base(form)
+        {
         }
     }
 
@@ -378,96 +428,173 @@ namespace BattleM
         public override string ToString() => $"回:{Finalize}\n息({Breath})+内({Mp})转({MpRate}){MpRatio:F}";
     }
 
-    public sealed record DodgeRecord : FightFragment, IDodgeRecord
-    {
-        public IUnitRecord Unit { get; }
-        public IDodgeForm Form { get; }
-        public DodgeFormula DodgeFormula { get; }
-        public override Types Type { get; } = Types.Dodge;
-        public override int CombatId => Unit.CombatId;
+    //public sealed record DodgeRecord : FightFragment, IDodgeRecord
+    //{
+    //    public IUnitRecord Unit { get; }
+    //    public ConsumeRecord<IDodgeForm> Consume { get; }
+    //    public IDodgeForm Form => Consume.Form;
+    //    public DodgeFormula DodgeFormula { get; }
+    //    public override Types Type { get; } = Types.Dodge;
+    //    public override int CombatId => Unit.CombatId;
 
-        public DodgeRecord(ICombatUnit unit, IDodgeForm form, DodgeFormula dodgeFormula)
-        {
-            Unit = new UnitRecord(unit);
-            Form = form;
-            DodgeFormula = dodgeFormula;
-        }
+    //    public DodgeRecord(ICombatUnit unit, DodgeFormula dodgeFormula,ConsumeRecord<IDodgeForm> consumeRec)
+    //    {
+    //        Unit = new UnitRecord(unit);
+    //        Consume = consumeRec;
+    //        DodgeFormula = dodgeFormula;
+    //    }
 
-        public override string ToString()
-        {
-            return $"{Unit}\n{Form}\n{DodgeFormula}";
-        }
-    }
+    //    public override string ToString()
+    //    {
+    //        return $"{Unit}\n{Form}\n{DodgeFormula}";
+    //    }
+    //}
 
-    public sealed record ParryRecord : FightFragment, IParryRecord
-    {
-        public IUnitRecord Unit { get; }
-        public IParryForm Form { get; }
-        public ParryFormula ParryFormula { get; }
-        public override Types Type { get; } = Types.Parry;
-        public override int CombatId => Unit.CombatId;
+    //public sealed record ParryRecord : FightFragment, IParryRecord
+    //{
+    //    public IUnitRecord Unit { get; }
+    //    public IParryForm Form { get; }
+    //    public ParryFormula ParryFormula { get; }
+    //    public override Types Type { get; } = Types.Parry;
+    //    public override int CombatId => Unit.CombatId;
 
-        public ParryRecord(ICombatUnit unit, IParryForm form, ParryFormula parryFormula)
-        {
-            Unit = new UnitRecord(unit);
-            Form = form;
-            ParryFormula = parryFormula;
-        }
+    //    public ParryRecord(ICombatUnit unit, IParryForm form, ParryFormula parryFormula)
+    //    {
+    //        Unit = new UnitRecord(unit);
+    //        Form = form;
+    //        ParryFormula = parryFormula;
+    //    }
 
-        public override string ToString() => $"{Unit}\n{Form}\n{ParryFormula}";
-    }
+    //    public override string ToString() => $"{Unit}\n{Form}\n{ParryFormula}";
+    //}
 
     public sealed record AttackRecord : FightFragment, IAttackRecord
     {
-        public IUnitRecord Unit { get; }
-        public IConsumeRecord Target { get; }
-        public ICombatForm Form { get; }
-        public override Types Type { get; } = Types.Attack;
+        public IUnitInfo Unit { get; }
+        public IUnitInfo Target { get; }
+        public ICombatForm Form => AttackConsume.Form;
+        //进攻消耗
+        public ConsumeRecord<ICombatForm> AttackConsume { get; set; }
+        //闪避消耗(状态更新1)
+        public ConsumeRecord<IDodgeForm> DodgeConsume { get; set; }
+        //招架消耗(状态更新2)
+        public ConsumeRecord<IParryForm> ParryConsume { get; set; }
+        //承受(状态更新3)
+        public ConsumeRecord Suffer { get; set; }
+        //移位记录
+        public PositionRecord AttackPlacing { get; set; }
+        //public override Types Type { get; } = Types.Attack;
         public override int CombatId => Unit.CombatId;
         public DamageFormula DamageFormula { get; }
+        public DodgeFormula DodgeFormula { get; }
+        public ParryFormula ParryFormula { get; }
 
-        public AttackRecord(ICombatUnit unit,  IConsumeRecord target, ICombatForm combatForm, DamageFormula damageFormula, bool isFling)
+        public AttackRecord(ICombatUnit unit, ICombatUnit target,
+            PositionRecord attackPlacing,
+            ConsumeRecord<ICombatForm> attackConsume,
+            ConsumeRecord<IDodgeForm> dodgeConsume,
+            ConsumeRecord<IParryForm> parryConsume,
+            ConsumeRecord suffer,
+            DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula)
         {
             Unit = new UnitRecord(unit);
-            Form = combatForm;
+            Target = new UnitRecord(target);
+            AttackPlacing = attackPlacing;
+            AttackConsume = attackConsume;
+            ParryConsume = parryConsume;
+            DodgeConsume = dodgeConsume;
+            DodgeFormula = dodgeFormula;
+            ParryFormula = parryFormula;
+            Suffer = suffer;
             DamageFormula = damageFormula;
-            Target = target;
-            if (isFling)
-                Type = Types.Fling;
         }
 
         public override string ToString()
         {
-            return $"{Unit}\n{Form}";
+            return $"{Unit}\n{Form}\n{Target}\n{DodgeFormula}\n{ParryFormula}";
+        }
+    }
+    public sealed record EscapeRecord : FightFragment
+    {
+        public override int CombatId => Escapee.CombatId;
+        public UnitRecord Escapee { get; }
+        public UnitRecord Attacker { get; }
+        public ConsumeRecord<ICombatForm> AttackConsume { get; }
+        public ConsumeRecord<IDodgeForm> EscapeConsume { get; }
+        public ConsumeRecord<IParryForm> ParryConsume { get; }
+        public ConsumeRecord Suffer { get; }
+        public DamageFormula DamageFormula { get; }
+        public DodgeFormula DodgeFormula { get; }
+        public ParryFormula ParryFormula { get; }
+        public bool IsSuccess { get; }
+        public EscapeRecord(ICombatUnit escapee, ICombatUnit attacker, 
+            ConsumeRecord<ICombatForm> attackConsume, 
+            ConsumeRecord<IDodgeForm> escapeConsume, 
+            ConsumeRecord<IParryForm> parryConsume, 
+            ConsumeRecord suffer, 
+            DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula,
+            bool isSuccess)
+        {
+            Escapee = new UnitRecord(escapee);
+            Attacker = new UnitRecord(attacker);
+            AttackConsume = attackConsume;
+            EscapeConsume = escapeConsume;
+            ParryConsume = parryConsume;
+            Suffer = suffer;
+            DamageFormula = damageFormula;
+            DodgeFormula = dodgeFormula;
+            ParryFormula = parryFormula;
+            IsSuccess = isSuccess;
+        }
+
+        public EscapeRecord(ICombatUnit escapee, bool isSuccess)
+        {
+            Escapee = new UnitRecord(escapee);
+            IsSuccess = isSuccess;
         }
     }
 
-    public sealed record UnitRecord : IUnitRecord
+    public sealed record UnitInfo : IUnitInfo
     {
-        public string Name { get; }
         public int CombatId { get; }
-        public int Breath { get; }
+        public string Name { get; }
         public int Strength { get; }
         public int Agility { get; }
         public int Position { get; }
-        public IConditionValue Hp { get; }
-        public IConditionValue Tp { get; }
-        public IConditionValue Mp { get; }
         public IEquip Equip { get; }
-
-        public UnitRecord(ICombatUnit unit)
+        public UnitInfo(ICombatUnit unit)
         {
             CombatId = unit.CombatId;
             Name = unit.Name;
             Strength = unit.Strength;
             Agility = unit.Agility;
             Position = unit.Position;
+            Equip = new Equipment(unit.Equipment);
+        }
+    }
+    public sealed record UnitRecord : IUnitInfo,IStatusRecord
+    {
+        public IUnitInfo Info { get; }
+        public string Name => Info.Name;
+        public int Strength => Info.Strength;
+        public int Agility => Info.Agility;
+        public int Position => Info.Position;
+        public int CombatId => Info.CombatId;
+        public IEquip Equip => Info.Equip;
+        public int Breath { get; }
+
+        public IConditionValue Hp { get; }
+        public IConditionValue Tp { get; }
+        public IConditionValue Mp { get; }
+
+        public UnitRecord(ICombatUnit unit)
+        {
+            Info = new UnitInfo(unit);
             Breath = unit.BreathBar.TotalBreath;
             var s = unit.Status.Clone();
             Hp = s.Hp;
             Tp = s.Tp;
             Mp = s.Mp;
-            Equip = new Equipment(unit.Equipment);
         }
 
         public override string ToString() => $"{Name}({Position}),力({Strength})敏({Agility}),血{Hp},气{Tp},内{Mp}";
@@ -491,9 +618,9 @@ namespace BattleM
     public record PositionRecord : FightFragment
     {
         public int NewPos { get; }
-        public IUnitRecord Unit { get; }
-        public IUnitRecord Target { get; }
-        public override Types Type { get; } = Types.Position;
+        public IUnitInfo Unit { get; }
+        public IUnitInfo Target { get; }
+        //public override Types Type { get; } = Types.Position;
         public override int CombatId => Unit.CombatId;
 
         public PositionRecord(int newPos, ICombatUnit unit, ICombatUnit target)
@@ -505,123 +632,200 @@ namespace BattleM
 
     }
 
-    public interface IFightFragment
+    public abstract record FightFragment 
     {
-        int Index { get; }
-        FightFragment.Types Type { get; }
-        FightFragment On<T>(Action<T> func) where T : IFightFragment;
+        public abstract int CombatId { get; }
     }
-    public abstract record FightFragment : IFightFragment
+
+    public record BreathRecord 
     {
         public enum Types
         {
-            None,
-            /// <summary>
-            /// 消耗
-            /// </summary>
-            Consume,
-            /// <summary>
-            /// 攻击
-            /// </summary>
+            Busy,
+            Charge,
+            Exert,
             Attack,
-            /// <summary>
-            /// 招架
-            /// </summary>
-            Parry,
-            /// <summary>
-            /// 身法
-            /// </summary>
-            Dodge,
-            /// <summary>
-            /// 换位
-            /// </summary>
-            Position,
-            /// <summary>
-            /// 尝试逃跑
-            /// </summary>
-            TryEscape,
-            /// <summary>
-            /// 逃跑暗器
-            /// </summary>
-            Fling,
-            /// <summary>
-            /// 逃跑
-            /// </summary>
-            Escaped,
-            /// <summary>
-            /// 死亡
-            /// </summary>
-            Death,
-            /// <summary>
-            /// 晕厥
-            /// </summary>
-            Exhausted,
-            /// <summary>
-            /// 等待
-            /// </summary>
-            Wait,
-            SwitchTarget
+            Placing,
         }
-        public int Index { get; private set; }
-        public abstract Types Type { get; }
-        public abstract int CombatId { get; }
-        public void SetIndex(int index) => Index = index;
+        public Types Type { get; }
+        public string Name { get; }
+        public int Value { get; }
+        public int GetBreath() => Type == Types.Charge ? -Value : Value;
 
-        public FightFragment On<T>(Action<T> action) where T : IFightFragment
+        public BreathRecord(Types type, int value, string name = null)
         {
-            if(this is T obj)
-                action(obj);
-            return this;
+            Type = type;
+            Value = value;
+            Name = name ?? string.Empty;
         }
     }
-    public record FightRoundRecord
+
+    public record BreathBarRecord : FightFragment
     {
-        private readonly List<FightFragment> _records;
-        private int _index = 0;
+        public override int CombatId => Unit.CombatId;
+        public List<BreathRecord> Breathes { get; }
+        public UnitRecord Unit { get; }
+        public CombatPlans Plan { get; }
+        public string Title { get; set; }
+
+        public BreathBarRecord(ICombatUnit unit, List<BreathRecord> breathes)
+        {
+            Unit = new UnitRecord(unit);
+            Breathes = breathes;
+            Plan = unit.BreathBar.Plan;
+            Title = Plan switch
+            {
+                CombatPlans.Wait => "等待",
+                CombatPlans.Attack => unit.BreathBar.Combat.Name,
+                CombatPlans.RecoverHp => unit.BreathBar.Recover.Name,
+                CombatPlans.RecoverTp => unit.BreathBar.Recover.Name,
+                CombatPlans.Surrender => "认输",
+                CombatPlans.Exert => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        public int GetBreath() => Breathes.Sum(b => b.GetBreath());
+    }
+
+    public record CombatRoundRecord
+    {
+        /// <summary>
+        /// 主要事件，每个回合必发生其中一项(战斗单位执行Action)。非辅助事件如：单位死亡，或是buff事件等
+        /// </summary>
+        public enum MajorEvents
+        {
+            /// <summary>
+            /// 无事件，双方都没有触发任何主动事件
+            /// </summary>
+            None,
+            /// <summary>
+            /// 单方触发攻击事件，包括玩家介入的技能
+            /// </summary>
+            Combat,
+            /// <summary>
+            /// 单方触发恢复事件
+            /// </summary>
+            Recover,
+            /// <summary>
+            /// 逃跑事件
+            /// </summary>
+            Escape
+        }
+        //private readonly List<FightFragment> _records;
         public bool IsFightEnd { get; private set; }
         public int Round { get; }
-        public  FightFragment.Types Respond { get; private set; }
-        public IReadOnlyList<IFightFragment> Records => _records;
-        
-        public FightRoundRecord(int round)
+        public MajorEvents Major { get; private set; }
+        public List<BreathBarRecord> BreathBars { get; private set; } = new List<BreathBarRecord>();
+        //public IReadOnlyList<IFightFragment> Records => _records;
+        public int TargetId { get; set; } = -1;
+        public int ExecutorId { get; set; } = -1;
+        #region 主动事件
+        /// <summary>
+        /// 攻击招式
+        /// </summary>
+        public AttackRecord AttackRec { get; set; }
+        public EscapeRecord EscapeRec { get; set; }
+        /// <summary>
+        /// 调息
+        /// </summary>
+        public RecoveryRecord RecoverRec { get; set; }
+        /// <summary>
+        /// 其它事件(非<see cref="AttackRec"/>和<see cref="RecoverRec"/>事件)
+        /// </summary>
+        public IList<SubEventRecord> OtherEventRec { get; set; } = new List<SubEventRecord>();
+        #endregion
+
+        /// <summary>
+        /// 换锁定目标
+        /// </summary>
+        public SwitchTargetRecord SwitchTargetRec { get; set; }
+        /// <summary>
+        /// 单位喘息(各方面恢复)
+        /// </summary>
+        public IList<RechargeRecord> RechargeRec { get; } = new List<RechargeRecord>();
+
+        public CombatRoundRecord(int round)
         {
             Round = round;
-            _records = new List<FightFragment>();
+            //_records = new List<FightFragment>();
         }
 
         public void SetFightEnd() => IsFightEnd = true;
 
-        public void SetRespond(FightFragment.Types type)
+        public void SetExecutor(CombatUnit executor)
         {
-            if (Respond == FightFragment.Types.Dodge) return;
-            Respond = type;
+            ExecutorId = executor.CombatId;
+            TargetId = executor.Target?.CombatId ?? -1;
         }
 
-        public void Add(FightFragment fragment)
+        public void AddBreathBar(ICombatUnit unit)
         {
-            fragment.SetIndex(_index++);
-            _records.Add(fragment);
+            var bars = GetBreathBarRecord(unit.BreathBar);
+            BreathBars.Add(new BreathBarRecord(unit, bars));
+
+            List<BreathRecord> GetBreathBarRecord(IBreathBar bar)
+            {
+                var list = new List<BreathRecord>();
+                if (bar.TotalBusies > 0)
+                    list.Add(new BreathRecord(BreathRecord.Types.Busy, bar.TotalBusies));
+                if (bar.TotalCharged > 0)
+                    list.Add(new BreathRecord(BreathRecord.Types.Charge, bar.TotalCharged));
+                switch (bar.Plan)
+                {
+                    case CombatPlans.Attack:
+                        if (bar.Dodge != null)
+                            list.Add(new BreathRecord(BreathRecord.Types.Placing, bar.Dodge.Breath, bar.Dodge.Name));
+                        list.Add(new BreathRecord(BreathRecord.Types.Attack, bar.Combat.Breath, bar.Combat.Name));
+                        break;
+                    case CombatPlans.RecoverHp:
+                    case CombatPlans.RecoverTp:
+                        list.Add(new BreathRecord(BreathRecord.Types.Exert, bar.Recover.Breath, bar.Recover.Name));
+                        break;
+                    case CombatPlans.Exert:
+                        break;
+                    case CombatPlans.Wait:
+                    case CombatPlans.Surrender:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                return list;
+            }
         }
 
-        //public void SetExecute(CombatUnit combat)
-        //{
-        //    switch (combat.Plan)
-        //    {
-        //        case CombatPlans.Attack:
-        //            combat.
-        //            break;
-        //        case CombatPlans.RecoverHp:
-        //            break;
-        //        case CombatPlans.RecoverTp:
-        //            break;
-        //        case CombatPlans.Exert:
-        //            break;
-        //        case CombatPlans.Surrender:
-        //            break;
-        //        case CombatPlans.Wait:
-        //        default:
-        //            throw new ArgumentOutOfRangeException();
-        //    }
-        //}
+        public void SetForceRecovery(RecoveryRecord recover)
+        {
+            Major = MajorEvents.Recover;
+            RecoverRec = recover;
+        }
+
+        public void SetAttack(AttackRecord combatForm)
+        {
+            Major = MajorEvents.Combat;
+            AttackRec = combatForm;
+        }
+
+        public void AddRechargeRec(RechargeRecord rec)
+        {
+            RechargeRec.Add(rec);
+        }
+
+        public void SetSwitchTarget(SwitchTargetRecord rec)
+        {
+            SwitchTargetRec = rec;
+        }
+
+        public void SetSubEvent(SubEventRecord rec)
+        {
+            OtherEventRec.Add(rec);
+        }
+
+        public void SetEscape(EscapeRecord rec)
+        {
+            Major = MajorEvents.Escape;
+            EscapeRec = rec;
+        }
     }
 }

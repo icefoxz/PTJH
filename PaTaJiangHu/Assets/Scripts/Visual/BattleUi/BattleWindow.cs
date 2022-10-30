@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BattleM;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -42,13 +43,13 @@ namespace Visual.BattleUi
         [SerializeField] private PlayerStrategyController _playerStrategyController;
         [SerializeField] private BattleStatusBarController _battleStatusBarController;
         [SerializeField] private BreathUiController _breathUi;
-        [SerializeField] private CombatEventUi _leftCombatEventUi;
-        [SerializeField] private CombatEventUi _rightCombatEventUi;
+        [SerializeField] private PromptEventUi _leftPromptEventUi;
+        [SerializeField] private PromptEventUi _rightPromptEventUi;
 
         private IBattleStatusBarController BattleStatusBarController => _battleStatusBarController;
         private BattleStanceUi[] Stances { get; set; }
         public BattleStage Stage { get; set; }
-        private CombatTempoController TempoController { get; set; }
+        private CombatTempoPlayer CombatTempoPlayer { get; set; }
         private CombatUnit Player { get; set; }
         private event UnityAction<bool> OnBattleResultCallback;
         public void Init(UnityAction<bool> battleResultCallback)
@@ -88,21 +89,21 @@ namespace Visual.BattleUi
         private void PlayerWaitPlan()
         {
             Player.WaitPlan();
-            CurrentBreathUpdate();
+            //CurrentBreathUpdate();
             //ManualRound();
         }
 
         private void PlayerExertPlan(IForceForm force)
         {
             Player.ExertPlan(force);
-            CurrentBreathUpdate();
+            //CurrentBreathUpdate();
             //ManualRound();
         }
 
         private void PlayerAttackPlan(ICombatForm combat)
         {
             Player.AttackPlan(combat, Player.BreathBar.Dodge);
-            CurrentBreathUpdate();
+            //CurrentBreathUpdate();
             //ManualRound();
         }
 
@@ -158,9 +159,8 @@ namespace Visual.BattleUi
                 PresetForce,
                 PresetCancel);
             InitStickmans(list);
-            CurrentBreathUpdate();
-            TempoController = new CombatTempoController(this);
-            PresetCancel();
+            BreathBarsInit();
+            CombatTempoPlayer = new CombatTempoPlayer(this);
         }
         public void StartBattle()
         {
@@ -171,20 +171,16 @@ namespace Visual.BattleUi
             } //直接返回胜利
             Stage.NextRound(true);
         }
-        private void OnEveryRound(FightRoundRecord rec)
+        private void OnEveryRound(CombatRoundRecord rec)
         {
-            var units = Stage.GetCombatUnits().ToArray();
-            _battleLogger.NextRound(units, rec);
+            _battleLogger.NextRound(rec);
             StartCoroutine(UpdateUis(rec));
 
-            IEnumerator UpdateUis(FightRoundRecord r)
+            IEnumerator UpdateUis(CombatRoundRecord r)
             {
                 RoundText.text = r.Round.ToString();
-                foreach (var unit in units)
-                    BattleStatusBarController.UpdateText(unit.CombatId, unit.Status.Hp, unit.Status.Tp, unit.Status.Mp);
-                CurrentBreathUpdate();
-                yield return _breathUi.PlaySlider(() => { });
-                yield return TempoController.Play(r);
+                yield return _breathUi.PlaySlider();
+                yield return CombatTempoPlayer.Play(r);
                 StartBattle();//自动回合
             }
         }
@@ -208,60 +204,69 @@ namespace Visual.BattleUi
         #region BreathViewUi Preset
         private void PresetCancel()
         {
-            BattleStatusBarController.UpdateStatus(Player.CombatId, Player.Status.Hp, Player.Status.Tp,
-                Player.Status.Mp);
-            CurrentBreathUpdate();
+            //BattleStatusBarController.UpdateStatus(Player.CombatId, Player.Status.Hp, Player.Status.Tp, Player.Status.Mp);
+            //CurrentBreathUpdate();
         }
         private void PresetIdle()
         {
             //_breathView.SetIdle();
-            UpdateDrum(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+            //UpdateDrum(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
         private void PresetForce(IForceForm form)
         {
             //_breathView.SetForce(form);
-            UpdateDrum(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+            //UpdateDrum(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
         private void PresetCombat(ICombatForm form)
         {
             //_breathView.SetCombat(form);
             var status = Player.Status;
-            BattleStatusBarController.UpdateStatus(Player.CombatId,
-                status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Tp,
-                status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
+            //BattleStatusBarController.UpdateStatus(Player.CombatId,
+            //    status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Tp,
+            //    status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
             var dodgeBreath = Player.BreathBar.Dodge?.Breath ?? 0;
-            UpdateDrum(dodgeBreath + form.Breath,
-                Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
+            //UpdateDrum(dodgeBreath + form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
         #endregion
 
         #region BreathView Update
-        private int lastPlayerBreath;
-        private int lastTargetBreath;
-        private int lastMaxBreath;
-
-        private void UpdateLastBreath()
-        {
-            _breathUi.UpdateDrum(lastPlayerBreath, lastTargetBreath, lastMaxBreath);
-        }
-
-        private void CurrentBreathUpdate()
+        private void BreathBarsInit()
         {
             var combatUnits = Stage.GetAliveUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
             var playerBreathBar = Player.BreathBar;
             var targetBreathBar = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar;
             var playerBreath = playerBreathBar.TotalBreath;
             var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
-            UpdateDrum(playerBreath, maxBreath);
-            _leftCombatEventUi.Set(playerBreathBar);
-            _rightCombatEventUi.Set(targetBreathBar);
-            _breathUi.SetBreathView(playerBreathBar, targetBreathBar);
+            //UpdateDrum(playerBreath, maxBreath);
+            _leftPromptEventUi.Set(GetTitle(playerBreathBar),playerBreath);
+            _rightPromptEventUi.Set(GetTitle(targetBreathBar), targetBreathBar.TotalBreath);
+            StartCoroutine(_breathUi.SetLeft(playerBreathBar));
+            StartCoroutine(_breathUi.SetRight(targetBreathBar));
+            string GetTitle(IBreathBar breathBar)
+            {
+                switch (breathBar.Plan)
+                {
+                    case CombatPlans.Attack:
+                        return breathBar.Combat?.Name ?? string.Empty;
+                    case CombatPlans.RecoverHp:
+                    case CombatPlans.RecoverTp:
+                        return breathBar.Recover?.Name ?? string.Empty;
+                    case CombatPlans.Exert:
+                        return "运功";
+                    case CombatPlans.Wait:
+                        return "等待";
+                    case CombatPlans.Surrender:
+                        return "伺机逃跑...";
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
         }
-        private void UpdateDrum(int playerBreath,int maxBreath)
-        {
-            var targetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
-            _breathUi.UpdateDrum(playerBreath, targetBreath, maxBreath);
-        }
+        //private void UpdateDrum(int playerBreath,int maxBreath)
+        //{
+        //    var targetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
+        //    _breathUi.UpdateDrum(playerBreath, targetBreath, maxBreath);
+        //}
         #endregion
 
         #region CombatUi Update
@@ -270,21 +275,21 @@ namespace Visual.BattleUi
         private void InitStickmans(List<CombatUnit> list)
         {
             var uis = GetAllCombatUis().ToArray();
+            Stickman player = null;
             foreach (var combat in list.OrderBy(c=>c.Position))
             {
                 var stickman = uis.Single(c => c.CombatId == combat.CombatId).Stickman;
-                stickman.Init(combat.CombatId);
-                stickman.SetTarget(combat.Target.CombatId);
-                if (combat.CombatId == 0)
+                if (combat.CombatId == 1)
                 {
+                    player = stickman;
                     _stickmanScene.PlaceCenter(stickman);
                     continue;
                 }
-
                 var target = uis.Single(c => c.CombatId == combat.Target.CombatId).Stickman;
                 _stickmanScene.AutoPlace(stickman, target, combat, false);
             }
 
+            _stickmanScene.Centralize(player);
             UpdateStickmanOrientation();
         }
         private void UpdateStickmanOrientation()
@@ -297,13 +302,162 @@ namespace Visual.BattleUi
             }
         }
         private BattleStanceUi GetCombatAnimUi(int combatId) => Stances.Single(s => s.HandledIds.Contains(combatId));
-        private void UpdateCombatUnit(int combatId, string popText)
+        private static string GetEventName(SubEventRecord eve)
         {
-            var stanceUi = GetCombatAnimUi(combatId);
-            if (!string.IsNullOrWhiteSpace(popText))
-                stanceUi.PopText(combatId, popText);
+            return eve.Type switch
+            {
+                SubEventRecord.EventTypes.None => string.Empty,
+                SubEventRecord.EventTypes.Death => "死亡!",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            //{
+            //    FightFragment.Types.None => string.Empty,
+            //    FightFragment.Types.Consume => string.Empty,
+            //    FightFragment.Types.Attack => string.Empty,
+            //    FightFragment.Types.Parry => string.Empty,
+            //    FightFragment.Types.Dodge => string.Empty,
+            //    FightFragment.Types.Position => string.Empty,
+            //    FightFragment.Types.SwitchTarget => string.Empty,
+            //    FightFragment.Types.TryEscape => "欲想逃跑...",
+            //    FightFragment.Types.Fling => "投掷暗器!",
+            //    FightFragment.Types.Escaped => "逃走了!",
+            //    FightFragment.Types.Death => "死亡!",
+            //    FightFragment.Types.Exhausted => "败!",
+            //    FightFragment.Types.Wait => "伺机行动...",
+            //    _ => throw new ArgumentOutOfRangeException()
+            //};
         }
-        private void UpdateStatus(IStatusRecord before,IStatusRecord after)
+        #endregion
+        public override void ResetUi() => Hide();
+
+        #region ICombatFragment
+        public IEnumerator OnReposAnim(PositionRecord pos)
+        {
+            var unitId = pos.Unit.CombatId;
+            var stickman = GetCombatAnimUi(unitId).GetStickman(unitId);
+            var tarId = pos.Target.CombatId;
+            var target = GetCombatAnimUi(tarId).GetStickman(tarId);
+            GetCombatAnimUi(pos.Unit.CombatId)
+                .SetAction(pos.Unit.CombatId, Stickman.Anims.Dodge);
+            var combatUnit = Stage.GetCombatUnit(unitId);
+            var isComplete = false;
+            _stickmanScene.AutoPlace(stickman, target, combatUnit, unitId == Player.CombatId, ()=>
+            {
+                isComplete = true;
+                UpdateStickmanOrientation();
+            });
+            yield return new WaitUntil(() => isComplete);
+        }
+
+        public void OnStatusUpdate(IStatusRecord before, IStatusRecord after) => UpdateStatusWithDifPop(before, after);
+        public void OnAttackAnim(AttackRecord att)
+        {
+            GetPromptEventUi(att.CombatId).UpdateEvent(PromptEventUi.CombatEvents.Attack);
+            GetCombatAnimUi(att.Unit.CombatId)
+                .SetAction(att.Unit.CombatId, Stickman.Anims.Attack);
+            var status = att.AttackConsume.After;
+            UpdateStatusUi(att.CombatId, status.Hp, status.Tp, status.Mp);
+        }
+
+        public void OnEscapeAnim(EscapeRecord esc)
+        {
+            GetPromptEventUi(esc.Attacker.CombatId).UpdateEvent(PromptEventUi.CombatEvents.Attack);
+            GetCombatAnimUi(esc.Attacker.CombatId).SetAction(esc.Attacker.CombatId, Stickman.Anims.Attack);
+        }
+
+        private PromptEventUi GetPromptEventUi(int combatId)
+        {
+            var isPlayer = Player.CombatId == combatId;
+            var comEvent = isPlayer ? _leftPromptEventUi : _rightPromptEventUi;
+            return comEvent;
+        }
+
+        public void OnSufferAnim(ConsumeRecord rec)
+        {
+            var combatId = rec.CombatId;
+            var status = rec.After;
+            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Suffer);
+            GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Suffer);
+            UpdateStatusUi(combatId, status.Hp, status.Tp, status.Mp);
+        }
+
+        public void OnDodgeAnim(ConsumeRecord<IDodgeForm> rec)
+        {
+            var combatId = rec.CombatId;
+            var status = rec.After;
+            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Dodge);
+            GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Dodge);
+            UpdateStatusUi(combatId, status.Hp, status.Tp, status.Mp);
+        }
+        public void OnParryAnim(ConsumeRecord<IParryForm> rec)
+        {
+            var combatId = rec.CombatId;
+            var status = rec.After;
+            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Parry);
+            GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Parry);
+            UpdateStatusUi(combatId, status.Hp, status.Tp, status.Mp);
+        }
+
+        public void OnOtherEventAnim(SubEventRecord eve)
+        {
+            switch (eve.Type)
+            {
+                case SubEventRecord.EventTypes.Death:
+                    GetCombatAnimUi(eve.CombatId).SetAction(eve.CombatId, Stickman.Anims.Death);
+                    break;
+                case SubEventRecord.EventTypes.None:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public void OnReCharge(RechargeRecord charge)
+        {
+            var status = charge.Consume.After;
+            UpdateStatusUi(charge.CombatId, status.Hp, status.Tp, status.Mp);
+        }
+
+        public IEnumerator FullRecord(CombatRoundRecord rec)
+        {
+            var listCo = new List<Coroutine>();
+            void StartCo(IEnumerator enumerator) => listCo.Add(StartCoroutine(enumerator));
+
+            if (rec.ExecutorId == -1)
+            {
+                foreach (var bar in rec.BreathBars) StartCo(BarUpdate(bar, Player.CombatId == bar.CombatId));
+                foreach (var co in listCo)
+                    yield return co;
+                yield break;
+            }
+
+            var exeBar = rec.BreathBars.Single(b => b.CombatId == rec.ExecutorId);
+            var tarBar = rec.BreathBars.SingleOrDefault(b => b.CombatId == rec.TargetId);
+            var maxBreath = exeBar.GetBreath() + tarBar?.GetBreath() ?? 0;
+            StartCo(BarUpdate(exeBar, true));
+            if (tarBar != null) StartCo(BarUpdate(tarBar, false));
+
+            foreach (var co in listCo) yield return co;
+
+            _breathUi.UpdateDrum(exeBar.GetBreath(), tarBar?.GetBreath() ?? 0, maxBreath);
+
+            IEnumerator BarUpdate(BreathBarRecord bar, bool isPlayer)
+            {
+                UpdateStatusUi(bar.CombatId, bar.Unit.Hp, bar.Unit.Tp, bar.Unit.Mp);
+                var popEventUi = GetPromptEventUi(bar.CombatId);
+                popEventUi.Set(bar.Title, bar.GetBreath());
+                var busy = bar.Breathes.FirstOrDefault(b => b.Type == BreathRecord.Types.Busy)?.Value ?? 0;
+                var charge = bar.Breathes.FirstOrDefault(b => b.Type == BreathRecord.Types.Charge)?.Value ?? 0;
+                var exert = bar.Breathes.FirstOrDefault(b => b.Type == BreathRecord.Types.Exert);
+                var attack = bar.Breathes.FirstOrDefault(b => b.Type == BreathRecord.Types.Attack);
+                var placing = bar.Breathes.FirstOrDefault(b => b.Type == BreathRecord.Types.Placing);
+                //UpdateDrum();
+                if (isPlayer)
+                    yield return _breathUi.SetLeft(bar.Plan, busy, charge, attack, placing, exert);
+                else yield return _breathUi.SetRight(bar.Plan, busy, charge, attack, placing, exert);
+            }
+        }
+
+        private void UpdateStatusWithDifPop(IStatusRecord before, IStatusRecord after)
         {
             var stanceUi = GetCombatAnimUi(before.CombatId);
             stanceUi.PopStatus(before.CombatId,
@@ -313,119 +467,30 @@ namespace Visual.BattleUi
             );
             BattleStatusBarController.UpdateStatus(after.CombatId, after.Hp, after.Tp, after.Mp);
         }
-        private static string GetEventName(IFightFragment eve)
-        {
-            return eve.Type switch
-            {
-                FightFragment.Types.None => string.Empty,
-                FightFragment.Types.Consume => string.Empty,
-                FightFragment.Types.Attack => string.Empty,
-                FightFragment.Types.Parry => string.Empty,
-                FightFragment.Types.Dodge => string.Empty,
-                FightFragment.Types.Position => string.Empty,
-                FightFragment.Types.SwitchTarget => string.Empty,
-                FightFragment.Types.TryEscape => "欲想逃跑...",
-                FightFragment.Types.Fling => "投掷暗器!",
-                FightFragment.Types.Escaped => "逃走了!",
-                FightFragment.Types.Death => "死亡!",
-                FightFragment.Types.Exhausted => "败!",
-                FightFragment.Types.Wait => "伺机行动...",
-                _ => throw new ArgumentOutOfRangeException()
-            };
-        }
-        #endregion
-        public override void ResetUi() => Hide();
 
-        #region ICombatFragment
-        public void OnConsumeAnim(ConsumeRecord con)
+        private void UpdateStatusUi(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp)
         {
-            var popText = string.Empty;
-            var combatId = con.Before.CombatId;
-            popText = con switch
-            {
-                ConsumeRecord<IForceForm> force => force.Form.Name,
-                ConsumeRecord<IDodgeForm> dodge => dodge.Form.Name,
-                ConsumeRecord<ICombatForm> combat => combat.Form.Name,
-                _ => popText
-            };
-            UpdateCombatUnit(combatId, popText);
-        }
-        public void OnReposAnim(PositionRecord pos)
-        {
-            var unitId = pos.Unit.CombatId;
-            var stickman = GetCombatAnimUi(unitId).GetStickman(unitId);
-            var tarId = pos.Target.CombatId;
-            var target = GetCombatAnimUi(tarId).GetStickman(tarId);
-            GetCombatAnimUi(pos.Unit.CombatId)
-                .SetAction(pos.Unit.CombatId, Stickman.Anims.Dodge);
-            var combatUnit = Stage.GetCombatUnit(unitId);
-            _stickmanScene.AutoPlace(stickman, target, combatUnit, unitId == Player.CombatId, UpdateStickmanOrientation);
+            var combatUi = GetCombatUi(combatId);
+            combatUi.UpdateTextUi(hp, mp, tp);
+            BattleStatusBarController.UpdateStatus(combatId, hp, tp, mp);
         }
 
-        public void OnStatusUpdate(IStatusRecord before, IStatusRecord after) => UpdateStatus(before, after);
-        public void OnAttackAnim(AttackRecord att)
-        {
-            GetCombatEventUi(att.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Attack);
-            GetCombatAnimUi(att.Unit.CombatId)
-                .SetAction(att.Unit.CombatId, Stickman.Anims.Attack);
-            UpdateCombatUnit(att.CombatId, $"攻-【{att.Form.Name}】:{att.DamageFormula.Finalize}");
-        }
-
-        private CombatEventUi GetCombatEventUi(int combatId)
-        {
-            var isPlayer = Player.CombatId == combatId;
-            var comEvent = isPlayer ? _leftCombatEventUi : _rightCombatEventUi;
-            return comEvent;
-        }
-
-        public void OnSufferAnim(AttackRecord att)
-        {
-            GetCombatEventUi(att.Target.Before.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Suffer);
-            GetCombatAnimUi(att.Target.Before.CombatId)
-                .SetAction(att.Target.Before.CombatId, Stickman.Anims.Suffer);
-        }
-
-        public void OnDodgeAnim(DodgeRecord dod)
-        {
-            GetCombatEventUi(dod.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Dodge);
-            GetCombatAnimUi(dod.CombatId).SetAction(dod.CombatId, Stickman.Anims.Dodge);
-            UpdateCombatUnit(dod.CombatId, $"闪-【{dod.Form.Name}】");
-        }
-        public void OnParryAnim(ParryRecord par)
-        {
-            GetCombatEventUi(par.CombatId).UpdateEvent(CombatEventUi.CombatEvents.Parry);
-            GetCombatAnimUi(par.CombatId).SetAction(par.CombatId, Stickman.Anims.Parry);
-            UpdateCombatUnit(par.CombatId, $"架-【{par.Form.Name}】");
-        }
-        public void OnEventAnim(FightFragment eve) => UpdateCombatUnit(eve.CombatId, GetEventName(eve));
-        public void OnSwitchTarget(SwitchTargetRecord swi)
-        {
-            var target = Stage.GetCombatUnit(swi.TargetId);
-            UpdateCombatUnit(swi.CombatId,$"盯上了【{target.Name}】");
-        }
-
-        public void OnFragmentUpdate()
-        {
-            foreach (var stance in Stances) stance.UpdateUi();
-        }
+        //public void OnFragmentUpdate()
+        //{
+        //    foreach (var stance in Stances) stance.UpdateUi();
+        //}
         #endregion
     }
     /// <summary>
-    /// 战斗片段实现接口，用于<see cref="CombatTempoController"/>作为节奏控制器控制战斗各种事件触发时机
+    /// 战斗片段实现接口，用于<see cref="CombatTempoPlayer"/>作为节奏控制器控制战斗各种事件触发时机
     /// </summary>
     public interface ICombatFragmentPlayer
     {
         /// <summary>
-        /// 任何一种的状态消耗触发，但别用在状态更新。因为触发节奏与状态更新不一样<br/>
-        /// 状态更新请用<see cref="OnStatusUpdate(IStatusRecord,IStatusRecord)"/>
-        /// </summary>
-        /// <param name="con"></param>
-        void OnConsumeAnim(ConsumeRecord con);
-        /// <summary>
         /// 移位触发
         /// </summary>
         /// <param name="pos"></param>
-        void OnReposAnim(PositionRecord pos);
+        IEnumerator OnReposAnim(PositionRecord pos);
         /// <summary>
         /// 状态更新器,保证与任何事件的节奏同步更新
         /// </summary>
@@ -437,34 +502,39 @@ namespace Visual.BattleUi
         /// </summary>
         /// <param name="att"></param>
         void OnAttackAnim(AttackRecord att);
+        void OnEscapeAnim(EscapeRecord esc);
         /// <summary>
         /// 承受触发
         /// </summary>
-        /// <param name="att"></param>
-        void OnSufferAnim(AttackRecord att);
+        void OnSufferAnim(ConsumeRecord suf);
         /// <summary>
         /// 闪避触发
         /// </summary>
-        /// <param name="dod"></param>
-        void OnDodgeAnim(DodgeRecord dod);
+        void OnDodgeAnim(ConsumeRecord<IDodgeForm> rec);
         /// <summary>
         /// 招架触发
         /// </summary>
-        /// <param name="par"></param>
-        void OnParryAnim(ParryRecord par);
+        void OnParryAnim(ConsumeRecord<IParryForm> rec);
         /// <summary>
         /// 特殊事件触发，包括逃逸，死亡，战败等...
         /// </summary>
         /// <param name="eve"></param>
-        void OnEventAnim(FightFragment eve);
+        void OnOtherEventAnim(SubEventRecord eve);
         /// <summary>
         /// 切换目标
         /// </summary>
         /// <param name="swi"></param>
-        void OnSwitchTarget(SwitchTargetRecord swi);
+        //void OnSwitchTarget(SwitchTargetRecord swi);
         /// <summary>
-        /// 每个片段的更新，一般上用来直接更新状态Ui
+        /// 息恢复
         /// </summary>
-        void OnFragmentUpdate();
+        /// <param name="charge"></param>
+        void OnReCharge(RechargeRecord charge);
+
+        /// <summary>
+        /// 总记录
+        /// </summary>
+        /// <param name="bar"></param>
+        IEnumerator FullRecord(CombatRoundRecord bar);
     }
 }

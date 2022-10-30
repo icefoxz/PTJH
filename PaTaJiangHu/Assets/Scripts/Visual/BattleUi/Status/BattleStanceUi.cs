@@ -25,12 +25,7 @@ namespace Visual.BattleUi.Status
         private CombatUnitUi GetCombatUnitUi(int combatId) => List.Single(c => c.CombatId == combatId);
         public Stickman GetStickman(int combatId) => GetCombatUnitUi(combatId).Stickman;
 
-        public void UpdateUi()
-        {
-            foreach (var ui in List) ui.UpdateUi();
-        }
-
-        public void AddCombatUnit(ICombatUnit unit)
+        public void AddCombatUnit(CombatUnit unit)
         {
             AddUi(ui => ui.Set(unit));
         }

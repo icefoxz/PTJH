@@ -21,23 +21,38 @@ namespace Visual.BattleUi.Status
         public Stickman Stickman => _stickman;
         public int CombatId => Unit?.CombatId ?? -1;
         private ICombatUnit Unit { get; set; }
-        public void Set(ICombatUnit unit)
+        public void Set(CombatUnit unit)
         {
             Unit = unit;
+            Stickman.Init(unit);
             SetTextUi(_popText, string.Empty);
             SetTextUi(_hpPop, string.Empty);
             SetTextUi(_mpPop, string.Empty);
             SetTextUi(_tpPop, string.Empty);
             SetTextUi(_name, unit.Name);
-            UpdateUi();
+            var s = unit.Status;
+            UpdateTextUi(s.Hp, s.Tp, s.Mp);
             Show();
         }
-        public void UpdateUi()
+        public void UpdateTextUi(IConditionValue hp, IConditionValue tp, IConditionValue mp)
         {
-            SetTextUi(_hp,SetConText(Unit.Status.Hp));
-            SetTextUi(_tp,SetConText(Unit.Status.Tp));
-            SetTextUi(_mp,SetConText(Unit.Status.Mp));
+            SetTextUi(_hp, SetConText(hp));
+            SetTextUi(_tp, SetConText(tp));
+            SetTextUi(_mp, SetConText(mp));
         }
+        public void UpdateTextUi(ICombatStatus status)
+        {
+            SetTextUi(_hp,SetConText(status.Hp));
+            SetTextUi(_tp,SetConText(status.Tp));
+            SetTextUi(_mp,SetConText(status.Mp));
+        }
+        //public void UpdateUi()
+        //{
+        //    SetTextUi(_hp,SetConText(Unit.Status.Hp));
+        //    SetTextUi(_tp,SetConText(Unit.Status.Tp));
+        //    SetTextUi(_mp,SetConText(Unit.Status.Mp));
+        //}
+        private static string SetConText(IConditionValue status) => $"{status.Value}/{status.Max}";
         private static string SetConText(IGameCondition status) => $"{status.Value}/{status.Max}";
         public override void ResetUi()
         {
@@ -101,6 +116,5 @@ namespace Visual.BattleUi.Status
         }
 
         public void SetAnim(Stickman.Anims action) => _stickman.SetAnim(action);
-
     }
 }

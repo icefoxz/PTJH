@@ -61,8 +61,8 @@ namespace BattleM
 
         private void ClampValue()
         {
-            Value = Math.Clamp(Value, 0, Max);
-            Max = Math.Clamp(Max, 0, Fix);
+            Max = Math.Clamp(Max, 0, Fix);//先锁定最大值
+            Value = Math.Clamp(Value, 0, Max);//后锁定状态值
         }
 
         public void Clone(IConditionValue con)
