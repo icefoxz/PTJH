@@ -355,8 +355,12 @@ namespace BattleM
                 combat.Action(breathes);
                 Mgr.CheckExhausted(OnUnitExhausted);
             }
-            foreach (var unit in fighters.Where(c => !c.IsExhausted))//去掉死亡单位(因为列表可能包涵被攻击死亡的单位)
-                unit.BreathCharge(breathes);//息恢复
+
+            foreach (var unit in fighters.Where(c => !c.IsExhausted)) //去掉死亡单位(因为列表可能包涵被攻击死亡的单位)
+            {
+                if (unit.BreathBar.BusyCharged > 0)
+                    unit.BreathCharge(unit.BreathBar.BusyCharged);
+            }//息恢复
             Mgr.BuffMgr.OnRoundEnd(this);
 
             if(Mgr.IsFightEnd) RoundRec.SetFightEnd();
