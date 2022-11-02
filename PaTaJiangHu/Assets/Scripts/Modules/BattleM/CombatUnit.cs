@@ -6,11 +6,29 @@ namespace BattleM
 {
     public enum CombatPlans
     {
-        Attack,
-        RecoverHp,
-        RecoverTp,
-        Exert,
+        /// <summary>
+        /// 等待策略，不做任何事
+        /// </summary>
         Wait,
+        /// <summary>
+        /// 进攻策略，主动发动攻击
+        /// </summary>
+        Attack,
+        /// <summary>
+        /// 恢复血量策略
+        /// </summary>
+        RecoverHp,
+        /// <summary>
+        /// 恢复体力策略
+        /// </summary>
+        RecoverTp,
+        /// <summary>
+        /// 发招策略(玩家主动介入)
+        /// </summary>
+        Exert,
+        /// <summary>
+        /// 投降策略，根据战况决定是否等待，逃跑，或是直接投降
+        /// </summary>
         Surrender
     }
 
@@ -127,21 +145,12 @@ namespace BattleM
                 }
                 bool LowerThan(float value, ICombatStatus status)
                 {
-                    return _breathBar.Round.Current >= Round.MinEscapeRounds &&
+                    return _breathBar.Round.RoundIndex >= Round.MinEscapeRounds &&
                            (value > status.Hp.ValueFixRatio ||
                             value > status.Tp.ValueFixRatio);
                 }
             }
         }
-
-        #region RecordEvents
-        public event Action<ConsumeRecord<IForceForm>> OnRecoverConsume;
-        public event Action<ConsumeRecord<IDodgeForm>> OnDodgeConsume;
-        public event Action<ConsumeRecord<ICombatForm>> OnCombatConsume;
-        public event Action<ConsumeRecord> OnConsume;
-        public event Action<EventRecord> OnFightEvent;
-        public event Action<SwitchTargetRecord> OnSwitchTargetEvent;
-        #endregion
 
         private CombatManager Mgr { get; set; }
         #region ICombatTarget
@@ -207,7 +216,7 @@ namespace BattleM
         public void BreathCharge(int charge)
         {
             if (charge <= 0) return;
-            OnIdleRecovery(charge);
+            OnIdleCharge(charge);
             _breathBar.Charge(charge);
         }
 
@@ -225,20 +234,19 @@ namespace BattleM
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void AutoCombatPlan()
         {
-            var target = Mgr.GetAliveCombatUnit(Target);
+            var target = Mgr.TryGetAliveCombatUnit(Target);
             if(target == null)
             {
                 Mgr.SetTargetFor(this);
-                SwitchTargetEvent();
-                target = Mgr.GetAliveCombatUnit(Target);
+                Round.OnTargetSwitch(this, Target);
             }
 
             var strategy = new CombatUnitSummary(this, target, GetCombatForm(), GetDodgeForm(), GetForceForm());
-            var plan = strategy.GetPlan();
+            var plan = strategy.GetPlan(Mgr.Judge);
             switch (plan)
             {
                 case CombatPlans.Attack:
-                    AttackPlan(strategy.CombatForm, strategy.DodgeForm);
+                    AttackPlan(strategy.CombatForm, strategy.IsCombatRange ? null : strategy.DodgeForm);
                     break;
                 case CombatPlans.RecoverHp:
                     RecoverHpPlan(strategy.RecoverForm);
@@ -257,102 +265,6 @@ namespace BattleM
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            //if (IsSurrenderCondition)
-            //{
-            //    if (Mgr.GetAliveCombatUnit(Target).IsSurrenderCondition) //如果对方打算逃跑，可以等待或恢复
-            //    {
-            //        var hpLow = CheckRecoverNeed(Status.Hp);
-            //        var tpLow = CheckRecoverNeed(Status.Tp);
-            //        if (hpLow)
-            //        {
-            //            TryRecoverPlan(CombatPlans.RecoverHp);
-            //            return;
-            //        }
-
-            //        if (tpLow)
-            //        {
-            //            TryRecoverPlan(CombatPlans.RecoverTp);
-            //            return;
-            //        }
-            //    }//如果对方没有打算逃跑，己方准备认输模式(逃跑，认输)
-            //    _breathBar.SetPlan(CombatPlans.Surrender);
-            //    return;
-            //}
-
-            //if (Target == null || Target.IsExhausted) //切换对手
-            //{
-            //    Mgr.SetTargetFor(this);
-            //    SwitchTargetEvent();
-            //}
-
-            //var combatForm = GetCombatForm();//获取攻击招式
-            //var dodgeForm = GetDodgeForm();//获取身法
-            //var isReachable = IsTargetRange() || dodgeForm != null;
-            //var isHpRecoverNeed = CheckRecoverNeed(Status.Hp);
-            //var isTpRecoverNeed = CheckRecoverNeed(Status.Tp);
-            //if (isHpRecoverNeed)
-            //{
-            //    TryRecoverPlan(CombatPlans.RecoverHp);
-            //    return;
-            //}
-
-            //if (isTpRecoverNeed)
-            //{
-            //    TryRecoverPlan(CombatPlans.RecoverTp);
-            //    return;
-            //}
-
-            //if (combatForm != null && isReachable && !IsSurrenderCondition)
-            //{
-            //    if (IsTargetRange()) dodgeForm = null;
-            //    AttackPlan(combatForm, dodgeForm);
-            //    return;
-            //}
-
-            //WaitPlan();
-            //return;
-
-            //void TryRecoverPlan(CombatPlans recoverPlan)
-            //{
-            //    var forceForm = GetForceForm();
-            //    if (forceForm == null)//如果状态不允许等待下一个回合
-            //    {
-            //        //_breathBar.SetBusy(1);//暂时状态不允许+1硬直
-            //        //_breathBar.SetPlan(BattleM.BreathBar.Plans.Wait);
-            //        WaitPlan();
-            //        return;
-            //    }
-
-            //    switch (recoverPlan)
-            //    {
-            //        case CombatPlans.RecoverHp: RecoverHpPlan(forceForm); return;
-            //        case CombatPlans.RecoverTp: RecoverTpPlan(forceForm); return;
-            //        case CombatPlans.Attack:
-            //        case CombatPlans.Exert:
-            //        case CombatPlans.Wait:
-            //        case CombatPlans.Surrender:
-            //        default:
-            //            throw new ArgumentOutOfRangeException(nameof(recoverPlan), recoverPlan, null);
-            //    }
-            //}
-
-            //bool CheckRecoverNeed(IGameCondition gameCondition)
-            //{
-            //    //回气策略
-            //    switch (Strategy)
-            //    {
-            //        case Strategies.Steady when Status.Mp.Value > 10 && LowerThan(0.4f, gameCondition):
-            //        case Strategies.Hazard when Status.Mp.Value > 10 && LowerThan(0.2f, gameCondition):
-            //        case Strategies.Defend when Status.Mp.Value > 10 && LowerThan(0.8f, gameCondition):
-            //        case Strategies.RunAway when Status.Mp.Value > 10 && LowerThan(0.8f, gameCondition):
-            //        case Strategies.DeathFight when Status.Mp.Value > 10 && LowerThan(0.4f, gameCondition):
-            //            return true;
-            //        default:
-            //            return false;
-            //    }
-            //}
-
-            //bool LowerThan(float ratio, IGameCondition con) => con.ValueMaxRatio < ratio;
         }
 
         public void AttackPlan(ICombatForm combat,IDodgeForm dodge)
@@ -434,15 +346,12 @@ namespace BattleM
         /// <returns></returns>
         public void Action(int breathes)
         {
-            var strategy = new CombatUnitSummary(this, Mgr.GetAliveCombatUnit(Target), 
-                _breathBar.Combat, _breathBar.Dodge, _breathBar.Recover);
-            var plan = strategy.GetPlan();
-            switch (plan)
+            switch (_breathBar.Plan)
             {
                 case CombatPlans.Attack:
                     {
                         _breathBar.BreathConsume(breathes);
-                        OnBattle(_breathBar.Dodge, _breathBar.Combat);
+                        Round.OnAttack(this, _breathBar, Target);
                     }
                     return;
                 case CombatPlans.RecoverHp:
@@ -462,7 +371,7 @@ namespace BattleM
                 case CombatPlans.Surrender:
                     {
                         _breathBar.BreathConsume(breathes);
-                        OnEscape(_breathBar.Dodge, _breathBar.Combat);
+                        OnEscape(_breathBar.Dodge);
                     }
                     return;
                 case CombatPlans.Exert:
@@ -473,63 +382,28 @@ namespace BattleM
         }
 
         #endregion
-        private void OnIdleRecovery(int charge) => OnNonCombatRecover(0, 0, charge);
-
-        #region Battle
-        private void OnBattle(IDodgeForm dodge, ICombatForm combat)
+        private void OnIdleCharge(int charge)
         {
-            if (dodge != null)
-            {
-                OnDodge(dodge, false, true);
-            }
-            if (combat != null) OnCombat(combat);
+            var rec = ConsumeRecord.Instance();
+            rec.Set(this, () => Status.Mp.Add(charge));
+            Round.RecRecharge(new RechargeRecord(charge, rec));
         }
-        private void OnCombat(ICombatForm combat)
-        {
-            var rec = ConsumeRecord<ICombatForm>.Instance(combat);
-            rec.Set(this, () => ConsumeForm(combat), true);
-            OnCombatConsume?.Invoke(rec);
-            Round.OnAttack(this, combat, Target);
-        }
-
-        #endregion
 
         #region Escape
-        private void OnEscape(IDodgeForm dodge, ICombatForm combat)
+
+        private void OnEscape(IDodgeForm dodge)
         {
-            if(Mgr.Judge == CombatManager.Judgment.Duel)
-            {
-                dodge ??= PickDodge();
-                var isSuccess = Round.OnTryEscape(this, dodge);
-                OnDodge(dodge, true, false);
-                if (!isSuccess)
-                {
-                    Mgr.CheckExhausted();
-                    return;
-                }
-            }
-            OnFightEvent?.Invoke(EventRecord.Instance(this, FightFragment.Types.Escaped));
-            Mgr.RemoveAlive(this);
+            dodge ??= PickDodge();
+            Round.OnEscape(this, dodge);
         }
-        
+
         #endregion
 
         #region Recover
-        private void OnNonCombatRecover(int hp, int tp, int mp)
-        {
-            var rec = ConsumeRecord.Instance();
-            rec.Set(this, () =>
-            {
-                Status.Hp.Add(hp);
-                Status.Tp.Add(tp);
-                Status.Mp.Add(mp);
-            }, false);
-            OnConsume?.Invoke(rec);
-        }
 
         private void Recovery(IGameCondition con, IForce force, IForceForm forceForm)
         {
-            var rec = ConsumeRecord<IForceForm>.Instance(forceForm);
+            var rec = RecoveryRecord.Instance(forceForm);
             rec.Set(this, () =>
             {
                 //var list = new[] { Status.Hp, Status.Tp };
@@ -551,34 +425,18 @@ namespace BattleM
                 var formula = RecoverFormula.Instance(mp, forceForm.Breath, force.MpRate);
                 con.Add(formula.Finalize);
                 Status.Mp.Add(-mp);
-            }, true);
-            OnRecoverConsume?.Invoke(rec);
+            });
+            Round.RecForceRecovery(rec);
         }
 
         #endregion
 
-        private void OnDodge(IDodgeForm dodge, bool isEscape,bool isExecutor)
-        {
-            var rec = ConsumeRecord<IDodgeForm>.Instance(dodge);
-            rec.Set(this, () =>
-            {
-                ConsumeForm(dodge);
-                Round.AdjustCombatDistance(this, Target, isEscape);
-            }, isExecutor);
-            OnDodgeConsume?.Invoke(rec);
-        }
-
         public void SetBusy(int busy) => _breathBar.SetBusy(busy);
 
-        private void ConsumeForm(IDepletionForm form)
+        public void ConsumeForm(IDepletionForm form)
         {
             Status.Tp.Add(-form.Tp);
             Status.Mp.Add(-form.Mp);
-        }
-
-        public void DodgeFromAttack(IDodgeForm dodge)
-        {
-            OnDodge(dodge, false, false);
         }
 
         public void SufferDamage(int finalDamage, Weapon.Injuries kind)
@@ -588,7 +446,6 @@ namespace BattleM
             {
                 Status.Hp.Add(-finalDamage);
                 var injury = Random.Next(finalDamage);
-
                 switch (kind)
                 {
                     case Weapon.Injuries.Blunt:
@@ -602,21 +459,10 @@ namespace BattleM
                     default:
                         throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
                 }
-            }, false);
-            OnConsume?.Invoke(rec);
+            });
         }
 
-        public void SwitchTargetEvent() =>
-            OnSwitchTargetEvent?.Invoke(SwitchTargetRecord.Instance(this, Target.CombatId));
-        public void ExhaustedAction()
-        {
-            OnFightEvent?.Invoke(EventRecord.Instance(this, FightFragment.Types.Exhausted));
-        }
-        public void DeathAction()
-        {
-            IsDeath = true;
-            OnFightEvent?.Invoke(EventRecord.Instance(this, FightFragment.Types.Death));
-        }
+        public void DeathAction() => IsDeath = true;
 
         private class BasicCombat : ICombatForm
         {

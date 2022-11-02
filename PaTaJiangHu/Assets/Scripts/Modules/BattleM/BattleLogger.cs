@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -9,214 +8,268 @@ namespace BattleM
 {
     public class BattleLogger : MonoBehaviour
     {
-        private IEnumerable<CombatUnit> CombatUnits { get; set; }
-        public void NextRound(IEnumerable<CombatUnit> combatUnits,FightRoundRecord rec)
+        public void NextRound(CombatRoundRecord rec)
         {
-            CombatUnits = combatUnits;
-            var units = combatUnits.Select(u => new UnitRecord(u)).ToList();
-            RoundLog(rec, units);
+            RoundLog(rec);
             FightLog(rec);
         }
 
-
-        private void RoundLog(FightRoundRecord rec,IEnumerable<UnitRecord> units)
+        private void RoundLog(CombatRoundRecord rec)
         {
             var round = rec.Round.Sb()
                 .Insert(0, "【回合").Append("】")
                 .Color(Color.HotPink)
                 .AppendLine(rec.IsFightEnd ? "【战斗结束】" : string.Empty);
-            foreach (var unit in units.OrderBy(c=>c.Breath))
+            foreach (var bar in rec.BreathBars)
             {
-                round.AppendLine($"{unit.Name}[位:{unit.Position}]{StatusLog(unit)}".Sb().Color(Color.White)
+                var unit = bar.Unit;
+                round.Append($"{unit.Name}[位:{unit.Position}]{StatusLog(unit)}".Sb().Color(Color.White)
                     .ToString());
+                round.Append($"息：【{bar.GetBreath()}】");
+                foreach (var text in bar.Breathes.Select(breath => breath.Type switch
+                         {
+                             BreathRecord.Types.Busy => $"【硬：{breath.Value}】",
+                             BreathRecord.Types.Charge => $"【蓄：{breath.Value}】",
+                             BreathRecord.Types.Exert => $"【运：{breath.Value}】",
+                             BreathRecord.Types.Attack => $"【攻：{breath.Value}】",
+                             BreathRecord.Types.Placing => $"【移：{breath.Value}】",
+                             _ => throw new ArgumentOutOfRangeException()
+                         })) round.Append(text);
+                round.AppendLine();
             }
-
             Debug.Log(round);
         }
 
-        private void FightLog(FightRoundRecord rec)
+        private void FightLog(CombatRoundRecord rec)
         {
-            foreach (var fragment in rec.Records)
+            var sb = new StringBuilder();
+            if (rec.SwitchTargetRec != null)
             {
-                var index = $"{fragment.Index.Sb().Color(Color.White)}.";
-                var sb = new StringBuilder(index);
-                fragment.On<ConsumeRecord>(r =>
-                    {
-                        switch (r)
-                        {
-                            case ConsumeRecord<IForceForm> force:
-                                ForceFormConsumeLog(sb, force);
-                                return;
-                            case ConsumeRecord<IDodgeForm> dodge:
-                                DodgeFormConsumeLog(sb, dodge);
-                                return;
-                            case ConsumeRecord<ICombatForm> combat:
-                                CombatFormConsumeLog(sb, combat);
-                                return;
-                            default:
-                                ConsumeLog(sb, r);
-                                return;
-                        }
-                    })
-                    .On<PositionRecord>(r => PositionRecordLog(r, sb))
-                    .On<AttackRecord>(r => AttactRecordLog(r, sb))
-                    .On<DodgeRecord>(r => DodgeRecordLog(r, sb))
-                    .On<ParryRecord>(r => ParryRecordLog(r, sb))
-                    .On<EventRecord>(r => EventRecordLog(r, sb));
+                var sw = rec.SwitchTargetRec;
+                sb.Append($"{sw.CombatUnit.Name}【尝试逃走...】{StatusLog(sw.CombatUnit)}".Sb().Color(Color.Yellow));
             }
+
+            switch (rec.Major)
+            {
+                case CombatRoundRecord.MajorEvents.None:
+                    break;
+                case CombatRoundRecord.MajorEvents.Combat:
+                    if (rec.AttackRec.AttackPlacing != null)
+                        PositionRecordLog(rec.AttackRec.AttackPlacing);
+                    AttackRecordLog(rec.AttackRec);
+                    break;
+                case CombatRoundRecord.MajorEvents.Recover:
+                    ForceFormConsumeLog(rec.RecoverRec);
+                    break;
+                case CombatRoundRecord.MajorEvents.Escape:
+                    EscapeRecordLog(rec.EscapeRec);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            foreach (var eventRecord in rec.OtherEventRec) EventRecordLog(eventRecord);//战斗事件
+
+            foreach (var recharge in rec.RechargeRec) RechargeLog(sb, recharge);//恢复内力
+            var log = sb.ToString();
+            if (!string.IsNullOrWhiteSpace(log))
+                Debug.Log(sb);
         }
 
-        private static void DodgeRecordLog(DodgeRecord dod, StringBuilder sb)
+        private static void PositionRecordLog(PositionRecord pos)
         {
-            string DodgeLog(IDodgeForm a) => FormLog(a) +
-                                             $"身({a.Dodge})内({a.Mp})气({a.Tp}))".Sb().Color(Color.Coral);
-
-            if (!dod.DodgeFormula.IsSuccess)
-                sb.AppendLine($"闪避失败!闪避值[{dod.DodgeFormula.Finalize}]随机[{dod.DodgeFormula.RandomValue}]");
-            else sb.Append("闪避成功！".Sb().Color(Color.Yellow));
-            sb.Append(dod.Unit.Sb().Color(Color.LightBlue));
-            sb.AppendLine(DodgeLog(dod.Form).Sb().Color(Color.LightBlue).ToString());
-            sb.Append(dod.DodgeFormula.Sb().Color(Color.DarkTurquoise));
-            Debug.Log(sb);
-        }
-
-        private static void ParryRecordLog(ParryRecord par, StringBuilder sb)
-        {
-            string ParryLog(IParryForm a) => $"【{a.Name}】".Sb().Color(Color.LightSeaGreen).ToString() +
-                                             $"架({a.Parry})内({a.Mp})气({a.Tp})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
-
-            if (!par.ParryFormula.IsSuccess)
-                sb.AppendLine($"招架失败!招架值[{par.ParryFormula.Finalize}]随机[{par.ParryFormula.RandomValue}]");
-            else 
-                sb.Append($"招架成功！招架值[{par.ParryFormula.Finalize}]随机[{par.ParryFormula.RandomValue}]".Sb().Color(Color.Yellow));
-            sb.Append(UnitNamePos(par.Unit).Sb().Color(Color.LightGreen));
-            sb.AppendLine(ParryLog(par.Form).Sb().Color(Color.LightBlue).ToString());
-            sb.Append(par.ParryFormula.Sb().Color(Color.Yellow));
-            Debug.Log(sb);
-        }
-
-        private static void PositionRecordLog(PositionRecord pos, StringBuilder sb)
-        {
+            var sb = new StringBuilder();
             var text = UnitNamePos(pos.Unit).Sb().Color(Color.White)
-                .AppendLine($"移位->【{pos.NewPos.Sb().Color(Color.GreenYellow)}】")
+                .Append($"移位->【{pos.NewPos.Sb().Color(Color.GreenYellow)}】| ")
                 .Append(UnitNamePos(pos.Target).Sb().Color(Color.LightBlue));
             sb.Append(text);
             Debug.Log(sb);
         }
 
-        private static string UnitNamePos(IUnitRecord u) => $"{u.Name}[息({u.Breath})位({u.Position})]";
+        private static string UnitNamePos(IUnitInfo u) => $"{u.Name}[位({u.Position})]";
 
-        private static void AttactRecordLog(AttackRecord att, StringBuilder sb)
+        private void EscapeRecordLog(EscapeRecord esc)
         {
-            string AttackLog(ICombatForm a) => FormLog(a) +
-                                                $"内({a.Mp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb().Color(Color.Coral);
-
-            var u = att.Unit;
-            if (att.Type == FightFragment.Types.Fling) sb.Append("【投掷暗器】".Sb().Color(Color.Red));
-            sb.Append($"{u.Name}伤害: 力({u.Strength})".Sb().Color(Color.Coral));
-            sb.AppendLine($"【{AttackLog(att.Form)}】".Sb().Color(Color.LightBlue).ToString());
-            sb.Append($"{att.DamageFormula})".Sb().Color(Color.Coral)
-            );
-            Debug.Log(sb);
-        }
-
-        private void EventRecordLog(EventRecord e, StringBuilder sb)
-        {
-            switch (e.Type)
+            var sb = new StringBuilder();
+            var e = esc.Escapee;
+            sb.Append($"{e.Name}打算逃跑......{StatusLog(e)}{(esc.IsSuccess ? "逃跑成功！~" : "逃脱失败！")}")
+                .Color(Color.GreenYellow).Bold();
+            var u = esc.Attacker;
+            if (u == null)
             {
-                case FightFragment.Types.TryEscape:
-                    sb.Append($"{e.Unit.Name}【尝试逃走...】{StatusLog(e.Unit)}".Sb().Color(Color.Yellow));
-                    break;
-                case FightFragment.Types.Escaped:
-                    sb.Append($"{e.Unit.Name}【逃走了！】{StatusLog(e.Unit)}".Sb().Color(Color.GreenYellow));
-                    break;
-                case FightFragment.Types.Death:
-                    sb.Append($"{e.Unit.Name}【死亡！】{StatusLog(e.Unit)}".Sb().Color(Color.Red));
-                    break;
-                case FightFragment.Types.Exhausted:
-                    sb.Append($"{e.Unit.Name}【倒地失去意识！】{StatusLog(e.Unit)}".Sb().Color(Color.DodgerBlue));
-                    break;
-                case FightFragment.Types.SwitchTarget:
-                    sb.Append($"{e.Unit.Name}【换攻击目标.】".Sb().Color(Color.Orange));
-                    break;
-                case FightFragment.Types.None:
-                case FightFragment.Types.Consume:
-                case FightFragment.Types.Attack:
-                case FightFragment.Types.Parry:
-                case FightFragment.Types.Dodge:
-                case FightFragment.Types.Position:
-                case FightFragment.Types.Fling:
-                case FightFragment.Types.Wait:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            Debug.Log(sb);
-        }
-
-        private void ConsumeLog(StringBuilder sb, ConsumeRecord consume)
-        {
-            if (consume.Type == FightFragment.Types.Wait)
-            {
-                sb.Append($"【{consume.UnitName}】等待,".Sb().Color(Color.Cyan).ToString() +
-                          StatusLog(consume.Before).Sb().Color(Color.Aquamarine) + "->");
-                sb.Append(SimpleStatusLog(consume.Before, consume.After, Color.GreenYellow));
+                sb.AppendLine($"无人阻止，{e.Name}逃跑......").Color(Color.GreenYellow).Bold();
             }
             else
             {
-                sb.Append($"【{consume.UnitName}】消耗,".Sb().Color(Color.IndianRed).ToString() +
-                          StatusLog(consume.Before).Sb().Color(Color.Aquamarine) + "->");
-                sb.Append(SimpleStatusLog(consume.Before, consume.After,
-                    consume.After.Hp.Value == 0 || consume.After.Tp.Value == 0
-                        ? Color.Red
-                        : Color.IndianRed)).Bold();
+                sb.Append($"{u.Name}【投掷暗器】".Sb().Color(Color.Red));
+                sb.Append($"{u.Name}伤害: 力({u.Strength})".Sb().Color(Color.Coral));
+                sb.AppendLine($"【{AttackLog(esc.AttackConsume.Form)}】".Sb().Color(Color.LightBlue).ToString());
+                sb.Append($"{esc.DamageFormula})".Sb().Color(Color.Coral)
+                );
+                DodgeRecordLog(esc.DodgeFormula, esc.EscapeConsume.Form, e, sb);
+                ParryRecordLog(esc.ParryFormula, esc.ParryConsume.Form, e, sb);
             }
 
             Debug.Log(sb);
+            string AttackLog(ICombatForm a) => FormLog(a) +
+                                               $"内({a.Mp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                                   .Color(Color.Coral);
         }
 
-        private void CombatFormConsumeLog(StringBuilder sb, ConsumeRecord<ICombatForm> combat)
+        private static void AttackRecordLog(AttackRecord att)
         {
-            var unit = CombatUnits.Single(u => u.CombatId == combat.CombatId);
-            sb.Append(($"{combat.UnitName}攻击招式," + FormLog(combat.Form)).Sb().Color(Color.Orange)
-                .ToString());
-            sb.Append($"气:({combat.Form.Tp})内:({combat.Form.Mp})".Sb().Color(Color.Yellow));
+            var sb = new StringBuilder();
 
-            sb.AppendLine(ArmedKindLog(unit.Equipment.Armed).Sb().Color(Color.DarkOrange).ToString());
-            sb.Append(
-                $"己硬直({combat.Form.OffBusy.Sb().Bold().Color(Color.DarkOrange)})|敌硬直({combat.Form.TarBusy.Sb().Bold().Color(Color.Orange)})");
-            sb.Append(
-                (
-                    $"气{SimpleStat(combat.Before.Tp)},内{SimpleStat(combat.Before.Mp)}->" +
-                    $"气{SimpleStat(combat.After.Tp)},内{SimpleStat(combat.After.Mp)}"
-                ).Sb().Color(Color.DeepSkyBlue));
+            string AttackLog(ICombatForm a) => FormLog(a) +
+                                               $"内({a.Mp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                                   .Color(Color.Coral);
+
+            var u = att.Unit;
+            sb.Append($"【{u.Name}】力({u.Strength})".Sb().Color(Color.Coral));
+            sb.Append($"【总伤害：({att.DamageFormula.Finalize}){AttackLog(att.Form)}】".Sb().Color(Color.Orange).ToString());
+            sb.Append($"{att.DamageFormula})".Sb().Color(Color.DarkOrange));
+            sb.AppendLine();
+            DodgeRecordLog(att.DodgeFormula, att.DodgeConsume.Form, att.Target, sb);
+            if (!att.DodgeFormula.IsSuccess)
+            {
+                ParryRecordLog(att.ParryFormula, att.ParryConsume.Form, att.Target, sb);
+                CombatFormConsumeLog(sb, att.AttackConsume, att.Unit);
+                sb.AppendLine();
+                ConsumeLog(sb, att.Suffer);
+            }
+
+            Debug.Log(sb);
+
+            void CombatFormConsumeLog(StringBuilder s, ConsumeRecord<ICombatForm> combat, IUnitInfo info)
+            {
+                s.Append($"【{info.Name}】气:({combat.Form.Tp})内:({combat.Form.Mp})".Sb().Color(Color.Cyan));
+                s.Append(ArmedKindLog(info.Equip.Armed).Sb().Color(Color.DarkOrange).ToString());
+                s.Append(
+                    $"己硬直({combat.Form.OffBusy.Sb().Bold().Color(Color.DarkOrange)})|敌硬直({combat.Form.TarBusy.Sb().Bold().Color(Color.Orange)})");
+                ConLog(s, combat);
+            }
+
+            void ConsumeLog(StringBuilder s, ConsumeRecord consume)
+            {
+                s.Append($"【{consume.UnitName}】".Sb().Color(Color.Cyan));
+                ConLog(s, consume);
+            }
+
+            void ConLog(StringBuilder s, ConsumeRecord consume)
+            {
+                s.Append(
+                    (
+                        $"血{SimpleStat(consume.Before.Hp)},气{SimpleStat(consume.Before.Tp)},内{SimpleStat(consume.Before.Mp)}->" +
+                        $"血{SimpleStat(consume.After.Hp)},气{SimpleStat(consume.After.Tp)},内{SimpleStat(consume.After.Mp)}"
+                    ).Sb().Color(Color.DeepSkyBlue));
+
+            }
+        }
+
+        static void DodgeRecordLog(DodgeFormula formula, IDodgeForm form, IUnitInfo tar,StringBuilder sb)
+        {
+            string DodgeLog(IDodgeForm a) => FormLog(a) +
+                                             $"身({a.Dodge})内({a.Mp})气({a.Tp}))".Sb().Color(Color.Coral);
+
+            sb.Append(!formula.IsSuccess
+                ? $"闪避失败!随机【{formula.RandomValue}】闪避值【{formula.Finalize}】".Sb().Color(Color.Crimson)
+                : $"闪避成功！随机【{formula.RandomValue}】闪避值【{formula.Finalize}】".Sb().Color(Color.Yellow));
+            sb.Append(tar.Sb().Color(Color.LightBlue));
+            sb.Append(DodgeLog(form).Sb().Color(Color.LightBlue).ToString());
+            sb.Append(formula.Sb().Color(Color.DarkTurquoise));
+            sb.AppendLine();
+        }
+        static void ParryRecordLog(ParryFormula formula, IParryForm form, IUnitInfo tar,StringBuilder sb)
+        {
+            string ParryLog(IParryForm a) => $"【{a.Name}】".Sb().Color(Color.LightSeaGreen).ToString() +
+                                             $"架({a.Parry})内({a.Mp})气({a.Tp})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
+            sb.Append(!formula.IsSuccess
+                ? $"招架失败!随机【{formula.RandomValue}】招架值【{formula.Finalize}】".Sb().Color(Color.Crimson)
+                : $"招架成功！随机【{formula.RandomValue}】招架值【{formula.Finalize}】".Sb().Color(Color.Yellow));
+            sb.Append(UnitNamePos(tar).Sb().Color(Color.LightGreen));
+            sb.Append(ParryLog(form).Sb().Color(Color.LightBlue).ToString());
+            sb.Append(formula.Sb().Color(Color.Yellow));
+            sb.AppendLine();
+        }
+
+        private void EventRecordLog(SubEventRecord e)
+        {
+            var sb = new StringBuilder();
+            switch (e.Type)
+            {
+                //case SubEventRecord.EventTypes.TryEscape:
+                //    sb.Append($"{e.Unit.Name}【尝试逃走...】{StatusLog(e.Status)}".Sb().Color(Color.Yellow));
+                //    break;
+                //case SubEventRecord.EventTypes.Escaped:
+                //    sb.Append($"{e.Unit.Name}【逃走了！】{StatusLog(e.Status)}".Sb().Color(Color.GreenYellow));
+                //    break;
+                case SubEventRecord.EventTypes.Death:
+                    sb.Append($"{e.Unit.Name}【死亡！】{StatusLog(e.Status)}".Sb().Color(Color.Red));
+                    break;
+                case SubEventRecord.EventTypes.None:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            //{
+            //    case FightFragment.Types.TryEscape:
+            //        break;
+            //    case FightFragment.Types.Escaped:
+            //        break;
+            //    case FightFragment.Types.Death:
+            //        break;
+            //    case FightFragment.Types.Exhausted:
+            //        sb.Append($"{e.Unit.Name}【倒地失去意识！】{StatusLog(e.Status)}".Sb().Color(Color.DodgerBlue));
+            //        break;
+            //    case FightFragment.Types.SwitchTarget:
+            //        sb.Append($"{e.Unit.Name}【换攻击目标.】".Sb().Color(Color.Orange));
+            //        break;
+            //    case FightFragment.Types.None:
+            //    case FightFragment.Types.Consume:
+            //    case FightFragment.Types.Attack:
+            //    case FightFragment.Types.Parry:
+            //    case FightFragment.Types.Dodge:
+            //    case FightFragment.Types.Position:
+            //    case FightFragment.Types.Fling:
+            //    case FightFragment.Types.Wait:
+            //        break;
+            //    default:
+            //        throw new ArgumentOutOfRangeException();
+            //}
+
             Debug.Log(sb);
         }
 
-        private void DodgeFormConsumeLog(StringBuilder sb, ConsumeRecord<IDodgeForm> dodge)
+        private void RechargeLog(StringBuilder sb, RechargeRecord charge)
         {
-            sb.AppendLine(($"{dodge.UnitName}身法," + FormLog(dodge.Form)).Sb().Color(Color.GreenYellow)
-                .ToString());
-            sb.Append(
-                (
-                    $"气{SimpleStat(dodge.Before.Tp)},内{SimpleStat(dodge.Before.Mp)}->" +
-                    $"气{SimpleStat(dodge.After.Tp)},内{SimpleStat(dodge.After.Mp)}"
-                ).Sb().Color(Color.DeepSkyBlue));
-            Debug.Log(sb);
+            var consume = charge.Consume;
+            //if (consume.Type == FightFragment.Types.Wait)
+            //{
+                sb.Append($"【{consume.UnitName}】回气({charge.Charge}),".Sb().Color(Color.Cyan).ToString() +
+                          StatusLog(consume.Before).Sb().Color(Color.Aquamarine) + "->");
+                sb.Append(SimpleStatusLog(consume.Before, consume.After, Color.GreenYellow));
+            //}
+            //else
+            //{
+            //    sb.Append($"【{consume.UnitName}】消耗,".Sb().Color(Color.IndianRed).ToString() +
+            //              StatusLog(consume.Before).Sb().Color(Color.Aquamarine) + "->");
+            //    sb.Append(SimpleStatusLog(consume.Before, consume.After,
+            //        consume.After.Hp.Value == 0 || consume.After.Tp.Value == 0
+            //            ? Color.Red
+            //            : Color.IndianRed)).Bold();
+            //}
         }
 
-        private static void ForceFormConsumeLog(StringBuilder sb, ConsumeRecord<IForceForm> force)
+        private static void ForceFormConsumeLog(ConsumeRecord<IForceForm> force)
         {
+            var sb = new StringBuilder();
             sb.AppendLine(($"{force.UnitName}调息," + FormLog(force.Form)).Sb().Color(Color.LightPink)
                 .ToString());
             sb.Append($"{force.Before}->{force.After}".Sb().Color(Color.DeepSkyBlue));
             Debug.Log(sb);
         }
 
-        private static string FormLog<T>(T f) where T : IBreathNode, ISkillForm => $"【{f.Name}({f.Breath})】".Sb().Color(Color.Cornsilk).ToString();
+        private static string FormLog<T>(T f) where T : IBreathNode, ISkillForm => $"【{f.Name}(息：{f.Breath})】".Sb().Color(Color.Cornsilk).ToString();
 
-        private string ArmedKindLog(Way.Armed armedKind)
+        private static string ArmedKindLog(Way.Armed armedKind)
         {
             return armedKind switch
             {
@@ -231,8 +284,9 @@ namespace BattleM
             };
         }
 
-        private string SimpleStat(IConditionValue c) => $"[{c.Value}/{c.Max}]";
-        private string StatusLog(IStatusRecord s) => $"[息:{s.Breath}]血{SimpleStat(s.Hp)},气{SimpleStat(s.Tp)},内{SimpleStat(s.Mp)}";
+        private static string SimpleStat(IConditionValue c) => $"[{c.Value}/{c.Max}]";
+        private static string StatusLog(IStatusRecord s) => StatusLog(s.Breath, s.Hp, s.Tp, s.Mp);
+        private static string StatusLog(int breathes, IConditionValue hp, IConditionValue tp, IConditionValue mp) => $"[息:{breathes}]血{SimpleStat(hp)},气{SimpleStat(tp)},内{SimpleStat(mp)}";
 
         private string SimpleStatusLog(IStatusRecord b, IStatusRecord s, Color color)
         {

@@ -8,7 +8,7 @@ namespace BattleM
 {
     public interface IRound
     {
-        public int Current { get; }
+        public int RoundIndex { get; }
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ namespace BattleM
         public CombatBuffManager BuffMgr { get; set; }
 
         //战斗单位的辨识Id
-        private int CombatId { get; set; }
+        private int CombatIdIndex { get; set; }
         public CombatManager(IEnumerable<CombatUnit> combats,Judgment judgment)
         {
             BuffMgr = new CombatBuffManager();
@@ -45,7 +45,7 @@ namespace BattleM
             Judge = judgment;
             foreach (var unit in AllUnits)
             {
-                unit.SetCombatId(CombatId++);
+                unit.SetCombatId(++CombatIdIndex);
                 if (Judge == Judgment.Duel)
                 {
                     unit.SetStrategy(CombatUnit.Strategies.Hazard);
@@ -54,7 +54,7 @@ namespace BattleM
         }
 
         public IEnumerable<CombatUnit> GetAliveCombatUnits() => AliveMap.Values;
-        public CombatUnit GetAliveCombatUnit(ICombatInfo unit) => AliveMap.TryGetValue(unit, out var tg) ? tg : null;
+        public CombatUnit TryGetAliveCombatUnit(ICombatInfo unit) => AliveMap.TryGetValue(unit, out var tg) ? tg : null;
         public CombatUnit GetFromAllUnits(int combatId) => AllUnits.Single(u => u.CombatId == combatId);
         public CombatUnit GetTargetedUnit(CombatUnit escapee) =>
             AliveMap.Values
@@ -66,12 +66,13 @@ namespace BattleM
             UpdateFightEnd();
         }
 
-        public void CheckExhausted()
+        public void CheckExhausted(Action<CombatUnit> onUnitExhausted)
         {
             foreach (var unit in AliveMap.Values.ToArray())
             {
                 if (!unit.IsExhausted) continue;
-                unit.ExhaustedAction();
+                
+                onUnitExhausted(unit);
                 BuffMgr.RemoveAll(unit.CombatId);
                 AliveMap.Remove(unit);
             }
@@ -106,17 +107,10 @@ namespace BattleM
     public interface ICombatRound : IRound
     {
         int MinEscapeRounds { get; }
-        void AdjustCombatDistance(CombatUnit obj ,ICombatInfo target, bool isEscape);
 
-        /// <summary>
-        /// true = success escape
-        /// </summary>
-        /// <param name="escapee"></param>
-        /// <param name="dodge"></param>
-        /// <returns></returns>
-        bool OnTryEscape(CombatUnit escapee, IDodgeForm dodge);
+        void OnEscape(CombatUnit escapee, IDodgeForm dodge);
 
-        void OnAttack(CombatUnit offender, ICombatForm combat, ICombatInfo target);
+        void OnAttack(CombatUnit offender, IBreathBar breathBar, ICombatInfo target);
         IList<CombatUnit> CombatPlan(IEnumerable<int> skipPlanIds);
 
         /// <summary>
@@ -124,7 +118,10 @@ namespace BattleM
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        FightRoundRecord NextRound(bool autoPlan);
+        CombatRoundRecord NextRound(bool autoPlan);
+        void RecRecharge(RechargeRecord rec);
+        void RecForceRecovery(RecoveryRecord rec);
+        void OnTargetSwitch(CombatUnit combatUnit, ICombatInfo target);
     }
 
     /// <summary>
@@ -134,7 +131,7 @@ namespace BattleM
     {
         private bool _isPlan;
         private static Random Random { get; } = new(DateTime.Now.Millisecond);
-        public int Current { get; set; }
+        public int RoundIndex { get; set; }
         
         public int MinEscapeRounds { get; private set; }
         private CombatManager Mgr { get; }
@@ -157,7 +154,7 @@ namespace BattleM
             };
         }
 
-        public void AdjustCombatDistance(CombatUnit obj ,ICombatInfo target, bool isEscape)
+        private PositionRecord AdjustCombatDistance(CombatUnit obj ,ICombatInfo target, bool isEscape)
         {
             int AdjustDistance(ICombatInfo combat,ICombatInfo tar,bool closer)
             {
@@ -168,159 +165,137 @@ namespace BattleM
             }
 
             var newPos = 0;
-            if (isEscape) newPos = AdjustDistance(obj, target, false);
-            switch (obj.Equipment.Armed)
+            if (isEscape)
             {
-                case Way.Armed.Unarmed when !obj.IsTargetRange():
-                case Way.Armed.Short when !obj.IsTargetRange():
-                    newPos = obj.Distance(target) < 1 ? AdjustDistance(obj,target, false) : AdjustDistance(obj,target, true);
-                    break;
-                case Way.Armed.Sword when !obj.IsTargetRange():
-                case Way.Armed.Blade when !obj.IsTargetRange():
-                    newPos = obj.Distance(target) < 2 ? AdjustDistance(obj, target, false) : AdjustDistance(obj, target, true);
-                    break;
-                case Way.Armed.Stick when !obj.IsTargetRange():
-                case Way.Armed.Whip when !obj.IsTargetRange():
-                    newPos = obj.Distance(target) < 3 ? AdjustDistance(obj, target, false) : AdjustDistance(obj, target, true);
-                    break;
-                //case Way.Armed.Fling:
-                //{
-                //    if (obj.IsTargetRange() && obj.Distance(target) < 3) 
-                //        newPos = AdjustDistance(obj, target, false);
-                //    break;
-                //}
-                //default:
-                //    throw new ArgumentOutOfRangeException(
-                //        $"{nameof(AdjustCombatDistance)}:{obj.Name}.{obj.Equipment.Armed},距离[{obj.Distance(target)}]，逻辑超出预期范围！");
+                newPos = AdjustDistance(obj, target, false);
+            }
+            else
+            {
+                //如果不在允许攻击范围内，赋予新位置(根据最近位置原则)
+                //否则返回原来的位置
+                switch (obj.Equipment.Armed)
+                {
+                    case Way.Armed.Unarmed :
+                    case Way.Armed.Short:
+                        newPos = !obj.IsTargetRange()
+                            ? obj.Distance(target) < 1
+                                ? AdjustDistance(obj, target, false)
+                                : AdjustDistance(obj, target, true)
+                            : obj.Position;
+                        break;
+                    case Way.Armed.Sword:
+                    case Way.Armed.Blade:
+                        newPos = !obj.IsTargetRange()
+                            ? obj.Distance(target) < 2
+                                ? AdjustDistance(obj, target, false)
+                                : AdjustDistance(obj, target, true)
+                            : obj.Position;
+                        break;
+                    case Way.Armed.Stick:
+                    case Way.Armed.Whip:
+                        newPos = !obj.IsTargetRange() 
+                            ? obj.Distance(target) < 3 
+                                ? AdjustDistance(obj, target, false) 
+                                : AdjustDistance(obj, target, true) 
+                            : obj.Position;
+                        break;
+                    //case Way.Armed.Fling:
+                    //{
+                    //    if (obj.IsTargetRange() && obj.Distance(target) < 3) 
+                    //        newPos = AdjustDistance(obj, target, false);
+                    //    break;
+                    //}
+                    //default:
+                    //    throw new ArgumentOutOfRangeException(
+                    //        $"{nameof(AdjustCombatDistance)}:{obj.Name}.{obj.Equipment.Armed},距离[{obj.Distance(target)}]，逻辑超出预期范围！");
+                }
             }
 
-            CurrentRoundRecord.Add(new PositionRecord(newPos, obj, Mgr.GetAliveCombatUnit(target)));
             obj.SetPosition(newPos);
+            return new PositionRecord(newPos, obj, Mgr.TryGetAliveCombatUnit(target));
         }
 
-        /// <summary>
-        /// true = success escape
-        /// </summary>
-        /// <param name="escapee"></param>
-        /// <param name="dodge"></param>
-        /// <returns></returns>
-        public bool OnTryEscape(CombatUnit escapee, IDodgeForm dodge)
+        public void OnEscape(CombatUnit escapee, IDodgeForm dodge)
         {
-            escapee.SetBusy(1);//尝试逃走+1硬直
-            RecFightEvent(EventRecord.Instance(escapee, FightFragment.Types.TryEscape));
-            var tar = Mgr.GetTargetedUnit(escapee);
-            if (tar != null)
+            escapee.SetBusy(1); //尝试逃走+1硬直
+            var op = Mgr.GetTargetedUnit(escapee);
+            if (op != null)
             {
-                if (tar.Distance(escapee) <= 4)
+                if (op.Distance(escapee) > 4)
                 {
-                    var combat = tar.PickCombat();
-                    tar.Equipment.FlingConsume();
-                    var isSuccessAttack = FlingOnTargetEscape(escapee, tar, combat, dodge);
-                    return !isSuccessAttack;
+                    var combat = op.PickCombat();
+                    op.Equipment.FlingConsume();
+                    {
+                        var dodgeFormula = InstanceDodgeFormula(op, escapee, dodge);
+                        var damageFormula = InstanceDamageFormula(op, combat);
+                        var armor = GetArmor(escapee);
+                        var parryForm = escapee.PickParry();
+                        var parryFormula = InstanceParryFormula(op, escapee, parryForm);
+
+                        var attConsume = ConsumeRecord<ICombatForm>.Instance(combat);
+                        attConsume.Set(op, () => op.ConsumeForm(combat));
+
+                        var tarParryConsume = ConsumeRecord<IParryForm>.Instance(parryForm);
+                        var tarDodgeConsume = ConsumeRecord<IDodgeForm>.Instance(dodge);
+                        tarDodgeConsume.Set(escapee, () => escapee.ConsumeForm(dodge));
+                        if (parryFormula.IsSuccess)
+                            tarParryConsume.Set(escapee, () => escapee.ConsumeForm(parryForm));
+                        var tarSuffer = ConsumeRecord.Instance();
+                        tarSuffer.Set(escapee, () =>
+                        {
+                            if (dodgeFormula.IsSuccess) //成功逃走
+                                return;
+                            var damage = (int)(0.01f * damageFormula.Finalize);
+                            var finalDamage = damage - (int)(1f - armor * 0.01f); //最终伤害(扣除免伤)
+                            var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage; //最低伤害为1
+                            if (parryFormula.IsSuccess)
+                            {
+                                sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
+                                op.SetBusy(parryForm.OffBusy); //招架打入硬直
+                            }
+
+                            escapee.SufferDamage(sufferDmg, op.WeaponInjuryType); //伤害
+                            escapee.SetBusy(combat.TarBusy); //攻击打入硬直
+                            op.SetBusy(combat.OffBusy); //攻击方招式硬直
+                        });
+
+                        RoundRec.SetEscape(new EscapeRecord(escapee, op, attConsume, tarDodgeConsume, tarParryConsume,
+                            tarSuffer, damageFormula, dodgeFormula, parryFormula, dodgeFormula.IsSuccess));
+
+                        if (!dodgeFormula.IsSuccess) return;
+                    }
                 }
             }
-            return true;
+
+            RoundRec.SetEscape(new EscapeRecord(escapee, true));
+            Mgr.RemoveAlive(escapee);
         }
 
-        /// <summary>
-        /// true = isAvoidEscape, false = isDodge
-        /// </summary>
-        /// <param name="op"></param>
-        /// <param name="target"></param>
-        /// <param name="combat"></param>
-        /// <param name="dodge"></param>
-        /// <returns></returns>
-        private bool FlingOnTargetEscape(CombatUnit op, ICombatInfo target, ICombatForm combat,
-            IDodgeForm dodge)
+        public void OnAttack(CombatUnit offender, IBreathBar breathBar, ICombatInfo target)
         {
-            var escapee = Mgr.GetAliveCombatUnit(target);
-            var dodgeFormula = InstanceDodgeFormula(op, escapee, dodge);
-            var damageFormula = InstanceDamageFormula(op, combat);
-            var isAvoidEscape = false;
-            var consume = ConsumeRecord.Instance();
-            consume.Set(escapee, () =>
+            var attackForm = breathBar.Combat;
+            PositionRecord placingRecord = null;
+            if (breathBar.Dodge != null) placingRecord = AdjustCombatDistance(offender, offender.Target, false);
+            var tar = Mgr.TryGetAliveCombatUnit(target);
+            var dodgeForm = tar.PickDodge();
+            var dodgeFormula = InstanceDodgeFormula(offender, tar, dodgeForm);
+            var damageFormula = InstanceDamageFormula(offender, attackForm);
+            var combo = attackForm.Combo?.Rates ?? new[] { 100 };
+            for (var i = 0; i < combo.Length; i++)
             {
-                if (dodgeFormula.IsSuccess)
-                {
-                    RecRespond(FightFragment.Types.Dodge);
-                    escapee.DodgeFromAttack(dodge);
-                    RecDodgeAction(escapee, dodge, dodgeFormula);
-                    isAvoidEscape = false;
-                }
-                else
-                {
-                    var damage = damageFormula.Finalize;
-                    var armor = GetArmor(escapee);
-                    var finalDamage = damage - (int)(1f - armor * 0.01f);
-                    var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage;
-                    var parryForm = escapee.PickParry();
-                    var parryFormula = InstanceParryFormula(op, escapee, parryForm);
-
-                    RecParryAction(escapee, parryForm, parryFormula);
-
-                    if (parryFormula.IsSuccess)
-                    {
-                        RecRespond(FightFragment.Types.Parry);
-                        sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
-                        escapee.SufferDamage(sufferDmg, op.WeaponInjuryType);
-                        escapee.SetBusy(combat.TarBusy);
-                        op.SetBusy(combat.OffBusy);
-                        op.SetBusy(1); //招架导致硬直
-                        isAvoidEscape = true;
-                    }
-
-                    escapee.SufferDamage(sufferDmg, op.WeaponInjuryType);
-                }
-            }, true);
-            RecAttackAction(op, consume, combat, damageFormula, true);
-            return isAvoidEscape;
+                var damageRate = combo[i];
+                var armor = GetArmor(tar);
+                var parryForm = tar.PickParry();
+                var parryFormula = InstanceParryFormula(offender, tar, parryForm);
+                RecAttackAction(offender, tar, attackForm, parryForm, dodgeForm, placingRecord, damageFormula,
+                    dodgeFormula, parryFormula, armor, damageRate);
+            }
         }
 
-
-        public void OnAttack(CombatUnit offender, ICombatForm combat, ICombatInfo target)
+        private void OnUnitExhausted(CombatUnit tar)
         {
-            var tg = Mgr.GetAliveCombatUnit(target);
-            var tgDodge = tg.PickDodge();
-            var dodgeFormula = InstanceDodgeFormula(offender, tg, tgDodge);
-            var damageFormula = InstanceDamageFormula(offender, combat);
-            var consume = ConsumeRecord.Instance();
-            var combo = combat.Combo?.Rates ?? new[] { 100 };
-            consume.Set(tg, () =>
-            {
-                for (var i = 0; i < combo.Length; i++)
-                {
-                    var rate = combo[i];
-                    RecDodgeAction(tg, tgDodge, dodgeFormula);
-                    if (dodgeFormula.IsSuccess)
-                    {
-                        RecRespond(FightFragment.Types.Dodge);
-                        tg.DodgeFromAttack(tgDodge);
-                        AdjustCombatDistance(tg, offender, tg.IsSurrenderCondition);
-                        return;
-                    }
-
-                    var damage = (int)(0.01f * damageFormula.Finalize * rate);
-                    var armor = GetArmor(tg);
-                    var finalDamage = damage - (int)(1f - armor * 0.01f);
-                    var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage;
-                    var parryForm = tg.PickParry();
-                    var parryFormula = InstanceParryFormula(offender, tg, parryForm);
-
-                    RecParryAction(tg, parryForm, parryFormula);
-
-                    if (parryFormula.IsSuccess)
-                    {
-                        RecRespond(FightFragment.Types.Parry);
-                        sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
-                        offender.SetBusy(parryForm.OffBusy); //招架打入硬直
-                    }
-
-                    tg.SufferDamage(sufferDmg, offender.WeaponInjuryType); //伤害
-                    tg.SetBusy(combat.TarBusy); //攻击打入硬直
-                    offender.SetBusy(combat.OffBusy); //攻击方招式硬直
-                }
-            }, true);
-            RecAttackAction(offender, consume, combat, damageFormula, false);
+            tar.DeathAction();
+            RoundRec.SetSubEvent(SubEventRecord.Instance(tar, SubEventRecord.EventTypes.Death));
         }
 
         private int GetArmor(CombatUnit tg)
@@ -344,79 +319,107 @@ namespace BattleM
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public FightRoundRecord NextRound(bool autoPlan)
+        public CombatRoundRecord NextRound(bool autoPlan)
         {
             if (!autoPlan && !_isPlan)
                 throw new InvalidOperationException($"{nameof(NextRound)}:手动回合必须先执行一次{nameof(CombatPlan)}才可以实现回合。");
-            CurrentRoundRecord = new FightRoundRecord(Current);
+            RoundRec = new CombatRoundRecord(++RoundIndex);
             var allUnits = autoPlan ? CombatPlan(Array.Empty<int>()) : Mgr.GetAliveCombatUnits().ToList();
-            return ProcessRound(allUnits);
+            return RoundProcess(allUnits);
         }
 
-        private FightRoundRecord ProcessRound(IList<CombatUnit> allUnits)
+        public void OnTargetSwitch(CombatUnit combatUnit, ICombatInfo target)
         {
-            foreach (var unit in allUnits) SubscribeRecords(unit);
+            var tar = Mgr.TryGetAliveCombatUnit(target);
+            if (tar == null)
+                throw new NullReferenceException("Target is null!");
+            RoundRec.SetSwitchTarget(SwitchTargetRecord.Instance(combatUnit, tar));
+        }
+
+        /*****************************Round Process**********************************/
+        private CombatRoundRecord RoundProcess(IList<CombatUnit> allUnits)
+        {
             Mgr.BuffMgr.OnRoundStart(this);
+            foreach (var unit in allUnits) 
+                RoundRec.AddBreathBar(unit);//breath记录
             var fighters = allUnits.ToList();
-            var actionUnits = fighters.Where(c => c.Plan != CombatPlans.Wait).ToList();
+            var actionUnits = fighters.Where(c => c.Plan != CombatPlans.Wait).ToList();//剔除等待单位
             actionUnits.Sort();
             var combat = actionUnits.FirstOrDefault();
-            var breathes = 10;
+            var breathes = 10;//默认息-恢复值(如果双方都等待，各自恢复10点)
             if(combat != null)
             {
+                RoundRec.SetExecutor(combat);
                 fighters.Remove(combat);
-                breathes = combat.BreathBar.TotalBreath;
-                //CurrentRoundRecord.SetExecute(combat);
+                breathes = combat.BreathBar.TotalBreath;//覆盖默认息
                 combat.Action(breathes);
-                Mgr.CheckExhausted();
+                Mgr.CheckExhausted(OnUnitExhausted);
             }
-            foreach (var unit in fighters) unit.BreathCharge(breathes);
-            allUnits.ToList().ForEach(UnsubscribeRecords);
+            foreach (var unit in fighters.Where(c => !c.IsExhausted))//去掉死亡单位(因为列表可能包涵被攻击死亡的单位)
+                unit.BreathCharge(breathes);//息恢复
             Mgr.BuffMgr.OnRoundEnd(this);
-            Current++;
+
+            if(Mgr.IsFightEnd) RoundRec.SetFightEnd();
             _isPlan = false;
-            return CurrentRoundRecord;
+            return RoundRec;
         }
 
         #region ConsumeRecord
-        private void SubscribeRecords(CombatUnit unit)
+
+        private void RecAttackAction(CombatUnit op, CombatUnit tar,
+            ICombatForm attackForm, IParryForm parryForm, IDodgeForm dodgeForm, PositionRecord attackPlacing,
+            DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula,
+            int armor, int damageRate)
         {
-            unit.OnCombatConsume += RecCombatConsume;
-            unit.OnDodgeConsume += RecDodgeConsume;
-            unit.OnRecoverConsume += RecRecoveryConsume;
-            unit.OnConsume += RecConsume;
-            unit.OnFightEvent += RecFightEvent;
-            unit.OnSwitchTargetEvent += RecSwitchTargetEvent;
+            var attConsume = ConsumeRecord<ICombatForm>.Instance(attackForm);
+            attConsume.Set(op, () => op.ConsumeForm(attackForm));
+
+            var tarParryConsume = ConsumeRecord<IParryForm>.Instance(parryForm);
+            var tarDodgeConsume = ConsumeRecord<IDodgeForm>.Instance(dodgeForm);
+
+            var tarSuffer = ConsumeRecord.Instance();
+            if (dodgeFormula.IsSuccess)
+            {
+                //闪避优先更新状态一次(1)
+                tarDodgeConsume.Set(tar, () => tar.ConsumeForm(dodgeForm));
+            }
+            else
+            {
+                if (parryFormula.IsSuccess)
+                {
+                    //招架第二次更新状态(2)
+                    tarParryConsume.Set(tar, () => tar.ConsumeForm(parryForm));
+                }
+
+                //承受伤害第三次更新状态(3)
+                tarSuffer.Set(tar, () =>
+                {
+                    var damage = (int)(0.01f * damageFormula.Finalize * damageRate);
+                    var finalDamage = damage - (int)(1f - armor * 0.01f); //最终伤害(扣除免伤)
+                    var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage; //最低伤害为1
+                    if (parryFormula.IsSuccess)
+                    {
+                        sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
+                        op.SetBusy(parryForm.OffBusy); //招架打入硬直
+                    }
+
+                    tar.SufferDamage(sufferDmg, op.WeaponInjuryType); //伤害
+                    tar.SetBusy(attackForm.TarBusy); //攻击打入硬直
+                    op.SetBusy(attackForm.OffBusy); //攻击方招式硬直
+                });
+            }
+
+            RoundRec.SetAttack(
+                new AttackRecord(op, tar, attackPlacing, 
+                    attConsume, tarDodgeConsume, tarParryConsume, tarSuffer,
+                    damageFormula, dodgeFormula, parryFormula));
         }
 
-        private void RecDodgeAction(ICombatUnit unit, IDodgeForm dodge, DodgeFormula dodgeFormula) =>
-            CurrentRoundRecord.Add(new DodgeRecord(unit, dodge, dodgeFormula));
-        private void RecParryAction(ICombatUnit unit, IParryForm parryForm, ParryFormula parryFormula) =>
-            CurrentRoundRecord.Add(new ParryRecord(unit, parryForm, parryFormula));
-        private void RecAttackAction(ICombatUnit op, IConsumeRecord tar, ICombatForm combat,
-            DamageFormula damageFormula, bool isFling) =>
-            CurrentRoundRecord.Add(new AttackRecord(op, tar, combat, damageFormula, isFling));
-
-        private void UnsubscribeRecords(CombatUnit unit)
-        {
-            unit.OnCombatConsume -= RecCombatConsume;
-            unit.OnDodgeConsume -= RecDodgeConsume;
-            unit.OnRecoverConsume -= RecRecoveryConsume;
-            unit.OnConsume -= RecConsume;
-            unit.OnFightEvent -= RecFightEvent;
-            unit.OnSwitchTargetEvent -= RecSwitchTargetEvent;
-        }
-
-        void RecSwitchTargetEvent(SwitchTargetRecord obj) => CurrentRoundRecord.Add(obj);
-        void RecFightEvent(EventRecord @event) => CurrentRoundRecord.Add(@event);
-        void RecConsume(ConsumeRecord consume) => CurrentRoundRecord.Add(consume);
-        void RecCombatConsume(ConsumeRecord<ICombatForm> consume) => CurrentRoundRecord.Add(consume);
-        void RecDodgeConsume(ConsumeRecord<IDodgeForm> consume) => CurrentRoundRecord.Add(consume);
-        void RecRecoveryConsume(ConsumeRecord<IForceForm> consume) => CurrentRoundRecord.Add(consume);
-        void RecRespond(FightFragment.Types type) => CurrentRoundRecord.SetRespond(type);
+        public void RecRecharge(RechargeRecord rec) => RoundRec.AddRechargeRec(rec);
+        public void RecForceRecovery(RecoveryRecord rec) => RoundRec.SetForceRecovery(rec);
         #endregion
 
-        private FightRoundRecord CurrentRoundRecord { get; set; }
+        private CombatRoundRecord RoundRec { get; set; }
 
         //伤害公式
         private DamageFormula InstanceDamageFormula(CombatUnit op, ICombatForm combat)

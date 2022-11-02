@@ -21,41 +21,87 @@ namespace Visual.BattleUi.Status
         [SerializeField] private BreathViewUi _leftView;
         [SerializeField] private BreathViewUi _rightView;
 
-        public void SetBreathView(IBreathBar left, IBreathBar right)
+        public IEnumerator SetLeft(CombatPlans plan, int busy, int charge, 
+            BreathRecord attack, BreathRecord exert, BreathRecord placing) => 
+            SetPlan(_leftView, plan, busy, charge, 
+            DataConvertOrDefault(attack),
+            DataConvertOrDefault(exert),
+            DataConvertOrDefault(placing));
+        public IEnumerator SetLeft(IBreathBar breathBar)
         {
-            SetPlan(_leftView, left);
-            SetPlan(_rightView, right);
+            yield return SetPlan(_leftView, breathBar.Plan, breathBar.TotalBusies, breathBar.TotalCharged,
+                DataConvertOrDefault(breathBar.Combat),
+                DataConvertOrDefault(breathBar.Recover),
+                DataConvertOrDefault(breathBar.Dodge));
+        }
+        public IEnumerator SetRight(CombatPlans plan, int busy, int charge,
+            BreathRecord attack, BreathRecord exert, BreathRecord placing) =>
+            SetPlan(_rightView, plan, busy, charge,
+                DataConvertOrDefault(attack),
+                DataConvertOrDefault(exert),
+                DataConvertOrDefault(placing));
+        public IEnumerator SetRight(IBreathBar breathBar)
+        {
+            yield return SetPlan(_rightView, breathBar.Plan, breathBar.TotalBusies, breathBar.TotalCharged,
+                DataConvertOrDefault(breathBar.Combat),
+                DataConvertOrDefault(breathBar.Recover),
+                DataConvertOrDefault(breathBar.Dodge));
         }
 
-        private void SetPlan(BreathViewUi view, IBreathBar bar)
+        private static (string Name, int Value) DataConvertOrDefault(BreathRecord rec) => 
+            rec == null ? default : (rec.Name, rec.Value);
+        private static (string Name, int Value) DataConvertOrDefault<T>(T rec) where T : IBreathNode, ISkillForm =>
+            rec == null ? default : (rec.Name, rec.Breath);
+
+        private IEnumerator SetPlan(BreathViewUi view, CombatPlans plan,
+            int totalBusies, int totalCharged,
+            (string Name, int Value) attack, (string Name, int Value) exert, (string Name, int Value) placing)
         {
-            switch (bar.Plan)
+            switch (plan)
             {
                 case CombatPlans.Attack:
-                    view.Set(bar.TotalBusies, bar.TotalCharged, bar.Dodge);
-                    view.SetCombat(bar.Combat);
+                    if (placing == default)
+                        yield return view.SetAttack(totalBusies, totalCharged, attack.Name, attack.Value);
+                    else
+                        yield return view.SetAttackWithDodge(totalBusies, totalCharged, attack.Name, attack.Value,
+                            placing.Name,
+                            placing.Value);
                     break;
                 case CombatPlans.RecoverHp:
                 case CombatPlans.RecoverTp:
-                    view.Set(bar.TotalBusies, bar.TotalCharged - bar.LastCharged, bar.Dodge);
-                    view.SetForce(bar.Recover);
+                    yield return view.SetExert(totalBusies, totalCharged, exert.Name, exert.Value);
                     break;
                 case CombatPlans.Wait:
                 case CombatPlans.Surrender:
-                    view.Set(bar.TotalBusies, bar.TotalCharged - bar.LastCharged, bar.Dodge);
-                    view.SetIdle();
+                    yield return view.SetIdle(totalBusies, totalCharged);
                     break;
                 case CombatPlans.Exert:
-                default:
-                    throw new ArgumentOutOfRangeException();
+                default: throw new ArgumentOutOfRangeException();
             }
         }
+
+        public void SetDrum(int breath, int maxBreath, bool isLeft)
+        {
+            if (maxBreath <= 0)
+            {
+                leftSlider.value = 0;
+                rightSlider.value = 0;
+                leftText.text = string.Empty;
+                rightText.text = string.Empty;
+                return;
+            }
+            SetSlider(isLeft ? leftSlider : rightSlider, breath, maxBreath);
+            SetText(isLeft ? leftText : rightText, breath);
+            void SetText(Text text, int value) => text.text = value.ToString();
+            void SetSlider(Slider slider, int value, int max) => slider.value = 1f * value / max;
+        }
+
         public void UpdateDrum(int left, int right, int maxBreath)
         {
             if (maxBreath <= 0)
             {
-                leftSlider.value = 1;
-                rightSlider.value = 1;
+                leftSlider.value = 0;
+                rightSlider.value = 0;
                 leftText.text = string.Empty;
                 rightText.text = string.Empty;
                 return;
@@ -67,13 +113,7 @@ namespace Visual.BattleUi.Status
             //_map[combatId].SetBreath(breath, maxBreath);
         }
 
-        public void PlayDrum(UnityAction afterComplete)
-        {
-            StopAllCoroutines();
-            StartCoroutine(PlaySlider(afterComplete));
-        }
-
-        public IEnumerator PlaySlider(UnityAction afterComplete)
+        public IEnumerator PlaySlider()
         {
             var tween = DOTween.Sequence().Pause();
             var (far, close) = leftSlider.value > rightSlider.value
@@ -85,15 +125,13 @@ namespace Visual.BattleUi.Status
              */
             var farStop = far.value - close.value;
             tween.Join(far.DOValue(far.value - farStop, _moveSecs)).Join(close.DOValue(0, _moveSecs));
-            yield return tween.Play().OnComplete(()=>
-            {
-                _drumImage.transform.DOShakeScale(0.5f);
-                afterComplete.Invoke();
-            }).WaitForCompletion();
+            yield return tween.Play().OnComplete(()=> _drumImage.transform.DOShakeScale(0.5f)).WaitForCompletion();
         }
 
         public override void ResetUi()
         {
+            _leftView.ResetUi();
+            _rightView.ResetUi();
         }
     }
 }

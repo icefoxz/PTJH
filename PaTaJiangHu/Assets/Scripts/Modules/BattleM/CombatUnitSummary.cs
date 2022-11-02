@@ -13,6 +13,7 @@ namespace BattleM
         public bool IsTpRecoverNeed { get; }
         public bool IsHpRecoverNeed { get; }
         public bool IsReachable { get; }
+        public bool IsCombatRange { get; }
         public IDodgeForm DodgeForm { get; }
         public ICombatForm CombatForm { get; }
 
@@ -24,7 +25,8 @@ namespace BattleM
             IsTargetSurrenderCondition = target.IsSurrenderCondition;
             CombatForm = combatForm; //获取攻击招式
             DodgeForm = dodgeForm; //获取身法
-            IsReachable = unit.IsCombatRange(target) || DodgeForm != null;
+            IsCombatRange = unit.IsCombatRange(target);
+            IsReachable =  IsCombatRange || DodgeForm != null;
             IsHpRecoverNeed = CheckRecoverStrategy(status.Hp);
             IsTpRecoverNeed = CheckRecoverStrategy(status.Tp);
             RecoverForm = forceForm;
@@ -48,13 +50,16 @@ namespace BattleM
             bool LowerThan(float ratio, IGameCondition con) => con.ValueMaxRatio < ratio;
         }
 
-        public CombatPlans GetPlan()
+        public CombatPlans GetPlan(CombatManager.Judgment mode)
         {
             //恢复优先
             if (IsHpRecoverNeed) return RecoverForm != null ? CombatPlans.RecoverHp : CombatPlans.Wait;
             if (IsTpRecoverNeed) return RecoverForm != null ? CombatPlans.RecoverTp : CombatPlans.Wait;
             //逃跑/认输:如果自己达条件，对方没意思逃跑则触发
-            if (IsSurrenderCondition && !IsTargetSurrenderCondition) return CombatPlans.Surrender;
+            if (mode == CombatManager.Judgment.Test &&
+                IsSurrenderCondition &&
+                !IsTargetSurrenderCondition)
+                return CombatPlans.Surrender;
             //攻击
             if (CombatForm != null && IsReachable && !IsSurrenderCondition) return CombatPlans.Attack;
             return CombatPlans.Wait;

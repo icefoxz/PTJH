@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BattleM;
 
 namespace BattleM
 {
@@ -100,7 +101,7 @@ namespace BattleM
         /// <param name="breathes"></param>
         public void BreathConsume(int breathes)
         {
-            LastRound = Round.Current;
+            LastRound = Round.RoundIndex;
             Charge(breathes);
             if (_busies.Any()) //先去掉硬直
             {
@@ -138,7 +139,8 @@ namespace BattleM
 
             Charge(-consume);
         }
+
         public int CompareTo(IBreathBar other) => TotalBreath.CompareTo(other.TotalBreath);
-        public override string ToString() => $"气息条({TotalBreath})【硬直：{Busies.Sum():D}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Recover?.Name}({Recover?.Breath})】";
+        public override string ToString() => $"气息条({TotalBreath})【硬：{TotalBusies}|蓄{TotalCharged}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Recover?.Name}({Recover?.Breath})】";
     }
 }

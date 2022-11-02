@@ -26,8 +26,14 @@ namespace Visual.BattleUi.Scene
         [SerializeField] private float _scrollSecs = 0.5f;
         
         private RectTransform MainCanvas { get; set; }
-        public int IndexOf(GameObject obj) => _slots.IndexOf(GetSlot(obj));
-        public SlotUi GetSlot(GameObject obj) => _slots.Single(s => s.Objs.Any(o => o == obj));
+        public int IndexOf(GameObject obj)
+        {
+            var slot = GetSlot(obj);
+            if (slot == null) return -1;
+            return _slots.IndexOf(slot);
+        }
+
+        public SlotUi GetSlot(GameObject obj) => _slots.SingleOrDefault(s => s.Objs.Any(o => o == obj));
         public void PlaceObject(int index, GameObject obj)
         {
             var oldSlot = _slots.SingleOrDefault(s=>s.Objs.Any(o=>o == obj));

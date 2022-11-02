@@ -9,7 +9,7 @@ using Visual.BaseUi;
 
 namespace Visual.BattleUi.Status
 {
-    public class CombatEventUi : UiBase
+    public class PromptEventUi : UiBase
     {
         public enum CombatEvents
         {
@@ -42,35 +42,7 @@ namespace Visual.BattleUi.Status
             Show();
         }
 
-        public void Set(IBreathBar breathBar)
-        {
-            string formText;
-            var breath = breathBar.TotalBreath;
-            switch (breathBar.Plan)
-            {
-                case CombatPlans.Attack:
-                    formText = breathBar.Combat?.Name ?? string.Empty;
-                    break;
-                case CombatPlans.RecoverHp:
-                case CombatPlans.RecoverTp:
-                    formText = breathBar.Recover?.Name ?? string.Empty;
-                    break;
-                case CombatPlans.Exert:
-                    formText = "运功";
-                    break;
-                case CombatPlans.Wait:
-                    formText = "等待";
-                    breath = -1;
-                    break;
-                case CombatPlans.Surrender:
-                    formText = "伺机逃跑...";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            SetUi(formText, breath);
-        }
+        public void Set(string title,int breath) => SetUi(title, breath);
 
         public void UpdateEvent(CombatEvents comEvent)
         {
