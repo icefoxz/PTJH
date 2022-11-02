@@ -14,11 +14,11 @@ namespace Visual.BattleUi.Input
         [SerializeField] private Button recHpButton;
         [SerializeField] private Button recTpButton;
 
-        private event UnityAction<IForceForm> OnExertAction;
+        private event UnityAction<IForce> OnExertAction;
         private event UnityAction<ICombatForm> OnAttackAction;
 
         public void Init(UnityAction<ICombatForm> onAttackAction,
-            UnityAction<IForceForm> onExertAction,
+            UnityAction<IForce> onExertAction,
             UnityAction onRecHpAction, UnityAction onRecTpAction)
         {
             combatFormView.Init();
@@ -32,46 +32,42 @@ namespace Visual.BattleUi.Input
         public void SetCombat(ICombatUnit unit, UnityAction<ICombatForm> onPointerDown)
         {
             var forms = unit.CombatForms;
-            for (var i = 0; i < forms.Length; i++)
-            {
-                var form = forms[i];
-                var isReady = unit.IsCombatFormAvailable(form);
-                combatFormView.AddOption(ui =>
-                {
-                    ui.Init(() => onPointerDown.Invoke(form));
-                    ui.Interaction(isReady);
-                    if (isReady)
-                        ui.Set(() =>
-                            {
-                                combatFormView.SetSelected(ui);
-                                OnAttackAction?.Invoke(form);
-                            }, form.Name, form.Breath.ToString(), form.Mp.ToString(), form.Tp.ToString(),
-                            form.TarBusy.ToString(),
-                            form.OffBusy.ToString());
-                });
-                combatFormView.Show();
-            }
+            //for (var i = 0; i < forms.Length; i++)
+            //{
+            //    var form = forms[i];
+            //    var isReady = unit.IsCombatFormAvailable(form);
+            //    combatFormView.AddOption(ui =>
+            //    {
+            //        ui.Init(() => onPointerDown.Invoke(form));
+            //        ui.Interaction(isReady);
+            //        if (isReady)
+            //            ui.Set(() =>
+            //                {
+            //                    combatFormView.SetSelected(ui);
+            //                    OnAttackAction?.Invoke(form);
+            //                }, form.Name, form.Breath.ToString(), form.Mp.ToString(), form.Tp.ToString(),
+            //                form.TarBusy.ToString(),
+            //                form.OffBusy.ToString());
+            //    });
+            //    combatFormView.Show();
+            //}
 
             Show();
         }
 
-        public void SetForce(ICombatUnit unit, UnityAction<IForceForm> onPointerDown)
+        public void SetForce(ICombatUnit unit, UnityAction<IForce> onPointerDown)
         {
-            for (var i = 0; i < unit.ForceSkill.Forms.Count; i++)
+            var form = unit.Force;
+            forceFormView.AddOption(ui =>
             {
-                var form = unit.ForceSkill.Forms[i];
-                forceFormView.AddOption(ui =>
+                ui.Init(() => onPointerDown.Invoke(form));
+                ui.Set(() =>
                 {
-                    ui.Init(() => onPointerDown.Invoke(form));
-                    ui.Set(() =>
-                    {
-                        forceFormView.SetSelected(ui);
-                        OnExertAction?.Invoke(form);
-                    }, form.Name, form.Breath.ToString());
-                });
-                forceFormView.Show();
-            }
-
+                    forceFormView.SetSelected(ui);
+                    OnExertAction?.Invoke(form);
+                }, form.Name, form.Breath.ToString());
+            });
+            forceFormView.Show();
             Show();
         }
 

@@ -31,7 +31,7 @@ namespace Visual.BattleUi.Status
         {
             yield return SetPlan(_leftView, breathBar.Plan, breathBar.TotalBusies, breathBar.TotalCharged,
                 DataConvertOrDefault(breathBar.Combat),
-                DataConvertOrDefault(breathBar.Recover),
+                DataConvertOrDefault(breathBar.Force),
                 DataConvertOrDefault(breathBar.Dodge));
         }
         public IEnumerator SetRight(CombatPlans plan, int busy, int charge,
@@ -44,13 +44,13 @@ namespace Visual.BattleUi.Status
         {
             yield return SetPlan(_rightView, breathBar.Plan, breathBar.TotalBusies, breathBar.TotalCharged,
                 DataConvertOrDefault(breathBar.Combat),
-                DataConvertOrDefault(breathBar.Recover),
+                DataConvertOrDefault(breathBar.Force),
                 DataConvertOrDefault(breathBar.Dodge));
         }
 
         private static (string Name, int Value) DataConvertOrDefault(BreathRecord rec) => 
             rec == null ? default : (rec.Name, rec.Value);
-        private static (string Name, int Value) DataConvertOrDefault<T>(T rec) where T : IBreathNode, ISkillForm =>
+        private static (string Name, int Value) DataConvertOrDefault<T>(T rec) where T : IBreathNode, ISkillName =>
             rec == null ? default : (rec.Name, rec.Breath);
 
         private IEnumerator SetPlan(BreathViewUi view, CombatPlans plan,

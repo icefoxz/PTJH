@@ -20,7 +20,7 @@ namespace Visual.BattleUi.Input
 
         public void Init((CombatUnit.Strategies strategy,UnityAction action)[]strategies, 
             UnityAction<ICombatForm> onAttackAction,
-            UnityAction<IForceForm> onExertAction,
+            UnityAction<IForce> onExertAction,
             UnityAction onRecHpAction,
             UnityAction onRecTpAction)
         {
@@ -70,12 +70,12 @@ namespace Visual.BattleUi.Input
             }
         }
         private event UnityAction OnPointerUp;
-        private event UnityAction<IForceForm> OnForcePointerDown;
+        private event UnityAction<IForce> OnForcePointerDown;
         private event UnityAction<ICombatForm> OnCombatPointerDown;
         //private event UnityAction OnIdlePointerDown;
         public void SetPlayer(ICombatUnit player, 
             UnityAction<ICombatForm> onCombatPointerDown,
-            UnityAction<IForceForm> onForcePointerDown,
+            UnityAction<IForce> onForcePointerDown,
             UnityAction onPointerCancel)
         {
             OnCombatPointerDown = combat =>

@@ -10,21 +10,39 @@ namespace BattleM
     /// </summary>
     public interface IBreathBar : IComparable<IBreathBar>
     {
+        /// <summary>
+        /// 总气息
+        /// </summary>
         int TotalBreath { get; }
-        int IdleBreath { get; }
+        /// <summary>
+        /// 恢复息
+        /// </summary>
         int RecoverBreath { get; }
+        /// <summary>
+        /// 战斗息
+        /// </summary>
         int CombatBreath { get; }
+        /// <summary>
+        /// 蓄与硬抵消
+        /// </summary>
         int BusyCharged { get; }
+        /// <summary>
+        /// 总硬直
+        /// </summary>
         int TotalBusies { get; }
-        int LastCharged { get; }
+        /// <summary>
+        /// 总蓄力
+        /// </summary>
         int TotalCharged { get; }
+
         ICombatForm Combat { get; }
-        IDodgeForm Dodge { get; }
-        IForceForm Recover { get; }
+        IDodge Dodge { get; }
+        IForce Force { get; }
         IRound Round { get; }
         IList<int> Busies { get; }
         CombatPlans Plan { get; }
         int LastRound { get; }
+        bool IsReposition { get; }
     }
     /// <summary>
     /// 气息节点，所有战斗动作都有必须继承这个
@@ -40,8 +58,8 @@ namespace BattleM
 
         public CombatPlans Plan { get; private set; }
         public ICombatForm Combat { get; private set; }
-        public IDodgeForm Dodge { get; private set; }
-        public IForceForm Recover { get; private set; }
+        public IDodge Dodge { get; private set; }
+        public IForce Force { get; private set; }
         public IRound Round { get; }
         public IList<int> Busies => _busies;
         
@@ -51,9 +69,9 @@ namespace BattleM
             {
                 return Plan switch
                 {
-                    CombatPlans.Attack => CombatBreath,
-                    CombatPlans.RecoverTp => RecoverBreath,
-                    CombatPlans.RecoverHp => RecoverBreath,
+                    CombatPlans.Attack => CombatBreath + BusyCharged,
+                    CombatPlans.RecoverTp => RecoverBreath + BusyCharged,
+                    CombatPlans.RecoverHp => RecoverBreath + BusyCharged,
                     CombatPlans.Wait => IdleBreath,
                     CombatPlans.Surrender => IdleBreath,
                     CombatPlans.Exert => throw new ArgumentOutOfRangeException(),
@@ -62,8 +80,17 @@ namespace BattleM
             }
         }
         public int IdleBreath => BusyCharged;
-        public int RecoverBreath => Recover?.Breath ?? 0 + BusyCharged;
-        public int CombatBreath => (Combat?.Breath ?? 0) + (Dodge?.Breath ?? 0) + BusyCharged;
+        public int RecoverBreath => Force?.Breath ?? 0;
+        public int CombatBreath
+        {
+            get
+            {
+                var combatBreath = Combat?.Breath ?? 0;
+                var dodgeBreath = Dodge?.Breath ?? 0;
+                return IsReposition ? combatBreath + dodgeBreath : combatBreath;
+            }
+        }
+
         public int BusyCharged => TotalBusies - TotalCharged;
         /// <summary>
         /// 总蓄力
@@ -71,6 +98,8 @@ namespace BattleM
         public int TotalCharged { get; private set; }
         public int TotalBusies => Busies.Sum(b => b);
         public int LastRound { get; private set; }
+        public bool IsReposition { get; private set; }
+
         /// <summary>
         /// 上次蓄力
         /// </summary>
@@ -82,19 +111,29 @@ namespace BattleM
             _busies = new List<int>();
         }
 
-        public void SetPlan(CombatPlans plan) => Plan = plan;
-        public void SetBusy(int busy) => _busies.Add(busy);
+        public void AddBusy(int busy) => _busies.Add(busy);
         public void Charge(int charge)
         {
             LastCharged = charge;
             TotalCharged += charge;
         }
+        public void SetPlan(CombatManager.Judgment judge,CombatUnitSummary strategy)
+        {
+            Plan = strategy.GetPlan(judge);
+            Combat = strategy.CombatForm;
+            Dodge = strategy.Dodge;
+            Force = strategy.Force;
+            IsReposition = strategy.IsReposition;
+        }
 
-        public void SetCombat(ICombatForm form) => Combat = form;
-        public void ClearCombat() => Combat = null;
-        public void SetDodge(IDodgeForm form) => Dodge = form;
-        public void ClearDodge() => Dodge = null;
-        public void SetRecover(IForceForm form) => Recover = form;
+        public void ClearPlan()
+        {
+            Plan = CombatPlans.Wait;
+            Combat = null;
+            Dodge = null;
+            Force = null;
+        }
+
         /// <summary>
         /// 消费气息条
         /// </summary>
@@ -120,14 +159,11 @@ namespace BattleM
             {
                 case CombatPlans.Attack:
                     //执行攻击之类
-                    var combatBreath = Combat?.Breath ?? 0;
-                    var dodgeBreath = Dodge?.Breath ?? 0;
-                    consume = combatBreath + dodgeBreath;
+                    consume = CombatBreath;
                     break;
                 case CombatPlans.RecoverHp:
                 case CombatPlans.RecoverTp:
-                    if (TotalCharged >= Recover?.Breath) 
-                        consume = Recover.Breath;
+                    consume = RecoverBreath;
                     break;
                 case CombatPlans.Wait:
                 case CombatPlans.Surrender:
@@ -141,6 +177,8 @@ namespace BattleM
         }
 
         public int CompareTo(IBreathBar other) => TotalBreath.CompareTo(other.TotalBreath);
-        public override string ToString() => $"气息条({TotalBreath})【硬：{TotalBusies}|蓄{TotalCharged}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Recover?.Name}({Recover?.Breath})】";
+
+        public override string ToString() =>
+            $"气息条({TotalBreath})【硬：{TotalBusies}|蓄{TotalCharged}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Force?.Name}({Force?.Breath})】";
     }
 }

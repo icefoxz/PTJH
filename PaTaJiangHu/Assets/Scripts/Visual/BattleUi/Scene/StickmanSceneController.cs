@@ -10,6 +10,12 @@ namespace Visual.BattleUi.Scene
     /// </summary>
     public class StickmanSceneController : MonoBehaviour
     {
+        public enum Placing
+        {
+            Left,
+            Right,
+            Random
+        }
         [SerializeField] private BattleSlotController _slotController;
         private IBattleSlotController SlotController => _slotController;
 
@@ -30,13 +36,9 @@ namespace Visual.BattleUi.Scene
         /// <summary>
         /// 自动摆放，但需要玩家已经摆放在中间<see cref="PlaceCenter"/>才能合理移位
         /// </summary>
-        /// <param name="stickman"></param>
-        /// <param name="target"></param>
-        /// <param name="combat"></param>
-        /// <param name="centralize"></param>
-        public void AutoPlace(Stickman stickman, Stickman target, CombatUnit combat, bool centralize)
+        public void AutoPlace(Stickman stickman, Stickman target, CombatUnit combat, bool centralize,Placing placing)
         {
-            var targetIndex = CountIndex(target, Math.Abs(combat.Position - combat.Target.Position));
+            var targetIndex = CountIndex(target, Math.Abs(combat.Position - combat.Target.Position), placing);
 
             SlotController.PlaceObject(targetIndex, stickman.gameObject);
             stickman.ResetPosition();
@@ -45,9 +47,9 @@ namespace Visual.BattleUi.Scene
             UpdateStickmanOrientation(stickman, target);
         }
 
-        public void AutoPlace(Stickman stickman, Stickman target, CombatUnit combat, bool centralize, Action afterPlaceCallback)
+        public void AutoPlace(Stickman stickman, Stickman target, CombatUnit combat, bool centralize, Placing placing,Action afterPlaceCallback)
         {
-            var targetIndex = CountIndex(target, Math.Abs(combat.Position - combat.Target.Position));
+            var targetIndex = CountIndex(target, Math.Abs(combat.Position - combat.Target.Position), placing);
             var oriIndex = SlotController.IndexOf(stickman.gameObject);
             stickman.SetOriented(oriIndex > targetIndex);
             SlotController.PlaceObject(targetIndex, stickman.gameObject);
@@ -60,11 +62,17 @@ namespace Visual.BattleUi.Scene
             });
         }
 
-        private int CountIndex(Stickman target, int distance)
+        private int CountIndex(Stickman target, int distance, Placing placing)
         {
             var targetIndex = SlotController.IndexOf(target.gameObject);
-            var randomDirection = Sys.RandomBool() ? -1 : 1;
-            var placeIndex = Math.Abs(targetIndex - distance * randomDirection);
+            var randomDirection = placing switch
+            {
+                Placing.Left => -1,
+                Placing.Right => 1,
+                Placing.Random => Sys.RandomBool() ? -1 : 1,
+                _ => throw new ArgumentOutOfRangeException(nameof(placing), placing, null)
+            };
+            var placeIndex = Math.Abs(targetIndex + distance * randomDirection);
             return placeIndex;
         }
 

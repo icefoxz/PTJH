@@ -128,7 +128,7 @@ namespace BattleM
             sb.Append($"【总伤害：({att.DamageFormula.Finalize}){AttackLog(att.Form)}】".Sb().Color(Color.Orange).ToString());
             sb.Append($"{att.DamageFormula})".Sb().Color(Color.DarkOrange));
             sb.AppendLine();
-            DodgeRecordLog(att.DodgeFormula, att.DodgeConsume.Form, att.Target, sb);
+            DodgeRecordLog(att.DodgeFormula, att.DodgeConsume.Form , att.Target, sb);
             if (!att.DodgeFormula.IsSuccess)
             {
                 ParryRecordLog(att.ParryFormula, att.ParryConsume.Form, att.Target, sb);
@@ -165,9 +165,9 @@ namespace BattleM
             }
         }
 
-        static void DodgeRecordLog(DodgeFormula formula, IDodgeForm form, IUnitInfo tar,StringBuilder sb)
+        static void DodgeRecordLog(DodgeFormula formula, IDodge form, IUnitInfo tar,StringBuilder sb)
         {
-            string DodgeLog(IDodgeForm a) => FormLog(a) +
+            string DodgeLog(IDodge a) => FormLog(a) +
                                              $"身({a.Dodge})内({a.Mp})气({a.Tp}))".Sb().Color(Color.Coral);
 
             sb.Append(!formula.IsSuccess
@@ -258,7 +258,7 @@ namespace BattleM
             //}
         }
 
-        private static void ForceFormConsumeLog(ConsumeRecord<IForceForm> force)
+        private static void ForceFormConsumeLog(ConsumeRecord<IForce> force)
         {
             var sb = new StringBuilder();
             sb.AppendLine(($"{force.UnitName}调息," + FormLog(force.Form)).Sb().Color(Color.LightPink)
@@ -267,7 +267,7 @@ namespace BattleM
             Debug.Log(sb);
         }
 
-        private static string FormLog<T>(T f) where T : IBreathNode, ISkillForm => $"【{f.Name}(息：{f.Breath})】".Sb().Color(Color.Cornsilk).ToString();
+        private static string FormLog<T>(T f) where T : IBreathNode, ISkillName=> $"【{f.Name}(息：{f.Breath})】".Sb().Color(Color.Cornsilk).ToString();
 
         private static string ArmedKindLog(Way.Armed armedKind)
         {

@@ -108,7 +108,7 @@ namespace BattleM
     {
         int MinEscapeRounds { get; }
 
-        void OnEscape(CombatUnit escapee, IDodgeForm dodge);
+        void OnEscape(CombatUnit escapee, IDodge dodge);
 
         void OnAttack(CombatUnit offender, IBreathBar breathBar, ICombatInfo target);
         IList<CombatUnit> CombatPlan(IEnumerable<int> skipPlanIds);
@@ -215,7 +215,7 @@ namespace BattleM
             return new PositionRecord(newPos, obj, Mgr.TryGetAliveCombatUnit(target));
         }
 
-        public void OnEscape(CombatUnit escapee, IDodgeForm dodge)
+        public void OnEscape(CombatUnit escapee, IDodge dodge)
         {
             escapee.SetBusy(1); //尝试逃走+1硬直
             var op = Mgr.GetTargetedUnit(escapee);
@@ -223,23 +223,22 @@ namespace BattleM
             {
                 if (op.Distance(escapee) > 4)
                 {
-                    var combat = op.PickCombat();
+                    var combat = op.BreathBar.Combat;
                     op.Equipment.FlingConsume();
                     {
                         var dodgeFormula = InstanceDodgeFormula(op, escapee, dodge);
                         var damageFormula = InstanceDamageFormula(op, combat);
                         var armor = GetArmor(escapee);
-                        var parryForm = escapee.PickParry();
-                        var parryFormula = InstanceParryFormula(op, escapee, parryForm);
+                        var parryFormula = InstanceParryFormula(op, escapee, combat);
 
                         var attConsume = ConsumeRecord<ICombatForm>.Instance(combat);
                         attConsume.Set(op, () => op.ConsumeForm(combat));
 
-                        var tarParryConsume = ConsumeRecord<IParryForm>.Instance(parryForm);
-                        var tarDodgeConsume = ConsumeRecord<IDodgeForm>.Instance(dodge);
+                        var tarParryConsume = ConsumeRecord<IParryForm>.Instance(combat);
+                        var tarDodgeConsume = ConsumeRecord<IDodge>.Instance(dodge);
                         tarDodgeConsume.Set(escapee, () => escapee.ConsumeForm(dodge));
                         if (parryFormula.IsSuccess)
-                            tarParryConsume.Set(escapee, () => escapee.ConsumeForm(parryForm));
+                            tarParryConsume.Set(escapee, () => escapee.ConsumeForm(combat));
                         var tarSuffer = ConsumeRecord.Instance();
                         tarSuffer.Set(escapee, () =>
                         {
@@ -251,7 +250,7 @@ namespace BattleM
                             if (parryFormula.IsSuccess)
                             {
                                 sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
-                                op.SetBusy(parryForm.OffBusy); //招架打入硬直
+                                op.SetBusy(combat.OffBusy); //招架打入硬直
                             }
 
                             escapee.SufferDamage(sufferDmg, op.WeaponInjuryType); //伤害
@@ -275,19 +274,19 @@ namespace BattleM
         {
             var attackForm = breathBar.Combat;
             PositionRecord placingRecord = null;
-            if (breathBar.Dodge != null) placingRecord = AdjustCombatDistance(offender, offender.Target, false);
+            if (breathBar.IsReposition) placingRecord = AdjustCombatDistance(offender, offender.Target, false);
             var tar = Mgr.TryGetAliveCombatUnit(target);
-            var dodgeForm = tar.PickDodge();
-            var dodgeFormula = InstanceDodgeFormula(offender, tar, dodgeForm);
+            var dodge = tar.BreathBar.Dodge;
+            var dodgeFormula = InstanceDodgeFormula(offender, tar, dodge);
             var damageFormula = InstanceDamageFormula(offender, attackForm);
             var combo = attackForm.Combo?.Rates ?? new[] { 100 };
             for (var i = 0; i < combo.Length; i++)
             {
                 var damageRate = combo[i];
                 var armor = GetArmor(tar);
-                var parryForm = tar.PickParry();
+                var parryForm = tar.BreathBar.Combat;
                 var parryFormula = InstanceParryFormula(offender, tar, parryForm);
-                RecAttackAction(offender, tar, attackForm, parryForm, dodgeForm, placingRecord, damageFormula,
+                RecAttackAction(offender, tar, attackForm, parryForm, dodge, placingRecord, damageFormula,
                     dodgeFormula, parryFormula, armor, damageRate);
             }
         }
@@ -300,8 +299,8 @@ namespace BattleM
 
         private int GetArmor(CombatUnit tg)
         {
-            var formula = ArmorFormula.Instance(tg.Armor, tg.Status.Mp.Squeeze(tg.ForceSkill.MpArmor),
-                tg.ForceSkill.MpRate);
+            var formula = ArmorFormula.Instance(tg.Armor, tg.Status.Mp.Squeeze(tg.Force.MpArmor),
+                tg.Force.MpRate);
             return formula.Finalize;
         }
 
@@ -371,7 +370,7 @@ namespace BattleM
         #region ConsumeRecord
 
         private void RecAttackAction(CombatUnit op, CombatUnit tar,
-            ICombatForm attackForm, IParryForm parryForm, IDodgeForm dodgeForm, PositionRecord attackPlacing,
+            ICombatForm attackForm, IParryForm parryForm, IDodge dodge, PositionRecord attackPlacing,
             DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula,
             int armor, int damageRate)
         {
@@ -379,13 +378,13 @@ namespace BattleM
             attConsume.Set(op, () => op.ConsumeForm(attackForm));
 
             var tarParryConsume = ConsumeRecord<IParryForm>.Instance(parryForm);
-            var tarDodgeConsume = ConsumeRecord<IDodgeForm>.Instance(dodgeForm);
+            var tarDodgeConsume = ConsumeRecord<IDodge>.Instance(dodge);
 
             var tarSuffer = ConsumeRecord.Instance();
             if (dodgeFormula.IsSuccess)
             {
                 //闪避优先更新状态一次(1)
-                tarDodgeConsume.Set(tar, () => tar.ConsumeForm(dodgeForm));
+                tarDodgeConsume.Set(tar, () => tar.ConsumeForm(dodge));
             }
             else
             {
@@ -432,7 +431,7 @@ namespace BattleM
             var opWeaponDamage = Mgr.BuffMgr.GetWeaponDamage(op, op.WeaponDamage);
             var mp = op.Status.Mp.Squeeze(combat.Mp);
             var mpValue = Mgr.BuffMgr.GetExtraMpValue(op, mp);
-            return DamageFormula.Instance(opStrength, opWeaponDamage, mpValue, op.ForceSkill.MpRate);
+            return DamageFormula.Instance(opStrength, opWeaponDamage, mpValue, op.Force.MpRate);
         }
 
         //招架公式
@@ -445,9 +444,9 @@ namespace BattleM
         }
 
         //闪避公式
-        private DodgeFormula InstanceDodgeFormula(CombatUnit op, CombatUnit tg, IDodgeForm form)
+        private DodgeFormula InstanceDodgeFormula(CombatUnit op, CombatUnit tg, IDodge dodge)
         {
-            var tarDodge = Mgr.BuffMgr.GetDodge(tg, form.Dodge);
+            var tarDodge = Mgr.BuffMgr.GetDodge(tg, dodge.Dodge);
             var tarAgility = Mgr.BuffMgr.GetAgility(tg, tg.Agility);
             return DodgeFormula.Instance(tarDodge, tarAgility, op.Distance(tg), tg.IsBusy, Randomize());
         }

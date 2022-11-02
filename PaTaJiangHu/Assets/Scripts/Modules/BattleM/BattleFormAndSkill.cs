@@ -48,18 +48,16 @@ namespace BattleM
     /// <summary>
     /// 所有招式的底层接口
     /// </summary>
-    public interface ISkillForm
+    public interface ISkillForm : ISkillName
     {
-        string Name { get; }
     }
 
     /// <summary>
     /// 战斗招式
     /// </summary>
-    public interface ICombatForm : IDepletionForm, IBreathNode
+    public interface ICombatForm : IParryForm, IBreathNode
     {
         int TarBusy { get; }
-        int OffBusy { get; }
         ICombo Combo { get; }
     }
     /// <summary>
@@ -82,12 +80,12 @@ namespace BattleM
         int Mp { get; }
     }
 
-    /// <summary>
-    /// 内功一式
-    /// </summary>
-    public interface IForceForm : IBreathNode, ISkillForm
-    {
-    }
+    ///// <summary>
+    ///// 内功一式
+    ///// </summary>
+    //public interface IForceForm : IBreathNode, ISkillForm
+    //{
+    //}
     public interface IParryForm : IDepletionForm
     {
         /// <summary>
@@ -98,34 +96,39 @@ namespace BattleM
         int OffBusy { get; }
     }
 
-    public interface IDodgeForm : IDepletionForm, IBreathNode
-    {
-        /// <summary>
-        /// 身法值
-        /// </summary>
-        int Dodge { get; }
-    }
+    //public interface IDodgeForm : IDepletionForm, IBreathNode
+    //{
+    //    /// <summary>
+    //    /// 身法值
+    //    /// </summary>
+    //    int Dodge { get; }
+    //}
     /// <summary>
     /// 技能组合基础类，基本就是内功，轻功，武功的基类，作为各种招式的容器规范
     /// </summary>
-    public interface ICombatSkill
+    public interface ICombatSkill : ISkillName
+    {
+    }
+
+    public interface ISkillName
     {
         string Name { get; }
     }
     /// <summary>
     /// 内功心法(战斗)
     /// </summary>
-    public interface IForce : ICombatSkill
+    public interface IForce : ICombatSkill, IBreathNode
     {
         /// <summary>
         /// 内力转化率
         /// </summary>
         int MpRate { get; }
+
         /// <summary>
         /// 内力值使用在护甲上
         /// </summary>
         int MpArmor { get; }
-        IList<IForceForm> Forms { get; }
+        //IList<IForceForm> Forms { get; }
     }
 
     /// <summary>
@@ -135,14 +138,17 @@ namespace BattleM
     {
         Way.Armed Armed { get; }
         IList<ICombatForm> Combats { get; }
-        IList<IParryForm> Parries { get; }
     }
 
     /// <summary>
     /// 轻功(战斗)
     /// </summary>
-    public interface IDodge : ICombatSkill
+    public interface IDodge : ICombatSkill, IDepletionForm, IBreathNode
     {
-        IList<IDodgeForm> Forms { get; }
+        /// <summary>
+        /// 身法值
+        /// </summary>
+        int Dodge { get; }
+        //IList<IDodgeForm> Forms { get; }
     }
 }

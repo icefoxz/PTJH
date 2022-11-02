@@ -44,8 +44,6 @@ namespace BattleM
         string Name { get; }
         bool IsExhausted { get; }
         int Distance(ICombatInfo target);
-        bool IsCombatRange(ICombatInfo unit);
-        bool IsTargetRange();
     }
     /// <summary>
     /// 战斗单位
@@ -56,14 +54,9 @@ namespace BattleM
         int Agility { get; }
         ICombatStatus Status { get; }
         IBreathBar BreathBar { get; }
-        IForce ForceSkill { get; }
+        IForce Force { get; }
         ICombatForm[] CombatForms { get; }
-        IParryForm[] ParryForms { get; }
-        IDodgeForm[] DodgeForms { get; }
-        void SetStandingPoint(int standingPoint);
-        void SetStrategy(CombatUnit.Strategies strategy);
-        void SetCombatId(int combatId);
-        bool IsCombatFormAvailable(ICombatForm form);
+        IDodge Dodge { get; }
     }
 
     public class CombatUnit : ICombatUnit, IComparable<CombatUnit>
@@ -97,18 +90,17 @@ namespace BattleM
         private ICombatRound Round { get; set; }
         private static readonly BasicDodge DefaultDodge = new();
         private static readonly BasicCombat DefaultCombat = new();
-        private static readonly BasicParry DefaultParry = new();
         private static readonly BasicForce DefaultForce = new();
 
         public static CombatUnit Instance(string name, int strength, int agility, ICombatStatus status,
             IForce forceSkill, IMartial martial,
             IDodge dodgeSkill, IEquip equip) => new(name, strength, agility, status, forceSkill,
-            martial.Combats.ToArray(), martial.Parries.ToArray(), dodgeSkill.Forms.ToArray(), equip);
+            martial.Combats.ToArray(), dodgeSkill, equip);
 
         public static CombatUnit Instance(ICombatUnit o) => new(o.Name, 
             o.Strength, o.Agility, o.Status.Clone(),
-            o.ForceSkill, o.CombatForms, o.ParryForms, 
-            o.DodgeForms, o.Equipment);
+            o.Force, o.CombatForms, 
+            o.Dodge, o.Equipment);
         public int StandingPoint { get; private set; }
         public string Name { get; }
         public bool IsDeath { get; private set; }
@@ -118,10 +110,9 @@ namespace BattleM
         public Strategies Strategy { get; private set; }
         public ICombatStatus Status { get; }
         public IBreathBar BreathBar => _breathBar;
-        public IForce ForceSkill { get; }
+        public IForce Force { get; }
         public ICombatForm[] CombatForms { get; }
-        public IParryForm[] ParryForms { get; }
-        public IDodgeForm[] DodgeForms { get; }
+        public IDodge Dodge { get; }
         public void SetStandingPoint(int standingPoint) => StandingPoint = standingPoint;
         public void SetStrategy(Strategies strategy) => Strategy = strategy;
         public void SetCombatId(int combatId) => CombatId = combatId;
@@ -164,23 +155,17 @@ namespace BattleM
         public bool IsExhausted => IsDeath || Status.IsExhausted;
         public CombatPlans Plan => _breathBar.Plan;
 
-        public IDodgeForm PickDodge() => DodgeForms?.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultDodge;
-        public ICombatForm PickCombat() => CombatForms?.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultCombat;
-        public IParryForm PickParry() => ParryForms?.OrderBy(_ => Random.Next(100)).FirstOrDefault() ?? DefaultParry;
-
         private CombatUnit(string name, int strength, int agility, 
             ICombatStatus status, IForce forceSkill,
-            ICombatForm[] combatForms, IParryForm[] parryForms,
-            IDodgeForm[] dodgeForms, IEquip equip)
+            ICombatForm[] combatForms, IDodge dodge, IEquip equip)
         {
             Name = name;
             Strength = strength;
             Agility = agility;
             Status = status;
-            ForceSkill = forceSkill ?? DefaultForce;
+            Force = forceSkill ?? DefaultForce;
             CombatForms = combatForms;
-            DodgeForms = dodgeForms;
-            ParryForms = parryForms;
+            Dodge = dodge;
             Equipment = new Equipment(equip);
         }
 
@@ -228,6 +213,7 @@ namespace BattleM
         #endregion
 
         #region CombatPlan
+
         /// <summary>
         /// 准备下一招
         /// </summary>
@@ -235,70 +221,19 @@ namespace BattleM
         public void AutoCombatPlan()
         {
             var target = Mgr.TryGetAliveCombatUnit(Target);
-            if(target == null)
+            if (target == null)
             {
                 Mgr.SetTargetFor(this);
                 Round.OnTargetSwitch(this, Target);
             }
-
-            var strategy = new CombatUnitSummary(this, target, GetCombatForm(), GetDodgeForm(), GetForceForm());
-            var plan = strategy.GetPlan(Mgr.Judge);
-            switch (plan)
-            {
-                case CombatPlans.Attack:
-                    AttackPlan(strategy.CombatForm, strategy.IsCombatRange ? null : strategy.DodgeForm);
-                    break;
-                case CombatPlans.RecoverHp:
-                    RecoverHpPlan(strategy.RecoverForm);
-                    break;
-                case CombatPlans.RecoverTp:
-                    RecoverTpPlan(strategy.RecoverForm);
-                    break;
-                case CombatPlans.Exert:
-                    ExertPlan(strategy.RecoverForm);
-                    break;
-                case CombatPlans.Wait:
-                    WaitPlan();
-                    break;
-                case CombatPlans.Surrender:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var(isDodgeAvailable, dodge) = GetDodgeForm();
+            var (isCombatAvailable, combat) = GetCombatForm();
+            var strategy =
+                new CombatUnitSummary(this, target, combat, dodge, Force, isCombatAvailable, isDodgeAvailable);
+            _breathBar.SetPlan(Mgr.Judge, strategy);
         }
 
-        public void AttackPlan(ICombatForm combat,IDodgeForm dodge)
-        {
-            _breathBar.SetPlan(CombatPlans.Attack);
-            _breathBar.SetDodge(dodge);
-            _breathBar.SetCombat(combat);
-        }
-        public void WaitPlan()
-        {
-            _breathBar.SetPlan(CombatPlans.Wait);
-        }
-
-        public void RecoverHpPlan(IForceForm forceForm)
-        {
-            _breathBar.SetRecover(forceForm);
-            _breathBar.SetPlan(CombatPlans.RecoverHp);
-        }
-
-        public void RecoverTpPlan(IForceForm forceForm)
-        {
-            _breathBar.SetRecover(forceForm);
-            _breathBar.SetPlan(CombatPlans.RecoverTp);
-        }
-
-        public void ExertPlan(IForceForm force)
-        {
-            //todo: 暂时没有特殊招方式
-            throw new NotImplementedException();
-            _breathBar.SetRecover(force);
-            _breathBar.SetPlan(CombatPlans.RecoverHp);
-        }
-
-        public bool IsCombatFormAvailable(ICombatForm form)
+        private bool IsCombatFormAvailable(ICombatForm form)
         {
             return Status.Mp.Value > form.Mp &&
                    Status.Tp.Value > form.Tp;
@@ -307,32 +242,25 @@ namespace BattleM
         public bool IsTargetRange() => IsCombatRange(Target);
         public bool IsCombatRange(ICombatInfo unit) => Equipment.Armed.InCombatRange(unit.Distance(this));
 
-        //获取内功招式    
-        public IForceForm GetForceForm()
-        {
-            var force = ForceSkill.Forms.LastOrDefault() ?? DefaultForce.Forms.First();
-            return Status.Mp.Value >= 10 ? force : null;
-        }
         //获取轻功招式
-        private IDodgeForm GetDodgeForm()
+        private (bool isDodgeAvailable,IDodge dodge) GetDodgeForm()
         {
-            if (DodgeForms != null && DodgeForms.Any())
-                return DodgeForms?
-                    .Where(d => d.Mp <= Status.Mp.Value) //先排除不够内力的招式
-                    .OrderBy(_ => Random.Next(100)) //随机一式
-                    .FirstOrDefault();
-            return Status.Tp.Value > DefaultDodge.Tp ? DefaultDodge : null;
+            if (Dodge != null && Dodge.Mp <= Status.Mp.Value)
+                return (true, Dodge);
+            return (Status.Tp.Value > DefaultDodge.Tp, DefaultDodge);
         }
         //获取战斗招式
-        private ICombatForm GetCombatForm()
+        private (bool isCombatAvailable, ICombatForm combat) GetCombatForm()
         {
             if (CombatForms != null && CombatForms.Any())
-                return CombatForms?
+            {
+                var combat = CombatForms
                     .Where(IsCombatFormAvailable) //先排除不够内力的招式
                     .OrderBy(_ => Random.Next(100)) //随机一式
                     .FirstOrDefault();
-            return Status.Tp.Value > DefaultCombat.Tp ? //如果找不到，直接用第一式
-                DefaultCombat : null;
+                return combat != null ? (true, combat) : (false ,CombatForms.First()); //如果没有内力只能使用第一式
+            }
+            return (false, DefaultCombat);
         }
 
         #endregion
@@ -357,13 +285,13 @@ namespace BattleM
                 case CombatPlans.RecoverHp:
                     {
                         _breathBar.BreathConsume(breathes);
-                        Recovery(Status.Hp, ForceSkill, _breathBar.Recover);
+                        Recovery(Status.Hp, Force, _breathBar.Force);
                     }
                     return;
                 case CombatPlans.RecoverTp:
                     {
                         _breathBar.BreathConsume(breathes);
-                        Recovery(Status.Tp, ForceSkill, _breathBar.Recover);
+                        Recovery(Status.Tp, Force, _breathBar.Force);
                     }
                     return;
                 case CombatPlans.Wait:
@@ -371,7 +299,7 @@ namespace BattleM
                 case CombatPlans.Surrender:
                     {
                         _breathBar.BreathConsume(breathes);
-                        OnEscape(_breathBar.Dodge);
+                        Round.OnEscape(this, _breathBar.Dodge);
                     }
                     return;
                 case CombatPlans.Exert:
@@ -389,21 +317,11 @@ namespace BattleM
             Round.RecRecharge(new RechargeRecord(charge, rec));
         }
 
-        #region Escape
-
-        private void OnEscape(IDodgeForm dodge)
-        {
-            dodge ??= PickDodge();
-            Round.OnEscape(this, dodge);
-        }
-
-        #endregion
-
         #region Recover
 
-        private void Recovery(IGameCondition con, IForce force, IForceForm forceForm)
+        private void Recovery(IGameCondition con, IForce force, IForce forceForm)
         {
-            var rec = RecoveryRecord.Instance(forceForm);
+            var rec = RecoveryRecord.Instance(force);
             rec.Set(this, () =>
             {
                 //var list = new[] { Status.Hp, Status.Tp };
@@ -431,7 +349,7 @@ namespace BattleM
 
         #endregion
 
-        public void SetBusy(int busy) => _breathBar.SetBusy(busy);
+        public void SetBusy(int busy) => _breathBar.AddBusy(busy);
 
         public void ConsumeForm(IDepletionForm form)
         {
@@ -470,13 +388,14 @@ namespace BattleM
             public int Tp => 10;
             public int Mp => 0;
             public int Breath => 5;
+            public int Parry => 1;
             public int OffBusy => 0;
             public ICombo Combo { get; }
             public int TarBusy => 0;
             public Way.Armed Armed => Way.Armed.Unarmed;
             public override string ToString() => Name;
         }
-        private class BasicDodge : IDodgeForm
+        private class BasicDodge : IDodge
         {
             public string Name => string.Empty;
             public int Tp => 5;
@@ -485,28 +404,12 @@ namespace BattleM
             public int Dodge => 1;
             public override string ToString() => Name;
         }
-        private class BasicParry : IParryForm
-        {
-            public string Name => string.Empty;
-            public int Tp => 5;
-            public int Mp => 0;
-            public int Parry => 1;
-            public int OffBusy => 1;
-            public override string ToString() => Name;
-        }
         private class BasicForce : IForce
         {
-            private static IList<IForceForm> forms = new IForceForm[] { new BasicForm() };
-            public string Name => "基础呼吸";
+            public string Name => "深呼吸";
             public int MpRate => 1;
             public int MpArmor => 0;
-            public IList<IForceForm> Forms => forms;
-
-            private class BasicForm : IForceForm
-            {
-                public string Name => "深呼吸";
-                public int Breath => 5;
-            }
+            public int Breath => 5;
         }
         public int CompareTo(CombatUnit other) => BreathBar.CompareTo(other.BreathBar);
         public override string ToString() => Name;

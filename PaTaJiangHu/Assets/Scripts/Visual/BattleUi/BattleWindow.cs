@@ -76,33 +76,33 @@ namespace Visual.BattleUi
         #region PlayerCommands
         private void PlayerRecTp()
         {
-            var forceForm = Player.GetForceForm();
-            Player.RecoverTpPlan(forceForm);
+            var force = Player.Force;
+            //Player.RecoverTpPlan(forceForm);
         }
 
         private void PlayerRecHp()
         {
-            var forceForm = Player.GetForceForm();
-            Player.RecoverHpPlan(forceForm);
+            var force = Player.Force;
+            //Player.RecoverHpPlan(forceForm);
         }
 
         private void PlayerWaitPlan()
         {
-            Player.WaitPlan();
+            //Player.WaitPlan();
             //CurrentBreathUpdate();
             //ManualRound();
         }
 
-        private void PlayerExertPlan(IForceForm force)
+        private void PlayerExertPlan(IForce force)
         {
-            Player.ExertPlan(force);
+            //Player.ExertPlan(force);
             //CurrentBreathUpdate();
             //ManualRound();
         }
 
         private void PlayerAttackPlan(ICombatForm combat)
         {
-            Player.AttackPlan(combat, Player.BreathBar.Dodge);
+            //Player.AttackPlan(combat, Player.BreathBar.Dodge);
             //CurrentBreathUpdate();
             //ManualRound();
         }
@@ -212,7 +212,7 @@ namespace Visual.BattleUi
             //_breathView.SetIdle();
             //UpdateDrum(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
-        private void PresetForce(IForceForm form)
+        private void PresetForce(IForce force)
         {
             //_breathView.SetForce(form);
             //UpdateDrum(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
@@ -224,7 +224,8 @@ namespace Visual.BattleUi
             //BattleStatusBarController.UpdateStatus(Player.CombatId,
             //    status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Tp,
             //    status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
-            var dodgeBreath = Player.BreathBar.Dodge?.Breath ?? 0;
+            var breathBar = Player.BreathBar;
+            var dodgeBreath = breathBar.IsReposition ? breathBar.Dodge?.Breath : 0;
             //UpdateDrum(dodgeBreath + form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
         #endregion
@@ -250,7 +251,7 @@ namespace Visual.BattleUi
                         return breathBar.Combat?.Name ?? string.Empty;
                     case CombatPlans.RecoverHp:
                     case CombatPlans.RecoverTp:
-                        return breathBar.Recover?.Name ?? string.Empty;
+                        return breathBar.Force?.Name ?? string.Empty;
                     case CombatPlans.Exert:
                         return "运功";
                     case CombatPlans.Wait:
@@ -286,7 +287,7 @@ namespace Visual.BattleUi
                     continue;
                 }
                 var target = uis.Single(c => c.CombatId == combat.Target.CombatId).Stickman;
-                _stickmanScene.AutoPlace(stickman, target, combat, false);
+                _stickmanScene.AutoPlace(stickman, target, combat, false, StickmanSceneController.Placing.Right);
             }
 
             _stickmanScene.Centralize(player);
@@ -341,11 +342,12 @@ namespace Visual.BattleUi
                 .SetAction(pos.Unit.CombatId, Stickman.Anims.Dodge);
             var combatUnit = Stage.GetCombatUnit(unitId);
             var isComplete = false;
-            _stickmanScene.AutoPlace(stickman, target, combatUnit, unitId == Player.CombatId, ()=>
-            {
-                isComplete = true;
-                UpdateStickmanOrientation();
-            });
+            _stickmanScene.AutoPlace(stickman, target, combatUnit, unitId == Player.CombatId,
+                StickmanSceneController.Placing.Random, () =>
+                {
+                    isComplete = true;
+                    UpdateStickmanOrientation();
+                });
             yield return new WaitUntil(() => isComplete);
         }
 
@@ -381,7 +383,7 @@ namespace Visual.BattleUi
             UpdateStatusUi(combatId, status.Hp, status.Tp, status.Mp);
         }
 
-        public void OnDodgeAnim(ConsumeRecord<IDodgeForm> rec)
+        public void OnDodgeAnim(ConsumeRecord<IDodge> rec)
         {
             var combatId = rec.CombatId;
             var status = rec.After;
@@ -433,8 +435,8 @@ namespace Visual.BattleUi
             var exeBar = rec.BreathBars.Single(b => b.CombatId == rec.ExecutorId);
             var tarBar = rec.BreathBars.SingleOrDefault(b => b.CombatId == rec.TargetId);
             var maxBreath = exeBar.GetBreath() + tarBar?.GetBreath() ?? 0;
-            StartCo(BarUpdate(exeBar, true));
-            if (tarBar != null) StartCo(BarUpdate(tarBar, false));
+            StartCo(BarUpdate(exeBar, rec.ExecutorId == Player.CombatId));
+            if (tarBar != null) StartCo(BarUpdate(tarBar, rec.TargetId == Player.CombatId));
 
             foreach (var co in listCo) yield return co;
 
@@ -510,7 +512,7 @@ namespace Visual.BattleUi
         /// <summary>
         /// 闪避触发
         /// </summary>
-        void OnDodgeAnim(ConsumeRecord<IDodgeForm> rec);
+        void OnDodgeAnim(ConsumeRecord<IDodge> rec);
         /// <summary>
         /// 招架触发
         /// </summary>

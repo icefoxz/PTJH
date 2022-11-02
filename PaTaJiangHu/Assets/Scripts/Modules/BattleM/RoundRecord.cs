@@ -16,7 +16,7 @@ namespace BattleM
         ParryFormula ParryFormula { get; }
         ConsumeRecord<ICombatForm> AttackConsume { get; set; }
         ConsumeRecord<IParryForm> ParryConsume { get; set; }
-        ConsumeRecord<IDodgeForm> DodgeConsume { get; set; }
+        ConsumeRecord<IDodge> DodgeConsume { get; set; }
     }
     //public interface IDodgeRecord
     //{
@@ -174,15 +174,15 @@ namespace BattleM
         }
     }
 
-    public record RecoveryRecord : ConsumeRecord<IForceForm>
+    public record RecoveryRecord : ConsumeRecord<IForce>
     {
 
-        public new static RecoveryRecord Instance(IForceForm form) => new(form);
+        public new static RecoveryRecord Instance(IForce force) => new(force);
 
         public RecoveryRecord()
         {
         }
-        public RecoveryRecord(IForceForm form):base(form)
+        public RecoveryRecord(IForce form):base(form)
         {
         }
     }
@@ -476,7 +476,7 @@ namespace BattleM
         //进攻消耗
         public ConsumeRecord<ICombatForm> AttackConsume { get; set; }
         //闪避消耗(状态更新1)
-        public ConsumeRecord<IDodgeForm> DodgeConsume { get; set; }
+        public ConsumeRecord<IDodge> DodgeConsume { get; set; }
         //招架消耗(状态更新2)
         public ConsumeRecord<IParryForm> ParryConsume { get; set; }
         //承受(状态更新3)
@@ -492,7 +492,7 @@ namespace BattleM
         public AttackRecord(ICombatUnit unit, ICombatUnit target,
             PositionRecord attackPlacing,
             ConsumeRecord<ICombatForm> attackConsume,
-            ConsumeRecord<IDodgeForm> dodgeConsume,
+            ConsumeRecord<IDodge> dodgeConsume,
             ConsumeRecord<IParryForm> parryConsume,
             ConsumeRecord suffer,
             DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula)
@@ -520,7 +520,7 @@ namespace BattleM
         public UnitRecord Escapee { get; }
         public UnitRecord Attacker { get; }
         public ConsumeRecord<ICombatForm> AttackConsume { get; }
-        public ConsumeRecord<IDodgeForm> EscapeConsume { get; }
+        public ConsumeRecord<IDodge> EscapeConsume { get; }
         public ConsumeRecord<IParryForm> ParryConsume { get; }
         public ConsumeRecord Suffer { get; }
         public DamageFormula DamageFormula { get; }
@@ -529,7 +529,7 @@ namespace BattleM
         public bool IsSuccess { get; }
         public EscapeRecord(ICombatUnit escapee, ICombatUnit attacker, 
             ConsumeRecord<ICombatForm> attackConsume, 
-            ConsumeRecord<IDodgeForm> escapeConsume, 
+            ConsumeRecord<IDodge> escapeConsume, 
             ConsumeRecord<IParryForm> parryConsume, 
             ConsumeRecord suffer, 
             DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula,
@@ -677,8 +677,8 @@ namespace BattleM
             {
                 CombatPlans.Wait => "等待",
                 CombatPlans.Attack => unit.BreathBar.Combat.Name,
-                CombatPlans.RecoverHp => unit.BreathBar.Recover.Name,
-                CombatPlans.RecoverTp => unit.BreathBar.Recover.Name,
+                CombatPlans.RecoverHp => unit.BreathBar.Force.Name,
+                CombatPlans.RecoverTp => unit.BreathBar.Force.Name,
                 CombatPlans.Surrender => "认输",
                 CombatPlans.Exert => throw new NotImplementedException(),
                 _ => throw new ArgumentOutOfRangeException()
@@ -774,13 +774,13 @@ namespace BattleM
                 switch (bar.Plan)
                 {
                     case CombatPlans.Attack:
-                        if (bar.Dodge != null)
+                        if (bar.IsReposition)
                             list.Add(new BreathRecord(BreathRecord.Types.Placing, bar.Dodge.Breath, bar.Dodge.Name));
                         list.Add(new BreathRecord(BreathRecord.Types.Attack, bar.Combat.Breath, bar.Combat.Name));
                         break;
                     case CombatPlans.RecoverHp:
                     case CombatPlans.RecoverTp:
-                        list.Add(new BreathRecord(BreathRecord.Types.Exert, bar.Recover.Breath, bar.Recover.Name));
+                        list.Add(new BreathRecord(BreathRecord.Types.Exert, bar.Force.Breath, bar.Force.Name));
                         break;
                     case CombatPlans.Exert:
                         break;

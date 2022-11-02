@@ -41,10 +41,8 @@ namespace Visual.BattleUi.Scene
             var newSlot = _slots[index];
             newSlot.PlaceObj(obj);
         }
-        public void ResetUi()
-        {
-            _slots.ForEach(s=>s.ResetUi());
-        }
+        public void ResetUi() => _slots.ForEach(s=>s.ResetUi());
+
         public int GetIndexInScreen(Positions pos)
         {
             return pos switch
