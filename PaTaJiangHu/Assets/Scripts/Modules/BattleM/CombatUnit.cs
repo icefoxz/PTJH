@@ -347,12 +347,13 @@ namespace BattleM
             return true;
         }
 
-        public void SufferDamage(int finalDamage, Weapon.Injuries kind)
+        public void SufferDamage(int finalDamage, int damageMp, Weapon.Injuries kind)
         {
             var rec = ConsumeRecord.Instance();
             rec.Set(this, () =>
             {
                 Status.Hp.Add(-finalDamage);
+                Status.Mp.Add(-damageMp);
                 var injury = Random.Next(finalDamage);
                 switch (kind)
                 {
@@ -376,6 +377,7 @@ namespace BattleM
         {
             public string Name => "王八拳";
             public int CombatMp => 0;
+            public int DamageMp => 0;
             public int Breath => 5;
             public int Parry => 1;
             public int ParryMp => 1;

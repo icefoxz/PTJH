@@ -57,7 +57,14 @@ namespace BattleM
     public interface ICombatForm : IParryForm, IBreathNode
     {
         ICombo Combo { get; }
+        /// <summary>
+        /// 内力使用
+        /// </summary>
         int CombatMp { get; }
+        /// <summary>
+        /// 打掉对方内力
+        /// </summary>
+        int DamageMp { get; }
     }
     /// <summary>
     /// 连击招式

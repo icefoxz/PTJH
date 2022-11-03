@@ -251,7 +251,7 @@ namespace BattleM
                             if (parryFormula.IsSuccess) 
                                 sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
                             escapee.ArmorDepletion();
-                            escapee.SufferDamage(sufferDmg, op.WeaponInjuryType); //伤害
+                            escapee.SufferDamage(sufferDmg, combat.DamageMp, op.WeaponInjuryType); //伤害
                             escapee.SetBusy(combat.TarBusy); //攻击打入硬直
                             op.SetBusy(combat.OffBusy); //攻击方招式硬直
                             op.SetBusy(parry.OffBusy);
@@ -412,7 +412,7 @@ namespace BattleM
                     if (parryFormula.IsSuccess) 
                         sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
                     tar.ArmorDepletion();
-                    tar.SufferDamage(sufferDmg, op.WeaponInjuryType); //伤害
+                    tar.SufferDamage(sufferDmg, attackForm.DamageMp ,op.WeaponInjuryType); //伤害
                     tar.SetBusy(attackForm.TarBusy); //攻击打入硬直
                     op.SetBusy(attackForm.OffBusy); //攻击方招式硬直
                     op.SetBusy(parryForm.OffBusy); //招架打入硬直

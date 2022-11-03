@@ -111,7 +111,7 @@ namespace BattleM
 
             Debug.Log(sb);
             string AttackLog(ICombatForm a) => FormLog(a) +
-                                               $"内({a.CombatMp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                               $"内({a.CombatMp})内削({a.DamageMp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
                                                    .Color(Color.Coral);
         }
 
@@ -120,7 +120,7 @@ namespace BattleM
             var sb = new StringBuilder();
 
             string AttackLog(ICombatForm a) => FormLog(a) +
-                                               $"内({a.CombatMp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                               $"内({a.CombatMp})内削({a.DamageMp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
                                                    .Color(Color.Coral);
 
             var u = att.Unit;
