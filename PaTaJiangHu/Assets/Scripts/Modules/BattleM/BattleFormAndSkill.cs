@@ -123,11 +123,14 @@ namespace BattleM
         /// 内力转化率
         /// </summary>
         int MpRate { get; }
-
+        /// <summary>
+        /// 护甲消耗
+        /// </summary>
+        int Depletion { get; }
         /// <summary>
         /// 内力值使用在护甲上
         /// </summary>
-        int MpArmor { get; }
+        int Armor { get; }
         //IList<IForceForm> Forms { get; }
     }
 

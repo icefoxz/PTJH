@@ -111,7 +111,11 @@ namespace BattleM
             _busies = new List<int>();
         }
 
-        public void AddBusy(int busy) => _busies.Add(busy);
+        public void AddBusy(int busy)
+        {
+            if (busy == 0) _busies.Add(busy);
+        }
+
         public void Charge(int charge)
         {
             LastCharged = charge;

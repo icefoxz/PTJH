@@ -299,8 +299,18 @@ namespace BattleM
 
         private int GetArmor(CombatUnit tg)
         {
-            var formula = ArmorFormula.Instance(tg.Armor, tg.Status.Mp.Squeeze(tg.Force.MpArmor),
-                tg.Force.MpRate);
+            var mp = tg.Status.Mp;
+            var force = tg.Force;
+            var mpArmor = force.Armor;
+            var depletion = force.Depletion;
+
+            if (mp.Value < force.Depletion)//如果消耗不够没有护甲
+            {
+                mpArmor = 0;
+                depletion = 0;
+            }
+
+            var formula = ArmorFormula.Instance(tg.Armor, mpArmor, depletion);
             return formula.Finalize;
         }
 
@@ -343,22 +353,25 @@ namespace BattleM
                 RoundRec.AddBreathBar(unit);//breath记录
             var fighters = allUnits.ToList();
             var actionUnits = fighters.Where(c => c.Plan != CombatPlans.Wait).ToList();//剔除等待单位
-            actionUnits.Sort();
-            var combat = actionUnits.FirstOrDefault();
-            var breathes = 10;//默认息-恢复值(如果双方都等待，各自恢复10点)
-            if(combat != null)
+            var charge = 10; //默认息-恢复值(如果双方都等待，各自恢复10点)
+            if (actionUnits.Count > 0)
             {
-                RoundRec.SetExecutor(combat);
-                fighters.Remove(combat);
-                breathes = combat.BreathBar.TotalBreath;//覆盖默认息
-                combat.Action(breathes);
-                Mgr.CheckExhausted(OnUnitExhausted);
+                actionUnits.Sort();
+                var combat = actionUnits.FirstOrDefault();
+                if (combat != null)
+                {
+                    RoundRec.SetExecutor(combat);
+                    fighters.Remove(combat);
+                    charge = combat.BreathBar.TotalBreath; //覆盖默认息
+                    combat.Action(charge);
+                    Mgr.CheckExhausted(OnUnitExhausted);
+                }
             }
 
             foreach (var unit in fighters.Where(c => !c.IsExhausted)) //去掉死亡单位(因为列表可能包涵被攻击死亡的单位)
             {
-                if (unit.BreathBar.BusyCharged > 0)
-                    unit.BreathCharge(unit.BreathBar.BusyCharged);
+                if (charge > 0)
+                    unit.BreathCharge(charge);
             }//息恢复
             Mgr.BuffMgr.OnRoundEnd(this);
 

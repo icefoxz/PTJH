@@ -375,22 +375,22 @@ namespace BattleM
         /// <summary>
         /// 内力使用
         /// </summary>
-        public int Mp;
+        public int Depletion;
         /// <summary>
         /// 内力转化
         /// </summary>
         public int MpRate;
-        public int MpArmor => (int)(Mp * (1 + (MpRateAlign * MpRate)));
-        public int Finalize => Math.Clamp(Armor + MpArmor,0,MaxArmorValue);
+        public int MpArmor => (int)(Armor * (1 + (MpRateAlign * MpRate)));
+        public int Finalize => Math.Clamp(MpArmor, 0, MaxArmorValue);
 
-        private ArmorFormula(int armor, int mp, int mpRate)
+        private ArmorFormula(int armor, int mpRate, int depletion)
         {
             Armor = armor;
-            Mp = mp;
+            Depletion = depletion;
             MpRate = mpRate;
         }
-        public static ArmorFormula Instance(int armor, int mp, int mpRate) => new(armor, mp, mpRate);
-        public override string ToString() => $"防:{Finalize}\n甲({Armor})内:{Mp}({MpRate})={MpArmor}";
+        public static ArmorFormula Instance(int armor, int mpRate, int depletion) => new(armor, mpRate, depletion);
+        public override string ToString() => $"防:{Finalize}\n甲({Armor})倍({MpRate})耗:{Depletion}={MpArmor}";
     }
 
     public struct RecoverFormula

@@ -23,8 +23,7 @@ namespace BattleM
             foreach (var bar in rec.BreathBars)
             {
                 var unit = bar.Unit;
-                round.Append($"{unit.Name}[位:{unit.Position}]{StatusLog(unit)}".Sb().Color(Color.White)
-                    .ToString());
+                round.Append($"{unit.Name}[位:{unit.Position}]");
                 round.Append($"息：【{bar.GetBreath()}】");
                 foreach (var text in bar.Breathes.Select(breath => breath.Type switch
                          {
@@ -35,6 +34,7 @@ namespace BattleM
                              BreathRecord.Types.Placing => $"【移：{breath.Value}】",
                              _ => throw new ArgumentOutOfRangeException()
                          })) round.Append(text);
+                round.Append($"{StatusLog(unit)}".Sb().Color(Color.White));
                 round.AppendLine();
             }
             Debug.Log(round);

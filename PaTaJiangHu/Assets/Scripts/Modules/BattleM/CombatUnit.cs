@@ -201,8 +201,9 @@ namespace BattleM
         public void BreathCharge(int charge)
         {
             if (charge <= 0) return;
-            OnIdleCharge(charge);
             _breathBar.Charge(charge);
+            if (_breathBar.TotalCharged > 0)//如果蓄力与硬直抵消不了就不增加内力
+                MpCharge(_breathBar.TotalCharged);
         }
 
         #region BuffManager
@@ -310,7 +311,7 @@ namespace BattleM
         }
 
         #endregion
-        private void OnIdleCharge(int charge)
+        private void MpCharge(int charge)
         {
             var rec = ConsumeRecord.Instance();
             rec.Set(this, () => Status.Mp.Add(charge));
@@ -407,8 +408,9 @@ namespace BattleM
         private class BasicForce : IForce
         {
             public string Name => "深呼吸";
-            public int MpRate => 1;
-            public int MpArmor => 0;
+            public int MpRate => 0;
+            public int Depletion => 0;
+            public int Armor => 0;
             public int Breath => 5;
         }
         public int CompareTo(CombatUnit other) => BreathBar.CompareTo(other.BreathBar);

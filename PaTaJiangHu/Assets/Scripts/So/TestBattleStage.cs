@@ -8,15 +8,17 @@ namespace So
 {
     public class TestBattleStage : MonoBehaviour
     {
+        [SerializeField] private CombatManager.Judgment 战斗模式;
         [SerializeField] private BattleWindow _battleWindow;
         [SerializeField] private BattleUnit[] _battleUnits;
+        private CombatManager.Judgment Judge => 战斗模式;
         public IBattleWindow BattleWindow => _battleWindow;
         void Start() => Init();
         public void Init() => BattleWindow.Init(OnBattleResult);
         public void StartBattle()
         {
             BattleWindow.Show();
-            BattleWindow.BattleSetup(GetCombatUnit(), CombatManager.Judgment.Duel);
+            BattleWindow.BattleSetup(GetCombatUnit(), Judge);
             BattleWindow.StartBattle();
         }
         private (int, CombatUnit)[] GetCombatUnit() => _battleUnits.Select(b => (Stance: b.立场, b.InstanceCombatUnit())).ToArray();

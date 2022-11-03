@@ -12,14 +12,16 @@ namespace So
     {
         [SerializeField] private string _name;
         [SerializeField] private int id;
-        [SerializeField] private int 内转化率;
-        [SerializeField] private int 内护甲;
+        [SerializeField] private int 内力转化率;
+        [SerializeField] private int 护甲值;
+        [SerializeField] private int 内消耗;
         [SerializeField] private int 使用息;
 
         public int Id => id;
         public string Name => _name;
-        public int MpRate => 内转化率;
-        public int MpArmor => 内护甲;
+        public int MpRate => 内力转化率;
+        public int Depletion => 内消耗;
+        public int Armor => 护甲值;
         public int Breath => 使用息;
     }
 }
