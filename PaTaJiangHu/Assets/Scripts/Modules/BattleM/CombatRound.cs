@@ -224,21 +224,22 @@ namespace BattleM
                 if (op.Distance(escapee) > 4)
                 {
                     var combat = op.BreathBar.Combat;
+                    var parry = escapee.BreathBar.Combat;
                     op.Equipment.FlingConsume();
                     {
                         var dodgeFormula = InstanceDodgeFormula(op, escapee, dodge);
                         var damageFormula = InstanceDamageFormula(op, combat);
                         var armor = GetArmor(escapee);
-                        var parryFormula = InstanceParryFormula(op, escapee, combat);
+                        var parryFormula = InstanceParryFormula(op, escapee, parry);
 
                         var attConsume = ConsumeRecord<ICombatForm>.Instance(combat);
                         attConsume.Set(op, () => op.ConsumeForm(combat));
 
-                        var tarParryConsume = ConsumeRecord<IParryForm>.Instance(combat);
+                        var tarParryConsume = ConsumeRecord<IParryForm>.Instance(parry);
                         var tarDodgeConsume = ConsumeRecord<IDodge>.Instance(dodge);
                         tarDodgeConsume.Set(escapee, () => escapee.ConsumeForm(dodge));
                         if (parryFormula.IsSuccess)
-                            tarParryConsume.Set(escapee, () => escapee.ConsumeForm(combat));
+                            tarParryConsume.Set(escapee, () => escapee.ConsumeForm(parry));
                         var tarSuffer = ConsumeRecord.Instance();
                         tarSuffer.Set(escapee, () =>
                         {
@@ -247,15 +248,13 @@ namespace BattleM
                             var damage = (int)(0.01f * damageFormula.Finalize);
                             var finalDamage = damage - (int)(1f - armor * 0.01f); //最终伤害(扣除免伤)
                             var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage; //最低伤害为1
-                            if (parryFormula.IsSuccess)
-                            {
+                            if (parryFormula.IsSuccess) 
                                 sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
-                                op.SetBusy(combat.OffBusy); //招架打入硬直
-                            }
-
+                            escapee.ArmorDepletion();
                             escapee.SufferDamage(sufferDmg, op.WeaponInjuryType); //伤害
                             escapee.SetBusy(combat.TarBusy); //攻击打入硬直
                             op.SetBusy(combat.OffBusy); //攻击方招式硬直
+                            op.SetBusy(parry.OffBusy);
                         });
 
                         RoundRec.SetEscape(new EscapeRecord(escapee, op, attConsume, tarDodgeConsume, tarParryConsume,
@@ -302,15 +301,14 @@ namespace BattleM
             var mp = tg.Status.Mp;
             var force = tg.Force;
             var mpArmor = force.Armor;
-            var depletion = force.Depletion;
-
-            if (mp.Value < force.Depletion)//如果消耗不够没有护甲
+            var depletion = force.ArmorDepletion;
+            if (mp.Value < force.ArmorDepletion)//如果消耗不够没有护甲
             {
                 mpArmor = 0;
                 depletion = 0;
             }
 
-            var formula = ArmorFormula.Instance(tg.Armor, mpArmor, depletion);
+            var formula = ArmorFormula.Instance(mpArmor, depletion);
             return formula.Finalize;
         }
 
@@ -401,11 +399,9 @@ namespace BattleM
             }
             else
             {
-                if (parryFormula.IsSuccess)
-                {
-                    //招架第二次更新状态(2)
-                    tarParryConsume.Set(tar, () => tar.ConsumeForm(parryForm));
-                }
+                //无论成不成功都消耗招架
+                //招架第二次更新状态(2)
+                tarParryConsume.Set(tar, () => tar.ConsumeForm(parryForm));
 
                 //承受伤害第三次更新状态(3)
                 tarSuffer.Set(tar, () =>
@@ -413,15 +409,13 @@ namespace BattleM
                     var damage = (int)(0.01f * damageFormula.Finalize * damageRate);
                     var finalDamage = damage - (int)(1f - armor * 0.01f); //最终伤害(扣除免伤)
                     var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage; //最低伤害为1
-                    if (parryFormula.IsSuccess)
-                    {
+                    if (parryFormula.IsSuccess) 
                         sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
-                        op.SetBusy(parryForm.OffBusy); //招架打入硬直
-                    }
-
+                    tar.ArmorDepletion();
                     tar.SufferDamage(sufferDmg, op.WeaponInjuryType); //伤害
                     tar.SetBusy(attackForm.TarBusy); //攻击打入硬直
                     op.SetBusy(attackForm.OffBusy); //攻击方招式硬直
+                    op.SetBusy(parryForm.OffBusy); //招架打入硬直
                 });
             }
 
@@ -442,9 +436,9 @@ namespace BattleM
         {
             var opStrength = Mgr.BuffMgr.GetStrength(op, op.Strength);
             var opWeaponDamage = Mgr.BuffMgr.GetWeaponDamage(op, op.WeaponDamage);
-            var mp = op.Status.Mp.Squeeze(combat.Mp);
+            var mp = op.Status.Mp.Squeeze(combat.CombatMp);
             var mpValue = Mgr.BuffMgr.GetExtraMpValue(op, mp);
-            return DamageFormula.Instance(opStrength, opWeaponDamage, mpValue, op.Force.MpRate);
+            return DamageFormula.Instance(opStrength, opWeaponDamage, mpValue, op.Force.ForceRate);
         }
 
         //招架公式

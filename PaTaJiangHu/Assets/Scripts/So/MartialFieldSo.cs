@@ -24,19 +24,22 @@ namespace So
         {
             [SerializeField] private string name;
             [SerializeField] private int 气消耗;
-            [SerializeField] private int 内消耗;
-            [SerializeField] private int 使用息;
+            [SerializeField] private int 息;
+            [SerializeField] private int 进攻内使用;
             [SerializeField] private int 招架值;
+            [SerializeField] private int 招架内消耗;
             [SerializeField] private int 对方硬直;
             [SerializeField] private int 己方硬直;
             [SerializeField] private int[] 连击伤害表;
 
             public string Name => name;
             public int Tp => 气消耗;
-            public int Mp => 内消耗;
-            public int Breath => 使用息;
+            public int CombatMp => 进攻内使用;
+            public int Breath => 息;
             public int TarBusy => 对方硬直;
             public int Parry => 招架值;
+            public int ParryMp => 招架内消耗;
+
             public int OffBusy => 己方硬直;
             public ICombo Combo => 连击伤害表?.Length > 0 ? new ComboField(连击伤害表) : null;
             private class ComboField : ICombo

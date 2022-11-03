@@ -236,7 +236,7 @@ namespace BattleM
 
         private bool IsCombatFormAvailable(ICombatForm form)
         {
-            return Status.Mp.Value > form.Mp &&
+            return Status.Mp.Value > form.CombatMp &&
                    Status.Tp.Value > form.Tp;
         }
 
@@ -246,7 +246,7 @@ namespace BattleM
         //获取轻功招式
         private (bool isDodgeAvailable,IDodge dodge) GetDodgeForm()
         {
-            if (Dodge != null && Dodge.Mp <= Status.Mp.Value)
+            if (Dodge != null && Dodge.DodgeMp <= Status.Mp.Value)
                 return (true, Dodge);
             return (Status.Tp.Value > DefaultDodge.Tp, DefaultDodge);
         }
@@ -325,25 +325,9 @@ namespace BattleM
             var rec = RecoveryRecord.Instance(force);
             rec.Set(this, () =>
             {
-                //var list = new[] { Status.Hp, Status.Tp };
-                //var totalGap = Status.Hp.Max - Status.Hp.Value + Status.Tp.Max - Status.Tp.Value;
-                //var mp = Math.Min(totalGap, Status.Mp.Value);
-                //var exert = ExertFormula.Instance(mp, forceForm.Breath, force.MpRate);
-                //var final = exert.Finalize;
-                //foreach (var con in list.OrderBy(c => c.ValueMaxRatio))
-                //{
-                //    if (final <= 0) break;
-                //    var gap = con.Max - con.Value;
-                //    var recover = Math.Min(gap, final);
-                //    con.Add(recover);
-                //    final -= recover;
-                //}
-                var gap = con.Max - con.Value; //差距值
-                var mpRequired = RecoverFormula.MpRequire(gap, force.MpRate, forceForm.Breath); //需要内力
-                var mp = Math.Min(mpRequired, Status.Mp.Value); //需要内力与剩余内力获取最低(内力不够的情况)
-                var formula = RecoverFormula.Instance(mp, forceForm.Breath, force.MpRate);
+                var formula = RecoverFormula.Instance(forceForm.Recover, force.ForceRate);
                 con.Add(formula.Finalize);
-                Status.Mp.Add(-mp);
+                Status.Mp.Add(-formula.Mp);
             });
             Round.RecForceRecovery(rec);
         }
@@ -352,10 +336,30 @@ namespace BattleM
 
         public void SetBusy(int busy) => _breathBar.AddBusy(busy);
 
-        public void ConsumeForm(IDepletionForm form)
+        public void ConsumeForm(ICombatForm form)
         {
             Status.Tp.Add(-form.Tp);
-            Status.Mp.Add(-form.Mp);
+            Status.Mp.Add(-form.CombatMp);
+        }
+        public void ConsumeForm(IDodge dodge)
+        {
+            Status.Tp.Add(-dodge.Tp);
+            Status.Mp.Add(-dodge.DodgeMp);
+        }
+        public void ConsumeForm(IParryForm form)
+        {
+            Status.Tp.Add(-form.Tp);
+            Status.Mp.Add(-form.ParryMp);
+        }
+
+        /// <summary>
+        /// 消耗内甲，如果内力不够不消耗
+        /// </summary>
+        public bool ArmorDepletion()
+        {
+            if (Status.Mp.Value < Force.ArmorDepletion) return false;
+            Status.Mp.Add(-Force.ArmorDepletion);
+            return true;
         }
 
         public void SufferDamage(int finalDamage, Weapon.Injuries kind)
@@ -369,7 +373,7 @@ namespace BattleM
                 {
                     case Weapon.Injuries.Blunt:
                         var inj = Random.Next(injury);
-                        Status.Tp.AddMax(-inj);
+                        Status.Mp.AddMax(-inj);
                         Status.Hp.AddMax(-injury + inj);
                         break;
                     case Weapon.Injuries.Sharp:
@@ -387,9 +391,10 @@ namespace BattleM
         {
             public string Name => "王八拳";
             public int Tp => 10;
-            public int Mp => 0;
+            public int CombatMp => 0;
             public int Breath => 5;
             public int Parry => 1;
+            public int ParryMp => 1;
             public int OffBusy => 0;
             public ICombo Combo { get; }
             public int TarBusy => 0;
@@ -400,7 +405,7 @@ namespace BattleM
         {
             public string Name => string.Empty;
             public int Tp => 5;
-            public int Mp => 0;
+            public int DodgeMp => 0;
             public int Breath => 3;
             public int Dodge => 1;
             public override string ToString() => Name;
@@ -408,8 +413,10 @@ namespace BattleM
         private class BasicForce : IForce
         {
             public string Name => "深呼吸";
-            public int MpRate => 0;
-            public int Depletion => 0;
+            public int ForceRate => 0;
+            public int MpConvert => 10;
+            public int Recover => 10;
+            public int ArmorDepletion => 0;
             public int Armor => 0;
             public int Breath => 5;
         }

@@ -57,8 +57,8 @@ namespace BattleM
     /// </summary>
     public interface ICombatForm : IParryForm, IBreathNode
     {
-        int TarBusy { get; }
         ICombo Combo { get; }
+        int CombatMp { get; }
     }
     /// <summary>
     /// 连击招式
@@ -77,7 +77,6 @@ namespace BattleM
     public interface IDepletionForm : ISkillForm
     {
         int Tp { get; }
-        int Mp { get; }
     }
 
     ///// <summary>
@@ -92,7 +91,8 @@ namespace BattleM
         /// 招架值
         /// </summary>
         int Parry { get; }
-
+        int ParryMp { get; }
+        int TarBusy { get; }
         int OffBusy { get; }
     }
 
@@ -120,13 +120,21 @@ namespace BattleM
     public interface IForce : ICombatSkill, IBreathNode
     {
         /// <summary>
-        /// 内力转化率
+        /// 内功转化率
         /// </summary>
-        int MpRate { get; }
+        int ForceRate { get; }
+        /// <summary>
+        /// 蓄转内
+        /// </summary>
+        int MpConvert { get; }
+        /// <summary>
+        /// 补血或气的消耗值
+        /// </summary>
+        int Recover { get; }
         /// <summary>
         /// 护甲消耗
         /// </summary>
-        int Depletion { get; }
+        int ArmorDepletion { get; }
         /// <summary>
         /// 内力值使用在护甲上
         /// </summary>
@@ -152,6 +160,7 @@ namespace BattleM
         /// 身法值
         /// </summary>
         int Dodge { get; }
+        int DodgeMp { get; }
         //IList<IDodgeForm> Forms { get; }
     }
 }

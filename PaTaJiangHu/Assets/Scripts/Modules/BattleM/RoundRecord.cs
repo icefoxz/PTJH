@@ -324,7 +324,7 @@ namespace BattleM
     /// </summary>
     public struct DamageFormula
     {
-        private const float MpRateAlign = 0.01f;
+        private const float MpRateAlign = 0.1f;
         /// <summary>
         /// 力量
         /// </summary>
@@ -344,7 +344,7 @@ namespace BattleM
         /// <summary>
         /// 内功转化率
         /// </summary>
-        public float MpRatio => 1 + MpRateAlign * MpRate;
+        public float MpRatio => MpRateAlign * MpRate;
         //
         public int Finalize => (Strength + WeaponDamage) + (int)(Mp * MpRatio);
 
@@ -366,8 +366,9 @@ namespace BattleM
     /// </summary>
     public struct ArmorFormula
     {
-        private const float MpRateAlign = 0.1f;
+        private const float MpRateAlign = 0.01f;
         private const int MaxArmorValue = 25;
+
         /// <summary>
         /// 装备护甲
         /// </summary>
@@ -376,56 +377,47 @@ namespace BattleM
         /// 内力使用
         /// </summary>
         public int Depletion;
-        /// <summary>
-        /// 内力转化
-        /// </summary>
-        public int MpRate;
-        public int MpArmor => (int)(Armor * (1 + (MpRateAlign * MpRate)));
+        ///// <summary>
+        ///// 内力转化
+        ///// </summary>
+        //public int MpRate;
+        public int MpArmor => Armor; //(int)(Armor * (1 + (MpRateAlign * MpRate)));
         public int Finalize => Math.Clamp(MpArmor, 0, MaxArmorValue);
 
-        private ArmorFormula(int armor, int mpRate, int depletion)
+        private ArmorFormula(int armor, int depletion)
         {
             Armor = armor;
             Depletion = depletion;
-            MpRate = mpRate;
+            //MpRate = mpRate;
         }
-        public static ArmorFormula Instance(int armor, int mpRate, int depletion) => new(armor, mpRate, depletion);
-        public override string ToString() => $"防:{Finalize}\n甲({Armor})倍({MpRate})耗:{Depletion}={MpArmor}";
+        public static ArmorFormula Instance(int armor, int depletion) => new(armor, depletion);
+        public override string ToString() => $"防:{Finalize}\n甲({Armor})" +
+                                             //$"倍({MpRate})" +
+                                             $"耗:{Depletion}={MpArmor}";
     }
 
     public struct RecoverFormula
     {
-        private const float MpRateAlign = 0.1f;
+        private const float MpRateAlign = 0.01f;
         /// <summary>
         /// 内力使用
         /// </summary>
         public int Mp;
-        /// <summary>
-        /// 息补充
-        /// </summary>
-        public int Breath;
+
         /// <summary>
         /// 内力转化
         /// </summary>
         public int MpRate;
-        public float MpRatio => 1 + MpRateAlign * MpRate;
-        public int Finalize => (int)((Mp + Breath) * MpRatio);
-        /// <summary>
-        /// 公式反算，需要多少内力以达到gap最终值
-        /// </summary>
-        /// <param name="gap"></param>
-        /// <param name="mpRate"></param>
-        /// <param name="breath"></param>
-        /// <returns></returns>
-        private RecoverFormula(int mp, int breath, int mpRate)
+        public float MpRatio => GetMpRatio(MpRate);
+        public int Finalize => (int)(Mp * MpRatio);
+        private RecoverFormula(int mp, int mpRate)
         {
             Mp = mp;
-            Breath = breath;
             MpRate = mpRate;
         }
-        public static int MpRequire(int gap, int mpRate, int breath) => (int)(gap / (MpRateAlign * mpRate) - breath);
-        public static RecoverFormula Instance(int mp, int breath, int mpRate) => new(mp, breath, mpRate);
-        public override string ToString() => $"回:{Finalize}\n息({Breath})+内({Mp})转({MpRate}){MpRatio:F}";
+        private static float GetMpRatio(int mpRate) => 1 + MpRateAlign * mpRate;
+        public static RecoverFormula Instance(int mp, int mpRate) => new(mp,  mpRate);
+        public override string ToString() => $"回:{Finalize}\n内({Mp})转({MpRate}){MpRatio:F}";
     }
 
     //public sealed record DodgeRecord : FightFragment, IDodgeRecord

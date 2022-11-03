@@ -113,7 +113,7 @@ namespace BattleM
 
         public void AddBusy(int busy)
         {
-            if (busy == 0) _busies.Add(busy);
+            if (busy > 0) _busies.Add(busy);
         }
 
         public void Charge(int charge)

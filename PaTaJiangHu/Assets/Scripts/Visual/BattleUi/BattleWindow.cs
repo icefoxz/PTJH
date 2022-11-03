@@ -311,22 +311,6 @@ namespace Visual.BattleUi
                 SubEventRecord.EventTypes.Death => "死亡!",
                 _ => throw new ArgumentOutOfRangeException()
             };
-            //{
-            //    FightFragment.Types.None => string.Empty,
-            //    FightFragment.Types.Consume => string.Empty,
-            //    FightFragment.Types.Attack => string.Empty,
-            //    FightFragment.Types.Parry => string.Empty,
-            //    FightFragment.Types.Dodge => string.Empty,
-            //    FightFragment.Types.Position => string.Empty,
-            //    FightFragment.Types.SwitchTarget => string.Empty,
-            //    FightFragment.Types.TryEscape => "欲想逃跑...",
-            //    FightFragment.Types.Fling => "投掷暗器!",
-            //    FightFragment.Types.Escaped => "逃走了!",
-            //    FightFragment.Types.Death => "死亡!",
-            //    FightFragment.Types.Exhausted => "败!",
-            //    FightFragment.Types.Wait => "伺机行动...",
-            //    _ => throw new ArgumentOutOfRangeException()
-            //};
         }
         #endregion
         public override void ResetUi() => Hide();
@@ -477,10 +461,6 @@ namespace Visual.BattleUi
             BattleStatusBarController.UpdateStatus(combatId, hp, tp, mp);
         }
 
-        //public void OnFragmentUpdate()
-        //{
-        //    foreach (var stance in Stances) stance.UpdateUi();
-        //}
         #endregion
     }
     /// <summary>

@@ -17,7 +17,7 @@ namespace So
         public int Id => id;
         public string Name => _name;
         public int Tp => 气消耗;
-        public int Mp => 内消耗;
+        public int DodgeMp => 内消耗;
         public int Breath => 使用息;
         public int Dodge => 身法值;
         //[SerializeField] private Form[] 招式;

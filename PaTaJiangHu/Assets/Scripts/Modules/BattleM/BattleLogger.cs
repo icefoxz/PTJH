@@ -111,7 +111,7 @@ namespace BattleM
 
             Debug.Log(sb);
             string AttackLog(ICombatForm a) => FormLog(a) +
-                                               $"内({a.Mp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                               $"内({a.CombatMp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
                                                    .Color(Color.Coral);
         }
 
@@ -120,7 +120,7 @@ namespace BattleM
             var sb = new StringBuilder();
 
             string AttackLog(ICombatForm a) => FormLog(a) +
-                                               $"内({a.Mp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                               $"内({a.CombatMp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
                                                    .Color(Color.Coral);
 
             var u = att.Unit;
@@ -141,7 +141,7 @@ namespace BattleM
 
             void CombatFormConsumeLog(StringBuilder s, ConsumeRecord<ICombatForm> combat, IUnitInfo info)
             {
-                s.Append($"【{info.Name}】气:({combat.Form.Tp})内:({combat.Form.Mp})".Sb().Color(Color.Cyan));
+                s.Append($"【{info.Name}】气:({combat.Form.Tp})内:({combat.Form.CombatMp})".Sb().Color(Color.Cyan));
                 s.Append(ArmedKindLog(info.Equip.Armed).Sb().Color(Color.DarkOrange).ToString());
                 s.Append(
                     $"己硬直({combat.Form.OffBusy.Sb().Bold().Color(Color.DarkOrange)})|敌硬直({combat.Form.TarBusy.Sb().Bold().Color(Color.Orange)})");
@@ -168,7 +168,7 @@ namespace BattleM
         static void DodgeRecordLog(DodgeFormula formula, IDodge form, IUnitInfo tar,StringBuilder sb)
         {
             string DodgeLog(IDodge a) => FormLog(a) +
-                                             $"身({a.Dodge})内({a.Mp})气({a.Tp}))".Sb().Color(Color.Coral);
+                                             $"身({a.Dodge})内({a.DodgeMp})气({a.Tp}))".Sb().Color(Color.Coral);
 
             sb.Append(!formula.IsSuccess
                 ? $"闪避失败!随机【{formula.RandomValue}】闪避值【{formula.Finalize}】".Sb().Color(Color.Crimson)
@@ -181,7 +181,7 @@ namespace BattleM
         static void ParryRecordLog(ParryFormula formula, IParryForm form, IUnitInfo tar,StringBuilder sb)
         {
             string ParryLog(IParryForm a) => $"【{a.Name}】".Sb().Color(Color.LightSeaGreen).ToString() +
-                                             $"架({a.Parry})内({a.Mp})气({a.Tp})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
+                                             $"架({a.Parry})内({a.ParryMp})气({a.Tp})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
             sb.Append(!formula.IsSuccess
                 ? $"招架失败!随机【{formula.RandomValue}】招架值【{formula.Finalize}】".Sb().Color(Color.Crimson)
                 : $"招架成功！随机【{formula.RandomValue}】招架值【{formula.Finalize}】".Sb().Color(Color.Yellow));
