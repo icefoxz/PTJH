@@ -8,7 +8,6 @@ namespace HotFix_Project.Models.Charators
         public int Strength { get; private set; }
         public int Agility { get; private set; }
         public int Hp { get; private set; }
-        public int Tp { get; private set; }
         public int Mp { get; private set; }
         public int Level { get; private set; }
         public int Stamina { get; private set; }

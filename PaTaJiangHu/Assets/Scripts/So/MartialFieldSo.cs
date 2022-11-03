@@ -23,7 +23,6 @@ namespace So
         [Serializable] private class CombatForm : ICombatForm
         {
             [SerializeField] private string name;
-            [SerializeField] private int 气消耗;
             [SerializeField] private int 息;
             [SerializeField] private int 进攻内使用;
             [SerializeField] private int 招架值;
@@ -33,7 +32,6 @@ namespace So
             [SerializeField] private int[] 连击伤害表;
 
             public string Name => name;
-            public int Tp => 气消耗;
             public int CombatMp => 进攻内使用;
             public int Breath => 息;
             public int TarBusy => 对方硬直;

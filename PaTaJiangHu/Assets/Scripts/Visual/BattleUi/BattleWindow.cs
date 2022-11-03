@@ -250,7 +250,6 @@ namespace Visual.BattleUi
                     case CombatPlans.Attack:
                         return breathBar.Combat?.Name ?? string.Empty;
                     case CombatPlans.RecoverHp:
-                    case CombatPlans.RecoverTp:
                         return breathBar.Force?.Name ?? string.Empty;
                     case CombatPlans.Exert:
                         return "运功";
@@ -342,7 +341,7 @@ namespace Visual.BattleUi
             GetCombatAnimUi(att.Unit.CombatId)
                 .SetAction(att.Unit.CombatId, Stickman.Anims.Attack);
             var status = att.AttackConsume.After;
-            UpdateStatusUi(att.CombatId, status.Hp, status.Tp, status.Mp);
+            UpdateStatusUi(att.CombatId, status.Hp, status.Mp);
         }
 
         public void OnEscapeAnim(EscapeRecord esc)
@@ -364,7 +363,7 @@ namespace Visual.BattleUi
             var status = rec.After;
             GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Suffer);
             GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Suffer);
-            UpdateStatusUi(combatId, status.Hp, status.Tp, status.Mp);
+            UpdateStatusUi(combatId, status.Hp, status.Mp);
         }
 
         public void OnDodgeAnim(ConsumeRecord<IDodge> rec)
@@ -373,7 +372,7 @@ namespace Visual.BattleUi
             var status = rec.After;
             GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Dodge);
             GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Dodge);
-            UpdateStatusUi(combatId, status.Hp, status.Tp, status.Mp);
+            UpdateStatusUi(combatId, status.Hp, status.Mp);
         }
         public void OnParryAnim(ConsumeRecord<IParryForm> rec)
         {
@@ -381,7 +380,7 @@ namespace Visual.BattleUi
             var status = rec.After;
             GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Parry);
             GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Parry);
-            UpdateStatusUi(combatId, status.Hp, status.Tp, status.Mp);
+            UpdateStatusUi(combatId, status.Hp, status.Mp);
         }
 
         public void OnOtherEventAnim(SubEventRecord eve)
@@ -400,7 +399,7 @@ namespace Visual.BattleUi
         public void OnReCharge(RechargeRecord charge)
         {
             var status = charge.Consume.After;
-            UpdateStatusUi(charge.CombatId, status.Hp, status.Tp, status.Mp);
+            UpdateStatusUi(charge.CombatId, status.Hp, status.Mp);
         }
 
         public IEnumerator FullRecord(CombatRoundRecord rec)
@@ -428,7 +427,7 @@ namespace Visual.BattleUi
 
             IEnumerator BarUpdate(BreathBarRecord bar, bool isPlayer)
             {
-                UpdateStatusUi(bar.CombatId, bar.Unit.Hp, bar.Unit.Tp, bar.Unit.Mp);
+                UpdateStatusUi(bar.CombatId, bar.Unit.Hp, bar.Unit.Mp);
                 var popEventUi = GetPromptEventUi(bar.CombatId);
                 popEventUi.Set(bar.Title, bar.GetBreath());
                 var busy = bar.Breathes.FirstOrDefault(b => b.Type == BreathRecord.Types.Busy)?.Value ?? 0;
@@ -448,17 +447,16 @@ namespace Visual.BattleUi
             var stanceUi = GetCombatAnimUi(before.CombatId);
             stanceUi.PopStatus(before.CombatId,
                 after.Hp.Value - before.Hp.Value,
-                after.Tp.Value - before.Tp.Value,
                 after.Mp.Value - before.Mp.Value
             );
-            BattleStatusBarController.UpdateStatus(after.CombatId, after.Hp, after.Tp, after.Mp);
+            BattleStatusBarController.UpdateStatus(after.CombatId, after.Hp, after.Mp);
         }
 
-        private void UpdateStatusUi(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp)
+        private void UpdateStatusUi(int combatId, IConditionValue hp, IConditionValue mp)
         {
             var combatUi = GetCombatUi(combatId);
-            combatUi.UpdateTextUi(hp, mp, tp);
-            BattleStatusBarController.UpdateStatus(combatId, hp, tp, mp);
+            combatUi.UpdateTextUi(hp, mp);
+            BattleStatusBarController.UpdateStatus(combatId, hp, mp);
         }
 
         #endregion

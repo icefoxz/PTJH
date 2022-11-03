@@ -68,7 +68,6 @@ namespace Visual.BattleUi.Status
                             placing.Value);
                     break;
                 case CombatPlans.RecoverHp:
-                case CombatPlans.RecoverTp:
                     yield return view.SetExert(totalBusies, totalCharged, exert.Name, exert.Value);
                     break;
                 case CombatPlans.Wait:

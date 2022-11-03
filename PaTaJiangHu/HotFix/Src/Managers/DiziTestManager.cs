@@ -70,7 +70,6 @@ public class DiziTestManager
         {
             MedicineTest = new MedicineTestWindow(go.GetComponent<View>(), id => TestCaller.Instance.UseMedicine(id));
             MedicineTest.Set(MedicineTestWindow.Cons.Hp, TestCaller.Instance.SetHpValue, TestCaller.Instance.SetHpMax, TestCaller.Instance.SetHpFix);
-            MedicineTest.Set(MedicineTestWindow.Cons.Tp, TestCaller.Instance.SetTpValue, TestCaller.Instance.SetTpMax, TestCaller.Instance.SetTpFix);
             MedicineTest.Set(MedicineTestWindow.Cons.Mp, TestCaller.Instance.SetMpValue, TestCaller.Instance.SetMpMax, TestCaller.Instance.SetMpFix);
         });
     }
@@ -87,13 +86,10 @@ public class DiziTestManager
             var status = JsonMapper.ToObject<TestStatus>(arg);
             MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, status.Hp);
             MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, status.Mp);
-            MedicineTest.UpdateCon(MedicineTestWindow.Cons.Tp, status.Tp);
             MedicineTest.Display(true);
         });
         Game.MessagingManager.RegEvent(EventString.Test_UpdateHp,
             arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, JsonMapper.ToObject<ConValue>(arg)));
-        Game.MessagingManager.RegEvent(EventString.Test_UpdateTp,
-            arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Tp, JsonMapper.ToObject<ConValue>(arg)));
         Game.MessagingManager.RegEvent(EventString.Test_UpdateMp,
             arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, JsonMapper.ToObject<ConValue>(arg)));
     }
@@ -101,7 +97,6 @@ public class DiziTestManager
     private class TestStatus
     {
         public ConValue Hp { get; set; }
-        public ConValue Tp { get; set; }
         public ConValue Mp { get; set; }
         public bool IsExhausted { get; set; }
     }
@@ -187,7 +182,6 @@ public class DiziTestManager
             Text_name.text = dizi.Name;
             PropList.ClearList(ui=>ui.Destroy());
             InstanceAttribTag().Set("血", dizi.Hp);
-            InstanceAttribTag().Set("气", dizi.Tp);
             InstanceAttribTag().Set("内", dizi.Mp);
             InstanceAttribTag().Set("敏捷", dizi.Agility);
             InstanceAttribTag().Set("力量", dizi.Strength);
@@ -340,17 +334,15 @@ public class DiziTestManager
         public enum Cons
         {
             Hp,
-            Tp,
             Mp,
         }
         private ListViewUi<ConditionSetter> ConListView { get; }
         private Dictionary<Cons,ConditionSetter> ConMap { get; } = new Dictionary<Cons,ConditionSetter>();
         private ConValue Hp { get; set; }
         private ConValue Mp { get; set; }
-        private ConValue Tp { get; set; }
         private void InitConListView()
         {
-            var cons = new[] { Cons.Hp, Cons.Tp, Cons.Mp };
+            var cons = new[] { Cons.Hp, Cons.Mp };
             foreach (var con in cons)
             {
                 var setter = ConListView.Instance(v => new ConditionSetter(v));
@@ -382,7 +374,6 @@ public class DiziTestManager
             return con switch
             {
                 Cons.Hp => Hp,
-                Cons.Tp => Tp,
                 Cons.Mp => Mp,
                 _ => throw new ArgumentOutOfRangeException(nameof(con), con, null)
             };
@@ -392,7 +383,6 @@ public class DiziTestManager
             switch (con)
             {
                 case Cons.Hp: Hp = c; break;
-                case Cons.Tp: Tp = c; break;
                 case Cons.Mp: Mp = c; break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(con), con, null);

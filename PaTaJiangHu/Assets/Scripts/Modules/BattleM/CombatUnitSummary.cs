@@ -11,7 +11,6 @@ namespace BattleM
         public bool IsSurrenderCondition { get; }
         public IForce Force { get; }
         public bool IsCombatAvailable { get; }
-        public bool IsTpRecoverNeed { get; }
         public bool IsHpRecoverNeed { get; }
         public bool IsReachable { get; }
         public bool IsCombatRange { get; }
@@ -34,7 +33,6 @@ namespace BattleM
             IsReposition = !IsCombatRange && IsDodgeAvailable;
             IsReachable =  IsCombatRange || IsDodgeAvailable;
             IsHpRecoverNeed = CheckRecoverStrategy(status.Hp);
-            IsTpRecoverNeed = CheckRecoverStrategy(status.Tp);
             Force = force;
 
             bool CheckRecoverStrategy(IGameCondition gameCondition)
@@ -61,7 +59,6 @@ namespace BattleM
         {
             //恢复优先
             if (IsHpRecoverNeed) return Force != null ? CombatPlans.RecoverHp : CombatPlans.Wait;
-            if (IsTpRecoverNeed) return Force != null ? CombatPlans.RecoverTp : CombatPlans.Wait;
             //逃跑/认输:如果自己达条件，对方没意思逃跑则触发
             if (mode == CombatManager.Judgment.Test &&
                 IsSurrenderCondition &&

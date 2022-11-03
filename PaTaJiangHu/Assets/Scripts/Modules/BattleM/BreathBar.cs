@@ -70,7 +70,6 @@ namespace BattleM
                 return Plan switch
                 {
                     CombatPlans.Attack => CombatBreath + BusyCharged,
-                    CombatPlans.RecoverTp => RecoverBreath + BusyCharged,
                     CombatPlans.RecoverHp => RecoverBreath + BusyCharged,
                     CombatPlans.Wait => IdleBreath,
                     CombatPlans.Surrender => IdleBreath,
@@ -166,7 +165,6 @@ namespace BattleM
                     consume = CombatBreath;
                     break;
                 case CombatPlans.RecoverHp:
-                case CombatPlans.RecoverTp:
                     consume = RecoverBreath;
                     break;
                 case CombatPlans.Wait:

@@ -12,8 +12,6 @@ namespace Visual.BattleUi.Status
         [SerializeField] private Text _name;
         [SerializeField] private Text _hp;
         [SerializeField] private Text _hpPop;
-        [SerializeField] private Text _tp;
-        [SerializeField] private Text _tpPop;
         [SerializeField] private Text _mp;
         [SerializeField] private Text _mpPop;
         [SerializeField] private Text _popText;
@@ -28,22 +26,19 @@ namespace Visual.BattleUi.Status
             SetTextUi(_popText, string.Empty);
             SetTextUi(_hpPop, string.Empty);
             SetTextUi(_mpPop, string.Empty);
-            SetTextUi(_tpPop, string.Empty);
             SetTextUi(_name, unit.Name);
             var s = unit.Status;
-            UpdateTextUi(s.Hp, s.Tp, s.Mp);
+            UpdateTextUi(s.Hp, s.Mp);
             Show();
         }
-        public void UpdateTextUi(IConditionValue hp, IConditionValue tp, IConditionValue mp)
+        public void UpdateTextUi(IConditionValue hp, IConditionValue mp)
         {
             SetTextUi(_hp, SetConText(hp));
-            SetTextUi(_tp, SetConText(tp));
             SetTextUi(_mp, SetConText(mp));
         }
         public void UpdateTextUi(ICombatStatus status)
         {
             SetTextUi(_hp,SetConText(status.Hp));
-            SetTextUi(_tp,SetConText(status.Tp));
             SetTextUi(_mp,SetConText(status.Mp));
         }
         //public void UpdateUi()
@@ -61,11 +56,9 @@ namespace Visual.BattleUi.Status
             Unit = null;
             SetTextUi(_name, string.Empty);
             SetTextUi(_hp, string.Empty);
-            SetTextUi(_tp, string.Empty);
             SetTextUi(_mp, string.Empty);
             SetTextUi(_hpPop, string.Empty);
             SetTextUi(_mpPop, string.Empty);
-            SetTextUi(_tpPop, string.Empty);
         }
         private static void SetTextUi(Text ui, string text) => ui.text = text;
         public void Pop(string text)
@@ -85,11 +78,6 @@ namespace Visual.BattleUi.Status
         {
             if(value == 0) return;
             PopCon(value.ToString(), _hp, _hpPop);
-        }
-        public void PopTp(int value)
-        {
-            if (value == 0) return;
-            PopCon(value.ToString(), _tp, _tpPop);
         }
         public void PopMp(int value) {
             if (value == 0)

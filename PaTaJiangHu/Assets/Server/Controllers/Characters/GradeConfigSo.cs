@@ -33,18 +33,18 @@ namespace Server.Controllers.Characters
             return _configsCache[grade];
         }
 
-        public (int strength, int agility, int hp, int tp, int mp, int Stamina, int inventorySlot)
+        public (int strength, int agility, int hp, int mp, int Stamina, int inventorySlot)
             GenerateFromGrade(int grade)
         {
             return GeneratePops(GradeConfigs((Grades)grade));
 
-            (int strength, int agility, int hp, int tp, int mp, int Stamina, int inventorySlot) GeneratePops(
+            (int strength, int agility, int hp, int mp, int Stamina, int inventorySlot) GeneratePops(
                 GradeConfig config)
             {
-                var (strength, agility, hp, tp, mp) = config.GeneratePentagon();
+                var (strength, agility, hp, mp) = config.GeneratePentagon();
                 var stamina = config.GenerateProp(Props.Stamina);
                 var inventory = config.GenerateProp(Props.InventorySlot);
-                return (strength, agility, hp, tp, mp, stamina, inventory);
+                return (strength, agility, hp, mp, stamina, inventory);
             }
         }
 
@@ -72,12 +72,11 @@ namespace Server.Controllers.Characters
                 };
             }
 
-            public (int strength, int agility, int hp, int tp, int mp) GeneratePentagon()
+            public (int strength, int agility, int hp, int mp) GeneratePentagon()
             {
                 return (Pentagon.Generate(PentagonGradeSo.Elements.Strength),
                     Pentagon.Generate(PentagonGradeSo.Elements.Agility),
                     Pentagon.Generate(PentagonGradeSo.Elements.Hp),
-                    Pentagon.Generate(PentagonGradeSo.Elements.Tp),
                     Pentagon.Generate(PentagonGradeSo.Elements.Mp));
             }
         }
@@ -88,13 +87,11 @@ namespace Server.Controllers.Characters
             [SerializeField] private PentagonGradeSo 力;
             [SerializeField] private PentagonGradeSo 敏;
             [SerializeField] private PentagonGradeSo 血;
-            [SerializeField] private PentagonGradeSo 气;
             [SerializeField] private PentagonGradeSo 内;
 
             private PentagonGradeSo Strength => 力;
             private PentagonGradeSo Agility => 敏;
             private PentagonGradeSo Hp => 血;
-            private PentagonGradeSo Tp => 气;
             private PentagonGradeSo Mp => 内;
 
             public int Generate(PentagonGradeSo.Elements element)
@@ -104,7 +101,6 @@ namespace Server.Controllers.Characters
                     PentagonGradeSo.Elements.Strength => Strength.GenerateProp(element),
                     PentagonGradeSo.Elements.Agility => Agility.GenerateProp(element),
                     PentagonGradeSo.Elements.Hp => Hp.GenerateProp(element),
-                    PentagonGradeSo.Elements.Tp => Tp.GenerateProp(element),
                     PentagonGradeSo.Elements.Mp => Mp.GenerateProp(element),
                     _ => throw new ArgumentOutOfRangeException(nameof(element), element, null)
                 };

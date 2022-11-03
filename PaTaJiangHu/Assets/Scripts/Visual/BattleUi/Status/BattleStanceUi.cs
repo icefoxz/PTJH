@@ -15,10 +15,9 @@ namespace Visual.BattleUi.Status
             BaseInit(false);
         }
         public void PopText(int combatId, string text) => GetCombatUnitUi(combatId).Pop(text);
-        public void PopStatus(int combatId, int hpValue, int tpValue, int mpValue)
+        public void PopStatus(int combatId, int hpValue, int mpValue)
         {
             GetCombatUnitUi(combatId).PopHp(hpValue);
-            GetCombatUnitUi(combatId).PopTp(tpValue);
             GetCombatUnitUi(combatId).PopMp(mpValue);
         }
         public void SetAction(int combatId, Stickman.Anims action) => GetCombatUnitUi(combatId).SetAnim(action);

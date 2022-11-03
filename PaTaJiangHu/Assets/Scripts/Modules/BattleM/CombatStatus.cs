@@ -42,10 +42,10 @@ namespace BattleM
         /// 血量,Health Point
         /// </summary>
         IGameCondition Hp { get; }
-        /// <summary>
-        /// 体能,Condition Point
-        /// </summary>
-        IGameCondition Tp { get; }
+        ///// <summary>
+        ///// 体能,Condition Point
+        ///// </summary>
+        //IGameCondition Tp { get; }
         /// <summary>
         /// 内力,Force Point
         /// </summary>
@@ -62,9 +62,9 @@ namespace BattleM
                 hp: status.Hp.Value,
                 maxHp: status.Hp.Max,
                 fixHp: status.Hp.Fix,
-                tp: status.Tp.Value,
-                maxtp: status.Tp.Max,
-                fixtp: status.Tp.Fix,
+                //tp: status.Tp.Value,
+                //maxtp: status.Tp.Max,
+                //fixtp: status.Tp.Fix,
                 mp: status.Mp.Value,
                 maxmp: status.Mp.Max,
                 fixmp: status.Mp.Fix
@@ -73,26 +73,23 @@ namespace BattleM
     }
     public class CombatStatus : ICombatStatus
     {
-        public static CombatStatus Instance(int hp, int tp, int mp) => Instance(hp, hp, hp, tp, tp, tp, mp, mp, mp);
-        public static CombatStatus Instance(int hp, int maxHp, int fixHp, int tp, int maxtp, int fixtp, int mp, int maxmp,
-            int fixmp) => new (new ConValue(fixHp, maxHp, hp), new ConValue(fixtp, maxtp, tp),
-            new ConValue(fixmp, maxmp, mp));
+        public static CombatStatus Instance(int hp, int mp) => Instance(hp, hp, hp, mp, mp, mp);
+        public static CombatStatus Instance(int hp, int maxHp, int fixHp, int mp, int maxmp,
+            int fixmp) => new (new ConValue(fixHp, maxHp, hp), new ConValue(fixmp, maxmp, mp));
 
         public IGameCondition Hp { get; }
-        public IGameCondition Tp { get; }
         public IGameCondition Mp { get; }
-        public bool IsExhausted => Hp.IsExhausted || Tp.IsExhausted;
+        public bool IsExhausted => Hp.IsExhausted;
         public void Clone(ICombatStatus status)
         {
             
         }
 
-        private CombatStatus(IGameCondition hp, IGameCondition tp, IGameCondition mp)
+        private CombatStatus(IGameCondition hp, IGameCondition mp)
         {
             Hp = hp;
-            Tp = tp;
             Mp = mp;
         }
-        public override string ToString() => $"Hp{Hp},Tp{Tp},Mp{Mp}";
+        public override string ToString() => $"Hp{Hp},Mp{Mp}";
     }
 }

@@ -10,8 +10,6 @@ namespace Visual.BattleUi.Status
         [SerializeField] private Text _nameText;
         [SerializeField] private ConValueSliderUi _hpSliderUi;
         [SerializeField] private Text _hpText;
-        [SerializeField] private ConValueSliderUi _tpSliderUi;
-        [SerializeField] private Text _tpText;
         [SerializeField] private ConValueSliderUi _mpSliderUi;
         [SerializeField] private Text _mpText;
         //[SerializeField] private Slider _breathSlider;
@@ -21,14 +19,11 @@ namespace Visual.BattleUi.Status
         public void Set(string title, ICombatStatus stat)
         {
             var hp = stat.Hp;
-            var tp = stat.Tp;
             var mp = stat.Mp;
             _nameText.text = title;
             _hpSliderUi.Set(hp);
-            _tpSliderUi.Set(tp);
             _mpSliderUi.Set(mp);
             SetConText(_hpText, hp);
-            SetConText(_tpText, tp);
             SetConText(_mpText, mp);
             //SetBreath(breath, maxBreath);
         }
@@ -41,8 +36,6 @@ namespace Visual.BattleUi.Status
             //SetBreath(1, 1);
             _hpSliderUi.ResetUi();
             SetConText(_hpText, default);
-            _tpSliderUi.ResetUi();
-            SetConText(_tpText, default);
             _mpSliderUi.ResetUi();
             SetConText(_mpText, default);
             //SetLosePanel(false);
@@ -54,26 +47,23 @@ namespace Visual.BattleUi.Status
         //    _breathSlider.value = 1f * breath / maxBreath;
         //    _breathText.text = $"({breath})";
         //}
-        public void UpdateSlider(int hp,int fixHp, int tp,int fixTp, int mp,int fixMp)
+        public void UpdateSlider(int hp, int fixHp, int mp, int fixMp)
         {
             _hpSliderUi.SetValue(hp, fixHp);
-            _tpSliderUi.SetValue(tp, fixTp);
             _mpSliderUi.SetValue(mp, fixMp);
         }
 
-        public void UpdateText(IConditionValue hp, IConditionValue tp, IConditionValue mp)
+        public void UpdateText(IConditionValue hp, IConditionValue mp)
         {
             SetConText(_hpText, hp);
-            SetConText(_tpText, tp);
             SetConText(_mpText, mp);
         }
-        public void UpdateStatus(IConditionValue hp, IConditionValue tp, IConditionValue mp)
+
+        public void UpdateStatus(IConditionValue hp, IConditionValue mp)
         {
             _hpSliderUi.Set(hp);
-            _tpSliderUi.Set(tp);
             _mpSliderUi.Set(mp);
             SetConText(_hpText, hp);
-            SetConText(_tpText, tp);
             SetConText(_mpText, mp);
         }
     }

@@ -39,7 +39,6 @@ namespace BattleM
         {
             Default,
             HpOnly,
-            TpOnly,
             MpOnly
         }
 
@@ -76,7 +75,6 @@ namespace BattleM
     /// </summary>
     public interface IDepletionForm : ISkillForm
     {
-        int Tp { get; }
     }
 
     ///// <summary>

@@ -13,9 +13,9 @@ namespace Visual.BattleUi.Status
         void Init();
         void AddUi(int stance, int combatId, Action<CombatStatusUi> initAction);
         void ResetUi();
-        void UpdateStatus(int combatId, int hp, int fixHp, int tp, int fixTp, int mp, int fixMp);
-        void UpdateStatus(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp);
-        void UpdateText(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp);
+        void UpdateStatus(int combatId, int hp, int fixHp, int mp, int fixMp);
+        void UpdateStatus(int combatId, IConditionValue hp, IConditionValue mp);
+        void UpdateText(int combatId, IConditionValue hp, IConditionValue mp);
     }
     public class BattleStatusBarController : UiBase, IBattleStatusBarController
     {
@@ -53,17 +53,17 @@ namespace Visual.BattleUi.Status
             RemoveList();
         }
 
-        public void UpdateStatus(int combatId,int hp, int fixHp, int tp, int fixTp, int mp, int fixMp)
+        public void UpdateStatus(int combatId,int hp, int fixHp, int mp, int fixMp)
         {
-            _map[combatId].UpdateSlider(hp, fixHp, tp, fixTp, mp, fixMp);
+            _map[combatId].UpdateSlider(hp, fixHp, mp, fixMp);
         }
-        public void UpdateStatus(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp)
+        public void UpdateStatus(int combatId, IConditionValue hp, IConditionValue mp)
         {
-            _map[combatId].UpdateStatus(hp, tp, mp);
+            _map[combatId].UpdateStatus(hp, mp);
         }
-        public void UpdateText(int combatId, IConditionValue hp, IConditionValue tp, IConditionValue mp)
+        public void UpdateText(int combatId, IConditionValue hp, IConditionValue mp)
         {
-            _map[combatId].UpdateText(hp, tp, mp);
+            _map[combatId].UpdateText(hp, mp);
         }
     }
 }

@@ -111,7 +111,7 @@ namespace BattleM
 
             Debug.Log(sb);
             string AttackLog(ICombatForm a) => FormLog(a) +
-                                               $"内({a.CombatMp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                               $"内({a.CombatMp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
                                                    .Color(Color.Coral);
         }
 
@@ -120,7 +120,7 @@ namespace BattleM
             var sb = new StringBuilder();
 
             string AttackLog(ICombatForm a) => FormLog(a) +
-                                               $"内({a.CombatMp})气({a.Tp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
+                                               $"内({a.CombatMp})硬:己({a.OffBusy})敌({a.TarBusy})".Sb()
                                                    .Color(Color.Coral);
 
             var u = att.Unit;
@@ -141,7 +141,7 @@ namespace BattleM
 
             void CombatFormConsumeLog(StringBuilder s, ConsumeRecord<ICombatForm> combat, IUnitInfo info)
             {
-                s.Append($"【{info.Name}】气:({combat.Form.Tp})内:({combat.Form.CombatMp})".Sb().Color(Color.Cyan));
+                s.Append($"【{info.Name}】内:({combat.Form.CombatMp})".Sb().Color(Color.Cyan));
                 s.Append(ArmedKindLog(info.Equip.Armed).Sb().Color(Color.DarkOrange).ToString());
                 s.Append(
                     $"己硬直({combat.Form.OffBusy.Sb().Bold().Color(Color.DarkOrange)})|敌硬直({combat.Form.TarBusy.Sb().Bold().Color(Color.Orange)})");
@@ -158,8 +158,8 @@ namespace BattleM
             {
                 s.Append(
                     (
-                        $"血{SimpleStat(consume.Before.Hp)},气{SimpleStat(consume.Before.Tp)},内{SimpleStat(consume.Before.Mp)}->" +
-                        $"血{SimpleStat(consume.After.Hp)},气{SimpleStat(consume.After.Tp)},内{SimpleStat(consume.After.Mp)}"
+                        $"血{SimpleStat(consume.Before.Hp)},内{SimpleStat(consume.Before.Mp)}->" +
+                        $"血{SimpleStat(consume.After.Hp)},内{SimpleStat(consume.After.Mp)}"
                     ).Sb().Color(Color.DeepSkyBlue));
 
             }
@@ -168,7 +168,7 @@ namespace BattleM
         static void DodgeRecordLog(DodgeFormula formula, IDodge form, IUnitInfo tar,StringBuilder sb)
         {
             string DodgeLog(IDodge a) => FormLog(a) +
-                                             $"身({a.Dodge})内({a.DodgeMp})气({a.Tp}))".Sb().Color(Color.Coral);
+                                             $"身({a.Dodge})内({a.DodgeMp}))".Sb().Color(Color.Coral);
 
             sb.Append(!formula.IsSuccess
                 ? $"闪避失败!随机【{formula.RandomValue}】闪避值【{formula.Finalize}】".Sb().Color(Color.Crimson)
@@ -181,7 +181,7 @@ namespace BattleM
         static void ParryRecordLog(ParryFormula formula, IParryForm form, IUnitInfo tar,StringBuilder sb)
         {
             string ParryLog(IParryForm a) => $"【{a.Name}】".Sb().Color(Color.LightSeaGreen).ToString() +
-                                             $"架({a.Parry})内({a.ParryMp})气({a.Tp})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
+                                             $"架({a.Parry})内({a.ParryMp})硬:己({a.OffBusy})".Sb().Color(Color.Coral);
             sb.Append(!formula.IsSuccess
                 ? $"招架失败!随机【{formula.RandomValue}】招架值【{formula.Finalize}】".Sb().Color(Color.Crimson)
                 : $"招架成功！随机【{formula.RandomValue}】招架值【{formula.Finalize}】".Sb().Color(Color.Yellow));
@@ -285,14 +285,13 @@ namespace BattleM
         }
 
         private static string SimpleStat(IConditionValue c) => $"[{c.Value}/{c.Max}]";
-        private static string StatusLog(IStatusRecord s) => StatusLog(s.Breath, s.Hp, s.Tp, s.Mp);
-        private static string StatusLog(int breathes, IConditionValue hp, IConditionValue tp, IConditionValue mp) => $"[息:{breathes}]血{SimpleStat(hp)},气{SimpleStat(tp)},内{SimpleStat(mp)}";
+        private static string StatusLog(IStatusRecord s) => StatusLog(s.Breath, s.Hp, s.Mp);
+        private static string StatusLog(int breathes, IConditionValue hp, IConditionValue mp) => $"[息:{breathes}]血{SimpleStat(hp)},内{SimpleStat(mp)}";
 
         private string SimpleStatusLog(IStatusRecord b, IStatusRecord s, Color color)
         {
             var sb = $"[息:{s.Breath}]".Sb();
             if (b.Hp.Value != s.Hp.Value) sb.Append($"血{SimpleStat(s.Hp)} ");
-            if (b.Tp.Value != s.Tp.Value) sb.Append($"气{SimpleStat(s.Tp)} ");
             if (b.Mp.Value != s.Mp.Value) sb.Append($"内{SimpleStat(s.Mp)} ");
             return sb.Color(color).ToString();
         }

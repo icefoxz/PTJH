@@ -9,14 +9,12 @@ namespace So
     {
         [SerializeField] private string _name;
         [SerializeField] private int id;
-        [SerializeField] private int 气消耗;
         [SerializeField] private int 内消耗;
         [SerializeField] private int 使用息;
         [SerializeField] private int 身法值;
 
         public int Id => id;
         public string Name => _name;
-        public int Tp => 气消耗;
         public int DodgeMp => 内消耗;
         public int Breath => 使用息;
         public int Dodge => 身法值;

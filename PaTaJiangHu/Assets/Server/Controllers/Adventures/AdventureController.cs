@@ -185,7 +185,6 @@ namespace Server.Controllers.Adventures
     {
         public ConValue Hp { get; set; }
         public ConValue Mp { get; set; }
-        public ConValue Tp { get; set; }
 
         public UnitStatus()
         {
@@ -196,20 +195,17 @@ namespace Server.Controllers.Adventures
         {
             Hp = new ConValue(hp);
             Mp = new ConValue(mp);
-            Tp = new ConValue(tp);
         }
 
         public ICombatStatus GetCombatStatus() => CombatStatus.Instance(
             Hp.Value, Hp.Max, Hp.Fix,
-            Tp.Value, Tp.Max, Tp.Fix,
             Mp.Value, Mp.Max, Mp.Fix);
 
         public void Clone(ICombatStatus c)
         {
             Hp.Clone(c.Hp);
             Mp.Clone(c.Mp);
-            Tp.Clone(c.Tp);
         }
-        public override string ToString() => $"Hp{Hp},Tp{Tp},Mp{Mp}";
+        public override string ToString() => $"Hp{Hp},Mp{Mp}";
     }
 }

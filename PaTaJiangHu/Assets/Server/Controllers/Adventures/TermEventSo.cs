@@ -114,28 +114,23 @@ namespace Server.Controllers.Adventures
         [Serializable] private class StatusClauseField : ClauseFieldBase<ICombatStatus>
         {
             [SerializeField] private ConValueSettingField _hp;
-            [SerializeField] private ConValueSettingField _tp;
             [SerializeField] private ConValueSettingField _mp;
 
             private ConValueSettingField HpClause => _hp;
-            private ConValueSettingField TpClause => _tp;
             private ConValueSettingField MpClause => _mp;
 
             public override bool IsTerm(ITerm term)
             {
                 var hp = term.Status.Hp;
                 var mp = term.Status.Mp;
-                var tp = term.Status.Tp;
                 var isHpInTerm = HpClause.InTerm(hp.Value, hp.Max);
-                var isTpInTerm = TpClause.InTerm(tp.Value, tp.Max);
                 var isMpInTerm = MpClause.InTerm(mp.Value, mp.Max);
-                return isHpInTerm && isTpInTerm && isMpInTerm;
+                return isHpInTerm && isMpInTerm;
             }
 
             public void ResetDefault()
             {
                 _hp.ResetDefault();
-                _tp.ResetDefault();
                 _mp.ResetDefault();
             }
 

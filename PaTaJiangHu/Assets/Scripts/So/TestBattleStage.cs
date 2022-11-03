@@ -36,7 +36,6 @@ namespace So
             [SerializeField] private int 力量;
             [SerializeField] private int 敏捷;
             [SerializeField] private int 血;
-            [SerializeField] private int 气;
             [SerializeField] private int 内;
             [SerializeField] private ForceFieldSo 内功;
             [SerializeField] private MartialFieldSo 武功;
@@ -47,7 +46,6 @@ namespace So
             public int Strength => 力量;
             public int Agility => 敏捷;
             public int Hp => 血;
-            public int Tp => 气;
             public int Mp => 内;
             public IForce Force => 内功;
             public IEquipment Equipment => equipment1 ??= new BattleM.Equipment(装备);
@@ -56,7 +54,7 @@ namespace So
 
             public CombatUnit InstanceCombatUnit()
             {
-                var status = CombatStatus.Instance(Hp, Tp, Mp);
+                var status = CombatStatus.Instance(Hp, Mp);
                 return CombatUnit.Instance(Name, Strength, Agility, status, Force, Martial, Dodge, Equipment);
             }
         }

@@ -45,7 +45,6 @@ namespace BattleM
         int CombatId { get; }
         int Breath { get; }
         public IConditionValue Hp { get; }
-        public IConditionValue Tp { get; }
         public IConditionValue Mp { get; }
     }
     public interface IConsumeRecord
@@ -120,7 +119,6 @@ namespace BattleM
         public int CombatId { get; }
         public int Breath { get; }
         public IConditionValue Hp { get; }
-        public IConditionValue Tp { get; }
         public IConditionValue Mp { get; }
 
         public StatusRecord(int combatId, ICombatStatus status, int breath)
@@ -129,11 +127,10 @@ namespace BattleM
             CombatId = combatId;
             var s = status.Clone();
             Hp = s.Hp;
-            Tp = s.Tp;
             Mp = s.Mp;
         }
 
-        public override string ToString() => $"Hp{Hp},Tp{Tp},Mp{Mp}";
+        public override string ToString() => $"Hp{Hp},Mp{Mp}";
     }
 
     public record RechargeRecord : FightFragment
@@ -576,7 +573,6 @@ namespace BattleM
         public int Breath { get; }
 
         public IConditionValue Hp { get; }
-        public IConditionValue Tp { get; }
         public IConditionValue Mp { get; }
 
         public UnitRecord(ICombatUnit unit)
@@ -585,11 +581,10 @@ namespace BattleM
             Breath = unit.BreathBar.TotalBreath;
             var s = unit.Status.Clone();
             Hp = s.Hp;
-            Tp = s.Tp;
             Mp = s.Mp;
         }
 
-        public override string ToString() => $"{Name}({Position}),力({Strength})敏({Agility}),血{Hp},气{Tp},内{Mp}";
+        public override string ToString() => $"{Name}({Position}),力({Strength})敏({Agility}),血{Hp},内{Mp}";
 
         private record Equipment : IEquip
         {
@@ -670,7 +665,6 @@ namespace BattleM
                 CombatPlans.Wait => "等待",
                 CombatPlans.Attack => unit.BreathBar.Combat.Name,
                 CombatPlans.RecoverHp => unit.BreathBar.Force.Name,
-                CombatPlans.RecoverTp => unit.BreathBar.Force.Name,
                 CombatPlans.Surrender => "认输",
                 CombatPlans.Exert => throw new NotImplementedException(),
                 _ => throw new ArgumentOutOfRangeException()
@@ -771,7 +765,6 @@ namespace BattleM
                         list.Add(new BreathRecord(BreathRecord.Types.Attack, bar.Combat.Breath, bar.Combat.Name));
                         break;
                     case CombatPlans.RecoverHp:
-                    case CombatPlans.RecoverTp:
                         list.Add(new BreathRecord(BreathRecord.Types.Exert, bar.Force.Breath, bar.Force.Name));
                         break;
                     case CombatPlans.Exert:

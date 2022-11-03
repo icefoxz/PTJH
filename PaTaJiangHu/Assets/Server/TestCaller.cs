@@ -19,9 +19,6 @@ namespace Server
         void SetHpValue(int value);
         void SetHpMax(int value);
         void SetHpFix(int value);
-        void SetTpValue(int value);
-        void SetTpMax(int value);
-        void SetTpFix(int value);
         void SetMpValue(int value);
         void SetMpMax(int value);
         void SetMpFix(int value);
@@ -113,9 +110,6 @@ namespace Server
         public void SetHpValue(int value) => SetCon(TestStatus.Hp,value, EventString.Test_UpdateHp);
         public void SetHpMax(int value) => SetConMax(TestStatus.Hp,value, EventString.Test_UpdateHp);
         public void SetHpFix(int value) => SetConFix(TestStatus.Hp,value, EventString.Test_UpdateHp);
-        public void SetTpValue(int value) => SetCon(TestStatus.Tp,value, EventString.Test_UpdateTp);
-        public void SetTpMax(int value) => SetConMax(TestStatus.Tp,value, EventString.Test_UpdateTp);
-        public void SetTpFix(int value) => SetConFix(TestStatus.Tp,value, EventString.Test_UpdateTp);
         public void SetMpValue(int value) => SetCon(TestStatus.Mp,value, EventString.Test_UpdateMp);
         public void SetMpMax(int value) => SetConMax(TestStatus.Mp,value, EventString.Test_UpdateMp);
         public void SetMpFix(int value) => SetConFix(TestStatus.Mp,value, EventString.Test_UpdateMp);

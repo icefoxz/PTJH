@@ -28,14 +28,13 @@ namespace Server.Controllers.Characters
         internal Dizi GenerateDizi(int grade)
         {
             var name = GenerateName();
-            var (str, agi, hp, tp, mp, sta, inv) = GradeConfigSo.GenerateFromGrade(grade: grade);
+            var (str, agi, hp, mp, sta, inv) = GradeConfigSo.GenerateFromGrade(grade: grade);
             var cap = new Capable(grade: grade, dodgeSlot: 3, martialSlot: 5, inventorySlot: inv);
             return new Dizi(
                 name: name, 
                 strength: str, 
                 agility: agi, 
                 hp: hp, 
-                tp: tp, 
                 mp: mp, 
                 level: 1, 
                 stamina: sta,
@@ -54,8 +53,6 @@ namespace Server.Controllers.Characters
             public int Agility { get; private set; }
             public int Hp { get; private set; }
             public int MaxHp { get; private set; }
-            public int Tp { get; private set; }
-            public int MaxTp { get; private set; }
             public int Mp { get; private set; }
             public int MaxMp { get; private set; }
             public int Level { get; private set; }
@@ -63,15 +60,13 @@ namespace Server.Controllers.Characters
             public Capable Capable { get; private set; }
             public Dictionary<int, int> Condition { get; private set; }
 
-            public Dizi(string name, int strength, int agility, int hp, int tp, int mp, int level, int stamina, Capable capable, Dictionary<int, int> condition)
+            public Dizi(string name, int strength, int agility, int hp, int mp, int level, int stamina, Capable capable, Dictionary<int, int> condition)
             {
                 Name = name;
                 Strength = strength;
                 Agility = agility;
                 Hp = hp;
                 MaxHp = hp;
-                Tp = tp;
-                MaxTp = tp;
                 Mp = mp;
                 MaxMp = mp;
                 Level = level;

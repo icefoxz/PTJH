@@ -19,10 +19,6 @@ namespace BattleM
         /// </summary>
         RecoverHp,
         /// <summary>
-        /// 恢复体力策略
-        /// </summary>
-        RecoverTp,
-        /// <summary>
         /// 发招策略(玩家主动介入)
         /// </summary>
         Exert,
@@ -137,8 +133,7 @@ namespace BattleM
                 bool LowerThan(float value, ICombatStatus status)
                 {
                     return _breathBar.Round.RoundIndex >= Round.MinEscapeRounds &&
-                           (value > status.Hp.ValueFixRatio ||
-                            value > status.Tp.ValueFixRatio);
+                           (value > status.Hp.ValueFixRatio);
                 }
             }
         }
@@ -236,8 +231,7 @@ namespace BattleM
 
         private bool IsCombatFormAvailable(ICombatForm form)
         {
-            return Status.Mp.Value > form.CombatMp &&
-                   Status.Tp.Value > form.Tp;
+            return Status.Mp.Value > form.CombatMp;
         }
 
         public bool IsTargetRange() => IsCombatRange(Target);
@@ -248,7 +242,7 @@ namespace BattleM
         {
             if (Dodge != null && Dodge.DodgeMp <= Status.Mp.Value)
                 return (true, Dodge);
-            return (Status.Tp.Value > DefaultDodge.Tp, DefaultDodge);
+            return (Status.Mp.Value > DefaultDodge.DodgeMp, DefaultDodge);
         }
         //获取战斗招式
         private (bool isCombatAvailable, ICombatForm combat) GetCombatForm()
@@ -287,12 +281,6 @@ namespace BattleM
                     {
                         _breathBar.BreathConsume(breathes);
                         Recovery(Status.Hp, Force, _breathBar.Force);
-                    }
-                    return;
-                case CombatPlans.RecoverTp:
-                    {
-                        _breathBar.BreathConsume(breathes);
-                        Recovery(Status.Tp, Force, _breathBar.Force);
                     }
                     return;
                 case CombatPlans.Wait:
@@ -338,17 +326,14 @@ namespace BattleM
 
         public void ConsumeForm(ICombatForm form)
         {
-            Status.Tp.Add(-form.Tp);
             Status.Mp.Add(-form.CombatMp);
         }
         public void ConsumeForm(IDodge dodge)
         {
-            Status.Tp.Add(-dodge.Tp);
             Status.Mp.Add(-dodge.DodgeMp);
         }
         public void ConsumeForm(IParryForm form)
         {
-            Status.Tp.Add(-form.Tp);
             Status.Mp.Add(-form.ParryMp);
         }
 
@@ -390,7 +375,6 @@ namespace BattleM
         private class BasicCombat : ICombatForm
         {
             public string Name => "王八拳";
-            public int Tp => 10;
             public int CombatMp => 0;
             public int Breath => 5;
             public int Parry => 1;
@@ -404,7 +388,6 @@ namespace BattleM
         private class BasicDodge : IDodge
         {
             public string Name => string.Empty;
-            public int Tp => 5;
             public int DodgeMp => 0;
             public int Breath => 3;
             public int Dodge => 1;
