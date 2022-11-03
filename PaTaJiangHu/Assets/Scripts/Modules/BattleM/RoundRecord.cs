@@ -357,6 +357,12 @@ namespace BattleM
             new(strength, weaponDamage, mp, mpRate);
 
         public override string ToString() => $"伤:{Finalize},武器({WeaponDamage})+[内:{Mp}({MpRate})={MpRatio}]";
+
+        public int GetDamage(int armor, int damageRate = 100)
+        {
+            return (int)(Damage(Finalize) * (1f - armor * 0.01f)); //最终伤害(扣除免伤)
+            float Damage(int dmg) => 0.01f * dmg * damageRate;
+        }
     }
     /// <summary>
     /// 护甲公式

@@ -245,11 +245,10 @@ namespace BattleM
                         {
                             if (dodgeFormula.IsSuccess) //成功逃走
                                 return;
-                            var damage = (int)(0.01f * damageFormula.Finalize);
-                            var finalDamage = damage - (int)(1f - armor * 0.01f); //最终伤害(扣除免伤)
-                            var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage; //最低伤害为1
+                            var finalDamage = damageFormula.GetDamage(armor);
                             if (parryFormula.IsSuccess) 
-                                sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
+                                finalDamage = ParryFormula.Damage(finalDamage); //防守修正
+                            var sufferDmg = finalDamage < 1 ? 1 : finalDamage; //最低伤害为1
                             escapee.ArmorDepletion();
                             escapee.SufferDamage(sufferDmg, combat.DamageMp, op.WeaponInjuryType); //伤害
                             escapee.SetBusy(combat.TarBusy); //攻击打入硬直
@@ -406,11 +405,10 @@ namespace BattleM
                 //承受伤害第三次更新状态(3)
                 tarSuffer.Set(tar, () =>
                 {
-                    var damage = (int)(0.01f * damageFormula.Finalize * damageRate);
-                    var finalDamage = damage - (int)(1f - armor * 0.01f); //最终伤害(扣除免伤)
-                    var sufferDmg = finalDamage = finalDamage < 1 ? 1 : finalDamage; //最低伤害为1
+                    var finalDmg = damageFormula.GetDamage(armor, damageRate);
                     if (parryFormula.IsSuccess) 
-                        sufferDmg = ParryFormula.Damage(finalDamage); //防守修正
+                        finalDmg = ParryFormula.Damage(finalDmg); //防守修正
+                    var sufferDmg = finalDmg < 1 ? 1 : finalDmg; //最低伤害为1
                     tar.ArmorDepletion();
                     tar.SufferDamage(sufferDmg, attackForm.DamageMp ,op.WeaponInjuryType); //伤害
                     tar.SetBusy(attackForm.TarBusy); //攻击打入硬直
