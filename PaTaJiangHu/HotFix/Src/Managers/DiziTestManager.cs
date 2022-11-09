@@ -109,6 +109,7 @@ public class DiziTestManager
     {
         private enum Grade
         {
+            E,
             D,
             C,
             B,
