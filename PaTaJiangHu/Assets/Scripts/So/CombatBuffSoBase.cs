@@ -14,7 +14,8 @@ namespace So
         [SerializeField] private int _id;
         [SerializeField] private int 叠加上限;
         [SerializeField] private Consumptions 消耗方式;
-        [SerializeField] private int 消耗值;
+        [SerializeField] private int 持久值;
+        [SerializeField] private ICombatBuff.Appends 赋buff;
         public int SpriteId => _id;
         public int Stacks => 叠加上限;
         public ICombatBuff.Consumptions Consumption => 消耗方式 switch
@@ -23,23 +24,25 @@ namespace So
             Consumptions.Consume => ICombatBuff.Consumptions.Consume,
             _ => throw new ArgumentOutOfRangeException()
         };
-        public int Lasting => 消耗值;
-        public virtual Func<CombatUnit, float> AddStrength { get; }
-        public virtual Func<CombatUnit, float> AddAgility { get; }
-        public virtual Func<CombatUnit, float> AddParry { get; }
-        public virtual Func<CombatUnit, float> AddDodge { get; }
-        public virtual Func<CombatUnit, float> AddWeaponDamage { get; }
-        public virtual Func<CombatUnit, float> ExtraMpValue { get; }
+        public int Lasting => 持久值;
+        public virtual Func<ICombatUnit, float> AddStrength { get; }
+        public virtual Func<ICombatUnit, float> AddAgility { get; }
+        public virtual Func<ICombatUnit, float> AddParry { get; }
+        public virtual Func<ICombatUnit, float> AddDodge { get; }
+        public virtual Func<ICombatUnit, float> AddWeaponDamage { get; }
+        public virtual Func<ICombatUnit, float> ExtraMpValue { get; }
         public virtual Action<ICombatRound> RoundEnd { get; }
         public virtual Action<ICombatRound> RoundStart { get; }
+        public ICombatBuff.Appends Append => 赋buff;
 
-        public virtual IBuffInstance InstanceBuff(CombatUnit unit) =>
-            new CombatBuff(combatId: unit.CombatId, 
-                lasting: Lasting, spriteId: SpriteId, 
+        public virtual IBuffInstance InstanceBuff(ICombatUnit unit) =>
+            new CombatBuff(combatId: unit.CombatId,
+                lasting: Lasting, spriteId: SpriteId,
                 stacks: Stacks, consumption: Consumption,
-                addStrength: AddStrength, addAgility: AddAgility, 
-                addParry: AddParry, addDodge: AddDodge, 
-                addWeaponDamage: AddWeaponDamage, extraMpValue: ExtraMpValue, 
+                append: Append,
+                addStrength: AddStrength, addAgility: AddAgility,
+                addParry: AddParry, addDodge: AddDodge,
+                addWeaponDamage: AddWeaponDamage, extraMpValue: ExtraMpValue,
                 onRoundStart: RoundStart, onRoundEnd: RoundEnd);
 
         protected record CombatBuff : CombatBuffBase, IBuffInstance
@@ -47,25 +50,26 @@ namespace So
             public override int SpriteId { get; }
             public override int Stacks { get; }
             public override ICombatBuff.Consumptions Consumption { get; }
-            public override Func<CombatUnit, float> AddStrength { get; }
-            public override Func<CombatUnit, float> AddAgility { get; }
-            public override Func<CombatUnit, float> AddParry { get; }
-            public override Func<CombatUnit, float> AddDodge { get; }
-            public override Func<CombatUnit, float> AddWeaponDamage { get; }
-            public override Func<CombatUnit, float> ExtraMpValue { get; }
+            public override Func<ICombatUnit, float> AddStrength { get; }
+            public override Func<ICombatUnit, float> AddAgility { get; }
+            public override Func<ICombatUnit, float> AddParry { get; }
+            public override Func<ICombatUnit, float> AddDodge { get; }
+            public override Func<ICombatUnit, float> AddWeaponDamage { get; }
+            public override Func<ICombatUnit, float> ExtraMpValue { get; }
             private event Action<ICombatRound> OnRoundStart;
             private event Action<ICombatRound> OnRoundEnd;
 
-            public CombatBuff(int combatId, int lasting, int spriteId, int stacks, 
-                ICombatBuff.Consumptions consumption, 
-                Func<CombatUnit, float> addStrength, 
-                Func<CombatUnit, float> addAgility, 
-                Func<CombatUnit, float> addParry, 
-                Func<CombatUnit, float> addDodge, 
-                Func<CombatUnit, float> addWeaponDamage, 
-                Func<CombatUnit, float> extraMpValue,
+            public CombatBuff(int combatId, int lasting, int spriteId, int stacks,
+                ICombatBuff.Consumptions consumption,
+                ICombatBuff.Appends append,
+                Func<ICombatUnit, float> addStrength,
+                Func<ICombatUnit, float> addAgility,
+                Func<ICombatUnit, float> addParry,
+                Func<ICombatUnit, float> addDodge,
+                Func<ICombatUnit, float> addWeaponDamage,
+                Func<ICombatUnit, float> extraMpValue,
                 Action<ICombatRound> onRoundStart,
-                Action<ICombatRound> onRoundEnd) : base(combatId, lasting)
+                Action<ICombatRound> onRoundEnd) : base(combatId, lasting, append)
             {
                 SpriteId = spriteId;
                 Stacks = stacks;

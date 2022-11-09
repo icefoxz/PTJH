@@ -6,19 +6,19 @@ namespace BattleM
 {
     public class BattleStage
     {
-        private CombatManager CombatManager { get; set; }
-        public IEnumerable<CombatUnit> GetCombatUnits() => CombatManager.AllUnits;
-        public IEnumerable<CombatUnit> GetAliveUnits() => CombatManager.GetAliveCombatUnits();
-        public CombatUnit GetCombatUnit(int combatId) => CombatManager.GetFromAllUnits(combatId);
-        public bool IsFightEnd => CombatManager.IsFightEnd;
-        public int WinningStance => CombatManager.WinningStance;
+        private CombatUnitManager CombatUnitManager { get; set; }
+        public IEnumerable<CombatUnit> GetCombatUnits() => CombatUnitManager.AllUnits;
+        public IEnumerable<CombatUnit> GetAliveUnits() => CombatUnitManager.GetAliveCombatUnits();
+        public CombatUnit GetCombatUnit(int combatId) => CombatUnitManager.GetFromAllUnits(combatId);
+        public bool IsFightEnd => CombatUnitManager.IsFightEnd;
+        public int WinningStance => CombatUnitManager.WinningStance;
         public event UnityAction<CombatRoundRecord> OnEveryRound;
         private ICombatRound Round { get; set; }
 
-        public BattleStage(CombatUnit[] units, CombatManager.Judgment judgment,int minEscapeRounds)
+        public BattleStage(CombatUnit[] units, CombatUnitManager.Judgment judgment,int minEscapeRounds)
         {
-            CombatManager = new CombatManager(units, judgment);
-            Round = new CombatRound(CombatManager, minEscapeRounds, false);
+            CombatUnitManager = new CombatUnitManager(units, judgment);
+            Round = new CombatRound(CombatUnitManager, minEscapeRounds, false);
         }
 
         public void NextRound(bool autoPlan)

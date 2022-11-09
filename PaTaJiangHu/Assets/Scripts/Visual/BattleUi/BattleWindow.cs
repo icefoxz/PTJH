@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BattleM;
-using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -22,7 +21,7 @@ namespace Visual.BattleUi
         /// </summary>
         /// <param name="roles"></param>
         /// <param name="judgment"></param>
-        void BattleSetup((int,CombatUnit)[] roles, CombatManager.Judgment judgment);
+        void BattleSetup((int,CombatUnit)[] roles, CombatUnitManager.Judgment judgment);
         void ResetUi();
         void Show();
         void StartBattle();
@@ -130,7 +129,7 @@ namespace Visual.BattleUi
                 Debug.Log("战斗结束！");
             }
         }
-        public void BattleSetup((int, CombatUnit)[] roles, CombatManager.Judgment judgment)
+        public void BattleSetup((int, CombatUnit)[] roles, CombatUnitManager.Judgment judgment)
         {
             var list = new List<CombatUnit>();
             Player = null;
@@ -159,7 +158,7 @@ namespace Visual.BattleUi
                 PresetForce,
                 PresetCancel);
             InitStickmans(list);
-            BreathBarsInit();
+            _breathUi.Init();
             CombatTempoPlayer = new CombatTempoPlayer(this);
         }
         public void StartBattle()
@@ -225,48 +224,9 @@ namespace Visual.BattleUi
             //    status.Hp.Value, status.Hp.Fix, status.Tp.Value - form.Tp,
             //    status.Tp.Fix, status.Mp.Value - form.Mp, status.Mp.Fix);
             var breathBar = Player.BreathBar;
-            var dodgeBreath = breathBar.IsReposition ? breathBar.Dodge?.Breath : 0;
+            var dodgeBreath = breathBar.IsReposition ? breathBar.Perform.DodgeSkill?.Breath : 0;
             //UpdateDrum(dodgeBreath + form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
-        #endregion
-
-        #region BreathView Update
-        private void BreathBarsInit()
-        {
-            var combatUnits = Stage.GetAliveUnits().OrderBy(c => c.BreathBar.TotalBreath).ToList();
-            var playerBreathBar = Player.BreathBar;
-            var targetBreathBar = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar;
-            var playerBreath = playerBreathBar.TotalBreath;
-            var maxBreath = combatUnits.Sum(c => c.BreathBar.TotalBreath);
-            //UpdateDrum(playerBreath, maxBreath);
-            _leftPromptEventUi.Set(GetTitle(playerBreathBar),playerBreath);
-            _rightPromptEventUi.Set(GetTitle(targetBreathBar), targetBreathBar.TotalBreath);
-            StartCoroutine(_breathUi.SetLeft(playerBreathBar));
-            StartCoroutine(_breathUi.SetRight(targetBreathBar));
-            string GetTitle(IBreathBar breathBar)
-            {
-                switch (breathBar.Plan)
-                {
-                    case CombatPlans.Attack:
-                        return breathBar.Combat?.Name ?? string.Empty;
-                    case CombatPlans.RecoverHp:
-                        return breathBar.Force?.Name ?? string.Empty;
-                    case CombatPlans.Exert:
-                        return "运功";
-                    case CombatPlans.Wait:
-                        return "等待";
-                    case CombatPlans.Surrender:
-                        return "伺机逃跑...";
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-        //private void UpdateDrum(int playerBreath,int maxBreath)
-        //{
-        //    var targetBreath = Stage.GetCombatUnit(Player.Target.CombatId).BreathBar.TotalBreath;
-        //    _breathUi.UpdateDrum(playerBreath, targetBreath, maxBreath);
-        //}
         #endregion
 
         #region CombatUi Update
@@ -337,7 +297,7 @@ namespace Visual.BattleUi
         public void OnStatusUpdate(IStatusRecord before, IStatusRecord after) => UpdateStatusWithDifPop(before, after);
         public void OnAttackAnim(AttackRecord att)
         {
-            GetPromptEventUi(att.CombatId).UpdateEvent(PromptEventUi.CombatEvents.Attack);
+            GetPromptEventUi(att.CombatId).UpdateEvent(PromptEventUi.Events.Attack);
             GetCombatAnimUi(att.Unit.CombatId)
                 .SetAction(att.Unit.CombatId, Stickman.Anims.Attack);
             var status = att.AttackConsume.After;
@@ -346,7 +306,7 @@ namespace Visual.BattleUi
 
         public void OnEscapeAnim(EscapeRecord esc)
         {
-            GetPromptEventUi(esc.Attacker.CombatId).UpdateEvent(PromptEventUi.CombatEvents.Attack);
+            GetPromptEventUi(esc.Attacker.CombatId).UpdateEvent(PromptEventUi.Events.Attack);
             GetCombatAnimUi(esc.Attacker.CombatId).SetAction(esc.Attacker.CombatId, Stickman.Anims.Attack);
         }
 
@@ -361,7 +321,7 @@ namespace Visual.BattleUi
         {
             var combatId = rec.CombatId;
             var status = rec.After;
-            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Suffer);
+            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.Events.Suffer);
             GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Suffer);
             UpdateStatusUi(combatId, status.Hp, status.Mp);
         }
@@ -370,7 +330,7 @@ namespace Visual.BattleUi
         {
             var combatId = rec.CombatId;
             var status = rec.After;
-            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Dodge);
+            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.Events.Dodge);
             GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Dodge);
             UpdateStatusUi(combatId, status.Hp, status.Mp);
         }
@@ -378,7 +338,7 @@ namespace Visual.BattleUi
         {
             var combatId = rec.CombatId;
             var status = rec.After;
-            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.CombatEvents.Parry);
+            GetPromptEventUi(combatId).UpdateEvent(PromptEventUi.Events.Parry);
             GetCombatAnimUi(combatId).SetAction(combatId, Stickman.Anims.Parry);
             UpdateStatusUi(combatId, status.Hp, status.Mp);
         }

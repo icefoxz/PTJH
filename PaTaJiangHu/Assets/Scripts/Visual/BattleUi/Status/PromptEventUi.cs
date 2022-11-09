@@ -11,7 +11,7 @@ namespace Visual.BattleUi.Status
 {
     public class PromptEventUi : UiBase
     {
-        public enum CombatEvents
+        public enum Events
         {
             None,
             Attack,
@@ -25,13 +25,13 @@ namespace Visual.BattleUi.Status
         [SerializeField] private Image _parry;
         [SerializeField] private Image _dodge;
         [SerializeField] private Image _suffer;
-        private Dictionary<CombatEvents, Image> _eventMap;
-        private Dictionary<CombatEvents, Image> EventMap => _eventMap ??= new Dictionary<CombatEvents, Image>
+        private Dictionary<Events, Image> _eventMap;
+        private Dictionary<Events, Image> EventMap => _eventMap ??= new Dictionary<Events, Image>
         {
-            { CombatEvents.Attack, _attack },
-            { CombatEvents.Parry, _parry },
-            { CombatEvents.Dodge, _dodge },
-            { CombatEvents.Suffer, _suffer },
+            { Events.Attack, _attack },
+            { Events.Parry, _parry },
+            { Events.Dodge, _dodge },
+            { Events.Suffer, _suffer },
         };
 
         private void SetUi(string form, int breath)
@@ -44,7 +44,7 @@ namespace Visual.BattleUi.Status
 
         public void Set(string title,int breath) => SetUi(title, breath);
 
-        public void UpdateEvent(CombatEvents comEvent)
+        public void UpdateEvent(Events comEvent)
         {
             foreach (var (e, image) in EventMap) 
                 image.gameObject.SetActive(e == comEvent);
@@ -52,17 +52,17 @@ namespace Visual.BattleUi.Status
             Sequence tween = DOTween.Sequence();
             switch (comEvent)
             {
-                case CombatEvents.None:
+                case Events.None:
                     scale = 1f;
                     tween.Append(transform.DOScale(scale, 0.2f));
                     break;
-                case CombatEvents.Attack:
+                case Events.Attack:
                     scale = 1.1f;
                     tween.Append(transform.DOScale(scale, 0.2f));
                     break;
-                case CombatEvents.Parry:
-                case CombatEvents.Dodge:
-                case CombatEvents.Suffer:
+                case Events.Parry:
+                case Events.Dodge:
+                case Events.Suffer:
                     scale = 0.8f;
                     tween.Append(transform.DOScale(scale, 0.2f));
                     tween.Append(transform.DOShakeScale(0.3f,0.3f));
@@ -83,7 +83,7 @@ namespace Visual.BattleUi.Status
         {
             _formText.text = string.Empty;
             _breathText.text = string.Empty;
-            UpdateEvent(CombatEvents.None);
+            UpdateEvent(Events.None);
             Hide();
             transform.localScale = Vector3.one;
         }

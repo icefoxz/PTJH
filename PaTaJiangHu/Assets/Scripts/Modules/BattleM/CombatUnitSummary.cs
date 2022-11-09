@@ -9,31 +9,31 @@ namespace BattleM
     {
         public bool IsTargetSurrenderCondition { get; }
         public bool IsSurrenderCondition { get; }
-        public IForce Force { get; }
         public bool IsCombatAvailable { get; }
         public bool IsHpRecoverNeed { get; }
         public bool IsReachable { get; }
         public bool IsCombatRange { get; }
         public bool IsDodgeAvailable { get; }
         public bool IsReposition { get; }
+        public IForce Force { get; }
         public IDodge Dodge { get; }
         public ICombatForm CombatForm { get; }
 
-        public CombatUnitSummary(CombatUnit unit, CombatUnit target, ICombatForm combatForm, IDodge dodge,
+        public CombatUnitSummary(CombatUnit unit, ICombatInfo target, ICombatForm combatForm, IDodge dodge,
             IForce force, bool isCombatAvailable, bool isDodgeAvailable)
         {
             var status = unit.Status;
+            Force = force;
+            Dodge = dodge;
+            CombatForm = combatForm;
             IsSurrenderCondition = unit.IsSurrenderCondition;
             IsTargetSurrenderCondition = target.IsSurrenderCondition;
             IsCombatAvailable = isCombatAvailable;
-            CombatForm = combatForm; //获取攻击招式
-            Dodge = dodge; //获取身法
             IsCombatRange = unit.IsCombatRange(target);
             IsDodgeAvailable = isDodgeAvailable;
             IsReposition = !IsCombatRange && IsDodgeAvailable;
             IsReachable =  IsCombatRange || IsDodgeAvailable;
             IsHpRecoverNeed = CheckRecoverStrategy(status.Hp);
-            Force = force;
 
             bool CheckRecoverStrategy(IGameCondition gameCondition)
             {
@@ -54,19 +54,30 @@ namespace BattleM
             bool LowerThan(float ratio, IGameCondition con) => con.ValueMaxRatio < ratio;
         }
 
+        public IPerform GetAutoPerform() => new AutoPerform(Force, Dodge, CombatForm, Force, IsReposition);
 
-        public CombatPlans GetPlan(CombatManager.Judgment mode)
+        public CombatEvents GetPlan(CombatUnitManager.Judgment mode)
         {
             //恢复优先
-            if (IsHpRecoverNeed) return Force != null ? CombatPlans.RecoverHp : CombatPlans.Wait;
+            if (IsHpRecoverNeed) return Force != null ? CombatEvents.Recover : CombatEvents.Wait;
             //逃跑/认输:如果自己达条件，对方没意思逃跑则触发
-            if (mode == CombatManager.Judgment.Test &&
+            if (mode == CombatUnitManager.Judgment.Test &&
                 IsSurrenderCondition &&
                 !IsTargetSurrenderCondition)
-                return CombatPlans.Surrender;
+                return CombatEvents.Surrender;
             //攻击
-            if (IsCombatAvailable && IsReachable && !IsSurrenderCondition) return CombatPlans.Attack;
-            return CombatPlans.Wait;
+            if (IsCombatAvailable && IsReachable && !IsSurrenderCondition) return CombatEvents.Offend;
+            return CombatEvents.Wait;
+        }
+
+        private record AutoPerform(IForce ForceSkill, IDodge DodgeSkill, ICombatForm CombatForm, IRecovery Recover, bool IsReposition) : IPerform
+        {
+            public IForce ForceSkill { get; } = ForceSkill;
+            public IDodge DodgeSkill { get; } = DodgeSkill;
+            public IPerform.Activities Activity { get; } = IPerform.Activities.Auto;
+            public ICombatForm CombatForm { get; } = CombatForm;
+            public IRecovery Recover { get; } = Recover;
+            public bool IsReposition { get; } = IsReposition;
         }
     }
 }

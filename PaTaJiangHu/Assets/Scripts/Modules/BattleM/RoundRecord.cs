@@ -171,16 +171,15 @@ namespace BattleM
         }
     }
 
-    public record RecoveryRecord : ConsumeRecord<IForce>
+    public record RecoveryRecord : ConsumeRecord<IRecovery>
     {
-
-        public new static RecoveryRecord Instance(IForce force) => new(force);
-
-        public RecoveryRecord()
+        public static RecoveryRecord Instance(IRecovery recover,IForce force, RecoverFormula formula) => new(recover,force ,formula);
+        public IForce Force { get; }
+        public RecoverFormula RecoverFormula { get; }
+        public RecoveryRecord(IRecovery recover, IForce force, RecoverFormula recoverFormula):base(recover)
         {
-        }
-        public RecoveryRecord(IForce form):base(form)
-        {
+            RecoverFormula = recoverFormula;
+            Force = force;
         }
     }
 
@@ -658,21 +657,20 @@ namespace BattleM
         public override int CombatId => Unit.CombatId;
         public List<BreathRecord> Breathes { get; }
         public UnitRecord Unit { get; }
-        public CombatPlans Plan { get; }
+        public CombatEvents Plan { get; }
         public string Title { get; set; }
 
         public BreathBarRecord(ICombatUnit unit, List<BreathRecord> breathes)
         {
             Unit = new UnitRecord(unit);
             Breathes = breathes;
-            Plan = unit.BreathBar.Plan;
+            Plan = unit.BreathBar.AutoPlan;
             Title = Plan switch
             {
-                CombatPlans.Wait => "等待",
-                CombatPlans.Attack => unit.BreathBar.Combat.Name,
-                CombatPlans.RecoverHp => unit.BreathBar.Force.Name,
-                CombatPlans.Surrender => "认输",
-                CombatPlans.Exert => throw new NotImplementedException(),
+                CombatEvents.Wait => "等待",
+                CombatEvents.Offend => unit.BreathBar.Perform.CombatForm.Name,
+                CombatEvents.Recover => unit.BreathBar.Perform.Recover.Name,
+                CombatEvents.Surrender => "认输",
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -763,25 +761,43 @@ namespace BattleM
                     list.Add(new BreathRecord(BreathRecord.Types.Busy, bar.TotalBusies));
                 if (bar.TotalCharged > 0)
                     list.Add(new BreathRecord(BreathRecord.Types.Charge, bar.TotalCharged));
-                switch (bar.Plan)
+                switch (bar.Perform.Activity)
                 {
-                    case CombatPlans.Attack:
+                    case IPerform.Activities.Attack:
                         if (bar.IsReposition)
-                            list.Add(new BreathRecord(BreathRecord.Types.Placing, bar.Dodge.Breath, bar.Dodge.Name));
-                        list.Add(new BreathRecord(BreathRecord.Types.Attack, bar.Combat.Breath, bar.Combat.Name));
+                            list.Add(new BreathRecord(BreathRecord.Types.Placing, bar.Perform.DodgeSkill.Breath,
+                                bar.Perform.DodgeSkill.Name));
+                        list.Add(new BreathRecord(BreathRecord.Types.Attack, bar.Perform.CombatForm.Breath,
+                            bar.Perform.CombatForm.Name));
                         break;
-                    case CombatPlans.RecoverHp:
-                        list.Add(new BreathRecord(BreathRecord.Types.Exert, bar.Force.Breath, bar.Force.Name));
+                    case IPerform.Activities.Recover:
+                        list.Add(new BreathRecord(BreathRecord.Types.Exert, bar.Perform.ForceSkill.Breath,
+                            bar.Perform.Recover.Name));
                         break;
-                    case CombatPlans.Exert:
-                        break;
-                    case CombatPlans.Wait:
-                    case CombatPlans.Surrender:
+                    case IPerform.Activities.Auto:
+                        switch (bar.AutoPlan)
+                        {
+                            case CombatEvents.Offend:
+                                if (bar.IsReposition)
+                                    list.Add(new BreathRecord(BreathRecord.Types.Placing, bar.Perform.DodgeSkill.Breath,
+                                        bar.Perform.DodgeSkill.Name));
+                                list.Add(new BreathRecord(BreathRecord.Types.Attack, bar.Perform.CombatForm.Breath,
+                                    bar.Perform.CombatForm.Name));
+                                break;
+                            case CombatEvents.Recover:
+                                list.Add(new BreathRecord(BreathRecord.Types.Exert, bar.Perform.ForceSkill.Breath,
+                                    bar.Perform.Recover.Name));
+                                break;
+                            case CombatEvents.Wait:
+                            case CombatEvents.Surrender:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-
                 return list;
             }
         }

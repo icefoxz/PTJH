@@ -22,9 +22,9 @@ namespace BattleM
 
         public void AddBuff(IBuffInstance sp)
         {
-            if (Buffs.Count(s => s.CombatId == sp.CombatId && s.SpriteId == sp.SpriteId) < sp.Stacks)
+            if (sp.Stacks == 0 || 
+                Buffs.Count(s => s.CombatId == sp.CombatId && s.SpriteId == sp.SpriteId) < sp.Stacks) //同类型的buff不超过最大叠加
             {
-                Console.WriteLine($"{nameof(AddBuff)}:Add({sp})");
                 sp.SetSeed(GetSeed());
                 Buffs.Add(sp);
             }
@@ -69,11 +69,13 @@ namespace BattleM
         public IEnumerable<IBuffInstance> GetBuffs(int combatId) =>
             Buffs.Where(s => s.CombatId == combatId);
 
-        private int ConsumeBuff(CombatUnit unit, ICombatBuff.Kinds kind, Func<IBuffInstance, float> funcMethod)
+        private int ConsumeBuff(CombatUnit unit, ICombatBuff.Kinds kind, Func<IBuffInstance, float> funcMethod,bool depletion)
         {
             var buffs = GetBuffs(unit.CombatId).Where(b => IsBuffOf(kind, b)).ToArray();
             var additional = buffs.Sum(funcMethod.Invoke);
-            foreach (var buff in buffs) DepleteOnConsumption(buff, ICombatBuff.Consumptions.Consume);
+            if(depletion)//消耗buff
+                foreach (var buff in buffs)
+                    DepleteOnConsumption(buff, ICombatBuff.Consumptions.Consume);
             return (int)additional;
 
             static bool IsBuffOf(ICombatBuff.Kinds k, ICombatBuff cb)
@@ -92,39 +94,41 @@ namespace BattleM
         }
 
 
-        public int GetStrength(CombatUnit unit, int unitStrength)
+        public int GetStrength(CombatUnit unit, int unitStrength, bool depletion)
         {
-            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Strength, b => b.AddStrength?.Invoke(unit) ?? 0);
+            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Strength, b => b.AddStrength?.Invoke(unit) ?? 0,
+                depletion);
             return unitStrength + additional;
         }
 
-        public int GetAgility(CombatUnit unit, int unitAgility)
+        public int GetAgility(CombatUnit unit, int unitAgility, bool depletion)
         {
-            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Agility, b => b.AddAgility?.Invoke(unit) ?? 0);
+            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Agility, b => b.AddAgility?.Invoke(unit) ?? 0,
+                depletion);
             return unitAgility + additional;
         }
 
-        public int GetWeaponDamage(CombatUnit unit, int unitWeaponDamage)
+        public int GetWeaponDamage(CombatUnit unit, int unitWeaponDamage, bool depletion)
         {
-            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Weapon, b => b.AddWeaponDamage?.Invoke(unit) ?? 0);
+            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Weapon, b => b.AddWeaponDamage?.Invoke(unit) ?? 0, depletion);
             return unitWeaponDamage + additional;
         }
 
-        public int GetParry(CombatUnit unit, int unitParry)
+        public int GetParry(CombatUnit unit, int unitParry, bool depletion)
         {
-            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Parry, b => b.AddParry?.Invoke(unit) ?? 0);
+            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Parry, b => b.AddParry?.Invoke(unit) ?? 0, depletion);
             return unitParry + additional;
         }
 
-        public int GetExtraMpValue(CombatUnit unit, int formMp)
+        public int GetExtraMpValue(CombatUnit unit, int formMp, bool depletion)
         {
-            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Parry, b => b.ExtraMpValue?.Invoke(unit) ?? 0);
+            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Parry, b => b.ExtraMpValue?.Invoke(unit) ?? 0, depletion);
             return formMp + additional;
         }
 
-        public int GetDodge(CombatUnit unit, int unitDodge)
+        public int GetDodge(CombatUnit unit, int unitDodge, bool depletion)
         {
-            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Dodge, b => b.AddDodge?.Invoke(unit) ?? 0);
+            var additional = ConsumeBuff(unit, ICombatBuff.Kinds.Dodge, b => b.AddDodge?.Invoke(unit) ?? 0, depletion);
             return unitDodge + additional;
         }
     }

@@ -1,15 +1,19 @@
 using System;
+using UnityEngine;
 
 namespace BattleM
 {
     public interface ICombatBuff
     {
+        /** 持久
+         * 1.回合制
+         * 2.消耗制(攻,受击,架,闪,移)
+         */
         public enum Consumptions
         {
             Round,
             Consume
         }
-
         public enum Kinds
         {
             Strength,
@@ -20,47 +24,56 @@ namespace BattleM
             ExtraMp,
         }
 
+        public enum Appends
+        {
+            /// <summary>
+            /// 自身buff
+            /// </summary>
+            [InspectorName("自身")] Self,
+            /// <summary>
+            /// 对方-强制赋buff
+            /// </summary>
+            [InspectorName("敌强制")] TargetForce,
+            /// <summary>
+            /// 对方-当击中
+            /// </summary>
+            [InspectorName("敌击中")]TargetIfHit
+        }
+
         /// <summary>
         /// 精灵Id(唯一类型标识)
         /// </summary>
         int SpriteId { get; }
-
         /// <summary>
         /// 同类型最大重叠数
         /// </summary>
         int Stacks { get; }
-
+        Appends Append { get; }
         Consumptions Consumption { get; }
-
         /// <summary>
         /// 力量增加值<see cref="Kinds.Strength"/>
         /// </summary>
-        Func<CombatUnit, float> AddStrength { get; }
-
+        Func<ICombatUnit, float> AddStrength { get; }
         /// <summary>
         /// 敏捷增加值<see cref="Kinds.Agility"/>
         /// </summary>
-        Func<CombatUnit, float> AddAgility { get; }
-
+        Func<ICombatUnit, float> AddAgility { get; }
         /// <summary>
         /// 招架增加值<see cref="Kinds.Parry"/>
         /// </summary>
-        Func<CombatUnit, float> AddParry { get; }
-
+        Func<ICombatUnit, float> AddParry { get; }
         /// <summary>
         /// 身法增加值<see cref="Kinds.Dodge"/>
         /// </summary>
-        Func<CombatUnit, float> AddDodge { get; }
-
+        Func<ICombatUnit, float> AddDodge { get; }
         /// <summary>
         /// 武器伤害增加值<see cref="Kinds.Weapon"/>
         /// </summary>
-        Func<CombatUnit, float> AddWeaponDamage { get; }
-
+        Func<ICombatUnit, float> AddWeaponDamage { get; }
         /// <summary>
         /// Mp增加值<see cref="Kinds.ExtraMp"/>
         /// </summary>
-        Func<CombatUnit, float> ExtraMpValue { get; }
+        Func<ICombatUnit, float> ExtraMpValue { get; }
         /// <summary>
         /// 当回合结束，回合精灵消失前。
         /// </summary>
@@ -84,22 +97,24 @@ namespace BattleM
             InstanceId = seed;
         }
 
-        protected CombatBuffBase(int combatId,int lasting)
+        protected CombatBuffBase(int combatId,int lasting, ICombatBuff.Appends append)
         {
             CombatId = combatId;
             Lasting = lasting;
+            Append = append;
         }
 
         public abstract int SpriteId { get; }
         public abstract int Stacks { get; }
+        public ICombatBuff.Appends Append { get; }
         public abstract ICombatBuff.Consumptions Consumption { get; }
         public int Lasting { get; protected set; }
-        public abstract Func<CombatUnit, float> AddStrength { get; }
-        public abstract Func<CombatUnit, float> AddAgility { get; }
-        public abstract Func<CombatUnit, float> AddParry { get; }
-        public abstract Func<CombatUnit, float> AddDodge { get; }
-        public abstract Func<CombatUnit, float> AddWeaponDamage { get; }
-        public abstract Func<CombatUnit, float> ExtraMpValue { get; }
+        public abstract Func<ICombatUnit, float> AddStrength { get; }
+        public abstract Func<ICombatUnit, float> AddAgility { get; }
+        public abstract Func<ICombatUnit, float> AddParry { get; }
+        public abstract Func<ICombatUnit, float> AddDodge { get; }
+        public abstract Func<ICombatUnit, float> AddWeaponDamage { get; }
+        public abstract Func<ICombatUnit, float> ExtraMpValue { get; }
         public abstract void RoundEnd(ICombatRound round);
         public abstract void RoundStart(ICombatRound round);
         public void LastingDepletion(int deplete = 1)

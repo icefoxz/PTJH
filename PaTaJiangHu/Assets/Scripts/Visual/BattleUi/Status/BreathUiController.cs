@@ -3,7 +3,6 @@ using System.Collections;
 using BattleM;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 using Visual.BaseUi;
 using Visual.BattleUi.Input;
@@ -21,7 +20,9 @@ namespace Visual.BattleUi.Status
         [SerializeField] private BreathViewUi _leftView;
         [SerializeField] private BreathViewUi _rightView;
 
-        public IEnumerator SetLeft(CombatPlans plan, int busy, int charge, 
+        public void Init() => ResetUi();
+
+        public IEnumerator SetLeft(CombatEvents plan, int busy, int charge, 
             BreathRecord attack, BreathRecord exert, BreathRecord placing) => 
             SetPlan(_leftView, plan, busy, charge, 
             DataConvertOrDefault(attack),
@@ -29,12 +30,12 @@ namespace Visual.BattleUi.Status
             DataConvertOrDefault(placing));
         public IEnumerator SetLeft(IBreathBar breathBar)
         {
-            yield return SetPlan(_leftView, breathBar.Plan, breathBar.TotalBusies, breathBar.TotalCharged,
-                DataConvertOrDefault(breathBar.Combat),
-                DataConvertOrDefault(breathBar.Force),
-                DataConvertOrDefault(breathBar.Dodge));
+            yield return SetPlan(_leftView, breathBar.AutoPlan, breathBar.TotalBusies, breathBar.TotalCharged,
+                DataConvertOrDefault(breathBar.Perform.CombatForm),
+                DataConvertOrDefault(breathBar.Perform.ForceSkill),
+                DataConvertOrDefault(breathBar.Perform.DodgeSkill));
         }
-        public IEnumerator SetRight(CombatPlans plan, int busy, int charge,
+        public IEnumerator SetRight(CombatEvents plan, int busy, int charge,
             BreathRecord attack, BreathRecord exert, BreathRecord placing) =>
             SetPlan(_rightView, plan, busy, charge,
                 DataConvertOrDefault(attack),
@@ -42,10 +43,10 @@ namespace Visual.BattleUi.Status
                 DataConvertOrDefault(placing));
         public IEnumerator SetRight(IBreathBar breathBar)
         {
-            yield return SetPlan(_rightView, breathBar.Plan, breathBar.TotalBusies, breathBar.TotalCharged,
-                DataConvertOrDefault(breathBar.Combat),
-                DataConvertOrDefault(breathBar.Force),
-                DataConvertOrDefault(breathBar.Dodge));
+            yield return SetPlan(_rightView, breathBar.AutoPlan, breathBar.TotalBusies, breathBar.TotalCharged,
+                DataConvertOrDefault(breathBar.Perform.CombatForm),
+                DataConvertOrDefault(breathBar.Perform.ForceSkill),
+                DataConvertOrDefault(breathBar.Perform.DodgeSkill));
         }
 
         private static (string Name, int Value) DataConvertOrDefault(BreathRecord rec) => 
@@ -53,13 +54,13 @@ namespace Visual.BattleUi.Status
         private static (string Name, int Value) DataConvertOrDefault<T>(T rec) where T : IBreathNode, ISkillName =>
             rec == null ? default : (rec.Name, rec.Breath);
 
-        private IEnumerator SetPlan(BreathViewUi view, CombatPlans plan,
+        private IEnumerator SetPlan(BreathViewUi view, CombatEvents plan,
             int totalBusies, int totalCharged,
             (string Name, int Value) attack, (string Name, int Value) exert, (string Name, int Value) placing)
         {
             switch (plan)
             {
-                case CombatPlans.Attack:
+                case CombatEvents.Offend:
                     if (placing == default)
                         yield return view.SetAttack(totalBusies, totalCharged, attack.Name, attack.Value);
                     else
@@ -67,14 +68,13 @@ namespace Visual.BattleUi.Status
                             placing.Name,
                             placing.Value);
                     break;
-                case CombatPlans.RecoverHp:
+                case CombatEvents.Recover:
                     yield return view.SetExert(totalBusies, totalCharged, exert.Name, exert.Value);
                     break;
-                case CombatPlans.Wait:
-                case CombatPlans.Surrender:
+                case CombatEvents.Wait:
+                case CombatEvents.Surrender:
                     yield return view.SetIdle(totalBusies, totalCharged);
                     break;
-                case CombatPlans.Exert:
                 default: throw new ArgumentOutOfRangeException();
             }
         }

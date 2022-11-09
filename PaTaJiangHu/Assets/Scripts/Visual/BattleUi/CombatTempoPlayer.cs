@@ -24,7 +24,6 @@ namespace Visual.BattleUi
 
             if (rec.SwitchTargetRec != null)
             {
-                throw new NotImplementedException();
                 //FragmentPlayer.OnSwitchTarget(rec.SwitchTargetRec);
             }
 

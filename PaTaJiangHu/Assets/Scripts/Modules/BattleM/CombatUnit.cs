@@ -1,27 +1,22 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace BattleM
 {
-    public enum CombatPlans
+    public enum CombatEvents
     {
         /// <summary>
         /// 等待策略，不做任何事
         /// </summary>
         Wait,
         /// <summary>
-        /// 进攻策略，主动发动攻击
+        /// 主动策略，一般为发动攻击
         /// </summary>
-        Attack,
+        Offend,
         /// <summary>
         /// 恢复血量策略
         /// </summary>
-        RecoverHp,
-        /// <summary>
-        /// 发招策略(玩家主动介入)
-        /// </summary>
-        Exert,
+        Recover,
         /// <summary>
         /// 投降策略，根据战况决定是否等待，逃跑，或是直接投降
         /// </summary>
@@ -39,6 +34,7 @@ namespace BattleM
         int StandingPoint { get; }
         string Name { get; }
         bool IsExhausted { get; }
+        bool IsSurrenderCondition { get; }
         int Distance(ICombatInfo target);
     }
     /// <summary>
@@ -48,6 +44,7 @@ namespace BattleM
     {
         int Strength { get; }
         int Agility { get; }
+        int WeaponDamage { get; }
         ICombatStatus Status { get; }
         IBreathBar BreathBar { get; }
         IForce Force { get; }
@@ -132,13 +129,13 @@ namespace BattleM
                 }
                 bool LowerThan(float value, ICombatStatus status)
                 {
-                    return _breathBar.Round.RoundIndex >= Round.MinEscapeRounds &&
+                    return Round.RoundIndex >= Round.MinEscapeRounds &&
                            (value > status.Hp.ValueFixRatio);
                 }
             }
         }
 
-        private CombatManager Mgr { get; set; }
+        private CombatUnitManager Mgr { get; set; }
         #region ICombatTarget
 
         public ICombatInfo Target { get; private set; }
@@ -148,7 +145,8 @@ namespace BattleM
         public Weapon.Injuries WeaponInjuryType => Equipment.Weapon?.Injury ?? Weapon.Injuries.Blunt;
         public int Armor => Equipment.Armor?.Def ?? 0;
         public bool IsExhausted => IsDeath || Status.IsExhausted;
-        public CombatPlans Plan => _breathBar.Plan;
+        public CombatEvents Plan => _breathBar.AutoPlan;
+        #endregion
 
         private CombatUnit(string name, int strength, int agility, 
             ICombatStatus status, IForce forceSkill,
@@ -165,9 +163,12 @@ namespace BattleM
         }
 
         public void SetPosition(int position) => Position = position;
-
+        /// <summary>
+        /// 仅根据Position找出位置的距离(差值)，不考虑是否目标已死亡
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public int Distance(ICombatInfo target) => Math.Abs(Position - target.Position);
-        #endregion
 
         /// <summary>
         /// 初始化战斗
@@ -177,14 +178,13 @@ namespace BattleM
         /// <param name="target"></param>
         /// <param name="standingPoint"></param>
         /// <param name="strategy"></param>
-        public void Init(CombatManager mgr,CombatRound round, ICombatInfo target,int standingPoint,Strategies strategy)
+        public void Init(CombatUnitManager mgr,CombatRound round, ICombatInfo target,int standingPoint,Strategies strategy)
         {
             Mgr = mgr;
             Round = round;
-            _breathBar = new BreathBar(round);
+            _breathBar = new BreathBar();
             StandingPoint = standingPoint;
             Strategy = strategy;
-            BuffMgr = mgr.BuffMgr;
             ChangeTarget(target);
         }
 
@@ -197,18 +197,9 @@ namespace BattleM
         {
             if (charge <= 0) return;
             _breathBar.Charge(charge);
-            if (_breathBar.TotalCharged > 0)//如果蓄力与硬直抵消不了就不增加内力
-                MpCharge(_breathBar.TotalCharged);
+            if (_breathBar.TotalCharged > 0) //仅增加蓄力值，并不被硬直影响
+                Round.RecRecharge(this, _breathBar.TotalCharged);
         }
-
-        #region BuffManager
-        private CombatBuffManager BuffMgr { get; set; }
-        public IEnumerable<ICombatBuff> Buffs => BuffMgr.GetBuffs(CombatId);
-
-
-        #endregion
-
-        #region CombatPlan
 
         /// <summary>
         /// 准备下一招
@@ -216,51 +207,53 @@ namespace BattleM
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void AutoCombatPlan()
         {
-            var target = Mgr.TryGetAliveCombatUnit(Target);
-            if (target == null)
+            if (!Mgr.IsAlive(Target))
             {
                 Mgr.SetTargetFor(this);
                 Round.OnTargetSwitch(this, Target);
             }
-            var(isDodgeAvailable, dodge) = GetDodgeForm();
+
+            var (isDodgeAvailable, dodge) = GetDodgeForm();
             var (isCombatAvailable, combat) = GetCombatForm();
             var strategy =
-                new CombatUnitSummary(this, target, combat, dodge, Force, isCombatAvailable, isDodgeAvailable);
-            _breathBar.SetPlan(Mgr.Judge, strategy);
-        }
+                new CombatUnitSummary(this, Target, combat, dodge, Force, isCombatAvailable, isDodgeAvailable);
+            _breathBar.SetAutoPlan(Mgr.Judge, strategy);
 
-        private bool IsCombatFormAvailable(ICombatForm form)
-        {
-            return Status.Mp.Value > form.CombatMp;
-        }
-
-        public bool IsTargetRange() => IsCombatRange(Target);
-        public bool IsCombatRange(ICombatInfo unit) => Equipment.Armed.InCombatRange(unit.Distance(this));
-
-        //获取轻功招式
-        private (bool isDodgeAvailable,IDodge dodge) GetDodgeForm()
-        {
-            if (Dodge != null && Dodge.DodgeMp <= Status.Mp.Value)
-                return (true, Dodge);
-            return (Status.Mp.Value > DefaultDodge.DodgeMp, DefaultDodge);
-        }
-        //获取战斗招式
-        private (bool isCombatAvailable, ICombatForm combat) GetCombatForm()
-        {
-            if (CombatForms != null && CombatForms.Any())
+            //获取轻功招式
+            (bool isDodgeAvailable, IDodge dodge) GetDodgeForm()
             {
-                var combat = CombatForms
-                    .Where(IsCombatFormAvailable) //先排除不够内力的招式
-                    .OrderBy(_ => Random.Next(100)) //随机一式
-                    .FirstOrDefault();
-                return combat != null ? (true, combat) : (false ,CombatForms.First()); //如果没有内力只能使用第一式
+                if (Dodge != null && Dodge.DodgeMp <= Status.Mp.Value)
+                    return (true, Dodge);
+                return (Status.Mp.Value > DefaultDodge.DodgeMp, DefaultDodge);
             }
-            return (false, DefaultCombat);
+
+            //获取战斗招式
+            (bool isCombatAvailable, ICombatForm combat) GetCombatForm()
+            {
+                if (CombatForms != null && CombatForms.Any())
+                {
+                    var combat = CombatForms
+                        .Where(IsCombatFormAvailable) //先排除不够内力的招式
+                        .OrderBy(_ => Random.Next(100)) //随机一式
+                        .FirstOrDefault();
+                    return combat != null ? (true, combat) : (false, CombatForms.First()); //如果没有内力只能使用第一式
+                }
+
+                return (false, DefaultCombat);
+                bool IsCombatFormAvailable(ICombatForm form) => Status.Mp.Value > form.CombatMp;
+            }
         }
-
-        #endregion
-
-        #region Action
+        /// <summary>
+        /// 目标在自己的攻击范围内
+        /// </summary>
+        /// <returns></returns>
+        public bool IsTargetInRange() => IsCombatRange(Target);
+        /// <summary>
+        /// 目标是否在可攻击范围内s
+        /// </summary>
+        /// <param name="unit"></param>
+        /// <returns></returns>
+        public bool IsCombatRange(ICombatInfo unit) => Equipment.Armed.InCombatRange(unit.Distance(this));
 
         /// <summary>
         /// 开始战斗
@@ -269,73 +262,47 @@ namespace BattleM
         /// <returns></returns>
         public void Action(int breathes)
         {
-            switch (_breathBar.Plan)
+            if (_breathBar.AutoPlan is CombatEvents.Wait) return;
+            //等待不消耗气息
+            _breathBar.BreathConsume(breathes);
+            var perform = _breathBar.Perform;
+            switch (perform.Activity)
             {
-                case CombatPlans.Attack:
+                case IPerform.Activities.Attack:
+                    Round.OnAttack(this, perform, Target);
+                    break;
+                case IPerform.Activities.Recover:
+                    Round.OnRecovery(this, perform.Recover, perform.ForceSkill);
+                    break;
+                case IPerform.Activities.Auto: //主动接入不允许自动活动
+                    switch (_breathBar.AutoPlan)
                     {
-                        _breathBar.BreathConsume(breathes);
-                        Round.OnAttack(this, _breathBar, Target);
+                        case CombatEvents.Offend:
+                            Round.OnAttack(this, perform, Target);
+                            break;
+                        case CombatEvents.Recover:
+                            Round.OnRecovery(this, perform.ForceSkill, _breathBar.Perform.ForceSkill);
+                            break;
+                        case CombatEvents.Surrender:
+                            Round.OnEscape(this, perform.DodgeSkill);
+                            break;
+                        case CombatEvents.Wait:
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
-                    return;
-                case CombatPlans.RecoverHp:
-                    {
-                        _breathBar.BreathConsume(breathes);
-                        Recovery(Status.Hp, Force, _breathBar.Force);
-                    }
-                    return;
-                case CombatPlans.Wait:
-                    return;
-                case CombatPlans.Surrender:
-                    {
-                        _breathBar.BreathConsume(breathes);
-                        Round.OnEscape(this, _breathBar.Dodge);
-                    }
-                    return;
-                case CombatPlans.Exert:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            throw new ArgumentOutOfRangeException(nameof(_breathBar.Plan), $"{_breathBar.Plan}");
         }
 
-        #endregion
-        private void MpCharge(int charge)
-        {
-            var rec = ConsumeRecord.Instance();
-            rec.Set(this, () => Status.Mp.Add(charge));
-            Round.RecRecharge(new RechargeRecord(charge, rec));
-        }
-
-        #region Recover
-
-        private void Recovery(IGameCondition con, IForce force, IForce forceForm)
-        {
-            var rec = RecoveryRecord.Instance(force);
-            rec.Set(this, () =>
-            {
-                var formula = RecoverFormula.Instance(forceForm.Recover, force.ForceRate);
-                con.Add(formula.Finalize);
-                Status.Mp.Add(-formula.Mp);
-            });
-            Round.RecForceRecovery(rec);
-        }
-
-        #endregion
-
+        public void SetExert(IExert exert) => _breathBar.SetExert(exert);
         public void SetBusy(int busy) => _breathBar.AddBusy(busy);
-
-        public void ConsumeForm(ICombatForm form)
-        {
-            Status.Mp.Add(-form.CombatMp);
-        }
-        public void ConsumeForm(IDodge dodge)
-        {
-            Status.Mp.Add(-dodge.DodgeMp);
-        }
-        public void ConsumeForm(IParryForm form)
-        {
-            Status.Mp.Add(-form.ParryMp);
-        }
+        public void ConsumeForm(ICombatForm form) => AddMp(-form.CombatMp);
+        public void ConsumeForm(IDodge dodge) => AddMp(-dodge.DodgeMp);
+        public void ConsumeForm(IParryForm form) => AddMp(-form.ParryMp);
+        public void AddMp(int mp) => Status.Mp.Add(mp);
+        public void AddHp(int hp) => Status.Hp.Add(hp);
 
         /// <summary>
         /// 消耗内甲，如果内力不够不消耗
@@ -343,17 +310,16 @@ namespace BattleM
         public bool ArmorDepletion()
         {
             if (Status.Mp.Value < Force.ArmorDepletion) return false;
-            Status.Mp.Add(-Force.ArmorDepletion);
+            AddMp(-Force.ArmorDepletion);
             return true;
         }
-
         public void SufferDamage(int finalDamage, int damageMp, Weapon.Injuries kind)
         {
             var rec = ConsumeRecord.Instance();
             rec.Set(this, () =>
             {
-                Status.Hp.Add(-finalDamage);
-                Status.Mp.Add(-damageMp);
+                AddHp(-finalDamage);
+                AddMp(-damageMp);
                 var injury = Random.Next(finalDamage);
                 switch (kind)
                 {
@@ -370,7 +336,6 @@ namespace BattleM
                 }
             });
         }
-
         public void DeathAction() => IsDeath = true;
 
         private class BasicCombat : ICombatForm
@@ -382,6 +347,9 @@ namespace BattleM
             public int Parry => 1;
             public int ParryMp => 1;
             public int OffBusy => 0;
+            public IRecovery Recover { get; }
+            public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
+            public IPerform.Activities Activity { get; } = IPerform.Activities.Attack;
             public ICombo Combo { get; }
             public int TarBusy => 0;
             public Way.Armed Armed => Way.Armed.Unarmed;
@@ -401,11 +369,12 @@ namespace BattleM
             public int ForceRate => 0;
             public int MpConvert => 10;
             public int Recover => 10;
+            public IBuffInstance[] GetBuffs(ICombatUnit opponent,ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
             public int ArmorDepletion => 0;
             public int Armor => 0;
             public int Breath => 5;
         }
         public int CompareTo(CombatUnit other) => BreathBar.CompareTo(other.BreathBar);
-        public override string ToString() => Name;
+        public override string ToString() =>$"{CombatId}.{Name}[{StandingPoint}]{Status}.力({Strength})敏{Agility}";
     }
 }

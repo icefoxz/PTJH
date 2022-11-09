@@ -46,7 +46,7 @@ namespace BattleM
             if (rec.SwitchTargetRec != null)
             {
                 var sw = rec.SwitchTargetRec;
-                sb.Append($"{sw.CombatUnit.Name}【尝试逃走...】{StatusLog(sw.CombatUnit)}".Sb().Color(Color.Yellow));
+                sb.Append($"{sw.CombatUnit.Name}【转换目标->{sw.Target.Name}】{StatusLog(sw.CombatUnit)}".Sb().Color(Color.Yellow));
             }
 
             switch (rec.Major)
@@ -59,7 +59,7 @@ namespace BattleM
                     AttackRecordLog(rec.AttackRec);
                     break;
                 case CombatRoundRecord.MajorEvents.Recover:
-                    ForceFormConsumeLog(rec.RecoverRec);
+                    RecovertConsumeLog(rec.RecoverRec);
                     break;
                 case CombatRoundRecord.MajorEvents.Escape:
                     EscapeRecordLog(rec.EscapeRec);
@@ -258,16 +258,16 @@ namespace BattleM
             //}
         }
 
-        private static void ForceFormConsumeLog(ConsumeRecord<IForce> force)
+        private static void RecovertConsumeLog(RecoveryRecord rec)
         {
             var sb = new StringBuilder();
-            sb.AppendLine(($"{force.UnitName}调息," + FormLog(force.Form)).Sb().Color(Color.LightPink)
+            sb.AppendLine(($"{rec.UnitName}调息," + FormLog(rec.Form)).Sb().Color(Color.LightPink)
                 .ToString());
-            sb.Append($"{force.Before}->{force.After}".Sb().Color(Color.DeepSkyBlue));
+            sb.Append($"{rec.Before}->{rec.After}".Sb().Color(Color.DeepSkyBlue));
             Debug.Log(sb);
         }
 
-        private static string FormLog<T>(T f) where T : IBreathNode, ISkillName=> $"【{f.Name}(息：{f.Breath})】".Sb().Color(Color.Cornsilk).ToString();
+        private static string FormLog<T>(T f) where T : ISkillName=> $"【{f.Name}】".Sb().Color(Color.Cornsilk).ToString();
 
         private static string ArmedKindLog(Way.Armed armedKind)
         {

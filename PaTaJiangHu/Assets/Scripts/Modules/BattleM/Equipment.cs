@@ -28,7 +28,6 @@ namespace BattleM
     public interface IEquipment : IEquip
     {
         void SetWeapon(IWeapon weapon);
-        void SetFling(IWeapon weapon,int flings);
         void SetArmor(IArmor armor);
         void FlingConsume();
         void RemoveWeapon(IWeapon weapon);
@@ -39,7 +38,7 @@ namespace BattleM
         public IWeapon Weapon { get; private set; }
         public IWeapon Fling { get; private set; }
         public IArmor Armor { get; private set; }
-        public int FlingTimes { get; private set; }
+        public int FlingTimes => Fling?.FlingTimes ?? 0;
 
         public Equipment()
         {
@@ -47,32 +46,27 @@ namespace BattleM
         }
         public Equipment(IEquip e)
         {
-            Weapon = e?.Weapon;
-            Fling = e?.Fling;
-            Armor = e?.Armor;
+            Weapon = e != null ? new Weapon(e.Weapon) : null;
+            Fling = e is { Fling: { } } ? new Weapon(e.Fling) : null;
+            Armor = e != null ? new Armor(e.Armor) : null;
         }
 
         public void SetWeapon(IWeapon weapon) => Weapon = weapon;
-        public void SetFling(IWeapon weapon,int flings)
-        {
-            Fling = weapon;
-            FlingTimes = flings;
-        }
 
         public void SetArmor(IArmor armor) => Armor = armor;
 
         public void FlingConsume()
         {
-            FlingTimes--;
+            Fling.AddFlingTime(-1);
             if (FlingTimes <= 0) RemoveWeapon(Fling);
         }
 
         public void RemoveWeapon(IWeapon weapon)
         {
             if (Weapon == weapon)
-                SetWeapon(null);
+                Weapon = null;
             if (Fling == weapon)
-                SetFling(null, 0);
+                Fling = null;
         }
     }
 
@@ -94,9 +88,9 @@ namespace BattleM
             Id = id;
         }
 
-        public Armor(int id, IArmor a)
+        public Armor(IArmor a)
         {
-            Id = id;
+            Id = a.Id;
             Name = a.Name;
             Def = a.Def;
         }
@@ -110,6 +104,7 @@ namespace BattleM
         Weapon.Injuries Injury { get; }
         int Grade { get; }
         int FlingTimes { get; }
+        void AddFlingTime(int value);
     }
 
     public class Weapon : IWeapon
@@ -126,9 +121,11 @@ namespace BattleM
         public Injuries Injury { get; }
         public int Grade { get; }
         public int FlingTimes { get; set; }
+        public void AddFlingTime(int value) => FlingTimes += value;
 
-        public Weapon(string name, int damage, int grade, Injuries injury, Way.Armed armed, int flingTimes = 1)
+        public Weapon(int id,string name, int damage, int grade, Injuries injury, Way.Armed armed, int flingTimes = 1)
         {
+            Id = id;
             Name = name;
             Damage = damage;
             Grade = grade;
@@ -139,6 +136,7 @@ namespace BattleM
 
         public Weapon(IWeapon w)
         {
+            Id = w.Id;
             Name = w.Name;
             Damage = w.Damage;
             Grade = w.Grade;

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using BattleM;
 using Data;
 using UnityEngine;
@@ -17,6 +18,9 @@ namespace So
         [SerializeField] private int 蓄转内;
         [SerializeField] private int 护甲值;
         [SerializeField] private int 护甲消耗;
+        [SerializeField] private CombatBuffSoBase[] _buffs;
+        public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => _buffs.Where(b => b.Append == append)
+            .Select(b => b.InstanceBuff(unit)).ToArray();
 
         public int Id => id;
         public string Name => _name;

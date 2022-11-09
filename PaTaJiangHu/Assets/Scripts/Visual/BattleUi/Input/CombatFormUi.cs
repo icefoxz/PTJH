@@ -22,6 +22,7 @@ namespace Visual.BattleUi.Input
             _titleText.text = string.Empty;
             _breathText.text = string.Empty;
             Display(false, _panel);
+            Hide();
         }
     }
 }

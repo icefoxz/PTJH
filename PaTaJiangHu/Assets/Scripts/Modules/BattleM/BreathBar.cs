@@ -15,18 +15,6 @@ namespace BattleM
         /// </summary>
         int TotalBreath { get; }
         /// <summary>
-        /// 恢复息
-        /// </summary>
-        int RecoverBreath { get; }
-        /// <summary>
-        /// 战斗息
-        /// </summary>
-        int CombatBreath { get; }
-        /// <summary>
-        /// 蓄与硬抵消
-        /// </summary>
-        int BusyCharged { get; }
-        /// <summary>
         /// 总硬直
         /// </summary>
         int TotalBusies { get; }
@@ -34,14 +22,21 @@ namespace BattleM
         /// 总蓄力
         /// </summary>
         int TotalCharged { get; }
-
-        ICombatForm Combat { get; }
-        IDodge Dodge { get; }
-        IForce Force { get; }
-        IRound Round { get; }
+        /// <summary>
+        /// 行动履行(演示)，自动或介入的战斗执行的统一接口
+        /// </summary>
+        IPerform Perform { get; }
+        /// <summary>
+        /// 总硬直
+        /// </summary>
         IList<int> Busies { get; }
-        CombatPlans Plan { get; }
-        int LastRound { get; }
+        /// <summary>
+        /// 自动策略(包括认输，与等待这类玩家不能主动操作的策略)
+        /// </summary>
+        CombatEvents AutoPlan { get; }
+        /// <summary>
+        /// 是否发生移位
+        /// </summary>
         bool IsReposition { get; }
     }
     /// <summary>
@@ -55,86 +50,101 @@ namespace BattleM
     public class BreathBar : IBreathBar
     {
         private readonly List<int> _busies;
+        public CombatEvents AutoPlan { get; private set; }
 
-        public CombatPlans Plan { get; private set; }
-        public ICombatForm Combat { get; private set; }
-        public IDodge Dodge { get; private set; }
-        public IForce Force { get; private set; }
-        public IRound Round { get; }
+        /// <summary>
+        /// 主要行动的出口
+        /// </summary>
+        public IPerform Perform { get; private set; }
+        public IExert Exert { get; private set; }
+        public CombatUnitSummary Strategy { get; private set; }
+        public CombatUnitManager.Judgment Judge { get; private set; }
         public IList<int> Busies => _busies;
         
         public int TotalBreath
         {
             get
             {
-                return Plan switch
+                return AutoPlan switch
                 {
-                    CombatPlans.Attack => CombatBreath + BusyCharged,
-                    CombatPlans.RecoverHp => RecoverBreath + BusyCharged,
-                    CombatPlans.Wait => IdleBreath,
-                    CombatPlans.Surrender => IdleBreath,
-                    CombatPlans.Exert => throw new ArgumentOutOfRangeException(),
+                    CombatEvents.Offend => CombatBreath + BusyCharged,
+                    CombatEvents.Recover => ForceBreath + BusyCharged,
+                    CombatEvents.Wait => IdleBreath,
+                    CombatEvents.Surrender => IdleBreath,
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
         }
         public int IdleBreath => BusyCharged;
-        public int RecoverBreath => Force?.Breath ?? 0;
+        public int ForceBreath => Perform.ForceSkill?.Breath ?? 0;
+        /// <summary>
+        /// 战斗息(如果移位+身法息)
+        /// </summary>
         public int CombatBreath
         {
             get
             {
-                var combatBreath = Combat?.Breath ?? 0;
-                var dodgeBreath = Dodge?.Breath ?? 0;
+                var combatBreath = Perform.CombatForm?.Breath ?? 0;
+                var dodgeBreath = Perform.DodgeSkill?.Breath ?? 0;
                 return IsReposition ? combatBreath + dodgeBreath : combatBreath;
             }
         }
-
+        /// <summary>
+        /// 硬直与蓄力抵消
+        /// </summary>
         public int BusyCharged => TotalBusies - TotalCharged;
         /// <summary>
         /// 总蓄力
         /// </summary>
         public int TotalCharged { get; private set; }
+        /// <summary>
+        /// 总硬直
+        /// </summary>
         public int TotalBusies => Busies.Sum(b => b);
-        public int LastRound { get; private set; }
+        /// <summary>
+        /// 是否移位
+        /// </summary>
         public bool IsReposition { get; private set; }
 
-        /// <summary>
-        /// 上次蓄力
-        /// </summary>
-        public int LastCharged { get; private set; }
-
-        public BreathBar(IRound round)
-        {
-            Round = round;
-            _busies = new List<int>();
-        }
+        public BreathBar() => _busies = new List<int>();
 
         public void AddBusy(int busy)
         {
             if (busy > 0) _busies.Add(busy);
         }
 
-        public void Charge(int charge)
+        public void Charge(int charge) => TotalCharged += charge;
+
+        public void SetAutoPlan(CombatUnitManager.Judgment judge,CombatUnitSummary strategy)
         {
-            LastCharged = charge;
-            TotalCharged += charge;
-        }
-        public void SetPlan(CombatManager.Judgment judge,CombatUnitSummary strategy)
-        {
-            Plan = strategy.GetPlan(judge);
-            Combat = strategy.CombatForm;
-            Dodge = strategy.Dodge;
-            Force = strategy.Force;
+            Judge = judge;
+            Strategy = strategy;
             IsReposition = strategy.IsReposition;
+            SetAutoStrategy();
+        }
+        /// <summary>
+        /// 玩家介入技能策略
+        /// </summary>
+        public void SetExert(IExert exert)
+        {
+            Exert = exert;
+            Perform = exert.GetPerform(this);
+        }
+
+        /// <summary>
+        /// 自动策略，一般用于玩家介入取消运功的重置策略
+        /// </summary>
+        public void SetAutoStrategy()
+        {
+            AutoPlan = Strategy.GetPlan(Judge);
+            Perform = Strategy.GetAutoPerform();
         }
 
         public void ClearPlan()
         {
-            Plan = CombatPlans.Wait;
-            Combat = null;
-            Dodge = null;
-            Force = null;
+            AutoPlan = CombatEvents.Wait;
+            Perform = null;
+            Strategy = default;
         }
 
         /// <summary>
@@ -143,7 +153,6 @@ namespace BattleM
         /// <param name="breathes"></param>
         public void BreathConsume(int breathes)
         {
-            LastRound = Round.RoundIndex;
             Charge(breathes);
             if (_busies.Any()) //先去掉硬直
             {
@@ -156,21 +165,32 @@ namespace BattleM
                     Charge(-value);
                 }
             }
-
             var consume = 0;
-            switch (Plan)
+            switch (Perform.Activity)
             {
-                case CombatPlans.Attack:
-                    //执行攻击之类
+                case IPerform.Activities.Attack:
                     consume = CombatBreath;
                     break;
-                case CombatPlans.RecoverHp:
-                    consume = RecoverBreath;
+                case IPerform.Activities.Recover:
+                    consume = ForceBreath;
                     break;
-                case CombatPlans.Wait:
-                case CombatPlans.Surrender:
+                case IPerform.Activities.Auto:
+                    switch (AutoPlan)
+                    {
+                        case CombatEvents.Offend:
+                            //执行攻击之类
+                            consume = CombatBreath;
+                            break;
+                        case CombatEvents.Recover:
+                            consume = ForceBreath;
+                            break;
+                        case CombatEvents.Wait:
+                        case CombatEvents.Surrender:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                     break;
-                case CombatPlans.Exert:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -181,6 +201,9 @@ namespace BattleM
         public int CompareTo(IBreathBar other) => TotalBreath.CompareTo(other.TotalBreath);
 
         public override string ToString() =>
-            $"气息条({TotalBreath})【硬：{TotalBusies}|蓄{TotalCharged}|{Combat?.Name}({Combat?.Breath})|{Dodge?.Name}({Dodge?.Breath})|{Force?.Name}({Force?.Breath})】";
+            $"气息条({TotalBreath})【硬：{TotalBusies}|蓄{TotalCharged}|" +
+            $"{Perform.CombatForm?.Name}({Perform.CombatForm?.Breath})|" +
+            $"{Perform.DodgeSkill?.Name}({Perform.DodgeSkill?.Breath})|" +
+            $"{Perform.ForceSkill?.Name}({Perform.ForceSkill?.Breath})】";
     }
 }
