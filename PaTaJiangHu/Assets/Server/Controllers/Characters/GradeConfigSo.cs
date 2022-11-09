@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Utls;
+using Random = UnityEngine.Random;
 
 namespace Server.Controllers.Characters
 {
@@ -11,6 +12,7 @@ namespace Server.Controllers.Characters
     {
         public enum Grades
         {
+            E,
             D,
             C,
             B,
@@ -71,40 +73,38 @@ namespace Server.Controllers.Characters
                     _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
                 };
             }
-
+            private readonly PentagonGradeSo.Elements[] ElementArray = new PentagonGradeSo.Elements[]
+            {
+                PentagonGradeSo.Elements.Strength,
+                PentagonGradeSo.Elements.Agility,
+                PentagonGradeSo.Elements.Hp,
+                PentagonGradeSo.Elements.Mp,
+            };
             public (int strength, int agility, int hp, int mp) GeneratePentagon()
             {
-                return (Pentagon.Generate(PentagonGradeSo.Elements.Strength),
-                    Pentagon.Generate(PentagonGradeSo.Elements.Agility),
-                    Pentagon.Generate(PentagonGradeSo.Elements.Hp),
-                    Pentagon.Generate(PentagonGradeSo.Elements.Mp));
+                var ran = Pentagon.Generate(ElementArray.OrderByDescending(_ => Random.Range(0, 10)))
+                    .ToDictionary(r => r.Item1, r => r.Item2);
+
+                return (ran[PentagonGradeSo.Elements.Strength],
+                        ran[PentagonGradeSo.Elements.Agility],
+                        ran[PentagonGradeSo.Elements.Hp],
+                        ran[PentagonGradeSo.Elements.Mp]
+                    );
             }
         }
 
         [Serializable]
         private class PentagonConfig
         {
-            [SerializeField] private PentagonGradeSo 力;
-            [SerializeField] private PentagonGradeSo 敏;
-            [SerializeField] private PentagonGradeSo 血;
-            [SerializeField] private PentagonGradeSo 内;
+            [SerializeField] private PentagonGradeSo 随1;
+            [SerializeField] private PentagonGradeSo 随2;
+            [SerializeField] private PentagonGradeSo 随3;
+            [SerializeField] private PentagonGradeSo 随4;
 
-            private PentagonGradeSo Strength => 力;
-            private PentagonGradeSo Agility => 敏;
-            private PentagonGradeSo Hp => 血;
-            private PentagonGradeSo Mp => 内;
+            private PentagonGradeSo[] Ran => new []{ 随1, 随2, 随3, 随4 };
 
-            public int Generate(PentagonGradeSo.Elements element)
-            {
-                return element switch
-                {
-                    PentagonGradeSo.Elements.Strength => Strength.GenerateProp(element),
-                    PentagonGradeSo.Elements.Agility => Agility.GenerateProp(element),
-                    PentagonGradeSo.Elements.Hp => Hp.GenerateProp(element),
-                    PentagonGradeSo.Elements.Mp => Mp.GenerateProp(element),
-                    _ => throw new ArgumentOutOfRangeException(nameof(element), element, null)
-                };
-            }
+            public (PentagonGradeSo.Elements, int)[] Generate(IEnumerable<PentagonGradeSo.Elements> array) =>
+                array.Select((e, i) => (e, Ran[i].GenerateProp(e))).ToArray();
         }
     }
 }
