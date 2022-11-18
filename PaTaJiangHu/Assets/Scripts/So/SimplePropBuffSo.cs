@@ -11,6 +11,15 @@ namespace So
     [Serializable]
     public class SimplePropBuffSo : CombatBuffSoBase
     {
+        #region ReferenceSo
+        private bool ReferenceSo()
+        {
+            _so = this;
+            return true;
+        }
+        [ConditionalField(true, nameof(ReferenceSo))][ReadOnly][SerializeField] private ScriptableObject _so;
+        #endregion
+
         public enum Attributes
         {
             [InspectorName("力量")]Strength,

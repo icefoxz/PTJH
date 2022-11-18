@@ -20,6 +20,11 @@ namespace HotFix_Project.Views.Bases
             Display(display);
         }
         public void Display(bool display) => gameObject.SetActive(display);
+        public void Destroy()
+        {
+            Display(false);
+            Object.Destroy(gameObject);
+        }
     }
 
     internal class ListViewUi<T> : UiBase

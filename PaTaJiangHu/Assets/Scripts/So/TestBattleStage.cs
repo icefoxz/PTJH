@@ -38,24 +38,24 @@ namespace So
             [SerializeField] private int 血;
             [SerializeField] private int 内;
             [SerializeField] private ForceFieldSo 内功;
-            [SerializeField] private MartialFieldSo 武功;
+            [SerializeField] private CombatFieldSo 武功;
             [SerializeField] private DodgeFieldSo 轻功;
             [SerializeField] private Equipment 装备;
-            private IEquipment equipment1;
+            private IEquipment equipCache;
             public string Name => _name;
             public int Strength => 力量;
             public int Agility => 敏捷;
             public int Hp => 血;
             public int Mp => 内;
-            public IForce Force => 内功;
-            public IEquipment Equipment => equipment1 ??= new BattleM.Equipment(装备);
-            public IDodge Dodge => 轻功;
-            public IMartial Martial => 武功;
+            public IForceSkill Force => 内功;
+            public IEquipment Equipment => equipCache ??= new BattleM.Equipment(装备);
+            public IDodgeSkill Dodge => 轻功;
+            private CombatFieldSo CombatSkill => 武功;
 
             public CombatUnit InstanceCombatUnit()
             {
                 var status = CombatStatus.Instance(Hp, Mp);
-                return CombatUnit.Instance(Name, Strength, Agility, status, Force, Martial, Dodge, Equipment);
+                return CombatUnit.Instance(Name, Strength, Agility, status, Force, CombatSkill.GetMaxLevel(), Dodge, Equipment);
             }
         }
         [Serializable] private class Equipment : IEquip

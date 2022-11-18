@@ -21,25 +21,20 @@ public class DiziTestManager
     private DiziGenWindow GenWindow { get; set; }
     private StaminaCountWindow StaCountWindow { get; set; }
     private MedicineTestWindow MedicineTest { get; set; }
+    private IDiziController Controller { get; set; }
     public void Init()
     {
+        Controller = TestCaller.Instance.InstanceDiziController();
         InitUi();
         EventReg();
     }
 
     private void InitUi()
     {
-        Game.UiBuilder.Build("view_diziGenerate", (go, v) =>
+        Game.UiBuilder.Build("view_diziGenerate", v =>
         {
-            GenWindow = new DiziGenWindow(gameObject: go,
-                textName: v.GetObject<Text>("text_name"),
-                btnGenerate: v.GetObject<Button>("btn_generate"),
-                btnRecruit: v.GetObject<Button>("btn_recruit"),
-                transContent: v.GetObject<Transform>("trans_content"),
-                prefabAttribute: v.GetObject<View>("prefab_attribute"),
-                gradeViewContent: v.GetObject<Transform>("trans_gradeContent"),
-                gradePrefab: v.GetObject<View>("prefab_grade"));
-            GenWindow.SetButtons(TestCaller.Instance.OnGenerateDizi, () => GenWindow.Display(false));
+            GenWindow = new DiziGenWindow(v, level => Controller.OnDiziLevel(level));
+            GenWindow.SetButtons(Controller.OnGenerateDizi, () => GenWindow.Display(false));
         });
         Game.UiBuilder.Build("view_diziStamina", (go, v) =>
         {
@@ -58,11 +53,11 @@ public class DiziTestManager
                     var st = StaminaTimer.Instance;
                     StaCountWindow.Update(
                         st.CurrentStamina,
-                        st.Countdown, 
-                        st.MinPerStamina, 
+                        st.Countdown,
+                        st.MinPerStamina,
                         SysTime.LocalFromUnixTicks(st.LastTicks));
                 };
-            StaCountWindow.SetButton(() => TestCaller.Instance.OnSetStamina(
+            StaCountWindow.SetButton(() => Controller.OnSetStamina(
                 StaCountWindow.InputStamina,
                 StaCountWindow.InputMinutes));
         });
@@ -77,7 +72,7 @@ public class DiziTestManager
 
     private void EventReg()
     {
-        Game.MessagingManager.RegEvent(EventString.Test_DiziGenerate, arg=> GenWindow.SetDizi(JsonMapper.ToObject<Dizi>(arg)));
+        Game.MessagingManager.RegEvent(EventString.Test_DiziGenerate, arg => GenWindow.SetDizi(JsonMapper.ToObject<Dizi>(arg)));
         Game.MessagingManager.RegEvent(EventString.Test_DiziRecruit, _ => GenWindow.Display(true));
         Game.MessagingManager.RegEvent(EventString.Test_StaminaWindow, _ => StaCountWindow.Display(true));
         Game.MessagingManager.RegEvent(EventString.Test_MedicineWindow, arg => MedicineTest.UpdateMedicines(arg));
@@ -92,6 +87,8 @@ public class DiziTestManager
             arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, JsonMapper.ToObject<ConValue>(arg)));
         Game.MessagingManager.RegEvent(EventString.Test_UpdateMp,
             arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, JsonMapper.ToObject<ConValue>(arg)));
+        Game.MessagingManager.RegEvent(EventString.Test_DiziLeveling,
+            arg => GenWindow.SetDiziGrow(JsonMapper.ToObject<Dizi>(arg)));
     }
 
     private class TestStatus
@@ -100,7 +97,7 @@ public class DiziTestManager
         public ConValue Mp { get; set; }
         public bool IsExhausted { get; set; }
     }
-    private class MedicineUi 
+    private class MedicineUi
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -121,31 +118,49 @@ public class DiziTestManager
         private Button Btn_recruit { get; }
         private Transform Trans_content { get; }
         private View Prefab_attribute { get; }
+
         private ListViewUi<PropUi> PropList { get; }
         private ListViewUi<GradeUi> GradeList { get; }
+        private LevelingUi Leveling { get; }
 
         private int SelectedGrade { get; set; }
+        private int Level { get; set; } = 1;
 
-        public DiziGenWindow(GameObject gameObject, Text textName, Button btnGenerate, Button btnRecruit,
-            Transform transContent, View prefabAttribute,Transform gradeViewContent,View gradePrefab) 
-            : base(gameObject, false)
+        public DiziGenWindow(IView v,Action<int> leveling) : base(v.GameObject, false)
         {
-            Text_name = textName;
-            Btn_generate = btnGenerate;
-            Btn_recruit = btnRecruit;
-            Trans_content = transContent;
-            Prefab_attribute = prefabAttribute;
+            Text_name = v.GetObject<Text>("text_name");
+            Btn_generate = v.GetObject<Button>("btn_generate");
+            Btn_recruit = v.GetObject<Button>("btn_recruit");
+            Trans_content = v.GetObject<Transform>("trans_content");
+            Prefab_attribute = v.GetObject<View>("prefab_attribute");
+            var gradeViewContent = v.GetObject<Transform>("trans_gradeContent");
+            var gradePrefab = v.GetObject<View>("prefab_grade");
             PropList = new ListViewUi<PropUi>(Prefab_attribute, Trans_content.gameObject);
             GradeList = new ListViewUi<GradeUi>(gradePrefab, gradeViewContent.gameObject);
+            Leveling = new LevelingUi(v.GetObject<View>("view_leveling"), 
+                () => leveling(LevelUp()),
+                () => leveling(LevelDown()));
             var gradeMap = Enum.GetValues(typeof(Grade)).Cast<int>()
                 .Select(g => (((Grade)g).ToString(), new Action(() => SelectGrade(g)))).ToArray();
             SetGrades(gradeMap);
         }
 
-        private void SelectGrade(int grade)
+        private int LevelDown()
         {
-            SelectedGrade = grade;
+            Level--;
+            if (Level <= 1)
+                Level = 1;
+            Leveling.SetLevelUi(Level);
+            return Level;
         }
+
+        private int LevelUp()
+        {
+            Leveling.SetLevelUi(++Level);
+            return Level;
+        }
+
+        private void SelectGrade(int grade) => SelectedGrade = grade;
 
         private void SetGrades((string grade, Action onSelectedAction)[] gradeTuples)
         {
@@ -153,11 +168,10 @@ public class DiziTestManager
                 InstanceGradeUi(grade, onSelectedAction);
         }
 
-        private void InstanceGradeUi(string grade, Action onSelectedAction)
-        {
+        private void InstanceGradeUi(string grade, Action onSelectedAction) =>
             GradeList.Instance(v =>
             {
-                var gradeUi = new GradeUi(v.gameObject, v.GetObject<Text>("text_value") , ui =>
+                var gradeUi = new GradeUi(v.gameObject, v.GetObject<Text>("text_value"), ui =>
                 {
                     onSelectedAction.Invoke();
                     RefreshSelected(ui);
@@ -165,11 +179,10 @@ public class DiziTestManager
                 gradeUi.SetValue(grade);
                 return gradeUi;
             });
-        }
 
         private void RefreshSelected(GradeUi btn)
         {
-            foreach (var ui in GradeList.List) 
+            foreach (var ui in GradeList.List)
                 ui.SetSelected(btn == ui);
         }
 
@@ -178,46 +191,75 @@ public class DiziTestManager
             Btn_generate.OnClickAdd(() => onGenerateAction(SelectedGrade));
             Btn_recruit.OnClickAdd(onRecruitAction);
         }
+
+        public void SetDiziGrow(Dizi dizi)
+        {
+            GraUi.SetGrow(dizi.Capable.Grade);
+            LevelUi.SetGrow(dizi.Level);
+            HpUi.SetGrow(dizi.Hp);
+            MpUi.SetGrow(dizi.Mp);
+            StrUi.SetGrow(dizi.Strength);
+            AgiUi.SetGrow(dizi.Agility);
+            StaUi.SetGrow(dizi.Stamina);
+        }
+
         public void SetDizi(Dizi dizi)
         {
             Text_name.text = dizi.Name;
-            PropList.ClearList(ui=>ui.Destroy());
-            InstanceAttribTag().Set("血", dizi.Hp);
-            InstanceAttribTag().Set("内", dizi.Mp);
-            InstanceAttribTag().Set("敏捷", dizi.Agility);
-            InstanceAttribTag().Set("力量", dizi.Strength);
-            InstanceAttribTag().Set("等级", dizi.Level);
-            InstanceAttribTag().Set("执行力", dizi.Stamina);
-            InstanceAttribTag().Set("品阶", dizi.Capable.Grade);
+            PropList.ClearList(ui => ui.Destroy());
+            GraUi = InstanceAttribTag();
+            LevelUi = InstanceAttribTag();
+            HpUi = InstanceAttribTag();
+            MpUi = InstanceAttribTag();
+            StrUi = InstanceAttribTag();
+            AgiUi = InstanceAttribTag();
+            StaUi = InstanceAttribTag();
+            GraUi.Set("品阶", dizi.Capable.Grade);
+            LevelUi.Set("等级", dizi.Level);
+            HpUi.Set("血", dizi.Hp);
+            MpUi.Set("内", dizi.Mp);
+            StrUi.Set("力量", dizi.Strength);
+            AgiUi.Set("敏捷", dizi.Agility);
+            StaUi.Set("体力", dizi.Stamina);
         }
 
-        private PropUi InstanceAttribTag()
-        {
-            return PropList.Instance(v =>
-            {
-                var obj = new PropUi(v.gameObject,
-                    v.GetObject<Text>("text_title"),
-                    v.GetObject<Text>("text_value")
-                );
-                return obj;
-            });
-        }
+        private PropUi StaUi { get; set; }
+        private PropUi AgiUi { get; set; }
+        private PropUi StrUi { get; set; }
+        private PropUi MpUi { get; set; }
+        private PropUi HpUi { get; set; }
+        private PropUi LevelUi { get; set; }
+        private PropUi GraUi { get; set; }
+
+        private PropUi InstanceAttribTag() => PropList.Instance(v => new PropUi(v));
 
         private class PropUi : UiBase
         {
             private Text Text_title { get; }
             private Text Text_value { get; }
+            private Text Text_pointer { get; }
+            private Text Text_grow { get; }
 
-            public PropUi(GameObject gameObject, Text textTitle, Text textValue) : base(gameObject, true)
+            public PropUi(IView v) : base(v.GameObject, true)
             {
-                Text_title = textTitle;
-                Text_value = textValue;
+                Text_title = v.GetObject<Text>("text_title");
+                Text_value = v.GetObject<Text>("text_value");
+                Text_pointer = v.GetObject<Text>("text_pointer");
+                Text_grow = v.GetObject<Text>("text_grow");
             }
 
-            public void Set(string title, object value)
+            public void Set(string title, object value, bool reset = true)
             {
                 Text_title.text = title;
                 Text_value.text = value.ToString();
+                if (reset) SetGrow(null);
+            }
+            public void SetGrow(object value)
+            {
+                var text = value?.ToString();
+                Text_pointer.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
+                Text_grow.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
+                Text_grow.text = text;
             }
 
             public void Destroy()
@@ -241,6 +283,28 @@ public class DiziTestManager
 
             public void SetSelected(bool selected) => outline.enabled = selected;
             public void SetValue(string value) => Text_value.text = value;
+        }
+
+        private class LevelingUi : UiBase
+        {
+            private Button Btn_AddLevel { get; }
+            private Button Btn_SubLevel { get; }
+            private Text Text_Level { get; }
+
+            public LevelingUi(IView v, Action upLevelAction, Action downLevelAction) : base(v.GameObject, true)
+            {
+                Btn_AddLevel = v.GetObject<Button>("btn_addLevel");
+                Btn_AddLevel.OnClickAdd(upLevelAction);
+                Btn_SubLevel = v.GetObject<Button>("btn_subLevel");
+                Btn_SubLevel.OnClickAdd(downLevelAction);
+                Text_Level = v.GetObject<Text>("text_level");
+            }
+
+            public void SetLevelUi(int level)
+            {
+                Text_Level.text = level.ToString();
+                Debug.Log($"Level Set = {level}");
+            }
         }
     }
     private class StaminaCountWindow : UiBase
@@ -269,7 +333,7 @@ public class DiziTestManager
 
         public void SetButton(Action onclickAction) => Btn_set.OnClickAdd(onclickAction);
 
-        public void Update(int currentStamina,TimeSpan countdown, TimeSpan minConfig, DateTime lastTick)
+        public void Update(int currentStamina, TimeSpan countdown, TimeSpan minConfig, DateTime lastTick)
         {
             Text_timeUpdate.text = countdown.ToString("g");
             Text_config.text = $"{minConfig.Hours}(小时){minConfig.Minutes}(分钟){minConfig.Seconds}(秒)";
@@ -285,7 +349,7 @@ public class DiziTestManager
         private View Prefab_item { get; }
         private Button BtnUse { get; }
 
-        public MedicineTestWindow(View v,Action<int> onUseMedicineAction) : base(v.gameObject, false)
+        public MedicineTestWindow(View v, Action<int> onUseMedicineAction) : base(v.gameObject, false)
         {
             Trans_con = v.GetObject<Transform>("trans_con");
             Prefab_con = v.GetObject<View>("prefab_con");
@@ -317,11 +381,11 @@ public class DiziTestManager
                 Text_value = prefab.GetObject<Text>("text_value");
             }
 
-            public void Set(Action<int> setValueAction,Action<int> setMaxAction,Action<int> setFixAction)
+            public void Set(Action<int> setValueAction, Action<int> setMaxAction, Action<int> setFixAction)
             {
-                Btn_setFix.OnClickAdd(()=>setFixAction?.Invoke(GetInputValue()));
-                Btn_setMax.OnClickAdd(()=>setMaxAction?.Invoke(GetInputValue()));
-                Btn_setValue.OnClickAdd(()=>setValueAction?.Invoke(GetInputValue()));
+                Btn_setFix.OnClickAdd(() => setFixAction?.Invoke(GetInputValue()));
+                Btn_setMax.OnClickAdd(() => setMaxAction?.Invoke(GetInputValue()));
+                Btn_setValue.OnClickAdd(() => setValueAction?.Invoke(GetInputValue()));
             }
 
             private int GetInputValue() => int.TryParse(Input.text, out var value) ? value : default;
@@ -338,7 +402,7 @@ public class DiziTestManager
             Mp,
         }
         private ListViewUi<ConditionSetter> ConListView { get; }
-        private Dictionary<Cons,ConditionSetter> ConMap { get; } = new Dictionary<Cons,ConditionSetter>();
+        private Dictionary<Cons, ConditionSetter> ConMap { get; } = new Dictionary<Cons, ConditionSetter>();
         private ConValue Hp { get; set; }
         private ConValue Mp { get; set; }
         private void InitConListView()
@@ -350,9 +414,9 @@ public class DiziTestManager
                 ConMap.Add(con, setter);
             }
         }
-        public void Set(Cons con, 
-            Action<int> setValueAction, 
-            Action<int> setMaxAction, 
+        public void Set(Cons con,
+            Action<int> setValueAction,
+            Action<int> setMaxAction,
             Action<int> setFixAction) =>
             ConMap[con].Set(i =>
             {
@@ -437,7 +501,7 @@ public class DiziTestManager
                 Display(true);
             }
 
-            public void SetSelected(bool selected)=> Img_selected.gameObject.SetActive(selected);
+            public void SetSelected(bool selected) => Img_selected.gameObject.SetActive(selected);
             public void Destroy() => Object.Destroy(gameObject);
         }
     }

@@ -8,6 +8,7 @@ namespace BattleM
     /// </summary>
     public interface IExert
     {
+        string Name { get; }
         IPerform.Activities Activity { get; }
         IPerform GetPerform(IBreathBar bar);
     }
@@ -35,8 +36,8 @@ namespace BattleM
             //Function
         }
 
-        IForce ForceSkill { get; }
-        IDodge DodgeSkill { get;  }
+        IForceSkill ForceSkill { get; }
+        IDodgeSkill DodgeSkill { get;  }
         /// <summary>
         /// 主动活动类型
         /// </summary>
@@ -148,10 +149,11 @@ namespace BattleM
         /// <returns></returns>
         IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append);
     }
+
     /// <summary>
     /// 内功心法(战斗)
     /// </summary>
-    public interface IForce : IRecovery,IBreathNode
+    public interface IForceSkill : IRecovery, IBreathNode
     {
         /// <summary>
         /// 内功转化率
@@ -160,11 +162,11 @@ namespace BattleM
         /// <summary>
         /// 蓄转内
         /// </summary>
-        int MpConvert { get; }
+        int MpCharge { get; }
         /// <summary>
         /// 护甲消耗
         /// </summary>
-        int ArmorDepletion { get; }
+        int ArmorCost { get; }
         /// <summary>
         /// 内力值使用在护甲上
         /// </summary>
@@ -174,7 +176,7 @@ namespace BattleM
     /// <summary>
     /// 武功(战斗)
     /// </summary>
-    public interface IMartial : ISkill
+    public interface ICombatSkill : ISkill
     {
         Way.Armed Armed { get; }
         IList<ICombatForm> Combats { get; }
@@ -184,13 +186,19 @@ namespace BattleM
     /// <summary>
     /// 轻功(战斗)
     /// </summary>
-    public interface IDodge : ISkill, IDepletionForm, IBreathNode
+    public interface IDodgeSkill : ISkill, IDepletionForm, IBreathNode
     {
         /// <summary>
         /// 身法值
         /// </summary>
         int Dodge { get; }
         int DodgeMp { get; }
-        //IList<IDodgeForm> Forms { get; }
+        /// <summary>
+        /// 获取Buff
+        /// </summary>
+        /// <param name="unit"></param>
+        /// <param name="append"></param>
+        /// <returns></returns>
+        IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append);
     }
 }

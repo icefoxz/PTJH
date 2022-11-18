@@ -14,11 +14,11 @@ namespace Visual.BattleUi.Input
         [SerializeField] private Button recHpButton;
         [SerializeField] private Button recTpButton;
 
-        private event UnityAction<IForce> OnExertAction;
+        private event UnityAction<IForceSkill> OnExertAction;
         private event UnityAction<ICombatForm> OnAttackAction;
 
         public void Init(UnityAction<ICombatForm> onAttackAction,
-            UnityAction<IForce> onExertAction,
+            UnityAction<IForceSkill> onExertAction,
             UnityAction onRecHpAction, UnityAction onRecTpAction)
         {
             combatFormView.Init();
@@ -55,7 +55,7 @@ namespace Visual.BattleUi.Input
             Show();
         }
 
-        public void SetForce(ICombatUnit unit, UnityAction<IForce> onPointerDown)
+        public void SetForce(ICombatUnit unit, UnityAction<IForceSkill> onPointerDown)
         {
             var form = unit.Force;
             forceFormView.AddOption(ui =>

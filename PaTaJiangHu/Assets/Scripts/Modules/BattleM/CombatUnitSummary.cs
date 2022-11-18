@@ -15,12 +15,12 @@ namespace BattleM
         public bool IsCombatRange { get; }
         public bool IsDodgeAvailable { get; }
         public bool IsReposition { get; }
-        public IForce Force { get; }
-        public IDodge Dodge { get; }
+        public IForceSkill Force { get; }
+        public IDodgeSkill Dodge { get; }
         public ICombatForm CombatForm { get; }
 
-        public CombatUnitSummary(CombatUnit unit, ICombatInfo target, ICombatForm combatForm, IDodge dodge,
-            IForce force, bool isCombatAvailable, bool isDodgeAvailable)
+        public CombatUnitSummary(CombatUnit unit, ICombatInfo target, ICombatForm combatForm, IDodgeSkill dodge,
+            IForceSkill force, bool isCombatAvailable, bool isDodgeAvailable)
         {
             var status = unit.Status;
             Force = force;
@@ -70,10 +70,10 @@ namespace BattleM
             return CombatEvents.Wait;
         }
 
-        private record AutoPerform(IForce ForceSkill, IDodge DodgeSkill, ICombatForm CombatForm, IRecovery Recover, bool IsReposition) : IPerform
+        private record AutoPerform(IForceSkill ForceSkill, IDodgeSkill DodgeSkill, ICombatForm CombatForm, IRecovery Recover, bool IsReposition) : IPerform
         {
-            public IForce ForceSkill { get; } = ForceSkill;
-            public IDodge DodgeSkill { get; } = DodgeSkill;
+            public IForceSkill ForceSkill { get; } = ForceSkill;
+            public IDodgeSkill DodgeSkill { get; } = DodgeSkill;
             public IPerform.Activities Activity { get; } = IPerform.Activities.Auto;
             public ICombatForm CombatForm { get; } = CombatForm;
             public IRecovery Recover { get; } = Recover;

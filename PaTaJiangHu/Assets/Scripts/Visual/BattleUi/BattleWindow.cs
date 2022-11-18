@@ -92,7 +92,7 @@ namespace Visual.BattleUi
             //ManualRound();
         }
 
-        private void PlayerExertPlan(IForce force)
+        private void PlayerExertPlan(IForceSkill force)
         {
             //Player.ExertPlan(force);
             //CurrentBreathUpdate();
@@ -211,7 +211,7 @@ namespace Visual.BattleUi
             //_breathView.SetIdle();
             //UpdateDrum(1, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
         }
-        private void PresetForce(IForce force)
+        private void PresetForce(IForceSkill force)
         {
             //_breathView.SetForce(form);
             //UpdateDrum(form.Breath, Stage.GetCombatUnits().Select(c => c.BreathBar.TotalBreath).Sum());
@@ -326,7 +326,7 @@ namespace Visual.BattleUi
             UpdateStatusUi(combatId, status.Hp, status.Mp);
         }
 
-        public void OnDodgeAnim(ConsumeRecord<IDodge> rec)
+        public void OnDodgeAnim(ConsumeRecord<IDodgeSkill> rec)
         {
             var combatId = rec.CombatId;
             var status = rec.After;
@@ -450,7 +450,7 @@ namespace Visual.BattleUi
         /// <summary>
         /// 闪避触发
         /// </summary>
-        void OnDodgeAnim(ConsumeRecord<IDodge> rec);
+        void OnDodgeAnim(ConsumeRecord<IDodgeSkill> rec);
         /// <summary>
         /// 招架触发
         /// </summary>

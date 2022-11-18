@@ -16,7 +16,7 @@ namespace BattleM
         ParryFormula ParryFormula { get; }
         ConsumeRecord<ICombatForm> AttackConsume { get; set; }
         ConsumeRecord<IParryForm> ParryConsume { get; set; }
-        ConsumeRecord<IDodge> DodgeConsume { get; set; }
+        ConsumeRecord<IDodgeSkill> DodgeConsume { get; set; }
     }
     //public interface IDodgeRecord
     //{
@@ -173,10 +173,10 @@ namespace BattleM
 
     public record RecoveryRecord : ConsumeRecord<IRecovery>
     {
-        public static RecoveryRecord Instance(IRecovery recover,IForce force, RecoverFormula formula) => new(recover,force ,formula);
-        public IForce Force { get; }
+        public static RecoveryRecord Instance(IRecovery recover,IForceSkill force, RecoverFormula formula) => new(recover,force ,formula);
+        public IForceSkill Force { get; }
         public RecoverFormula RecoverFormula { get; }
-        public RecoveryRecord(IRecovery recover, IForce force, RecoverFormula recoverFormula):base(recover)
+        public RecoveryRecord(IRecovery recover, IForceSkill force, RecoverFormula recoverFormula):base(recover)
         {
             RecoverFormula = recoverFormula;
             Force = force;
@@ -470,7 +470,7 @@ namespace BattleM
         //进攻消耗
         public ConsumeRecord<ICombatForm> AttackConsume { get; set; }
         //闪避消耗(状态更新1)
-        public ConsumeRecord<IDodge> DodgeConsume { get; set; }
+        public ConsumeRecord<IDodgeSkill> DodgeConsume { get; set; }
         //招架消耗(状态更新2)
         public ConsumeRecord<IParryForm> ParryConsume { get; set; }
         //承受(状态更新3)
@@ -486,7 +486,7 @@ namespace BattleM
         public AttackRecord(ICombatUnit unit, ICombatUnit target,
             PositionRecord attackPlacing,
             ConsumeRecord<ICombatForm> attackConsume,
-            ConsumeRecord<IDodge> dodgeConsume,
+            ConsumeRecord<IDodgeSkill> dodgeConsume,
             ConsumeRecord<IParryForm> parryConsume,
             ConsumeRecord suffer,
             DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula)
@@ -514,7 +514,7 @@ namespace BattleM
         public UnitRecord Escapee { get; }
         public UnitRecord Attacker { get; }
         public ConsumeRecord<ICombatForm> AttackConsume { get; }
-        public ConsumeRecord<IDodge> EscapeConsume { get; }
+        public ConsumeRecord<IDodgeSkill> EscapeConsume { get; }
         public ConsumeRecord<IParryForm> ParryConsume { get; }
         public ConsumeRecord Suffer { get; }
         public DamageFormula DamageFormula { get; }
@@ -523,7 +523,7 @@ namespace BattleM
         public bool IsSuccess { get; }
         public EscapeRecord(ICombatUnit escapee, ICombatUnit attacker, 
             ConsumeRecord<ICombatForm> attackConsume, 
-            ConsumeRecord<IDodge> escapeConsume, 
+            ConsumeRecord<IDodgeSkill> escapeConsume, 
             ConsumeRecord<IParryForm> parryConsume, 
             ConsumeRecord suffer, 
             DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula,

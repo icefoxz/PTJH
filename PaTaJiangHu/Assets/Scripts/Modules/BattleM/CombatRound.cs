@@ -9,7 +9,7 @@ namespace BattleM
     {
         public int RoundIndex { get; }
         int MinEscapeRounds { get; }
-        void OnEscape(CombatUnit escapee, IDodge dodge);
+        void OnEscape(CombatUnit escapee, IDodgeSkill dodge);
         void OnAttack(CombatUnit offender, IPerform perform, ICombatInfo target);
         IList<CombatUnit> CombatPlan(IEnumerable<int> skipPlanIds);
         /// <summary>
@@ -20,7 +20,7 @@ namespace BattleM
         CombatRoundRecord NextRound(bool autoPlan);
         void OnTargetSwitch(CombatUnit combatUnit, ICombatInfo target);
         void RecRecharge(CombatUnit unit, int charge);
-        void OnRecovery(CombatUnit unit, IRecovery skill, IForce force);
+        void OnRecovery(CombatUnit unit, IRecovery skill, IForceSkill force);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ namespace BattleM
             return new PositionRecord(newPos, obj, Mgr.TryGetAliveCombatUnit(target));
         }
 
-        public void OnEscape(CombatUnit escapee, IDodge dodge)
+        public void OnEscape(CombatUnit escapee, IDodgeSkill dodge)
         {
             escapee.SetBusy(1); //尝试逃走+1硬直
             var op = Mgr.GetHasThrowTargetedUnit(escapee);
@@ -133,7 +133,7 @@ namespace BattleM
                 attConsume.Set(op, () => op.ConsumeForm(combat));
 
                 var tarParryConsume = ConsumeRecord<IParryForm>.Instance(parry);
-                var tarDodgeConsume = ConsumeRecord<IDodge>.Instance(dodge);
+                var tarDodgeConsume = ConsumeRecord<IDodgeSkill>.Instance(dodge);
                 tarDodgeConsume.Set(escapee, () => escapee.ConsumeForm(dodge));
                 if (parryFormula.IsSuccess)
                     tarParryConsume.Set(escapee, () => escapee.ConsumeForm(parry));
@@ -209,8 +209,8 @@ namespace BattleM
             var mp = tg.Status.Mp;
             var force = tg.Force;
             var mpArmor = force.Armor;
-            var depletion = force.ArmorDepletion;
-            if (mp.Value < force.ArmorDepletion)//如果消耗不够没有护甲
+            var depletion = force.ArmorCost;
+            if (mp.Value < force.ArmorCost)//如果消耗不够没有护甲
             {
                 mpArmor = 0;
                 depletion = 0;
@@ -289,7 +289,7 @@ namespace BattleM
         #region ConsumeRecord
 
         private void RecAttackAction(CombatUnit op, CombatUnit tar,
-            ICombatForm attackForm, IParryForm parryForm, IDodge dodge, PositionRecord attackPlacing,
+            ICombatForm attackForm, IParryForm parryForm, IDodgeSkill dodge, PositionRecord attackPlacing,
             DamageFormula damageFormula, DodgeFormula dodgeFormula, ParryFormula parryFormula,
             int armor, int damageRate)
         {
@@ -297,7 +297,7 @@ namespace BattleM
             attConsume.Set(op, () => op.ConsumeForm(attackForm));
 
             var tarParryConsume = ConsumeRecord<IParryForm>.Instance(parryForm);
-            var tarDodgeConsume = ConsumeRecord<IDodge>.Instance(dodge);
+            var tarDodgeConsume = ConsumeRecord<IDodgeSkill>.Instance(dodge);
 
             var tarSuffer = ConsumeRecord.Instance();
             if (dodgeFormula.IsSuccess)
@@ -335,12 +335,12 @@ namespace BattleM
         public void RecRecharge(CombatUnit unit, int charge)
         {
             var consume = ConsumeRecord.Instance();
-            var mp = (int)((1f + unit.Force.MpConvert * 0.01f) * charge);//蓄转内
+            var mp = (int)((1f + unit.Force.MpCharge * 0.01f) * charge);//蓄转内
             consume.Set(unit, () => unit.AddMp(mp));
             RoundRec.AddRechargeRec(new RechargeRecord(mp, consume));
         }
 
-        public void OnRecovery(CombatUnit unit, IRecovery skill,IForce force)
+        public void OnRecovery(CombatUnit unit, IRecovery skill,IForceSkill force)
         {
             var formula = RecoverFormula.Instance(skill.Recover, force.ForceRate);
             var rec = RecoveryRecord.Instance(skill, force, formula);
@@ -375,7 +375,7 @@ namespace BattleM
         }
 
         //闪避公式
-        private DodgeFormula InstanceDodgeFormula(CombatUnit op, CombatUnit tg, IDodge dodge)
+        private DodgeFormula InstanceDodgeFormula(CombatUnit op, CombatUnit tg, IDodgeSkill dodge)
         {
             var tarDodge = Mgr.BuffMgr.GetDodge(tg, dodge.Dodge, true);
             var tarAgility = Mgr.BuffMgr.GetAgility(tg, tg.Agility, true);

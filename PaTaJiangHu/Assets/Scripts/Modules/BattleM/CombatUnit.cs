@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BattleM
@@ -47,9 +48,9 @@ namespace BattleM
         int WeaponDamage { get; }
         ICombatStatus Status { get; }
         IBreathBar BreathBar { get; }
-        IForce Force { get; }
+        IForceSkill Force { get; }
         ICombatForm[] CombatForms { get; }
-        IDodge Dodge { get; }
+        IDodgeSkill Dodge { get; }
     }
 
     public class CombatUnit : ICombatUnit, IComparable<CombatUnit>
@@ -86,9 +87,9 @@ namespace BattleM
         private static readonly BasicForce DefaultForce = new();
 
         public static CombatUnit Instance(string name, int strength, int agility, ICombatStatus status,
-            IForce forceSkill, IMartial martial,
-            IDodge dodgeSkill, IEquip equip) => new(name, strength, agility, status, forceSkill,
-            martial.Combats.ToArray(), dodgeSkill, equip);
+            IForceSkill forceSkill, ICombatSkill combatSkill,
+            IDodgeSkill dodgeSkill, IEquip equip) => new(name, strength, agility, status, forceSkill,
+            combatSkill.Combats.ToArray(), dodgeSkill, equip);
 
         public static CombatUnit Instance(ICombatUnit o) => new(o.Name, 
             o.Strength, o.Agility, o.Status.Clone(),
@@ -103,9 +104,9 @@ namespace BattleM
         public Strategies Strategy { get; private set; }
         public ICombatStatus Status { get; }
         public IBreathBar BreathBar => _breathBar;
-        public IForce Force { get; }
+        public IForceSkill Force { get; }
         public ICombatForm[] CombatForms { get; }
-        public IDodge Dodge { get; }
+        public IDodgeSkill Dodge { get; }
         public void SetStandingPoint(int standingPoint) => StandingPoint = standingPoint;
         public void SetStrategy(Strategies strategy) => Strategy = strategy;
         public void SetCombatId(int combatId) => CombatId = combatId;
@@ -149,8 +150,8 @@ namespace BattleM
         #endregion
 
         private CombatUnit(string name, int strength, int agility, 
-            ICombatStatus status, IForce forceSkill,
-            ICombatForm[] combatForms, IDodge dodge, IEquip equip)
+            ICombatStatus status, IForceSkill forceSkill,
+            ICombatForm[] combatForms, IDodgeSkill dodge, IEquip equip)
         {
             Name = name;
             Strength = strength;
@@ -220,7 +221,7 @@ namespace BattleM
             _breathBar.SetAutoPlan(Mgr.Judge, strategy);
 
             //获取轻功招式
-            (bool isDodgeAvailable, IDodge dodge) GetDodgeForm()
+            (bool isDodgeAvailable, IDodgeSkill dodge) GetDodgeForm()
             {
                 if (Dodge != null && Dodge.DodgeMp <= Status.Mp.Value)
                     return (true, Dodge);
@@ -299,7 +300,7 @@ namespace BattleM
         public void SetExert(IExert exert) => _breathBar.SetExert(exert);
         public void SetBusy(int busy) => _breathBar.AddBusy(busy);
         public void ConsumeForm(ICombatForm form) => AddMp(-form.CombatMp);
-        public void ConsumeForm(IDodge dodge) => AddMp(-dodge.DodgeMp);
+        public void ConsumeForm(IDodgeSkill dodge) => AddMp(-dodge.DodgeMp);
         public void ConsumeForm(IParryForm form) => AddMp(-form.ParryMp);
         public void AddMp(int mp) => Status.Mp.Add(mp);
         public void AddHp(int hp) => Status.Hp.Add(hp);
@@ -309,8 +310,8 @@ namespace BattleM
         /// </summary>
         public bool ArmorDepletion()
         {
-            if (Status.Mp.Value < Force.ArmorDepletion) return false;
-            AddMp(-Force.ArmorDepletion);
+            if (Status.Mp.Value < Force.ArmorCost) return false;
+            AddMp(-Force.ArmorCost);
             return true;
         }
         public void SufferDamage(int finalDamage, int damageMp, Weapon.Injuries kind)
@@ -348,31 +349,34 @@ namespace BattleM
             public int ParryMp => 1;
             public int OffBusy => 0;
             public IRecovery Recover { get; }
-            public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
-            public IPerform.Activities Activity { get; } = IPerform.Activities.Attack;
             public ICombo Combo { get; }
+
+            public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
+            public IEnumerable<ICombatBuff> GetAllBuffs()=> Array.Empty<ICombatBuff>();
+            public IPerform.Activities Activity { get; } = IPerform.Activities.Attack;
             public int TarBusy => 0;
             public Way.Armed Armed => Way.Armed.Unarmed;
             public override string ToString() => Name;
         }
-        private class BasicDodge : IDodge
+        private class BasicDodge : IDodgeSkill
         {
             public string Name => string.Empty;
             public int DodgeMp => 0;
             public int Breath => 3;
             public int Dodge => 1;
+            public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
             public override string ToString() => Name;
         }
-        private class BasicForce : IForce
+        private class BasicForce : IForceSkill
         {
             public string Name => "深呼吸";
             public int ForceRate => 0;
-            public int MpConvert => 10;
+            public int MpCharge => 10;
             public int Recover => 10;
-            public IBuffInstance[] GetBuffs(ICombatUnit opponent,ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
-            public int ArmorDepletion => 0;
+            public int ArmorCost => 0;
             public int Armor => 0;
             public int Breath => 5;
+            public IBuffInstance[] GetBuffs(ICombatUnit unit,ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
         }
         public int CompareTo(CombatUnit other) => BreathBar.CompareTo(other.BreathBar);
         public override string ToString() =>$"{CombatId}.{Name}[{StandingPoint}]{Status}.力({Strength})敏{Agility}";

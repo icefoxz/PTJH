@@ -19,9 +19,11 @@ namespace HotFix_Project.Managers
     {
         private TestMap AdvMap { get; set; }
         private TestEvent EventWindow { get; set; }
+        private IAdventureController Controller { get; set; }
 
         public void Init()
         {
+            Controller = TestCaller.Instance.InstanceAdventureController();
             InitUi();
             EventReg();
         }
@@ -29,8 +31,8 @@ namespace HotFix_Project.Managers
         private void InitUi()
         {
             Game.UiBuilder.Build("view_testEvent",
-                v => EventWindow = new TestEvent(v, TestCaller.Instance.OnEventInvoke));
-            Game.UiBuilder.Build("view_testMap", v => AdvMap = new TestMap(v, EventWindow));
+                v => EventWindow = new TestEvent(v, Controller.OnEventInvoke));
+            Game.UiBuilder.Build("view_testMap", v => AdvMap = new TestMap(v, Controller.OnStartMapEvent));
         }
 
         private void EventReg()
@@ -63,7 +65,7 @@ namespace HotFix_Project.Managers
             private EventProcess Process { get; }
             private EventPreview Preview { get; }
             private ListViewUi<MapUi> Maps { get; }
-            private TestEvent EventWindow { get; }
+            private event Action<int> OnStartMapEvent;
             
             private void SetMode(Modes mode)
             {
@@ -82,7 +84,7 @@ namespace HotFix_Project.Managers
                     ui.SetSelected(ui == selectedUi);
             }
 
-            public TestMap(IView v, TestEvent eventWindow) : base(v.GameObject, false)
+            public TestMap(IView v, Action<int> onStartMapEvent) : base(v.GameObject, false)
             {
                 Scroll_map = v.GetObject<ScrollRect>("scroll_map");
                 Prefab_map = v.GetObject<View>("prefab_map");
@@ -90,8 +92,9 @@ namespace HotFix_Project.Managers
                 Preview = new EventPreview(v.GetObject<View>("view_eventPreview"));
                 Process = new EventProcess(v.GetObject<View>("view_eventProcess"));
                 Maps = new ListViewUi<MapUi>(Prefab_map, Scroll_map.content.gameObject);
-                EventWindow = eventWindow;
+                OnStartMapEvent = onStartMapEvent;
             }
+
 
             //public void SetEvent(AdventureController.AdvEvent advEvent, string arg)
             //{
@@ -109,7 +112,7 @@ namespace HotFix_Project.Managers
                     {
                         UpdateEventPreview(events);
                         OnMapSelected(selectedUi);
-                        SetNextEvent(() => TestCaller.Instance.OnStartMapEvent(m.Id));
+                        SetNextEvent(()=>OnStartMapEvent?.Invoke(m.Id));
                     }));
                 }
                 SetMode(Modes.None);

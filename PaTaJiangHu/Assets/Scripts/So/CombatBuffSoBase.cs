@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using BattleM;
 using UnityEngine;
 
 namespace So
 {
-    public abstract class CombatBuffSoBase : ScriptableObject
+    public abstract class CombatBuffSoBase : ScriptableObject,ICombatBuff
     {
         public enum Consumptions
         {
@@ -31,6 +33,7 @@ namespace So
         public virtual Func<ICombatUnit, float> AddDodge { get; }
         public virtual Func<ICombatUnit, float> AddWeaponDamage { get; }
         public virtual Func<ICombatUnit, float> ExtraMpValue { get; }
+
         public virtual Action<ICombatRound> RoundEnd { get; }
         public virtual Action<ICombatRound> RoundStart { get; }
         public ICombatBuff.Appends Append => 赋buff;
@@ -56,8 +59,8 @@ namespace So
             public override Func<ICombatUnit, float> AddDodge { get; }
             public override Func<ICombatUnit, float> AddWeaponDamage { get; }
             public override Func<ICombatUnit, float> ExtraMpValue { get; }
-            private event Action<ICombatRound> OnRoundStart;
-            private event Action<ICombatRound> OnRoundEnd;
+            public override Action<ICombatRound> RoundEnd { get; }
+            public override Action<ICombatRound> RoundStart { get; }
 
             public CombatBuff(int combatId, int lasting, int spriteId, int stacks,
                 ICombatBuff.Consumptions consumption,
@@ -80,12 +83,16 @@ namespace So
                 AddDodge = addDodge;
                 AddWeaponDamage = addWeaponDamage;
                 ExtraMpValue = extraMpValue;
-                OnRoundStart = onRoundStart;
-                OnRoundEnd = onRoundEnd;
+                RoundStart = onRoundStart;
+                RoundEnd = onRoundEnd;
             }
-
-            public override void RoundEnd(ICombatRound round) => OnRoundStart?.Invoke(round);
-            public override void RoundStart(ICombatRound round) => OnRoundEnd?.Invoke(round);
         }
+    }
+
+    public static class CombatBuffInstanceExtension
+    {
+        public static IEnumerable<IBuffInstance> GetSortedInstance(this CombatBuffSoBase[] buffs,
+            ICombatBuff.Appends append, ICombatUnit unit) =>
+            buffs.Where(b => b.Append == append).Select(b => b.InstanceBuff(unit));
     }
 }

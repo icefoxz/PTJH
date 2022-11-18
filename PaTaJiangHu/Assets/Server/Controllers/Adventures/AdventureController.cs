@@ -3,11 +3,44 @@ using System.Linq;
 using System.Text;
 using BattleM;
 using MyBox;
+using UnityEngine;
 
 namespace Server.Controllers.Adventures
 {
-    public class AdventureController
+    public interface IAdventureController
     {
+        void OnEventInvoke(int mapId, int index);
+        void OnStartMapEvent(int mapId);
+    }
+
+    public class AdventureController : IAdventureController
+    {
+        private AdvConfig Config { get; }
+        internal AdventureController(AdvConfig config)
+        {
+            Config = config;
+        }
+
+        public void StartAdventureMaps()
+        {
+            var list = Config.Maps.Select(InstanceMapData).ToList();
+            Game.MessagingManager.Invoke(EventString.Test_AdventureMap, list.ToArray());
+        }
+        public void OnEventInvoke(int mapId, int index)
+        {
+            var map = Config.Maps.First(m => m.Id == mapId);
+            var advEvent = map.AllEvents[index];
+            var eventData = InstanceEventData(map, advEvent);
+            Game.MessagingManager.Invoke(EventString.Test_AdvEventInvoke, eventData);
+        }
+
+        public void OnStartMapEvent(int mapId)
+        {
+            var map = Config.Maps.First(m => m.Id == mapId);
+            var eventData = InstanceEventData(map, map.StartEvent);
+            Game.MessagingManager.Invoke(EventString.Test_AdvEventInvoke, eventData);
+        }
+
         public class Map
         {
             public int Id { get; set; }
@@ -140,7 +173,7 @@ namespace Server.Controllers.Adventures
             }
         }
 
-        internal Map InstanceMapData(AdvMapSo mapSo)
+        private Map InstanceMapData(AdvMapSo mapSo)
         {
             var allEvents = mapSo.AllEvents.Select(e => ((AdvEventSoBase)e).name).ToArray();
             return new Map
@@ -151,8 +184,7 @@ namespace Server.Controllers.Adventures
                 AllEvents = allEvents
             };
         }
-
-        internal AdvEvent InstanceEventData(AdvMapSo mapSo,IAdvEvent advEvent)
+        private AdvEvent InstanceEventData(AdvMapSo mapSo,IAdvEvent advEvent)
         {
             return GetEventData(mapSo, advEvent);
 
@@ -178,6 +210,12 @@ namespace Server.Controllers.Adventures
             private UnitStatus _status = new UnitStatus(100, 100, 100);
             public ICombatStatus Status => _status.GetCombatStatus();
             public override string ToString()=> _status.ToString();
+        }
+
+        [Serializable] internal class AdvConfig
+        {
+            [SerializeField] private AdvMapSo[] 地图;
+            public AdvMapSo[] Maps => 地图;
         }
     }
 
@@ -208,4 +246,5 @@ namespace Server.Controllers.Adventures
         }
         public override string ToString() => $"Hp{Hp},Mp{Mp}";
     }
+
 }

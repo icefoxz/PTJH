@@ -4,14 +4,26 @@ using System.Linq;
 using BattleM;
 using Data;
 using MyBox;
+using Server.Controllers.Skills;
 using UnityEngine;
 
 namespace So
 {
-    [CreateAssetMenu(fileName = "martialSo", menuName = "战斗测试/武功")]
-    [Serializable]
-    public class MartialFieldSo : ScriptableObject, IMartial, IDataElement
+    interface IUnlockable
     {
+        int UnlockLevel { get; }
+    }
+    [CreateAssetMenu(fileName = "combatSo", menuName = "战斗测试/武功")]
+    internal class CombatFieldSo : ScriptableObject, IDataElement,ILeveling<ICombatSkill>
+    {
+        #region ReferenceSo
+        private bool ReferenceSo()
+        {
+            _so = this;
+            return true;
+        }
+        [ConditionalField(true, nameof(ReferenceSo))][ReadOnly][SerializeField] private ScriptableObject _so;
+        #endregion
         [SerializeField] private string _name;
         [SerializeField] private int id;
         [SerializeField] private Way.Armed 类型;
@@ -21,10 +33,20 @@ namespace So
         public int Id => id;
         public string Name => _name;
         public Way.Armed Armed => 类型;
-        public IList<ICombatForm> Combats => 招式;
-        public IList<IExert> Exerts => 介入;
+        private IList<CombatForm> Combats => 招式;
+        private IList<ExertField> Exerts => 介入;
 
-        [Serializable] private class CombatForm : ICombatForm
+        public ICombatSkill GetFromLevel(int level)
+        {
+            var unlockedCombats = Combats.Where(c => c.UnlockLevel <= level).ToArray();
+            var unlockedExerts = Exerts.Where(e => e.UnlockLevel <= level).ToArray();
+            return new CombatSkill(Name, Armed, unlockedCombats, unlockedExerts);
+        }
+        public ICombatSkill GetMaxLevel() => new CombatSkill(Name, Armed, Combats.ToArray(), Exerts.ToArray());
+        public CombatBuffSoBase[] GetBuffSos(ICombatForm form) => Combats.Single(c => c == form).GetBuffSos().ToArray();
+
+        [Serializable]
+        private class CombatForm : ICombatForm, IUnlockable
         {
             [SerializeField] private string name;
             [SerializeField] private int 息;
@@ -36,9 +58,14 @@ namespace So
             [SerializeField] private int 己方硬直;
             [SerializeField] private int[] 连击伤害表;
             [SerializeField] private CombatBuffSoBase[] _buffs;
+            [SerializeField] private int 解锁等级;
 
-            public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => _buffs.Where(b => b.Append == append)
+            public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => _buffs
+                .Where(b => b.Append == append)
                 .Select(b => b.InstanceBuff(unit)).ToArray();
+
+            public IEnumerable<CombatBuffSoBase> GetBuffSos() => _buffs.ToArray();
+
             public int Breath => 息;
             public string Name => name;
             public int TarBusy => 对方硬直;
@@ -50,6 +77,8 @@ namespace So
             public int DamageMp => 削内力;
             public ICombo Combo => 连击伤害表?.Length > 0 ? new ComboField(连击伤害表) : null;
 
+            public int UnlockLevel => 解锁等级;
+
             private class ComboField : ICombo
             {
                 public int[] Rates { get; }
@@ -60,17 +89,20 @@ namespace So
                 }
             }
         }
+
         [Serializable] private class RecoveryField : IRecovery
         {
             [SerializeField] private string _name;
             [SerializeField] private int 恢复值;
             [SerializeField] private CombatBuffSoBase[] _buffs;
+
             public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => _buffs.Where(b => b.Append == append)
                 .Select(b => b.InstanceBuff(unit)).ToArray();
             public string Name => _name;
             public int Recover => 恢复值;
+
         }
-        [Serializable] private class ExertField : IExert
+        [Serializable] private class ExertField : IExert,IUnlockable
         {
             public enum Activities
             {
@@ -80,8 +112,18 @@ namespace So
             [SerializeField] private Activities 活动;
             [ConditionalField(nameof(活动), false, Activities.Attack)][SerializeField] private CombatForm 招式;
             [ConditionalField(nameof(活动), false, Activities.Recover)][SerializeField] private RecoveryField 恢复;
+            [SerializeField] private int 解锁等级;
+
+            public int UnlockLevel => 解锁等级;
             private ICombatForm Combat => 招式;
             private IRecovery Recovery => 恢复;
+            public string Name => Activity switch
+            {
+                IPerform.Activities.Attack => Combat.Name,
+                IPerform.Activities.Recover => Recovery.Name,
+                IPerform.Activities.Auto => throw new ArgumentOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
             public IPerform.Activities Activity => 活动 switch
             {
@@ -105,14 +147,30 @@ namespace So
                 return perform;
             }
 
-            private record Perform(IForce ForceSkill, IDodge DodgeSkill, ICombatForm CombatForm, IRecovery Recover, IPerform.Activities Activity, bool IsReposition) : IPerform
+            private record Perform(IForceSkill ForceSkill, IDodgeSkill DodgeSkill, ICombatForm CombatForm, IRecovery Recover, IPerform.Activities Activity, bool IsReposition) : IPerform
             {
-                public IForce ForceSkill { get; } = ForceSkill;
-                public IDodge DodgeSkill { get; } = DodgeSkill;
+                public IForceSkill ForceSkill { get; } = ForceSkill;
+                public IDodgeSkill DodgeSkill { get; } = DodgeSkill;
                 public IPerform.Activities Activity { get; } = Activity;
                 public ICombatForm CombatForm { get; } = CombatForm;
                 public IRecovery Recover { get; } = Recover;
                 public bool IsReposition { get; } = IsReposition;
+            }
+        }
+
+        private record CombatSkill : ICombatSkill
+        {
+            public string Name { get; }
+            public Way.Armed Armed { get; }
+            public IList<ICombatForm> Combats { get; }
+            public IList<IExert> Exerts { get; }
+
+            public CombatSkill(string name, Way.Armed armed, CombatForm[] combats, ExertField[] exerts)
+            {
+                Name = name;
+                Armed = armed;
+                Combats = combats;
+                Exerts = exerts;
             }
         }
     }

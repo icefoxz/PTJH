@@ -1,4 +1,5 @@
 ﻿using System;
+using MyBox;
 using UnityEngine;
 
 namespace Server.Controllers.Characters
@@ -6,10 +7,10 @@ namespace Server.Controllers.Characters
     [CreateAssetMenu(fileName = "LevelingConfig", menuName = "配置/升等配置")]
     internal class LevelConfigSo : ScriptableObject
     {
-        [SerializeField] private float 力量成长倍率;
-        [SerializeField] private float 敏捷成长倍率;
-        [SerializeField] private float 血成长倍率;
-        [SerializeField] private float 内成长倍率;
+        [SerializeField] private LevelingConfig[] 力量成长;
+        [SerializeField] private LevelingConfig[] 敏捷成长;
+        [SerializeField] private LevelingConfig[] 血成长;
+        [SerializeField] private LevelingConfig[] 内成长;
 
         public enum Props
         {
@@ -19,14 +20,15 @@ namespace Server.Controllers.Characters
             [InspectorName("内")] Mp
         }
 
-        public float StrengthGrowingRate => 力量成长倍率;
-        public float AgilityGrowingRate => 敏捷成长倍率;
-        public float HpGrowingRate => 血成长倍率;
-        public float MpGrowingRate => 内成长倍率;
+        private LevelingConfig[] StrengthGrowingRate => 力量成长;
+        private LevelingConfig[] AgilityGrowingRate => 敏捷成长;
+        private LevelingConfig[] HpGrowingRate => 血成长;
+        private LevelingConfig[] MpGrowingRate => 内成长;
 
-        public int GetLeveledValue(int level, int baseValue, Props prop)
+        public int GetLeveledValue(Props prop, int baseValue, int level)
         {
             if (level <= 0) throw new InvalidOperationException($"{prop}.等级不可以小于1!");
+            if (level == 1) return baseValue;
             return prop switch
             {
                 Props.Strength => LevelingFormula(level, baseValue, StrengthGrowingRate),
@@ -36,7 +38,26 @@ namespace Server.Controllers.Characters
                 _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
             };
         }
+        private int LevelingFormula(int level, int baseValue, LevelingConfig[] rates)
+        {
+            var index = level - 2;
+            if (rates.Length <= index)
+                throw new InvalidOperationException($"等级已超过最大限制[{rates.Length + 1}],当前等级{level}！");
+            return (int)(rates[index].Ratio * baseValue);
+        }
 
-        private int LevelingFormula(int level, int baseValue, float rate) => (int)((level - 1) * rate + baseValue);
+        [Serializable]
+        private class LevelingConfig
+        {
+            private bool Rename()
+            {
+                _name = $"倍率{Ratio * 100}%";
+                return true;
+            }
+
+            [ConditionalField(true,nameof(Rename))][ReadOnly][SerializeField] private string _name;
+            [SerializeField] private float 倍率;
+            public float Ratio => 倍率;
+        }
     }
 }

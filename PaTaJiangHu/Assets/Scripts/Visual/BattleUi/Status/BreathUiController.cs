@@ -52,7 +52,7 @@ namespace Visual.BattleUi.Status
         private static (string Name, int Value) DataConvertOrDefault(BreathRecord rec) => 
             rec == null ? default : (rec.Name, rec.Value);
         private static (string Name, int Value) DataConvertOrDefault<T>(T rec) where T : IBreathNode, ISkillName =>
-            rec == null ? default : (rec.Name, rec.Breath);
+            rec == null ? default : (Name: rec.Name, rec.Breath);
 
         private IEnumerator SetPlan(BreathViewUi view, CombatEvents plan,
             int totalBusies, int totalCharged,

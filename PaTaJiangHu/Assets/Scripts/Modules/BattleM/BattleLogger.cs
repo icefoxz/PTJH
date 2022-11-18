@@ -165,9 +165,9 @@ namespace BattleM
             }
         }
 
-        static void DodgeRecordLog(DodgeFormula formula, IDodge form, IUnitInfo tar,StringBuilder sb)
+        static void DodgeRecordLog(DodgeFormula formula, IDodgeSkill form, IUnitInfo tar,StringBuilder sb)
         {
-            string DodgeLog(IDodge a) => FormLog(a) +
+            string DodgeLog(IDodgeSkill a) => FormLog(a) +
                                              $"身({a.Dodge})内({a.DodgeMp}))".Sb().Color(Color.Coral);
 
             sb.Append(!formula.IsSuccess

@@ -50,6 +50,7 @@ namespace BattleM
         int Stacks { get; }
         Appends Append { get; }
         Consumptions Consumption { get; }
+        int Lasting { get; }
         /// <summary>
         /// 力量增加值<see cref="Kinds.Strength"/>
         /// </summary>
@@ -77,12 +78,12 @@ namespace BattleM
         /// <summary>
         /// 当回合结束，回合精灵消失前。
         /// </summary>
-        void RoundEnd(ICombatRound round);
+        Action<ICombatRound> RoundEnd { get; }
         /// <summary>
         /// 所有消耗类型的buff都会触发回合开始
         /// </summary>
         /// <param name="round"></param>
-        void RoundStart(ICombatRound round);
+        Action<ICombatRound> RoundStart { get; }
     }
 
     public abstract record CombatBuffBase : IBuffInstance
@@ -115,8 +116,8 @@ namespace BattleM
         public abstract Func<ICombatUnit, float> AddDodge { get; }
         public abstract Func<ICombatUnit, float> AddWeaponDamage { get; }
         public abstract Func<ICombatUnit, float> ExtraMpValue { get; }
-        public abstract void RoundEnd(ICombatRound round);
-        public abstract void RoundStart(ICombatRound round);
+        public abstract Action<ICombatRound> RoundEnd { get; }
+        public abstract Action<ICombatRound> RoundStart { get; }
         public void LastingDepletion(int deplete = 1)
         {
             Lasting -= deplete;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NameM;
 using UnityEngine;
 using UnityEngine.Analytics;
@@ -7,28 +8,57 @@ using Utls;
 
 namespace Server.Controllers.Characters
 {
-    public class DiziController
+    public interface IDiziController
     {
-        private LevelConfigSo LevelConfig { get; }
-        private GradeConfigSo GradeConfigSo { get; }
-        private StaminaGenerateSo StaminaGenerator { get; }
-        private StaminaTimer StaminaTimer { get; }
+        void OnGenerateDizi(int grade);
+        void OnDiziLevel(int level);
+        void OnSetStamina(int currentStamina, int minutePass);
+    }
 
-        internal DiziController(LevelConfigSo levelConfig, GradeConfigSo gradeConfigSo,StaminaGenerateSo staminaGenerator)
+    public class DiziController : IDiziController
+    {
+        private StaminaTimer StaminaTimer { get; }
+        private DiziConfig Config { get; }
+
+        internal DiziController(DiziConfig config)
         {
-            LevelConfig = levelConfig;
-            GradeConfigSo = gradeConfigSo;
-            StaminaGenerator = staminaGenerator;
+            Config = config;
             StaminaTimer = new GameObject(nameof(Characters.StaminaTimer)).AddComponent<StaminaTimer>();
         }
+        private DiziController.Dizi TestDizi { get; set; }
+        public void OnGenerateDizi(int grade)
+        {
+            TestDizi = GenerateDizi(grade);
+            Game.MessagingManager.Invoke(EventString.Test_DiziGenerate, TestDizi);
+        }
+        public void OnDiziLevel(int level)
+        {
+            var leveling = Config.LevelConfig;
+            var str = leveling.GetLeveledValue(LevelConfigSo.Props.Strength, TestDizi.Strength, level);
+            var agi = leveling.GetLeveledValue(LevelConfigSo.Props.Agility, TestDizi.Agility, level);
+            var hp = leveling.GetLeveledValue(LevelConfigSo.Props.Strength, TestDizi.MaxHp, level);
+            var mp = leveling.GetLeveledValue(LevelConfigSo.Props.Strength, TestDizi.MaxMp, level);
+            var dizi = TestDizi.Clone();
+            dizi.SetHp(hp);
+            dizi.SetMp(mp);
+            dizi.SetAgility(agi);
+            dizi.SetStrength(str);
+            dizi.SetLevel(level);
+            Game.MessagingManager.Invoke(EventString.Test_DiziLeveling, dizi);
+        }
+        public void OnSetStamina(int currentStamina, int minutePass)
+        {
+            var lastTicks = SysTime.UnixTicksFromNow(TimeSpan.FromMinutes(-minutePass));
+            SetStamina(currentStamina, lastTicks);
+        }
 
-        internal void SetStamina(int baseStamina, long lastTicks) =>
-            StaminaTimer.Init(baseStamina, lastTicks, StaminaGenerator);
+        private void SetStamina(int baseStamina, long lastTicks) =>
+            StaminaTimer.Init(baseStamina, lastTicks, Config.StaminaGenerator);
 
-        internal Dizi GenerateDizi(int grade)
+        private Dizi GenerateDizi(int grade)
         {
             var name = GenerateName();
-            var (str, agi, hp, mp, sta, inv) = GradeConfigSo.GenerateFromGrade(grade: grade);
+            var (str, agi, hp, mp, sta, inv) = Config.GradeConfigSo.GenerateFromGrade(grade: grade);
             var cap = new Capable(grade: grade, dodgeSlot: 3, martialSlot: 5, inventorySlot: inv);
             return new Dizi(
                 name: name, 
@@ -74,6 +104,24 @@ namespace Server.Controllers.Characters
                 Capable = capable;
                 Condition = condition;
             }
+
+            public void SetHp(int hp)
+            {
+                Hp = hp;
+                MaxHp = hp;
+            }
+            public void SetMp(int mp)
+            {
+                Mp = mp;
+                MaxMp = mp;
+            }
+            public void SetLevel(int level) => Level = level;
+            public void SetStrength(int str) => Strength = str;
+            public void SetAgility(int str) => Agility = str;
+
+            public Dizi Clone() =>
+                new(Name, Strength, Agility, Hp, Mp, Level, Stamina, Capable,
+                    Condition.ToDictionary(c => c.Key, c => c.Value));
         }
         internal class Capable 
         {
@@ -101,6 +149,18 @@ namespace Server.Controllers.Characters
                 MartialSlot = martialSlot;
                 InventorySlot = inventorySlot;
             }
+        }
+
+        [Serializable]
+        internal class DiziConfig
+        {
+            [SerializeField] private LevelConfigSo 等级配置;
+            [SerializeField] private GradeConfigSo 资质配置;
+            [SerializeField] private StaminaGenerateSo 体力产出配置;
+
+            public LevelConfigSo LevelConfig => 等级配置;
+            public GradeConfigSo GradeConfigSo => 资质配置;
+            public StaminaGenerateSo StaminaGenerator => 体力产出配置;
         }
     }
 }
