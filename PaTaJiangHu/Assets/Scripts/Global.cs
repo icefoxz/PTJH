@@ -24,4 +24,5 @@ public class EventString
     public const string Test_DodgeSoList = "Test_DodgeSoList";
     public const string Test_DodgeSkillLeveling = "Test_DodgeSkillLeveling";
     public const string Test_DodgeSkillSelected = "Test_DodgeSkillSelected";
+    public const string Test_AdvMapLoad = "Test_AdvMapLoad";
 }

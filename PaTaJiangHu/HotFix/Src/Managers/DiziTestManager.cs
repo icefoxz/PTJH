@@ -69,7 +69,6 @@ public class DiziTestManager
         });
     }
 
-
     private void EventReg()
     {
         Game.MessagingManager.RegEvent(EventString.Test_DiziGenerate, arg => GenWindow.SetDizi(JsonMapper.ToObject<Dizi>(arg)));
@@ -502,7 +501,6 @@ public class DiziTestManager
             }
 
             public void SetSelected(bool selected) => Img_selected.gameObject.SetActive(selected);
-            public void Destroy() => Object.Destroy(gameObject);
         }
     }
 }

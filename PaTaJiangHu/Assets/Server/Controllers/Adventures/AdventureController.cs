@@ -41,7 +41,7 @@ namespace Server.Controllers.Adventures
             Game.MessagingManager.Invoke(EventString.Test_AdvEventInvoke, eventData);
         }
 
-        public class Map
+        public class Story
         {
             public int Id { get; set; }
             public string Name { get; set; }
@@ -51,16 +51,16 @@ namespace Server.Controllers.Adventures
         public class AdvEvent
         {
             public string Name { get; set; }
-            public int MapId { get; set; }
+            public int StoryId { get; set; }
             public AdvTypes AdvType { get; set; }
             public int[] NextIndexes { get; set; }
 
-            internal AdvEvent(AdvMapSo mapSo, AdvEventSoBase so)
+            internal AdvEvent(AdvStorySo storySo, AdvEventSoBase so)
             {
                 Name = so.name;
-                MapId = mapSo.Id;
+                StoryId = storySo.Id;
                 AdvType = so.AdvType;
-                NextIndexes = so.PossibleEvents.Select(e => mapSo.AllEvents.IndexOfItem(e)).ToArray();
+                NextIndexes = so.PossibleEvents.Select(e => storySo.AllEvents.IndexOfItem(e)).ToArray();
             }
 
             public AdvEvent()
@@ -73,17 +73,17 @@ namespace Server.Controllers.Adventures
             public string[] Options { get; set; }
             public string Story { get; set; }
 
-            internal OptionEvent(AdvMapSo mapSo, OptionEventSo so) : base(mapSo, so)
+            internal OptionEvent(AdvStorySo storySo, OptionEventSo so) : base(storySo, so)
             {
                 Options = so.GetOptions;
                 Story = so.Story;
             }
-            internal OptionEvent(AdvMapSo mapSo, PoolEventSo so) : base(mapSo, so)
+            internal OptionEvent(AdvStorySo storySo, PoolEventSo so) : base(storySo, so)
             {
                 Options = so.PossibleEvents.Cast<AdvEventSoBase>().Select(e=>e.name).ToArray();
                 Story = $"权重事件：{so.name}";
             }
-            internal OptionEvent(AdvMapSo mapSo, TermEventSo so,ITerm term) : base(mapSo, so)
+            internal OptionEvent(AdvStorySo storySo, TermEventSo so,ITerm term) : base(storySo, so)
             {
                 Options = so.PossibleEvents.Cast<AdvEventSoBase>().Select(e=>e.name).ToArray();
                 var sb = new StringBuilder($"状态：{term}\n");
@@ -102,7 +102,7 @@ namespace Server.Controllers.Adventures
         {
             public string Story { get; set; }
 
-            internal StoryEvent(AdvMapSo mapSo, StoryEventSo so) : base(mapSo, so)
+            internal StoryEvent(AdvStorySo storySo, StoryEventSo so) : base(storySo, so)
             {
                 Story = so.Story;
             }
@@ -119,7 +119,7 @@ namespace Server.Controllers.Adventures
             public string[] Names { get; set; }
             public string[] Messages { get; set; }
 
-            internal DialogEvent(AdvMapSo mapSo, DialogEventSo so) : base(mapSo, so)
+            internal DialogEvent(AdvStorySo storySo, DialogEventSo so) : base(storySo, so)
             {
                 var array = so.GetDialogue.Select(d => (d.id, d.name, d.message)).ToArray();
                 Ids = new int[array.Length];
@@ -146,7 +146,7 @@ namespace Server.Controllers.Adventures
             /// [0].Win<br/>[1].Lose<br/>[2].Kill<br/>[3].Escape
             /// </summary>
             public string[] ResultEvents { get; set; }
-            internal BattleEvent(AdvMapSo mapSo, BattleEventSo so) : base(mapSo, so)
+            internal BattleEvent(AdvStorySo storySo, BattleEventSo so) : base(storySo, so)
             {
                 ResultEvents = so.PossibleEvents.Cast<AdvEventSoBase>().Select(c => c.name).ToArray();
             }
@@ -159,7 +159,7 @@ namespace Server.Controllers.Adventures
         public class RewardEvent : AdvEvent
         {
             public string[] Rewards { get; set; }
-            internal RewardEvent(AdvMapSo mapSo, RewardEventSo so) : base(mapSo, so)
+            internal RewardEvent(AdvStorySo storySo, RewardEventSo so) : base(storySo, so)
             {
                 var r = so.Reward;
                 Rewards = r.Weapons.Concat(r.Armor).Concat(r.Medicines)
@@ -173,22 +173,22 @@ namespace Server.Controllers.Adventures
             }
         }
 
-        private Map InstanceMapData(AdvMapSo mapSo)
+        private Story InstanceMapData(AdvStorySo storySo)
         {
-            var allEvents = mapSo.AllEvents.Select(e => ((AdvEventSoBase)e).name).ToArray();
-            return new Map
+            var allEvents = storySo.AllEvents.Select(e => ((AdvEventSoBase)e).name).ToArray();
+            return new Story
             {
-                Id = mapSo.Id,
-                Name = mapSo.Name,
-                StartEventName = mapSo.StartEvent.ToString(),
+                Id = storySo.Id,
+                Name = storySo.Name,
+                StartEventName = storySo.StartEvent.ToString(),
                 AllEvents = allEvents
             };
         }
-        private AdvEvent InstanceEventData(AdvMapSo mapSo,IAdvEvent advEvent)
+        private AdvEvent InstanceEventData(AdvStorySo storySo,IAdvEvent advEvent)
         {
-            return GetEventData(mapSo, advEvent);
+            return GetEventData(storySo, advEvent);
 
-            AdvEvent GetEventData(AdvMapSo mSo, IAdvEvent aEvent)
+            AdvEvent GetEventData(AdvStorySo mSo, IAdvEvent aEvent)
             {
                 AdvEvent advEventData = aEvent.AdvType switch
                 {
@@ -214,8 +214,8 @@ namespace Server.Controllers.Adventures
 
         [Serializable] internal class AdvConfig
         {
-            [SerializeField] private AdvMapSo[] 地图;
-            public AdvMapSo[] Maps => 地图;
+            [SerializeField] private AdvStorySo[] 地图;
+            public AdvStorySo[] Maps => 地图;
         }
     }
 
@@ -246,5 +246,4 @@ namespace Server.Controllers.Adventures
         }
         public override string ToString() => $"Hp{Hp},Mp{Mp}";
     }
-
 }

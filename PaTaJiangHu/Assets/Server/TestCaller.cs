@@ -15,6 +15,7 @@ namespace Server
         ISkillController InstanceSkillController();
         IDiziController InstanceDiziController();
         IAdventureController InstanceAdventureController();
+        IAdvMapController InstanceAdvMapController();
         void SetHpValue(int value);
         void SetHpMax(int value);
         void SetHpFix(int value);
@@ -32,25 +33,28 @@ namespace Server
         private AdventureController AdvController { get; set; }
         private DiziController DiziController { get; set; }
         private SkillController SkillController { get; set; }
-        
+        private AdvMapController MapController { get; set; }
+
+        [SerializeField] private AdvMapController.Configure 地图;
+        private AdvMapController.Configure MapConfig => 地图;
         [SerializeField] private DiziController.DiziConfig 弟子配置;
         private DiziController.DiziConfig DiziCfg => 弟子配置;
         [SerializeField] private ItemConfig 物品配置;
         private ItemConfig ItemCfg => 物品配置;
         [SerializeField] private AdventureController.AdvConfig 副本配置;
         private AdventureController.AdvConfig AdvConfig => 副本配置;
-
         [SerializeField]private SkillController.Configure 技能配置;
         private SkillController.Configure SkillConfig => 技能配置;
 
+        public IAdvMapController InstanceAdvMapController()=> MapController = new AdvMapController(MapConfig);
         public ISkillController InstanceSkillController() => SkillController = new SkillController(SkillConfig);
         public IDiziController InstanceDiziController() => DiziController = new DiziController(DiziCfg);
+        public IAdventureController InstanceAdventureController() => AdvController = new AdventureController(AdvConfig);
 
+        public void StartAdvMapLoad() => MapController.LoadMap();
         public void StartCombatLevelTest() => SkillController.ListCombatSkills();
         public void StartForceLevelTest() => SkillController.ListForceSkills();
         public void StartDodgeLevelTest() => SkillController.ListDodgeSkills();
-
-        public IAdventureController InstanceAdventureController() => AdvController = new AdventureController(AdvConfig);
         public void StartAdventureMaps() => AdvController.StartAdventureMaps();
 
         public UnitStatus TestStatus { get; } = new(100, 100, 100);

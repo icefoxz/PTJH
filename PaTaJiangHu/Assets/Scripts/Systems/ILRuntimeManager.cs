@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ILRuntime.Mono.Cecil.Pdb;
@@ -57,15 +58,26 @@ namespace Systems
             appdomain.DelegateManager.RegisterFunctionDelegate<Task<int>>();
             appdomain.DelegateManager.RegisterFunctionDelegate<Task<string>>();
             appdomain.DelegateManager.RegisterFunctionDelegate<Task<bool>>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<Task<float>>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, int>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, object>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, string>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, bool>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, float>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<IGrouping<int, ILTypeInstance>, ILTypeInstance>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, ILTypeInstance>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance[]>();
 
             appdomain.DelegateManager.RegisterFunctionDelegate<object>();
             appdomain.DelegateManager.RegisterFunctionDelegate<string>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<float>();
             appdomain.DelegateManager.RegisterFunctionDelegate<bool>();
             appdomain.DelegateManager.RegisterFunctionDelegate<int>();
             appdomain.DelegateManager.RegisterFunctionDelegate<int, ValueTuple<string, Action>>();
             
             appdomain.DelegateManager.RegisterMethodDelegate<HttpResponseMessage>();
             appdomain.DelegateManager.RegisterMethodDelegate<object>();
+            appdomain.DelegateManager.RegisterMethodDelegate<float>();
             appdomain.DelegateManager.RegisterMethodDelegate<int>();
             appdomain.DelegateManager.RegisterMethodDelegate<string>();
             appdomain.DelegateManager.RegisterMethodDelegate<bool>();

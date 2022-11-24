@@ -17,7 +17,7 @@ namespace HotFix_Project.Managers
     /// </summary>
     internal class AdventureManager
     {
-        private TestMap AdvMap { get; set; }
+        private TestStory AdvStory { get; set; }
         private TestEvent EventWindow { get; set; }
         private IAdventureController Controller { get; set; }
 
@@ -32,16 +32,16 @@ namespace HotFix_Project.Managers
         {
             Game.UiBuilder.Build("view_testEvent",
                 v => EventWindow = new TestEvent(v, Controller.OnEventInvoke));
-            Game.UiBuilder.Build("view_testMap", v => AdvMap = new TestMap(v, Controller.OnStartMapEvent));
+            Game.UiBuilder.Build("view_testAdvStory", v => AdvStory = new TestStory(v, Controller.OnStartMapEvent));
         }
 
         private void EventReg()
         {
             Game.MessagingManager.RegEvent(EventString.Test_AdventureMap, arg =>
             {
-                var list = LJson.ToObject<AdventureController.Map[]>(arg, true);
-                AdvMap.UpdateMap(list);
-                AdvMap.Display(true);
+                var list = LJson.ToObject<AdventureController.Story[]>(arg, true);
+                AdvStory.UpdateStory(list);
+                AdvStory.Display(true);
             });
             Game.MessagingManager.RegEvent(EventString.Test_AdvEventInvoke, arg =>
             {
@@ -50,7 +50,7 @@ namespace HotFix_Project.Managers
             });
         }
 
-        private class TestMap : UiBase
+        private class TestStory : UiBase
         {
             private enum Modes
             {
@@ -84,7 +84,7 @@ namespace HotFix_Project.Managers
                     ui.SetSelected(ui == selectedUi);
             }
 
-            public TestMap(IView v, Action<int> onStartMapEvent) : base(v.GameObject, false)
+            public TestStory(IView v, Action<int> onStartMapEvent) : base(v.GameObject, false)
             {
                 Scroll_map = v.GetObject<ScrollRect>("scroll_map");
                 Prefab_map = v.GetObject<View>("prefab_map");
@@ -102,7 +102,7 @@ namespace HotFix_Project.Managers
             //    Process.AddProcessEvent($"{advEvent.Name}", () => EventWindow.PromptEvent(advEvent.AdvType, arg));
             //    SetMode(Modes.Process);
             //}
-            public void UpdateMap(AdventureController.Map[] list)
+            public void UpdateStory(AdventureController.Story[] list)
             {
                 Maps.ClearList(m => m.Destroy());
                 foreach (var m in list)
@@ -260,7 +260,7 @@ namespace HotFix_Project.Managers
                         var storyEvent = LJson.ToObject<AdventureController.StoryEvent>(arg, true);
                         var nextIndex = storyEvent.NextIndexes.First();
                         StoryEventView.Set(storyEvent.Name, storyEvent.Story,
-                            () => OnNextEvent?.Invoke(storyEvent.MapId, nextIndex));
+                            () => OnNextEvent?.Invoke(storyEvent.StoryId, nextIndex));
                         break;
                     }
                     case AdvTypes.Option:
@@ -273,7 +273,7 @@ namespace HotFix_Project.Managers
                         {
                             var title = optionEvent.Options[i];
                             var nextId = optionEvent.NextIndexes[i];
-                            OptionEventView.AddOption(title, () => OnNextEvent?.Invoke(optionEvent.MapId, nextId));
+                            OptionEventView.AddOption(title, () => OnNextEvent?.Invoke(optionEvent.StoryId, nextId));
                         }
                         break;
                     }
@@ -287,21 +287,21 @@ namespace HotFix_Project.Managers
                     {
                         var dialogEvent = LJson.ToObject<AdventureController.DialogEvent>(arg, true);
                         var nextIndex = dialogEvent.NextIndexes.First();
-                        DialogEventView.Set(dialogEvent, () => OnNextEvent?.Invoke(dialogEvent.MapId, nextIndex));
+                        DialogEventView.Set(dialogEvent, () => OnNextEvent?.Invoke(dialogEvent.StoryId, nextIndex));
                         break;
                     }
                     case AdvTypes.Battle:
                     {
                         var battleEvent = LJson.ToObject<AdventureController.BattleEvent>(arg, true);
                         BattleEventView.Set(battleEvent.Name, battleEvent.ResultEvents, battleEvent.NextIndexes,
-                            eventIndex => OnNextEvent?.Invoke(battleEvent.MapId, eventIndex));
+                            eventIndex => OnNextEvent?.Invoke(battleEvent.StoryId, eventIndex));
                         break;
                     }
                     case AdvTypes.Reward:
                     {
                         var rewardEvent = LJson.ToObject<AdventureController.RewardEvent>(arg, true);
                         RewardEventView.Set(rewardEvent.Name, rewardEvent.Rewards,
-                            () => OnNextEvent?.Invoke(rewardEvent.MapId, rewardEvent.NextIndexes.First()));
+                            () => OnNextEvent?.Invoke(rewardEvent.StoryId, rewardEvent.NextIndexes.First()));
                         break;
                     }
                     default:
