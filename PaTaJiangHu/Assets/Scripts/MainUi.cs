@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
@@ -9,6 +10,7 @@ public interface IMainUi : ISingletonDependency
     void SetTop(IView view);
     void SetMid(IView view);
     void SetBtm(IView view);
+    void SetPanel(IView view);
     void ShowTop();
     void ShowMid();
     void ShowBtm();
@@ -40,12 +42,25 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     public RectTransform MidUi => _midUi;
     public RectTransform BtmUi => _btmUi;
     public Image Panel => _panel;
+    private Dictionary<RectTransform,IView> _uiMap;
 
-    public void Init() => ResetUi();
+    public void Init()
+    {
+        _uiMap = new Dictionary<RectTransform, IView>
+        {
+            { _panel.rectTransform, null },
+            { _topUi, null },
+            { _midUi, null },
+            { _btmUi, null },
+        };
+        ResetUi();
+    }
 
     public void SetTop(IView view) => SetUi(TopUi, view);
     public void SetMid(IView view) => SetUi(MidUi, view);
     public void SetBtm(IView view) => SetUi(BtmUi, view);
+    public void SetPanel(IView view) => SetUi(Panel.rectTransform, view);
+
     public void ShowTop() => Display(true, TopUi);
     public void ShowMid() => Display(true, MidUi);
     public void ShowBtm() => Display(true, BtmUi);
@@ -79,6 +94,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
 
     private void SetUi(RectTransform tran, IView view)
     {
+        _uiMap[tran] = view;
         view.GameObject.transform.SetParent(tran);
     }
 }

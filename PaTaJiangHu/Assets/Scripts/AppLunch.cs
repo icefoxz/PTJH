@@ -9,12 +9,21 @@ using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
 /// </summary>
 public class AppLunch : UnitySingleton<AppLunch>
 {
+    private enum GameRun
+    {
+        Game,
+        Test,
+    }
+
+    [SerializeField] private GameRun _mode;
 #if UNITY_EDITOR
     [Header("自动或手动启动游戏，在打包此设定无效--自动")]
     [SerializeField] private bool AutoStart;
 #else
     private bool AutoStart => true;
 #endif
+    [SerializeField] private MainUi _mainUi;
+
     private static IlRuntimeManager ILRuntimeMgr { get; set; }
     private static Res Res { get; set; }
     private static AppDomain _appDomain;
@@ -71,9 +80,19 @@ public class AppLunch : UnitySingleton<AppLunch>
         var ilService = new IlService(_appDomain);
         //实例+初始化游戏控件
         var game = Instance.gameObject.AddComponent<Game>();
-        game.Init(Res,ilService);
+        game.Init(Res, ilService, _mainUi);
         //调用热更逻辑来启动游戏
-        ILRuntimeMgr.LaunchAppDomain();
+        switch (_mode)
+        {
+            case GameRun.Game:
+                ILRuntimeMgr.LaunchAppRun();
+                break;
+            case GameRun.Test:
+                ILRuntimeMgr.LaunchAppRunTest();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     //资源管理，

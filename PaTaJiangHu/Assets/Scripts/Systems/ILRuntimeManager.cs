@@ -162,12 +162,17 @@ namespace Systems
         }
 
         //调用主应用
-        public void LaunchAppDomain()
+        public void LaunchAppRun()
         {
             //调用逻辑应用的主体
             Appdomain.Invoke(HotfixProjectMain, HotFixProjectRun, null, null);
         }
-
-
+        
+        public void LaunchAppRunTest()
+        {
+            //调用逻辑应用的主体
+            Appdomain.Invoke(HotfixProjectMain, "RunTest", null, null);
+        }
+        
     }
 }

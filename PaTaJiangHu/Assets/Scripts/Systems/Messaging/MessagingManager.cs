@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.Events;
-using UnityEngine.UI;
 using Utls;
 
 namespace Systems.Messaging
@@ -13,7 +11,17 @@ namespace Systems.Messaging
     {
         private Dictionary<string, Action<string>> EventMap { get; set; } = new Dictionary<string, Action<string>>();
 
-        public void Invoke(string eventName, object obj)
+        public void Invoke<T>(string eventName, T obj) where T : class, new()
+        {
+            if (EventMap.ContainsKey(eventName))
+            {
+                var method = EventMap[eventName];
+                if (obj == null)
+                    method?.Invoke(null);
+                else method?.Invoke(Json.Serialize(obj));
+            }
+        }
+        public void Invoke<T>(string eventName, T[] obj) where T : class, new()
         {
             if (EventMap.ContainsKey(eventName))
             {
@@ -36,15 +44,6 @@ namespace Systems.Messaging
         public void RemoveEvent(string eventName, Action<string> action)
         {
             EventMap[eventName] -= action;
-        }
-    }
-
-    public static class UnityButtonExtension
-    {
-        public static void OnClickAdd(this Button btn, Action action,bool removeAllListener = true)
-        {
-            if(removeAllListener) btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(action == null ? default : new UnityAction(action));
         }
     }
 }

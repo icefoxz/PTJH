@@ -1,10 +1,12 @@
 using System;
+using Server;
 using Systems;
 using Systems.Coroutines;
 using Systems.Messaging;
 using Systems.Updaters;
 using UnityEngine;
 using Utls;
+using Views;
 
 /// <summary>
 /// 游戏主体
@@ -38,8 +40,10 @@ public class Game : UnitySingleton<Game>
         private set => _sceneCanvas = value;
     }
 
+    public static MainUi MainUi { get; private set; }
+
     public static bool IsInit { get; private set; }
-    public void Init(Res res, IlService ilService)
+    public void Init(Res res, IlService ilService, MainUi mainUi)
     {
         if (IsInit) throw new InvalidOperationException("Double Init!");
         IsInit = true;
@@ -51,6 +55,8 @@ public class Game : UnitySingleton<Game>
         HotFixHelper.Init(FrameUpdater);
         UpdateAwaiterMgr = new UpdateAwaiterManager();
         IlService = ilService;
+        MainUi = mainUi;
+        MainUi.Init();
         //SceneCanvas = sceneCanvas;
     }
 
@@ -60,6 +66,14 @@ public class Game : UnitySingleton<Game>
     public static void Run()
     {
         Instance.Log();
+        Game.UiBuilder.Build("view_fractionInventory", v =>
+        {
+            MainUi.SetPanel(v);
+            var rect = (RectTransform)v.GameObject.transform;
+            rect.sizeDelta = Vector2.zero;
+            rect.pivot = Vector2.zero;
+            MainUi.ShowPanel();
+        });
     }
 
     void Update()

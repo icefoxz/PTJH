@@ -15,7 +15,7 @@ namespace HotFix_Project.Managers
     /// <summary>
     /// 冒险任务管理器，主要管理UI与本地数据的交互
     /// </summary>
-    internal class AdventureManager
+    internal class AdventureManager 
     {
         private TestStory AdvStory { get; set; }
         private TestEvent EventWindow { get; set; }

@@ -7,7 +7,7 @@ using UnityEngine;
 namespace So
 {
     [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "配置/秘籍")]
-    [Serializable] public class ScrollFieldSo : ScrollSoBase
+    [Serializable] public class BookFieldSo : BookSoBase
     {
         [SerializeField] private string _name;
         [SerializeField] private int id;
@@ -53,12 +53,12 @@ namespace So
             }
         }
     }
-    //武功秘籍
-    public abstract class ScrollSoBase : ScriptableObject, IDataElement
+    public abstract class BookSoBase : ScriptableObject, IDataElement
     {
         public abstract int Id { get; }
         public abstract string Name { get; }
         public abstract int Price { get; }
         public abstract int GetUpgradeRate(int currentLevel);
     }
+    //武功秘籍
 }

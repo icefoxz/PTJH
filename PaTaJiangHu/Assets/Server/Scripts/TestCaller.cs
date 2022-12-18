@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BattleM;
+using QFramework;
 using Server.Controllers.Adventures;
 using Server.Controllers.Characters;
 using Server.Controllers.Items;
@@ -16,6 +17,7 @@ namespace Server
         IDiziController InstanceDiziController();
         IAdventureController InstanceAdventureController();
         IAdvMapController InstanceAdvMapController();
+        IBattleSimController InstanceBattleSimController();
         void SetHpValue(int value);
         void SetHpMax(int value);
         void SetHpFix(int value);
@@ -34,6 +36,7 @@ namespace Server
         private DiziController DiziController { get; set; }
         private SkillController SkillController { get; set; }
         private AdvMapController MapController { get; set; }
+        private BattleSimController BattleSimController { get; set; }
 
         [SerializeField] private AdvMapController.Configure 地图;
         private AdvMapController.Configure MapConfig => 地图;
@@ -43,9 +46,16 @@ namespace Server
         private ItemConfig ItemCfg => 物品配置;
         [SerializeField] private AdventureController.AdvConfig 副本配置;
         private AdventureController.AdvConfig AdvConfig => 副本配置;
-        [SerializeField]private SkillController.Configure 技能配置;
+        [SerializeField] private SkillController.Configure 技能配置;
         private SkillController.Configure SkillConfig => 技能配置;
+        [SerializeField] private BattleSimController.Configure 模拟战斗配置;
+        private BattleSimController.Configure BattleSimConfig => 模拟战斗配置;
 
+        public IBattleSimController InstanceBattleSimController()
+        {
+            BattleSimController = new BattleSimController(BattleSimConfig);
+            return BattleSimController;
+        }
         public IAdvMapController InstanceAdvMapController()=> MapController = new AdvMapController(MapConfig);
         public ISkillController InstanceSkillController() => SkillController = new SkillController(SkillConfig);
         public IDiziController InstanceDiziController() => DiziController = new DiziController(DiziCfg);
@@ -56,6 +66,11 @@ namespace Server
         public void StartForceLevelTest() => SkillController.ListForceSkills();
         public void StartDodgeLevelTest() => SkillController.ListDodgeSkills();
         public void StartAdventureMaps() => AdvController.StartAdventureMaps();
+        public void StartSimulationSo()
+        {
+            Game.MessagingManager.Invoke(EventString.Test_SimulationStart, string.Empty);
+            //BattleSimController.Start();
+        }
 
         public UnitStatus TestStatus { get; } = new(100, 100, 100);
 
@@ -78,7 +93,7 @@ namespace Server
         public void StartTestMedicineWindow()
         {
             ItemCfg.Init();
-            Game.MessagingManager.Invoke(EventString.Test_StatusUpdate, TestStatus.GetCombatStatus());
+            Game.MessagingManager.Invoke(EventString.Test_StatusUpdate, new Status(TestStatus.GetCombatStatus()));
             Game.MessagingManager.Invoke(EventString.Test_MedicineWindow, ItemCfg.Medicines.Values.ToList());
         }
 
@@ -93,7 +108,7 @@ namespace Server
             var cs = TestStatus.GetCombatStatus();
             ItemCfg.Medicines[id].Recover(cs);
             TestStatus.Clone(cs);
-            Game.MessagingManager.Invoke(EventString.Test_StatusUpdate, cs);
+            Game.MessagingManager.Invoke(EventString.Test_StatusUpdate, new Status(cs));
         }
 
         [Serializable]internal class ItemConfig
@@ -105,6 +120,40 @@ namespace Server
             public void Init()
             {
                 Medicines = 丹药配置.SelectMany(m => m.GetMedicines).ToDictionary(m => m.Id, m => m);
+            }
+        }
+
+        public class Status
+        {
+            public GameCon Hp { get; set; }
+            public GameCon Mp { get; set; }
+
+            public Status()
+            {
+                
+            }
+            public Status(ICombatStatus s)
+            {
+                Hp = new GameCon(s.Hp);
+                Mp = new GameCon(s.Mp);
+            }
+
+            public class GameCon
+            {
+                public int Max { get; set; }
+                public int Value { get; set; }
+                public int Fix { get; set; }
+
+                public GameCon()
+                {
+                    
+                }
+                public GameCon(IGameCondition c)
+                {
+                    Max = c.Max;
+                    Value = c.Value;
+                    Fix = c.Fix;
+                }
             }
         }
     }

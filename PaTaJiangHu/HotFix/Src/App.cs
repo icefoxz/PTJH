@@ -14,21 +14,26 @@ namespace HotFix_Project
     /// 游戏App程序
     /// 不可以继承Monobehaviour
     /// </summary>
-    internal class App
+    internal class App 
     {
         private static GameManager GameManager { get; set; } = new GameManager();
-
-        public static void Init()
+        
+        public void Init()
         {
-            Debug.Log($"{nameof(App)}.{nameof(Init)}! Ver 1.0");
+            Debug.Log($"{nameof(App)}.{nameof(Init)}!");
             //初始化热更新工程框架模块：UI管理，事件订阅...
-            
-            Game.Run();
-            GameManager.Init();
+            Game.Run();//游戏启动
+        }
+
+        public void InitTest()
+        {
+            Init();
+            GameManager.Test();
             //TestAsync();
             //TestCoroutine();
             //TestViewBag();
             //TestButtonEvent();
+            Debug.Log($"{nameof(App)}.{nameof(InitTest)}!");
         }
 
         private static void TestCoroutine()

@@ -76,7 +76,7 @@ namespace Server.Controllers.Characters
             return NameGen.GenName(gen).Text;
         }
 
-        internal class Dizi //: IDizi
+        internal class Dizi
         {
             public string Name { get; private set; }
             public int Strength { get; private set; }
@@ -90,6 +90,10 @@ namespace Server.Controllers.Characters
             public Capable Capable { get; private set; }
             public Dictionary<int, int> Condition { get; private set; }
 
+            public Dizi()
+            {
+                
+            }
             public Dizi(string name, int strength, int agility, int hp, int mp, int level, int stamina, Capable capable, Dictionary<int, int> condition)
             {
                 Name = name;

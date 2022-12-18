@@ -6,11 +6,38 @@ using UnityEngine;
 
 namespace Server.Controllers.Adventures
 {
+    /// <summary>
+    /// 游戏物品大类(功能性, 不细化)
+    /// </summary>
+    public enum ItemType
+    {
+        /// <summary>
+        /// 丹药
+        /// </summary>
+        Medicine,
+        /// <summary>
+        /// 装备
+        /// </summary>
+        Equipment,
+        /// <summary>
+        /// 书籍
+        /// </summary>
+        Book,
+        /// <summary>
+        /// 包裹, 游戏物品的容器
+        /// </summary>
+        Parcel,
+        /// <summary>
+        /// 故事道具
+        /// </summary>
+        StoryProps
+    }
     public interface IGameItem
     {
         int Id { get; }
         string Name { get; }
         int Amount { get; }
+        ItemType Type { get; }
     }
     public interface IGameReward
     {
@@ -59,7 +86,7 @@ namespace Server.Controllers.Adventures
                 UpdateList(武器, GameItem.Kinds.Weapon);
                 UpdateList(防具, GameItem.Kinds.Armor);
                 UpdateList(丹药, GameItem.Kinds.Medicine);
-                UpdateList(秘籍, GameItem.Kinds.Scroll);
+                UpdateList(秘籍, GameItem.Kinds.Book);
                 UpdateList(故事道具, GameItem.Kinds.StoryProp);
                 UpdateList(功能道具, GameItem.Kinds.FunctionProp);
                 return false;
@@ -72,7 +99,7 @@ namespace Server.Controllers.Adventures
             private const string m_Weapon = "武器";
             private const string m_Armor = "防具";
             private const string m_Medicine= "丹药";
-            private const string m_Scroll= "秘籍";
+            private const string m_Book= "秘籍";
             private const string m_StoryProp= "故事道具";
             private const string m_FunctionProp= "功能道具";
             public enum Kinds
@@ -80,7 +107,7 @@ namespace Server.Controllers.Adventures
                 [InspectorName(m_Weapon)] Weapon,
                 [InspectorName(m_Armor)] Armor,
                 [InspectorName(m_Medicine)] Medicine,
-                [InspectorName(m_Scroll)] Scroll,
+                [InspectorName(m_Book)] Book,
                 [InspectorName(m_StoryProp)] StoryProp,
                 [InspectorName(m_FunctionProp)] FunctionProp
             }
@@ -90,11 +117,22 @@ namespace Server.Controllers.Adventures
             //[ConditionalField(true, nameof(IsSupportSo))]
             [ConditionalField(true, nameof(CheckSupport))] [SerializeField] private bool 引用;
             [ConditionalField(true, nameof(TryUseSo), true)] [SerializeField] private int _id;
-            [ConditionalField(true, nameof(TryUseSo))] [SerializeField] private ScrollSoBase 残卷;
+            [ConditionalField(true, nameof(TryUseSo))] [SerializeField] private BookSoBase 残卷;
             [SerializeField] private int 数量 = 1;
             public int Id => _id;
             public string Name => _name;
             public int Amount => 数量;
+
+            public ItemType Type => Kind switch
+            {
+                Kinds.Weapon => ItemType.Equipment,
+                Kinds.Armor => ItemType.Equipment,
+                Kinds.Medicine => ItemType.Medicine,
+                Kinds.Book => ItemType.Book,
+                Kinds.StoryProp => ItemType.StoryProps,
+                Kinds.FunctionProp => ItemType.StoryProps,
+                _ => throw new ArgumentOutOfRangeException()
+            };
             private Kinds Kind => _kind;
 
             private bool UseSo() => 引用;
@@ -131,7 +169,7 @@ namespace Server.Controllers.Adventures
                         break;
                     case Kinds.Medicine:
                         break;
-                    case Kinds.Scroll:
+                    case Kinds.Book:
                         so = 残卷;
                         return true;
                     case Kinds.StoryProp:
@@ -162,7 +200,7 @@ namespace Server.Controllers.Adventures
                     Kinds.Weapon => m_Weapon,
                     Kinds.Armor => m_Armor,
                     Kinds.Medicine => m_Medicine,
-                    Kinds.Scroll => m_Scroll,
+                    Kinds.Book => m_Book,
                     Kinds.StoryProp => m_StoryProp,
                     Kinds.FunctionProp => m_FunctionProp,
                     _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)

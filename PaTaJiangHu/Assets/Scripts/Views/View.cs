@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Views
 {
+    /// <summary>
+    /// 基于Unity的通用Ui整合标准
+    /// </summary>
     public interface IView
     {
         IReadOnlyDictionary<string, GameObject> GetMap();
@@ -14,7 +17,9 @@ namespace Views
         T GetObject<T>(string objName);
         T GetObject<T>(int index);
     }
-
+    /// <summary>
+    /// 挂在Ui父件的身上的整合插件
+    /// </summary>
     public class View : MonoBehaviour, IView
     {
         [SerializeField] private GameObject[] _components;
