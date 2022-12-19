@@ -12,12 +12,13 @@ namespace Server.Controllers.Characters
     {
         public enum Grades
         {
-            E,
-            D,
-            C,
-            B,
-            A,
-            S,
+            [InspectorName("白")]F,
+            [InspectorName("绿")]E,
+            [InspectorName("篮")]D,
+            [InspectorName("紫")]C,
+            [InspectorName("橙")]B,
+            [InspectorName("红")]A,
+            [InspectorName("金")]S,
         }
 
         public enum Props
