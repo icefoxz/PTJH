@@ -103,15 +103,28 @@ public class DiziTestManager
     }
     private class DiziGenWindow : UiBase
     {
-        private enum Grade
+        public enum Grades
         {
+            F,
             E,
             D,
             C,
             B,
             A,
-            S
+            S,
         }
+        public static string GetColorTitle(Grades grade) => grade switch
+        {
+            Grades.F => "白",
+            Grades.E => "绿",
+            Grades.D => "篮",
+            Grades.C => "紫",
+            Grades.B => "橙",
+            Grades.A => "红",
+            Grades.S => "金",
+            _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
+        };
+
         private Text Text_name { get; }
         private Button Btn_generate { get; }
         private Button Btn_recruit { get; }
@@ -139,8 +152,8 @@ public class DiziTestManager
             Leveling = new LevelingUi(v.GetObject<View>("view_leveling"), 
                 () => leveling(LevelUp()),
                 () => leveling(LevelDown()));
-            var gradeMap = Enum.GetValues(typeof(Grade)).Cast<int>()
-                .Select(g => (((Grade)g).ToString(), new Action(() => SelectGrade(g)))).ToArray();
+            var gradeMap = Enum.GetValues(typeof(Grades)).Cast<Grades>()
+                .Select(g => (GetColorTitle(g).ToString(), new Action(() => SelectGrade((int)g)))).ToArray();
             SetGrades(gradeMap);
         }
 
