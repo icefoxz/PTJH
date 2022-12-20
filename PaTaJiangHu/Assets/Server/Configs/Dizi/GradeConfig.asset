@@ -13,23 +13,77 @@ MonoBehaviour:
   m_Name: GradeConfig
   m_EditorClassIdentifier: 
   _gradeConfigs:
+  - Grade: 6
+    "\u4F53\u529B":
+      _range: {x: 300, y: 300}
+    "\u80CC\u5305\u683C":
+      _range: {x: 26, y: 30}
+    "\u968F\u673A\u4E94\u7EF4":
+    - "\u968F1": {fileID: 11400000, guid: 48a37aeacfcf5c34890351cb5c2121c5, type: 2}
+      "\u968F2": {fileID: 11400000, guid: 48a37aeacfcf5c34890351cb5c2121c5, type: 2}
+      "\u968F3": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
+      "\u968F4": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
+    - "\u968F1": {fileID: 11400000, guid: 48a37aeacfcf5c34890351cb5c2121c5, type: 2}
+      "\u968F2": {fileID: 11400000, guid: 48a37aeacfcf5c34890351cb5c2121c5, type: 2}
+      "\u968F3": {fileID: 11400000, guid: 48a37aeacfcf5c34890351cb5c2121c5, type: 2}
+      "\u968F4": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+  - Grade: 5
+    "\u4F53\u529B":
+      _range: {x: 250, y: 250}
+    "\u80CC\u5305\u683C":
+      _range: {x: 21, y: 25}
+    "\u968F\u673A\u4E94\u7EF4":
+    - "\u968F1": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
+      "\u968F2": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
+      "\u968F3": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
+      "\u968F4": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
   - Grade: 4
     "\u4F53\u529B":
-      _range: {x: 50, y: 60}
+      _range: {x: 200, y: 200}
+    "\u80CC\u5305\u683C":
+      _range: {x: 16, y: 20}
+    "\u968F\u673A\u4E94\u7EF4":
+    - "\u968F1": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
+      "\u968F2": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
+      "\u968F3": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+      "\u968F4": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+  - Grade: 3
+    "\u4F53\u529B":
+      _range: {x: 150, y: 150}
+    "\u80CC\u5305\u683C":
+      _range: {x: 11, y: 15}
+    "\u968F\u673A\u4E94\u7EF4":
+    - "\u968F1": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+      "\u968F2": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+      "\u968F3": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+      "\u968F4": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+  - Grade: 2
+    "\u4F53\u529B":
+      _range: {x: 100, y: 100}
+    "\u80CC\u5305\u683C":
+      _range: {x: 6, y: 10}
+    "\u968F\u673A\u4E94\u7EF4":
+    - "\u968F1": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+      "\u968F2": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
+      "\u968F3": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+      "\u968F4": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+  - Grade: 1
+    "\u4F53\u529B":
+      _range: {x: 50, y: 50}
     "\u80CC\u5305\u683C":
       _range: {x: 3, y: 5}
     "\u968F\u673A\u4E94\u7EF4":
-    - "\u968F1": {fileID: 11400000, guid: 6af135b285f53a74c93bea3e2611ce64, type: 2}
-      "\u968F2": {fileID: 11400000, guid: e5e246dc6aad88242a847f0299c31ad9, type: 2}
-      "\u968F3": {fileID: 11400000, guid: 48a37aeacfcf5c34890351cb5c2121c5, type: 2}
-      "\u968F4": {fileID: 11400000, guid: 48a37aeacfcf5c34890351cb5c2121c5, type: 2}
-  - Grade: 1
+    - "\u968F1": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+      "\u968F2": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+      "\u968F3": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+      "\u968F4": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+  - Grade: 0
     "\u4F53\u529B":
-      _range: {x: 20, y: 50}
+      _range: {x: 30, y: 30}
     "\u80CC\u5305\u683C":
-      _range: {x: 1, y: 3}
+      _range: {x: 1, y: 5}
     "\u968F\u673A\u4E94\u7EF4":
     - "\u968F1": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
-      "\u968F2": {fileID: 11400000, guid: fd8738a8982a9334ba0cce9456d77b4f, type: 2}
-      "\u968F3": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+      "\u968F2": {fileID: 11400000, guid: 65965737f253e744dbe6d34649913036, type: 2}
+      "\u968F3": {fileID: 11400000, guid: fd8738a8982a9334ba0cce9456d77b4f, type: 2}
       "\u968F4": {fileID: 11400000, guid: fd8738a8982a9334ba0cce9456d77b4f, type: 2}
