@@ -68,6 +68,7 @@ namespace Server.Controllers.Characters
                 mp: mp, 
                 level: 1, 
                 stamina: sta,
+                gradeTitle: GradeConfigSo.GetColorTitle((GradeConfigSo.Grades)grade),
                 capable: cap, condition: new Dictionary<int, int>());
         }
         private string GenerateName()
@@ -87,14 +88,14 @@ namespace Server.Controllers.Characters
             public int MaxMp { get; private set; }
             public int Level { get; private set; }
             public int Stamina { get; private set; }
+            public string GradeTitle { get;  }
             public Capable Capable { get; private set; }
             public Dictionary<int, int> Condition { get; private set; }
 
             public Dizi()
             {
-                
             }
-            public Dizi(string name, int strength, int agility, int hp, int mp, int level, int stamina, Capable capable, Dictionary<int, int> condition)
+            public Dizi(string name, int strength, int agility, int hp, int mp, int level, int stamina, string gradeTitle, Capable capable, Dictionary<int, int> condition)
             {
                 Name = name;
                 Strength = strength;
@@ -107,6 +108,7 @@ namespace Server.Controllers.Characters
                 Stamina = stamina;
                 Capable = capable;
                 Condition = condition;
+                GradeTitle = gradeTitle;
             }
 
             public void SetHp(int hp)
@@ -124,7 +126,7 @@ namespace Server.Controllers.Characters
             public void SetAgility(int str) => Agility = str;
 
             public Dizi Clone() =>
-                new(Name, Strength, Agility, Hp, Mp, Level, Stamina, Capable,
+                new(Name, Strength, Agility, Hp, Mp, Level, Stamina, GradeTitle ,Capable,
                     Condition.ToDictionary(c => c.Key, c => c.Value));
         }
         internal class Capable 

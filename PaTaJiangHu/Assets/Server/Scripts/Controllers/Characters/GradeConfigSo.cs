@@ -20,6 +20,17 @@ namespace Server.Controllers.Characters
             [InspectorName("红")]A,
             [InspectorName("金")]S,
         }
+        public static string GetColorTitle(Grades grade) => grade switch
+        {
+            Grades.F => "白",
+            Grades.E => "绿",
+            Grades.D => "篮",
+            Grades.C => "紫",
+            Grades.B => "橙",
+            Grades.A => "红",
+            Grades.S => "金",
+            _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
+        };
 
         public enum Props
         {

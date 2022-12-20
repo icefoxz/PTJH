@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
+using _Game.Models;
 using QFramework;
-using Server.Models;
 using UnityEngine;
 
 namespace Server.Controllers.Adventures
