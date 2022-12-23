@@ -1,0 +1,231 @@
+﻿using System;
+using HotFix_Project.Serialization.LitJson;
+using UnityEngine;
+using UnityEngine.UI;
+using Views;
+using HotFix_Project.Views.Bases;
+
+namespace HotFix_Project.Controllers;
+
+/// <summary>
+/// 弟子信息板块Ui控制器
+/// </summary>
+public class DiziInfoSection
+{
+    private View_diziInfoSect DiziInfo { get; set; }
+    public void Init()
+    {
+        //Game.UiBuilder.Build("view_diziInfoSect", v => DiziInfo = new View_diziInfoSect(v));
+        //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_Update,
+        //    arg => DiziInfo.SetDizi(JsonMapper.ToObject<DiziInfoDto>(arg)));
+        //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StaminaUpdate,
+        //    arg => DiziInfo.UpdateStamina(JsonMapper.ToObject<int[]>(arg)));
+        //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StateUpdate,
+        //    arg => DiziInfo.UpdateState(JsonMapper.ToObject<string[]>(arg)));
+    }
+
+    private class View_diziInfoSect : UiBase
+    {
+        private View_charInfo CharInfo { get; }
+        private View_diziProps DiziProps { get; }
+        public View_diziInfoSect(IView v) : base(v.GameObject, false)
+        {
+            CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"));
+            DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
+        }
+
+        private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
+        private void SetProp(View_diziProps.Props prop, int grade, int value, int equip = 0, int condition = 0) =>
+            DiziProps.Set(prop, grade, value, equip, condition);
+        private class View_charInfo : UiBase
+        {
+            private Image Img_charAvatar { get; }
+            private Text Text_charName { get; }
+            private Text Text_charLevel { get; }
+            private Text Text_charExpValue { get; }
+            private Text Text_charExpMax { get; }
+            private Scrollbar Scrbar_exp { get; }
+
+            private View_statusList StatusList { get; }
+            public View_charInfo(IView v) : base(v.GameObject, true)
+            {
+                Img_charAvatar = v.GetObject<Image>("img_charAvatar");
+                Text_charName = v.GetObject<Text>("text_charName");
+                Text_charLevel = v.GetObject<Text>("text_charLevel");
+                Text_charExpValue = v.GetObject<Text>("text_charExpValue");
+                Text_charExpMax = v.GetObject<Text>("text_charExpMax");
+                Scrbar_exp = v.GetObject<Scrollbar>("scrbar_exp");
+                StatusList = new View_statusList(v.GetObject<View>("view_statusList"));
+            }
+
+            public void SetAvatar(Sprite avatar) => Img_charAvatar.sprite = avatar;
+            public void SetName(string name) => Text_charName.text = name;
+            public void SetLevel(string level) => Text_charLevel.text = level;
+            public void SetExp(int value, int max)
+            {
+                Text_charExpValue.text = value.ToString();
+                Text_charExpMax.text = max.ToString();
+                Scrbar_exp.value = 1f * value / max;
+            }
+            public void SetPower(int power) => StatusList.SetPower(power);
+
+            public void SetStamina(int staValue, int staMax, int min, int sec) =>
+                StatusList.SetStamina(staValue, staMax, min, sec);
+
+            public void SetState(string shortTitle, string description, int min, int sec) =>
+                StatusList.SetState(shortTitle, description, min, sec);
+
+            private class View_statusList : UiBase
+            {
+                private Text Text_powerValue { get; }
+                private View_Stamina StaminaView { get; }
+                private View_State StateView { get; }
+                public View_statusList(IView v) : base(v.GameObject, true)
+                {
+                    Text_powerValue = v.GetObject<Text>("text_powerValue");
+                    StaminaView = new View_Stamina(v.GetObject<View>("view_stamina"));
+                    StateView = new View_State(v.GetObject<View>("view_state"));
+                }
+
+                public void SetPower(int power) => Text_powerValue.text = power.ToString();
+                public void SetStamina(int staValue, int staMax, int min, int sec)
+                {
+                    StaminaView.SetTime(min, sec);
+                    StaminaView.SetStamina(staValue, staMax);
+                }
+                public void SetState(string shortTitle, string description, int min, int sec)
+                {
+                    StateView.SetTitle(shortTitle);
+                    StateView.SetDescription(description);
+                    StateView.SetTime(min, sec);
+                }
+
+                private class View_Stamina : UiBase
+                {
+                    private Text Text_staminaMax { get; }
+                    private Text Text_staminaValue { get; }
+                    private View_time TimeView { get; }
+
+                    public View_Stamina(IView v) : base(v.GameObject, true)
+                    {
+                        Text_staminaMax = v.GetObject<Text>("text_staminaMax");
+                        Text_staminaValue = v.GetObject<Text>("text_staminaValue");
+                        TimeView = new View_time(v.GetObject<View>("view_timeView"));
+                    }
+                    public void SetStamina(int value, int max)
+                    {
+                        Text_staminaValue.text = value.ToString();
+                        Text_staminaMax.text = max.ToString();
+                    }
+                    public void SetTime(int min, int sec) => TimeView.SetTime(min, sec);
+                }
+                private class View_State : UiBase
+                {
+                    private Text Text_stateTitle { get; }
+                    private Text Text_stateTime { get; }
+                    private Text Text_stateDescription { get; }
+                    private View_time TimeView { get; }
+
+                    public View_State(IView v) : base(v.GameObject, false)
+                    {
+                        Text_stateTitle = v.GetObject<Text>("text_stateTitle");
+                        Text_stateDescription = v.GetObject<Text>("text_stateDescription");
+                        TimeView = new View_time(v.GetObject<View>("view_timeView"));
+                    }
+                    public void SetTitle(string title) => Text_stateTitle.text = title;
+                    public void SetTime(int min, int sec) => TimeView.SetTime(min, sec);
+                    public void SetDescription(string description) => Text_stateDescription.text = description;
+                }
+                private class View_time : UiBase
+                {
+                    private Text Text_value { get; }
+                    private Text Text_max { get; }
+
+                    public View_time(IView v) : base(v.GameObject, true)
+                    {
+                        Text_value = v.GetObject<Text>("text_value");
+                        Text_max = v.GetObject<Text>("text_max");
+                    }
+
+                    public void SetTime(int min, int sec)
+                    {
+                        Text_max.text = min.ToString();
+                        Text_value.text = sec.ToString();
+                        Display(true);
+                    }
+                    public void Hide() => Display(false);
+                }
+            }
+        }
+        private class View_diziProps : UiBase
+        {
+            public enum Props { Strength, Agility, Hp, Mp }
+            private Element_prop Strength { get; }
+            private Element_prop Agility { get; }
+            private Element_prop Hp { get; }
+            private Element_prop Mp { get; }
+            public View_diziProps(IView v) : base(v.GameObject, false)
+            {
+                Strength = new Element_prop(v.GetObject<View>("element_propStrength"));
+                Agility = new Element_prop(v.GetObject<View>("element_propAgility"));
+                Hp = new Element_prop(v.GetObject<View>("element_propHp"));
+                Mp = new Element_prop(v.GetObject<View>("element_propMp"));
+            }
+
+            public void SetIcon(Props prop, Sprite icon) => GetProp(prop).SetIcon(icon);
+
+            public void Set(Props prop, int grade, int value, int equip, int condition) =>
+                GetProp(prop).Set(grade, value, equip, condition);
+
+            private Element_prop GetProp(Props prop) => prop switch
+            {
+                Props.Strength => Strength,
+                Props.Agility => Agility,
+                Props.Hp => Hp,
+                Props.Mp => Mp,
+                _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
+            };
+
+            private class Element_prop : UiBase
+            {
+                private Image Img_ico { get; }
+                private Text Text_grade { get; }
+                private Text Text_prop { get; }
+                private Text Text_equip { get; }
+                private Text Text_condition { get; }
+
+                public Element_prop(IView v) : base(v.GameObject, true)
+                {
+                    Img_ico = v.GetObject<Image>("img_ico");
+                    Text_grade = v.GetObject<Text>("text_grade");
+                    Text_prop = v.GetObject<Text>("text_prop");
+                    Text_equip = v.GetObject<Text>("text_equip");
+                    Text_condition = v.GetObject<Text>("text_condition");
+                }
+
+                public void SetIcon(Sprite icon) => Img_ico.sprite = icon;
+                public void Set(int grade, int value, int equip, int condition)
+                {
+                    Text_grade.text = GetGrade(grade);
+                    Text_prop.text = SetText(value);
+                    Text_equip.text = SetText(equip);
+                    Text_condition.text = SetText(condition);
+
+                    string SetText(int v) => v == 0 ? string.Empty : v.ToString();
+                }
+
+                private static string GetGrade(int grade) => grade switch
+                {
+                    0 => "F",
+                    1 => "E",
+                    2 => "D",
+                    3 => "C",
+                    4 => "B",
+                    5 => "A",
+                    6 => "S",
+                    _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
+                };
+            }
+        }
+    }
+}

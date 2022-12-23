@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {
-    public class SkillFormUi : UiBase
+    public class SkillFormUi : BaseUi
     {
         [SerializeField] private PointerButton _button;
         [SerializeField] private Text _title;

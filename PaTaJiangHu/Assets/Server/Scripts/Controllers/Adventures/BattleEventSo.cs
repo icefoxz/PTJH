@@ -1,11 +1,12 @@
 ﻿using System;
+using BattleM;
 using MyBox;
 using UnityEngine;
 
 namespace Server.Controllers.Adventures
 {
-    [CreateAssetMenu(fileName = "id_战斗事件名", menuName = "副本/战斗事件")]
-    internal class BattleEventSo : AdvEventSoBase
+    [CreateAssetMenu(fileName = "id_战斗事件名", menuName = "事件/副本/战斗事件")]
+    internal class BattleEventSo : AdvInterEventSoBase
     {
         public enum Result
         {
@@ -27,23 +28,32 @@ namespace Server.Controllers.Adventures
         [SerializeField] private AdvEventSoBase 战败;
         [ConditionalField(nameof(类型), false, Types.Test)] [SerializeField] private AdvEventSoBase 击杀;
         [ConditionalField(nameof(类型), false, Types.Test)] [SerializeField] private AdvEventSoBase 逃脱;
-        //[SerializeField] private int _id;
-        //public override int Id => _id;
+        public override IAdvEvent GetNextEvent(IAdvEventArg arg)
+        {
+            return arg.Result switch
+            {
+                0 => NextEvent(Result.Win, Finalized.Exhausted),
+                1 => NextEvent(Result.Lose, Finalized.Exhausted),
+                2 => NextEvent(Result.Win, Finalized.Escaped),
+                3 => NextEvent(Result.Lose, Finalized.Escaped),
+                _ => throw new ArgumentOutOfRangeException($"{nameof(arg.Result)}", arg.Result.ToString())
+            };
+        }
+
         /// <summary>
         /// [0].Win<br/>[1].Lose<br/>[2].Kill<br/>[3].Escape
         /// </summary>
-        public override IAdvEvent[] PossibleEvents => Type switch
+        public override IAdvEvent[] AllEvents => Type switch
         {
             Types.Test => new[] { Win, Lose, Kill, Escaped },
             Types.Duel => new[] { Win, Lose },
             _ => throw new ArgumentOutOfRangeException()
         };
         public override AdvTypes AdvType => AdvTypes.Battle;
-        protected override Action<IAdvEvent> OnResultCallback { get; set; }
 
-        public void NextEvent(Result result, Finalized finalize)
+        public IAdvEvent NextEvent(Result result, Finalized finalize)
         {
-            IAdvEvent next = result switch
+            var next = result switch
             {
                 Result.Win when
                     Type == Types.Test => finalize == Finalized.Escaped ? Win : Kill,
@@ -53,7 +63,7 @@ namespace Server.Controllers.Adventures
                 Result.Lose => Lose,
                 _ => throw new ArgumentOutOfRangeException(nameof(result), result, null)
             };
-            OnResultCallback(next);
+            return next;
         }
         private Types Type => 类型;
         private IAdvEvent Win => 胜利;

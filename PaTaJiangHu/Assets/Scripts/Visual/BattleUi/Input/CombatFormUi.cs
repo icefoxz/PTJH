@@ -1,10 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {
-    public class CombatFormUi : UiBase
+    public class CombatFormUi : BaseUi
     {
         [SerializeField] private Text _titleText;
         [SerializeField] private Text _breathText;

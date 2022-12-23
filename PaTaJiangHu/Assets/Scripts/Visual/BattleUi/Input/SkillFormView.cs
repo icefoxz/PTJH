@@ -1,5 +1,5 @@
 using System;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {

@@ -28,4 +28,7 @@ public class EventString
     public const string Test_SimulationOutcome = "Test_SimulationOutcome";
     public const string Test_SimulationUpdateModel = "Test_SimulationUpdateModel";
     public const string Test_SimulationStart = "Test_SimulationStart";
+
+    //弟子Info
+    public const string Model_DiziInfo_StaminaUpdate = "Model_DiziInfo_StaminaUpdate";
 }

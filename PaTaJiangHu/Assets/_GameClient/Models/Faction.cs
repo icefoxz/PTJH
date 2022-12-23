@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Server.Controllers.Adventures;
 
-namespace _Game.Models
+namespace _GameClient.Models
 {
     public interface IDiziInfo
     {
@@ -13,7 +13,6 @@ namespace _Game.Models
         int Mp { get; }
         int MaxMp { get; }
         int Level { get; }
-        int Stamina { get; }
         /// <summary>
         /// 品级
         /// </summary>
@@ -30,6 +29,18 @@ namespace _Game.Models
         /// 背包格
         /// </summary>
         int InventorySlot { get; }
+        /// <summary>
+        /// 当前体力
+        /// </summary>
+        int Stamina { get; set; }
+        /// <summary>
+        /// 最大体力
+        /// </summary>
+        int StaminaMax { get; set; }
+        /// <summary>
+        /// 上次体力更新
+        /// </summary>
+        long StaminaUpdate { get; set; }
     }
 
     /// <summary>

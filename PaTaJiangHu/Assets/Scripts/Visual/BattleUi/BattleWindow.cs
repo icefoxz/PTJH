@@ -6,7 +6,7 @@ using BattleM;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 using Visual.BattleUi.Input;
 using Visual.BattleUi.Scene;
 using Visual.BattleUi.Status;
@@ -27,7 +27,7 @@ namespace Visual.BattleUi
         void StartBattle();
     }
 
-    public class BattleWindow : UiBase, IBattleWindow,ICombatFragmentPlayer
+    public class BattleWindow : BaseUi, IBattleWindow,ICombatFragmentPlayer
     {
         [SerializeField] private Button WinBtn;
         [SerializeField] private Button LoseBtn;

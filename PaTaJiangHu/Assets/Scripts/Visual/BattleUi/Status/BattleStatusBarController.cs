@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BattleM;
 using UnityEngine;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Status
 {
@@ -17,7 +17,7 @@ namespace Visual.BattleUi.Status
         void UpdateStatus(int combatId, IConditionValue hp, IConditionValue mp);
         void UpdateText(int combatId, IConditionValue hp, IConditionValue mp);
     }
-    public class BattleStatusBarController : UiBase, IBattleStatusBarController
+    public class BattleStatusBarController : BaseUi, IBattleStatusBarController
     {
         [SerializeField] private CombatStatusUi leftPrefab;
         [SerializeField] private CombatStatusUi rightPrefab;

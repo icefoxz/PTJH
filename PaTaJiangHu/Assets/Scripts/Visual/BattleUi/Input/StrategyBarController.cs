@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {

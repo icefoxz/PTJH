@@ -3,11 +3,11 @@ using System.Collections;
 using MyBox;
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {
-    public class BreathViewUi : UiBase
+    public class BreathViewUi : BaseUi
     {
         private enum ViewModes
         {

@@ -2,12 +2,12 @@ using BattleM;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 using Visual.BattleUi.Scene;
 
 namespace Visual.BattleUi.Status
 {
-    public class CombatUnitUi : UiBase
+    public class CombatUnitUi : BaseUi
     {
         [SerializeField] private Text _name;
         [SerializeField] private Text _hp;

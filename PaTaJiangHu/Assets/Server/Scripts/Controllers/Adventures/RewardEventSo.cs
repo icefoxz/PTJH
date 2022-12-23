@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Data;
 using MyBox;
 using So;
@@ -47,22 +48,22 @@ namespace Server.Controllers.Adventures
         IGameItem[] Scrolls { get; }
         IGameItem[] StoryProps { get; }
         IGameItem[] FunctionProps { get; }
+        IGameItem[] AllItems { get; }
     }
 
-    [CreateAssetMenu(fileName = "id_奖励件名", menuName = "副本/奖励事件")]
+    [CreateAssetMenu(fileName = "id_奖励件名", menuName = "事件/奖励事件")]
     internal class RewardEventSo : AdvEventSoBase
     {
         [SerializeField] private AdvEventSoBase 下个事件;
         [SerializeField] private RewardField 奖励;
-        
+        private RewardField GameReward => 奖励;
         //[SerializeField] private int _id;
         //public override int Id => _id;
-        public override IAdvEvent[] PossibleEvents => new[] { Next };
+        public override IAdvEvent GetNextEvent(IAdvEventArg arg) => Next;
+        public override IAdvEvent[] AllEvents => new[] { Next };
         public override AdvTypes AdvType => AdvTypes.Reward;
         private IAdvEvent Next => 下个事件;
-        public IGameReward Reward => 奖励;
-        protected override Action<IAdvEvent> OnResultCallback { get; set; }
-        public void NextEvent() => OnResultCallback?.Invoke(Next);
+        public IGameReward Reward => GameReward;
 
         [Serializable] private class RewardField : IGameReward
         {
@@ -80,6 +81,15 @@ namespace Server.Controllers.Adventures
             public IGameItem[] Scrolls => 秘籍;
             public IGameItem[] StoryProps => 故事道具;
             public IGameItem[] FunctionProps => 功能道具;
+
+            public IGameItem[] AllItems => Weapons.Concat(Armor)
+                .Concat(Medicines)
+                .Concat(Scrolls)
+                .Concat(StoryProps)
+                .Concat(FunctionProps)
+                .ToArray();
+
+            public GameItem[] AllItemFields => 武器.Concat(防具).Concat(丹药).Concat(秘籍).Concat(故事道具).Concat(功能道具).ToArray();
 
             private bool UpdateAllList()
             {
@@ -133,7 +143,7 @@ namespace Server.Controllers.Adventures
                 Kinds.FunctionProp => ItemType.StoryProps,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            private Kinds Kind => _kind;
+            public Kinds Kind => _kind;
 
             private bool UseSo() => 引用;
 
@@ -193,7 +203,7 @@ namespace Server.Controllers.Adventures
                 }
                 _name = $"{id}.{title}({GetKindName(_kind)}):{Amount}";
             }
-            private string GetKindName(Kinds kind)
+            public static string GetKindName(Kinds kind)
             {
                 return kind switch
                 {

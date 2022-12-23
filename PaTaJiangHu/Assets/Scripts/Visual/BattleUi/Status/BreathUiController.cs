@@ -4,12 +4,12 @@ using BattleM;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 using Visual.BattleUi.Input;
 
 namespace Visual.BattleUi.Status
 {
-    public class BreathUiController : UiBase
+    public class BreathUiController : BaseUi
     {
         [SerializeField] private Slider leftSlider;
         [SerializeField] private Text leftText;

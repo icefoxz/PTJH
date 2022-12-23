@@ -2,11 +2,11 @@ using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Status
 {
-    public class BattleOrderAvatarUi : UiBase
+    public class BattleOrderAvatarUi : BaseUi
     {
         [SerializeField] private Text _nameText;
         [SerializeField] private RectTransform _rect;

@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {
-    public class ManualAutoSwitch : UiBase
+    public class ManualAutoSwitch : BaseUi
     {
         [SerializeField] private Text _autoText;
         [SerializeField] private Text _manualText;

@@ -3,11 +3,11 @@ using BattleM;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {
-    public class PlayerStrategyController : UiBase
+    public class PlayerStrategyController : BaseUi
     {
         private enum Modes
         {

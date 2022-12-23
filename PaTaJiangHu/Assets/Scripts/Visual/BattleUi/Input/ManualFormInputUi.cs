@@ -3,11 +3,11 @@ using BattleM;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Input
 {
-    public class ManualFormInputUi : UiBase
+    public class ManualFormInputUi : BaseUi
     {
         [SerializeField] private SkillFormView combatFormView;
         [SerializeField] private SkillFormView forceFormView;

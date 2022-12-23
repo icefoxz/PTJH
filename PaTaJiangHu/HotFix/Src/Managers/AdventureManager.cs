@@ -95,7 +95,6 @@ namespace HotFix_Project.Managers
                 OnStartMapEvent = onStartMapEvent;
             }
 
-
             //public void SetEvent(AdventureController.AdvEvent advEvent, string arg)
             //{
             //    Process.ClearEvents();
@@ -257,9 +256,9 @@ namespace HotFix_Project.Managers
                 {
                     case AdvTypes.Story:
                     {
-                        var storyEvent = LJson.ToObject<AdventureController.StoryEvent>(arg, true);
+                        var storyEvent = LJson.ToObject<AdventureController.BriefEvent>(arg, true);
                         var nextIndex = storyEvent.NextIndexes.First();
-                        StoryEventView.Set(storyEvent.Name, storyEvent.Story,
+                        StoryEventView.Set(storyEvent.Name, storyEvent.Text,
                             () => OnNextEvent?.Invoke(storyEvent.StoryId, nextIndex));
                         break;
                     }
@@ -452,10 +451,10 @@ namespace HotFix_Project.Managers
                 public void Set(AdventureController.DialogEvent dialogEvent,Action onDialogComplete)
                 {
                     Text_title.text = dialogEvent.Name;
-                    var array = new(int Id, string Name, string Message)[dialogEvent.Ids.Length];
-                    for (var i = 0; i < dialogEvent.Ids.Length; i++)
+                    var array = new(int Id, string Name, string Message)[dialogEvent.Names.Length];
+                    for (var i = 0; i < dialogEvent.Names.Length; i++)
                     {
-                        array[i].Id = dialogEvent.Ids[i];
+                        array[i].Id = i;
                         array[i].Name = dialogEvent.Names[i];
                         array[i].Message = dialogEvent.Messages[i];
                     }

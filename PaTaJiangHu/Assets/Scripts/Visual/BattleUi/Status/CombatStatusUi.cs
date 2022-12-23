@@ -1,11 +1,11 @@
 using BattleM;
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Status
 {
-    public class CombatStatusUi : UiBase
+    public class CombatStatusUi : BaseUi
     {
         [SerializeField] private Text _nameText;
         [SerializeField] private ConValueSliderUi _hpSliderUi;

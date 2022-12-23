@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
-using _Game.Models;
-using QFramework;
+using _GameClient.Models;
 using UnityEngine;
 
 namespace Server.Controllers.Adventures
@@ -37,8 +36,8 @@ namespace Server.Controllers.Adventures
 
         public void SimulateResult()
         {
-            var outCome = Model.SimulateOutcome(Cfg.ConditionPropCfg, Cfg.SimulationOutcomeCfg);
-            Game.MessagingManager.Invoke(EventString.Test_SimulationOutcome, new Outcome(outCome,Cfg.SimulationOutcomeCfg));
+            var outCome = Model.SimulateOutcome(Cfg.ConditionPropCfg, Cfg.BattleSimulatorCfg);
+            Game.MessagingManager.Invoke(EventString.Test_SimulationOutcome, new Outcome(outCome,Cfg.BattleSimulatorCfg));
         }
 
         private PropCon GetCon(bool isPlayer) => isPlayer ? Model.Player : Model.Enemy;
@@ -139,10 +138,10 @@ namespace Server.Controllers.Adventures
         [Serializable] internal class Configure
         {
             [SerializeField] private ConditionPropertySo 状态属性配置;
-            [SerializeField] private SimulationOutcomeConfigSo 体力扣除配置;
+            [SerializeField] private BattleSimulatorConfig 体力扣除配置;
 
             internal ConditionPropertySo ConditionPropCfg => 状态属性配置;
-            internal SimulationOutcomeConfigSo SimulationOutcomeCfg => 体力扣除配置;
+            internal BattleSimulatorConfig BattleSimulatorCfg => 体力扣除配置;
         }
 
         public class TestModel 
@@ -164,7 +163,7 @@ namespace Server.Controllers.Adventures
             }
 
             internal ISimulationOutcome SimulateOutcome(ConditionPropertySo conditionCfg,
-                SimulationOutcomeConfigSo simCfg)
+                BattleSimulatorConfig simCfg)
             {
                 var p = Player;
                 var e = Enemy;
@@ -348,7 +347,7 @@ namespace Server.Controllers.Adventures
             {
                 
             }
-            internal Outcome(ISimulationOutcome o, SimulationOutcomeConfigSo simCfg)
+            internal Outcome(ISimulationOutcome o, BattleSimulatorConfig simCfg)
             {
                 Rounds = o.Rounds.Select(r => new Round(r)).ToArray();
                 IsPlayerWin = o.IsPlayerWin;

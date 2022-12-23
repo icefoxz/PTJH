@@ -1,4 +1,4 @@
-﻿namespace _Game.Models
+﻿namespace _GameClient.Models
 {
     /// <summary>
     /// 弟子状态

@@ -5,11 +5,11 @@ using BattleM;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Status
 {
-    public class PromptEventUi : UiBase
+    public class PromptEventUi : BaseUi
     {
         public enum Events
         {

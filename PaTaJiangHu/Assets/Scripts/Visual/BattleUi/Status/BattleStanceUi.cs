@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BattleM;
-using Visual.BaseUi;
+using Visual.BaseUis;
 using Visual.BattleUi.Scene;
 
 namespace Visual.BattleUi.Status

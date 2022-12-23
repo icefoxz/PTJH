@@ -1,11 +1,11 @@
 using BattleM;
 using UnityEngine;
 using UnityEngine.UI;
-using Visual.BaseUi;
+using Visual.BaseUis;
 
 namespace Visual.BattleUi.Status
 {
-    public class ConValueSliderUi : UiBase
+    public class ConValueSliderUi : BaseUi
     {
         [SerializeField] private Slider _hpSlider;
         [SerializeField] private Slider _maxSlider;
