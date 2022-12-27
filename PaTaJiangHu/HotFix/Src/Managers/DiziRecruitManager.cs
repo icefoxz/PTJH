@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
@@ -24,13 +25,18 @@ public class DiziRecruitManager
         private Text Text_SilverCost { get; }
         private View_RecruitWindow RecruitWindow { get; }
 
-        public View_diziRecruitPage(IView v) : base(v.GameObject, true)
+        public View_diziRecruitPage(IView v) : base(v.GameObject, false)
         {
             Btn_Recruit = v.GetObject<Button>("btn_recruit");
+            Btn_Recruit.OnClickAdd(OnRecruit);
             Text_SilverCost = v.GetObject<Text>("text_silverCost");
             RecruitWindow = new View_RecruitWindow(v.GetObject<View>("view_recruitWindow"));
         }
-
+        //Open RecruitWindow
+        public void OnRecruit()
+        {
+            RecruitWindow.Display(true);
+        }
 
         private class View_RecruitWindow : UiBase
         {
@@ -43,10 +49,24 @@ public class DiziRecruitManager
                 Img_charAvatar = v.GetObject<Image>("img_charAvatar");
                 Text_charName = v.GetObject<Text>("text_charName");
                 Btn_Accept = v.GetObject<Button>("btn_accept");
+                Btn_Accept.OnClickAdd(OnAccept);
                 Btn_Reject = v.GetObject<Button>("btn_reject");
+                Btn_Reject.OnClickAdd(OnReject);
             }
             public void SetIcon(Sprite icon) => Img_charAvatar.sprite = icon;
             public void SetDiziName(string name) => Text_charName.text = name;
+            
+            public void OnAccept()
+            {
+                //Accept DiZi
+                this.Display(false);//RecruitWindow??
+            }
+            public void OnReject()
+            {
+                //Reject Dizi
+                this.Display(false);//RecruitWindow??
+            }
         }
+        
     }
 }
