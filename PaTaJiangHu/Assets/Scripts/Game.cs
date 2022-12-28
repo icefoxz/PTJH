@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Server;
 using Server.Controllers.Factions;
 using Systems;
@@ -62,6 +63,7 @@ public class Game : UnitySingleton<Game>
         MainUi.Init();
         Configure = configure;
         //SceneCanvas = sceneCanvas;
+        InitControllers();
     }
 
     /// <summary>
@@ -71,9 +73,20 @@ public class Game : UnitySingleton<Game>
     {
         Instance.Log();
         World = new GameWorld();
-        World.TestFaction();
-        InitControllers();
+        Debug.Log("TestFaction Init!");
+        Instance.StartGameAfterASecond();
         //TestFactionInventory();
+    }
+
+    private void StartGameAfterASecond(float sec = 0.5f)
+    {
+        StartCoroutine(StartAfterSec(sec));
+
+        IEnumerator StartAfterSec(float innerSec)
+        {
+            yield return new WaitForSeconds(innerSec);
+            World.TestFaction();
+        }
     }
 
     private static void InitControllers()

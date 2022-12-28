@@ -1,10 +1,14 @@
-﻿using UnityEngine;
+﻿using HotFix_Project.Controllers;
+using UnityEngine;
 
 namespace HotFix_Project.Managers;
 
 internal class UiManager
 {
     private IMainUi MainUi { get; }
+    private FactionInfoManager FactionInfo { get; set; } = new FactionInfoManager();
+    private DiziInfoSection DiziInfoSection { get; set; } = new DiziInfoSection();
+    private DiziRecruitManager DiziRecruitManager { get; set; } = new DiziRecruitManager();
     public UiManager(IMainUi mainUi)
     {
         MainUi = mainUi;
@@ -15,7 +19,17 @@ internal class UiManager
         InstanceTopUis();
         InstanceMidUis();
         InstanceBtmUis();
+        InitUis();
+        Debug.Log($"{nameof(UiManager)} Init!");
     }
+
+    private void InitUis()
+    {
+        FactionInfo.Init();
+        DiziInfoSection.Init();
+        DiziRecruitManager.Init();
+    }
+
 
     private void InstanceTopUis()
     {

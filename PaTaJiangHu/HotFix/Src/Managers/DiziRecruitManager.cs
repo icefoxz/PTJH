@@ -1,72 +1,91 @@
-﻿using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using HotFix_Project.Serialization.LitJson;
+using HotFix_Project.Views.Bases;
+using Server.Controllers.Factions;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Src.Managers;
+namespace HotFix_Project.Managers;
 
 public class DiziRecruitManager
 {
     private View_diziRecruitPage DiziRecruitPage { get; set; }
+    private DiziRecruitController RecruitController { get; set; }
+    private int CurrentDiziIndex { get; set; }
 
     public void Init()
     {
-        ///Init...
+        RecruitController = Game.Controllers.Get<DiziRecruitController>();
+        InitUis();
+        RegEvents();
     }
+
+    private void RegEvents()
+    {
+        Game.MessagingManager.RegEvent(EventString.Recruit_DiziGenerated, arg =>
+        {
+            DiziRecruitPage.SetDizi(JsonMapper.ToObject<DiziRecruitController.DiziInfo>(arg));
+        });
+        Game.MessagingManager.RegEvent(EventString.Recruit_DiziInSlot,
+            arg => CurrentDiziIndex = JsonMapper.ToObject<int[]>(arg)[0]);
+    }
+
+
+    private void InitUis()
+    {
+        Game.UiBuilder.Build("view_diziRecruitPage", v =>
+        {
+            DiziRecruitPage = new View_diziRecruitPage(v, RecruitController.GenerateDizi, 
+                ()=> RecruitController.RecruitDizi(CurrentDiziIndex));
+            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
+        });
+    }
+
     private class View_diziRecruitPage : UiBase
     {
         private Button Btn_Recruit { get; }
         private Text Text_SilverCost { get; }
         private View_RecruitWindow RecruitWindow { get; }
 
-        public View_diziRecruitPage(IView v) : base(v.GameObject, false)
+        public View_diziRecruitPage(IView v, Action onRecruitAction, Action onAcceptAction) : base(v.GameObject, true)
         {
             Btn_Recruit = v.GetObject<Button>("btn_recruit");
-            Btn_Recruit.OnClickAdd(OnRecruit);
+            Btn_Recruit.OnClickAdd(onRecruitAction);
             Text_SilverCost = v.GetObject<Text>("text_silverCost");
-            RecruitWindow = new View_RecruitWindow(v.GetObject<View>("view_recruitWindow"));
+            RecruitWindow = new View_RecruitWindow(v.GetObject<View>("view_recruitWindow"), onAcceptAction);
         }
-        //Open RecruitWindow
-        public void OnRecruit()
+
+        public void SetDizi(DiziRecruitController.DiziInfo d)
         {
+            RecruitWindow.SetDiziName(d.Name);
             RecruitWindow.Display(true);
         }
 
+        //private class
         private class View_RecruitWindow : UiBase
         {
             private Image Img_charAvatar { get; }
             private Text Text_charName { get; }
             private Button Btn_Accept { get; }
             private Button Btn_Reject { get; }
-            public View_RecruitWindow(IView v) : base(v.GameObject, false)
+            public View_RecruitWindow(IView v,Action onAcceptAction) : base(v.GameObject, false)
             {
                 Img_charAvatar = v.GetObject<Image>("img_charAvatar");
                 Text_charName = v.GetObject<Text>("text_charName");
                 Btn_Accept = v.GetObject<Button>("btn_accept");
-                Btn_Accept.OnClickAdd(OnAccept);
+                Btn_Accept.OnClickAdd(() =>
+                {
+                    onAcceptAction?.Invoke();
+                    Display(false);
+                });
                 Btn_Reject = v.GetObject<Button>("btn_reject");
                 Btn_Reject.OnClickAdd(OnReject);
             }
             public void SetIcon(Sprite icon) => Img_charAvatar.sprite = icon;
             public void SetDiziName(string name) => Text_charName.text = name;
-            
-            public void OnAccept()
-            {
-                //Accept DiZi
-                this.Display(false);//RecruitWindow??
-            }
-            public void OnReject()
-            {
-                //Reject Dizi
-                this.Display(false);//RecruitWindow??
-            }
+            private void OnReject() => Display(false); 
         }
-        
     }
 }

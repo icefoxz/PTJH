@@ -69,5 +69,30 @@ namespace _GameClient.Models
         public void AddSilver(int silver) => Silver += silver;
         public void AddYuanBao(int yuanBao) => YuanBao += yuanBao;
         public void AddLing(int ling)=> ActionLing += ling;
+
+        public class Dto
+        {
+            public int Silver { get; set; }
+            public int YuanBao { get; set; }
+            public int ActionLing { get; set; }
+            public int ActionLingMax { get; set; }
+
+            public Dto() { }
+
+            public Dto(Faction f)
+            {
+                Silver = f.Silver;
+                YuanBao = f.YuanBao;
+                ActionLing = f.ActionLing;
+                ActionLingMax = 100;
+            }
+            public Dto(int silver, int yuanBao, int actionLing, int actionLingMax)
+            {
+                Silver = silver;
+                YuanBao = yuanBao;
+                ActionLing = actionLing;
+                ActionLingMax = actionLingMax;
+            }
+        }
     }
 }

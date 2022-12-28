@@ -15,7 +15,7 @@ public class DiziInfoSection
     private View_diziInfoSect DiziInfo { get; set; }
     public void Init()
     {
-        //Game.UiBuilder.Build("view_diziInfoSect", v => DiziInfo = new View_diziInfoSect(v));
+        InitUi();
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_Update,
         //    arg => DiziInfo.SetDizi(JsonMapper.ToObject<DiziInfoDto>(arg)));
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StaminaUpdate,
@@ -24,11 +24,20 @@ public class DiziInfoSection
         //    arg => DiziInfo.UpdateState(JsonMapper.ToObject<string[]>(arg)));
     }
 
+    private void InitUi()
+    {
+        Game.UiBuilder.Build("view_diziInfoSect", v =>
+        {
+            DiziInfo = new View_diziInfoSect(v);
+            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Top, true);
+        });
+    }
+
     private class View_diziInfoSect : UiBase
     {
         private View_charInfo CharInfo { get; }
         private View_diziProps DiziProps { get; }
-        public View_diziInfoSect(IView v) : base(v.GameObject, false)
+        public View_diziInfoSect(IView v) : base(v.GameObject, true)
         {
             CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"));
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 /// </summary>
 public interface IGameController
 {
-
 }
 /// <summary>
 /// 基于<see cref="IGameController"/>的DI容器

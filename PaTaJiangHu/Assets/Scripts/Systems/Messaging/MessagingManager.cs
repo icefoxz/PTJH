@@ -32,8 +32,10 @@ namespace Systems.Messaging
             }
         }
 
-        public void Invoke(string eventName, string args) =>
-            EventMap[eventName]?.Invoke(string.IsNullOrEmpty(args) ? args : null);
+        public void Invoke(string eventName, string args)
+        {
+            if (EventMap.ContainsKey(eventName)) EventMap[eventName]?.Invoke(string.IsNullOrEmpty(args) ? args : null);
+        }
 
         public void RegEvent(string eventName, Action<string> action)
         {

@@ -4,15 +4,16 @@ using System.Linq;
 using _GameClient.Models;
 using NameM;
 using Server.Controllers.Characters;
+using UnityEngine;
 using Utls;
 
 namespace Server.Controllers.Factions
 {
-    internal class DiziRecruitController : IGameController
+    public class DiziRecruitController : IGameController
     {
         private GradeConfigSo GradeConfig { get; }
-        private List<Dizi> DiziList { get; } = new List<Dizi>();
-        public DiziRecruitController(GradeConfigSo gradeConfig)
+        private List<Dizi> TempDiziList { get; } = new List<Dizi>();
+        internal DiziRecruitController(GradeConfigSo gradeConfig)
         {
             GradeConfig = gradeConfig;
         }
@@ -20,21 +21,24 @@ namespace Server.Controllers.Factions
         public void GenerateDizi()
         {
             var name = NameGen.GenName();
-            var grades = Enum.GetValues(typeof(GradeConfigSo.Grades)).Cast<int>().ToArray();
-            var randomGrade = Sys.Random.Next(grades.Length);
+            var allGrades = Enum.GetValues(typeof(GradeConfigSo.Grades)).Cast<int>().ToArray();
+            var randomGrade = Sys.Random.Next(allGrades.Length);
             var (strength, agility, hp, mp, stamina, bag) = GradeConfig.GenerateFromGrade(randomGrade);
-            var diziIndex = DiziList.Count;
+            
+            var diziIndex = TempDiziList.Count;
             var dizi = new Dizi(name.Text, strength, agility, hp, mp, 1, randomGrade, stamina, bag, 1, 1, 1);
-            DiziList.Add(dizi);
+            TempDiziList.Add(dizi);
+            var list = new List<int> { diziIndex };
             Game.MessagingManager.Invoke(EventString.Recruit_DiziGenerated, new DiziInfo(dizi));
-            Game.MessagingManager.Invoke(EventString.Recruit_DiziInSlot, diziIndex.ToString());
+            Game.MessagingManager.Invoke(EventString.Recruit_DiziInSlot, list);
         }
 
         public void RecruitDizi(int index)
         {
-            var dizi = DiziList[index];
+            var dizi = TempDiziList[index];
             Game.World.Faction.AddDizi(dizi);
             Game.MessagingManager.Invoke(EventString.Faction_DiziAdd, new DiziInfo(dizi));
+            Debug.Log($"弟子:{dizi.Name} 加入门派!");
         }
 
         public class DiziInfo

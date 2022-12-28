@@ -4,32 +4,63 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using _GameClient.Models;
+using BattleM;
+using HotFix_Project.Serialization.LitJson;
+using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Src.Managers;
+namespace HotFix_Project.Managers;
 
 public class FactionInfoManager
 {
-    private View_factionInfo FactionInfo { get; set; }
+    private View_factionInfoUi FactionInfoUi { get; set; }
 
     public void Init()
     {
-        //Init method......
+        InitUi();
+        RegEvents();
     }
 
-    private class View_factionInfo : UiBase
+    private void RegEvents()
+    {
+        Game.MessagingManager.RegEvent(EventString.Faction_Init,
+            arg =>
+            {
+                FactionInfoUi.SetFaction(JsonMapper.ToObject<Faction.Dto>(arg));
+                FactionInfoUi.Display(true);
+            });
+    }
+
+    private void InitUi()
+    {
+        Game.UiBuilder.Build("view_factionInfoUi", v =>
+        {
+            FactionInfoUi = new View_factionInfoUi(v);
+            Game.MainUi.SetTop(v, true);
+        });
+    }
+    private class View_factionInfoUi : UiBase
     {
         private Element Element_Silver { get; }
         private Element Element_Yuanbao { get; }
         private View_actionToken ActionToken { get; }
 
-        public View_factionInfo(IView v) : base(v.GameObject, true)
+        public View_factionInfoUi(IView v) : base(v.GameObject, false)
         {
             Element_Silver = new Element(v.GetObject<View>("element_silver"));
             Element_Yuanbao = new Element(v.GetObject<View>("element_yuanbao"));
             ActionToken = new View_actionToken(v.GetObject<View>("view_actionToken"));
         }
+        public void SetFaction(Faction.Dto f)
+        {
+            Element_Silver.SetText(f.Silver.ToString());
+            Element_Yuanbao.SetText(f.YuanBao.ToString());
+            ActionToken.SetToken(f.ActionLing, f.ActionLingMax);
+        }
+
+        //private class
         private class Element : UiBase
         {
             private Text Text_resValue { get; }
@@ -70,6 +101,7 @@ public class FactionInfoManager
                 Text_timerSec.text = sec.ToString();
             }
         }
+
     }
     
 }

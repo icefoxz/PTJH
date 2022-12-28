@@ -36,4 +36,5 @@ public class EventString
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";
+    public const string Faction_Init = "Faction_Init";
 }

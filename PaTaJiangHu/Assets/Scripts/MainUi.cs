@@ -7,9 +7,9 @@ using Views;
 
 public interface IMainUi : ISingletonDependency
 {
-    void SetTop(IView view);
-    void SetMid(IView view);
-    void SetBtm(IView view);
+    void SetTop(IView view, bool resetPosition = false);
+    void SetMid(IView view, bool resetPosition = false);
+    void SetBtm(IView view, bool resetPosition = false);
     void SetPanel(IView view);
     void ShowTop();
     void ShowMid();
@@ -37,11 +37,13 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     [SerializeField] private RectTransform _midUi;
     [SerializeField] private RectTransform _btmUi;
     [SerializeField] private Image _panel;
+    [SerializeField] private MainPageLayout _mainPage;
 
     public RectTransform TopUi => _topUi;
     public RectTransform MidUi => _midUi;
     public RectTransform BtmUi => _btmUi;
     public Image Panel => _panel;
+    public MainPageLayout MainPage => _mainPage;
     private Dictionary<RectTransform,IView> _uiMap;
 
     public void Init()
@@ -56,9 +58,9 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         ResetUi();
     }
 
-    public void SetTop(IView view) => SetUi(TopUi, view);
-    public void SetMid(IView view) => SetUi(MidUi, view);
-    public void SetBtm(IView view) => SetUi(BtmUi, view);
+    public void SetTop(IView view, bool resetPos) => SetUi(TopUi, view, resetPos);
+    public void SetMid(IView view, bool resetPos) => SetUi(MidUi, view, resetPos);
+    public void SetBtm(IView view, bool resetPos) => SetUi(BtmUi, view, resetPos);
     public void SetPanel(IView view) => SetUi(Panel.rectTransform, view);
 
     public void ShowTop() => Display(true, TopUi);
@@ -92,9 +94,18 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         }
     }
 
-    private void SetUi(RectTransform tran, IView view)
+    private void SetUi(RectTransform tran, IView view, bool resetPos = false)
     {
         _uiMap[tran] = view;
         view.GameObject.transform.SetParent(tran);
+        if(resetPos)
+        {
+            var rect = (RectTransform)(view.GameObject.transform);
+            rect.SetTop(0);
+            rect.SetBottom(0);
+            rect.SetLeft(0);
+            rect.SetRight(0);
+            //((RectTransform)(view.GameObject.transform)).rect.size.Set(0, 0);
+        }
     }
 }
