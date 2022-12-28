@@ -2,6 +2,7 @@
 using System.Net.Http;
 using HotFix_Project.Data;
 using HotFix_Project.Managers;
+using JetBrains.Annotations;
 using Systems;
 using Systems.Coroutines;
 using Systems.Messaging;
@@ -16,19 +17,26 @@ namespace HotFix_Project
     /// </summary>
     internal class App 
     {
-        private static GameManager GameManager { get; set; } = new GameManager();
-        
+        private static TestUiManager TestUiManager { get; set; } = new TestUiManager();
+        private static UiManager UiManager { get; set; }
         public void Init()
         {
             Debug.Log($"{nameof(App)}.{nameof(Init)}!");
             //初始化热更新工程框架模块：UI管理，事件订阅...
+            InitUiManager();
             Game.Run();//游戏启动
+        }
+
+        private void InitUiManager()
+        {
+            UiManager = new UiManager(Game.MainUi);
+            UiManager.LoadAllUis();
         }
 
         public void InitTest()
         {
             Init();
-            GameManager.Test();
+            TestUiManager.Test();
             //TestAsync();
             //TestCoroutine();
             //TestViewBag();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BattleM;
 using Server.Controllers.Adventures;
+using UnityEditor;
 using Utls;
 
 namespace _GameClient.Models
@@ -11,40 +12,41 @@ namespace _GameClient.Models
     /// </summary>
     public class Dizi
     {
-        private DiziInventory _inventory;
-        private StaminaModel _stamina;
-        private Slots _slots;
+        public Guid Guid { get; }
         public string Name { get; }
         public int Strength { get; }
         public int Agility { get; }
-        public int Power { get; }
-
         public int Hp { get; }
         public int Mp { get; }
         public int Level { get; }
         public int Grade { get; }
 
-        private StaminaModel Stamina => _stamina;
-        public IInventory Inventory => _inventory;
+        private StaminaModel Stamina { get; }
+        private DiziSkills Skills { get; }
+        private DiziBag Bag { get; }
 
-        public Dizi(IDiziInfo d)
+        public Dizi(string name, int strength, int agility, 
+            int hp, int mp, int level, int grade,
+            int stamina, int bag,
+            int combatSlot, int forceSlot, int dodgeSlot)
         {
-            Name = d.Name;
-            Strength = d.Strength;
-            Agility = d.Agility;
-            Hp = d.Hp;
-            Mp = d.Mp;
-            Level = d.Level;
-            Grade = d.Grade;
-            _slots = new Slots(d.DodgeSlot, d.MartialSlot, d.InventorySlot);
-            _stamina = new StaminaModel(d.Stamina, d.StaminaMax, d.StaminaUpdate);
-            _inventory = new DiziInventory(new List<IGameItem>());
+            Guid = Guid.NewGuid();
+            Name = name;
+            Strength = strength;
+            Agility = agility;
+            Hp = hp;
+            Mp = mp;
+            Level = level;
+            Grade = grade;
+            Stamina = new StaminaModel(stamina);
+            Skills = new DiziSkills(combatSlot, forceSlot, dodgeSlot);
+            Bag = new DiziBag(bag);
         }
 
         public void UpdateStamina(int value,long lastUpdate)
         {
-            _stamina.Update(value, lastUpdate);
-            var arg = Json.Serialize(new long[] { _stamina.Con.Value, _stamina.Con.Max, lastUpdate });
+            Stamina.Update(value, lastUpdate);
+            var arg = Json.Serialize(new long[] { Stamina.Con.Value, Stamina.Con.Max, lastUpdate });
             Game.MessagingManager.Invoke(EventString.Model_DiziInfo_StaminaUpdate, arg);
 
         }
@@ -62,6 +64,11 @@ namespace _GameClient.Models
             {
                 _con = new ConValue(max, max, value);
                 _lastUpdate = lastUpdate;
+            }
+            public StaminaModel(int value)
+            {
+                _con = new ConValue(value, value, value);
+                _lastUpdate = SysTime.UnixNow;
             }
 
             public void Update(int current, long lastUpdate)
@@ -106,41 +113,63 @@ namespace _GameClient.Models
         }
         private class Slots
         {
-            public int DodgeSlot { get; }
-            public int MartialSlot { get; }
-            public int InventorySlot { get; }
+            public int BagSlot { get; }
+            public int SkillSlot { get; }
+        }
+        //弟子技能栏
+        private class DiziSkills
+        {
+            public IDodgeSkill[] DodgeSkills { get; }
+            public ICombatSkill[] CombatSkills { get; }
+            public IForceSkill[] ForceSkills { get; }
 
-            public Slots(int dodgeSlot, int martialSlot, int inventorySlot)
+            public DiziSkills(ICombatSkill[] combatSlot, IForceSkill[] forceSkill, IDodgeSkill[] dodgeSlot)
             {
-                DodgeSlot = dodgeSlot;
-                MartialSlot = martialSlot;
-                InventorySlot = inventorySlot;
+                DodgeSkills = dodgeSlot;
+                CombatSkills = combatSlot;
+                ForceSkills = forceSkill;
+            }
+            public DiziSkills(int combatSlot, int forceSkill, int dodgeSlot)
+            {
+                DodgeSkills = new IDodgeSkill[dodgeSlot];
+                CombatSkills = new ICombatSkill[combatSlot];
+                ForceSkills = new IForceSkill[forceSkill];
             }
         }
-        private class DiziInventory : IInventory
+        //弟子背包
+        private class DiziBag 
         {
-            private List<IGameItem> _items;
-            private int _silver;
-            public IReadOnlyList<IGameItem> Items => _items;
-            public int Silver => _silver;
-            public DiziInventory(List<IGameItem> items)
+            private IGameItem[] _items;
+            public IGameItem[] Items => _items;
+
+            public DiziBag(int length)
+            {
+                _items = new IGameItem[length];
+            }
+            public DiziBag(IGameItem[] items)
             {
                 _items = items;
             }
-            public void TradeSilver(int silver,bool throwIfLessThanZero = false)
+
+        }
+        //弟子钱包
+        private class DiziWallet
+        {
+            public int Silver { get; private set; }
+            public int MaxSilver { get; private set; }
+
+            public DiziWallet(int silver, int maxSilver)
             {
-                _silver += silver;
-                if (throwIfLessThanZero && _silver < 0)
-                    throw new InvalidOperationException($"{nameof(TradeSilver)}: silver = {_silver}");
+                Silver = silver;
+                MaxSilver = maxSilver;
             }
-            public void ClearSilver() => _silver = 0;
-            public void AddItem(IGameItem item) => _items.Add(item);
-            public void ClearItems() => _items.Clear();
-            public bool RemoveItem(IGameItem item) => _items.Remove(item);
-            public void ClearAll()
+
+            public void ClearSilver() => Silver = 0;
+            public void TradeSilver(int silver, bool throwIfLessThanZero = false)
             {
-                ClearItems();
-                ClearSilver();
+                Silver += silver;
+                if (throwIfLessThanZero && Silver < 0)
+                    throw new InvalidOperationException($"{nameof(TradeSilver)}: silver = {Silver}");
             }
         }
     }

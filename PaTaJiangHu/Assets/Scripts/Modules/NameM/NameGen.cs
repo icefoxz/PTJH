@@ -29,6 +29,8 @@ namespace NameM
             MNames = JsonConvert.DeserializeObject<string[]>(_mName.text);
             FNames = JsonConvert.DeserializeObject<string[]>(_fName.text);
         }
+
+        public static Name GenName() => GenName((Gender)Sys.Random.Next(2));
         public static Name GenName(Gender gender,int word = -1) =>
             gender switch
             {

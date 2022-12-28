@@ -1,0 +1,27 @@
+using System;
+using System.Collections.Generic;
+
+/// <summary>
+/// 游戏逻辑控制器
+/// </summary>
+public interface IGameController
+{
+
+}
+/// <summary>
+/// 基于<see cref="IGameController"/>的DI容器
+/// </summary>
+public class GameControllerServiceContainer
+{
+    private Dictionary<Type,IGameController> Container { get; set; } = new Dictionary<Type,IGameController>();
+
+    public T Get<T>() where T : class, IGameController
+    {
+        var type = typeof(T);
+        if (!Container.TryGetValue(type, out var obj))
+            throw new NotImplementedException($"{type.Name} hasn't register!");
+        return obj as T;
+    }
+
+    public void Reg<T>(T controller) where T : class, IGameController => Container.Add(typeof(T), controller);
+}

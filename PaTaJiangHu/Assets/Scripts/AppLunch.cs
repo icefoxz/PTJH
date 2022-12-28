@@ -22,13 +22,14 @@ public class AppLunch : UnitySingleton<AppLunch>
 #else
     private bool AutoStart => true;
 #endif
-    [SerializeField] private MainUi _mainUi;
 
     private static IlRuntimeManager ILRuntimeMgr { get; set; }
     private static Res Res { get; set; }
     private static AppDomain _appDomain;
     //************场景引用**************//
+    [SerializeField] private MainUi _mainUi;
     [SerializeField] private Canvas _sceneCanvas;
+    [SerializeField] private Configure _configure;
 
     //*************初始化Unity项目底层框架：*****************
     private IEnumerator CheckHotFix()
@@ -80,7 +81,7 @@ public class AppLunch : UnitySingleton<AppLunch>
         var ilService = new IlService(_appDomain);
         //实例+初始化游戏控件
         var game = Instance.gameObject.AddComponent<Game>();
-        game.Init(Res, ilService, _mainUi);
+        game.Init(Res, ilService, _mainUi, _configure);
         //调用热更逻辑来启动游戏
         switch (_mode)
         {

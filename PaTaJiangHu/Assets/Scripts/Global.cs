@@ -29,6 +29,11 @@ public class EventString
     public const string Test_SimulationUpdateModel = "Test_SimulationUpdateModel";
     public const string Test_SimulationStart = "Test_SimulationStart";
 
-    //弟子Info
+    //弟子dizi
     public const string Model_DiziInfo_StaminaUpdate = "Model_DiziInfo_StaminaUpdate";
+    public const string Recruit_DiziGenerated = "Recruit_DiziGenerated";
+    public const string Recruit_DiziInSlot = "Recruit_DiziInSlot";
+
+    //门派faction
+    public const string Faction_DiziAdd = "Faction_DiziAdd";
 }

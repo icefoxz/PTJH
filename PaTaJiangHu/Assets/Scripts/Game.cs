@@ -1,5 +1,6 @@
 using System;
 using Server;
+using Server.Controllers.Factions;
 using Systems;
 using Systems.Coroutines;
 using Systems.Messaging;
@@ -27,6 +28,7 @@ public class Game : UnitySingleton<Game>
     public static UpdateAwaiterManager UpdateAwaiterMgr { get; private set; }
     public static MessagingManager MessagingManager { get; private set; }
     public static ICoroutineService CoService { get; private set; }
+    public static GameControllerServiceContainer Controllers { get; private set; } 
     public static Canvas SceneCanvas
     {
         get
@@ -41,9 +43,10 @@ public class Game : UnitySingleton<Game>
     }
 
     public static MainUi MainUi { get; private set; }
-
+    internal static GameWorld World { get; private set; }
+    private static Configure Configure { get; set; }
     public static bool IsInit { get; private set; }
-    public void Init(Res res, IlService ilService, MainUi mainUi)
+    internal void Init(Res res, IlService ilService, MainUi mainUi, Configure configure)
     {
         if (IsInit) throw new InvalidOperationException("Double Init!");
         IsInit = true;
@@ -57,6 +60,7 @@ public class Game : UnitySingleton<Game>
         IlService = ilService;
         MainUi = mainUi;
         MainUi.Init();
+        Configure = configure;
         //SceneCanvas = sceneCanvas;
     }
 
@@ -66,6 +70,22 @@ public class Game : UnitySingleton<Game>
     public static void Run()
     {
         Instance.Log();
+        World = new GameWorld();
+        World.TestFaction();
+        InitControllers();
+        //TestFactionInventory();
+    }
+
+    private static void InitControllers()
+    {
+        Controllers = new GameControllerServiceContainer();
+        //***************Reg********************//
+        var recruitController = new DiziRecruitController(Configure.GradeConfig);
+        Controllers.Reg(recruitController);
+    }
+
+    private static void TestFactionInventory()
+    {
         Game.UiBuilder.Build("view_fractionInventory", v =>
         {
             MainUi.SetPanel(v);

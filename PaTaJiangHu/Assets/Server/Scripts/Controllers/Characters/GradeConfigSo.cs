@@ -47,12 +47,12 @@ namespace Server.Controllers.Characters
             return _configsCache[grade];
         }
 
-        public (int strength, int agility, int hp, int mp, int Stamina, int inventorySlot)
+        public (int strength, int agility, int hp, int mp, int Stamina, int bagSlot)
             GenerateFromGrade(int grade)
         {
             return GeneratePops(GradeConfigs((Grades)grade));
 
-            (int strength, int agility, int hp, int mp, int Stamina, int inventorySlot) GeneratePops(
+            (int strength, int agility, int hp, int mp, int Stamina, int bagSlot) GeneratePops(
                 GradeConfig config)
             {
                 var (strength, agility, hp, mp) = config.GeneratePentagon();
