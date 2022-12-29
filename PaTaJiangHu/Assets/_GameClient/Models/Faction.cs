@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Server.Controllers.Adventures;
+using Utls;
+using static Server.Controllers.Factions.RecruitController;
 
 namespace _GameClient.Models
 {
@@ -63,7 +66,14 @@ namespace _GameClient.Models
             ActionLing = actionLing;
         }
 
-        public void AddDizi(Dizi dizi) => _diziList.Add(dizi);
+        public void AddDizi(Dizi dizi)
+        {
+            _diziList.Add(dizi);
+            Game.MessagingManager.Invoke(EventString.Faction_DiziAdd, new DiziInfo(dizi));
+            var list = DiziList.Select(d => new DiziInfo(d)).ToList();
+            Game.MessagingManager.Invoke(EventString.Faction_DiziListUpdate, ObjectBag.Serialize(list));
+        }
+
         public void RemoveDizi(Dizi dizi) => _diziList.Remove(dizi);
 
         public void AddSilver(int silver) => Silver += silver;

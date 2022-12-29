@@ -1,9 +1,11 @@
 ﻿using System;
+using _GameClient.Models;
 using HotFix_Project.Serialization.LitJson;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
 using HotFix_Project.Views.Bases;
+using Utls;
 
 namespace HotFix_Project.Controllers;
 
@@ -16,8 +18,8 @@ public class DiziInfoSection
     public void Init()
     {
         InitUi();
-        //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_Update,
-        //    arg => DiziInfo.SetDizi(JsonMapper.ToObject<DiziInfoDto>(arg)));
+        Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected,
+            arg => DiziInfo.SetDizi(ObjectBag.DeSerialize(arg)));
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StaminaUpdate,
         //    arg => DiziInfo.UpdateStamina(JsonMapper.ToObject<int[]>(arg)));
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StateUpdate,
@@ -41,6 +43,15 @@ public class DiziInfoSection
         {
             CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"));
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
+        }
+
+        public void SetDizi(ObjectBag bag)
+        {
+            var dizi = bag.Get<Dizi>(0);
+            SetProp(View_diziProps.Props.Strength, dizi.Grade, dizi.Strength);
+            SetProp(View_diziProps.Props.Agility, dizi.Grade, dizi.Agility);
+            SetProp(View_diziProps.Props.Hp, dizi.Grade, dizi.Hp);
+            SetProp(View_diziProps.Props.Mp, dizi.Grade, dizi.Mp);
         }
 
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);

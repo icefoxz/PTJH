@@ -93,7 +93,7 @@ public class Game : UnitySingleton<Game>
     {
         Controllers = new GameControllerServiceContainer();
         //***************Reg********************//
-        var recruitController = new DiziRecruitController(Configure.GradeConfig);
+        var recruitController = new RecruitController(Configure.GradeConfig);
         Controllers.Reg(recruitController);
     }
 

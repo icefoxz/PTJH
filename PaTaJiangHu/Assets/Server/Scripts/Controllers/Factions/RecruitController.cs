@@ -4,16 +4,15 @@ using System.Linq;
 using _GameClient.Models;
 using NameM;
 using Server.Controllers.Characters;
-using UnityEngine;
 using Utls;
 
 namespace Server.Controllers.Factions
 {
-    public class DiziRecruitController : IGameController
+    public class RecruitController : IGameController
     {
         private GradeConfigSo GradeConfig { get; }
         private List<Dizi> TempDiziList { get; } = new List<Dizi>();
-        internal DiziRecruitController(GradeConfigSo gradeConfig)
+        internal RecruitController(GradeConfigSo gradeConfig)
         {
             GradeConfig = gradeConfig;
         }
@@ -29,7 +28,7 @@ namespace Server.Controllers.Factions
             var dizi = new Dizi(name.Text, strength, agility, hp, mp, 1, randomGrade, stamina, bag, 1, 1, 1);
             TempDiziList.Add(dizi);
             var list = new List<int> { diziIndex };
-            Game.MessagingManager.Invoke(EventString.Recruit_DiziGenerated, new DiziInfo(dizi));
+            Game.MessagingManager.Invoke(EventString.Recruit_DiziGenerated, ObjectBag.Serialize(new DiziInfo(dizi)));
             Game.MessagingManager.Invoke(EventString.Recruit_DiziInSlot, list);
         }
 
@@ -37,8 +36,7 @@ namespace Server.Controllers.Factions
         {
             var dizi = TempDiziList[index];
             Game.World.Faction.AddDizi(dizi);
-            Game.MessagingManager.Invoke(EventString.Faction_DiziAdd, new DiziInfo(dizi));
-            Debug.Log($"弟子:{dizi.Name} 加入门派!");
+            XDebug.Log($"弟子:{dizi.Name} 加入门派!");
         }
 
         public class DiziInfo
