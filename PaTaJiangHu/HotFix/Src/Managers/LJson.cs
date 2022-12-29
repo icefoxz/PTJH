@@ -5,7 +5,7 @@ namespace HotFix_Project.Managers;
 
 internal static class LJson
 {
-    public static T ToObject<T>(string json,bool notNullable)
+    public static T ToObject<T>(string json,bool notNullable = false)
     {
         try
         {
