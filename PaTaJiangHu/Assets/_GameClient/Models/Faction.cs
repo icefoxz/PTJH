@@ -1,51 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Server.Controllers.Adventures;
 using Utls;
-using static Server.Controllers.Factions.RecruitController;
 
 namespace _GameClient.Models
 {
-    public interface IDiziInfo
-    {
-        string Name { get; }
-        int Strength { get; }
-        int Agility { get; }
-        int Hp { get; }
-        int MaxHp { get; }
-        int Mp { get; }
-        int MaxMp { get; }
-        int Level { get; }
-        /// <summary>
-        /// 品级
-        /// </summary>
-        int Grade { get; }
-        /// <summary>
-        /// 轻功格
-        /// </summary>
-        int DodgeSlot { get; }
-        /// <summary>
-        /// 武功格
-        /// </summary>
-        int CombatSlot { get; }
-        /// <summary>
-        /// 背包格
-        /// </summary>
-        int BagSlot { get; }
-        /// <summary>
-        /// 当前体力
-        /// </summary>
-        int Stamina { get; set; }
-        /// <summary>
-        /// 最大体力
-        /// </summary>
-        int StaminaMax { get; set; }
-        /// <summary>
-        /// 上次体力更新
-        /// </summary>
-        long StaminaUpdate { get; set; }
-    }
-
     /// <summary>
     /// 门派模型
     /// </summary>
@@ -69,16 +27,30 @@ namespace _GameClient.Models
         public void AddDizi(Dizi dizi)
         {
             _diziList.Add(dizi);
-            Game.MessagingManager.Invoke(EventString.Faction_DiziAdd, new DiziInfo(dizi));
+            Game.MessagingManager.Send(EventString.Faction_DiziAdd, new DiziInfo(dizi));
             var list = DiziList.Select(d => new DiziInfo(d)).ToList();
-            Game.MessagingManager.Invoke(EventString.Faction_DiziListUpdate, ObjectBag.Serialize(list));
+            Game.MessagingManager.Send(EventString.Faction_DiziListUpdate, list);
         }
 
         public void RemoveDizi(Dizi dizi) => _diziList.Remove(dizi);
 
-        public void AddSilver(int silver) => Silver += silver;
-        public void AddYuanBao(int yuanBao) => YuanBao += yuanBao;
-        public void AddLing(int ling)=> ActionLing += ling;
+        public void AddSilver(int silver)
+        {
+            Silver += silver;
+            Game.MessagingManager.Send(EventString.Faction_SilverUpdate, Silver);
+        }
+
+        public void AddYuanBao(int yuanBao)
+        {
+            YuanBao += yuanBao;
+            Game.MessagingManager.Send(EventString.Faction_YuanBaoUpdate, YuanBao);
+        }
+
+        public void AddLing(int ling)
+        {
+            ActionLing += ling;
+            Game.MessagingManager.SendParams(EventString.Faction_Params_ActionLingUpdate, ActionLing, 100, 0, 0);
+        }
 
         public class Dto
         {
@@ -103,6 +75,16 @@ namespace _GameClient.Models
                 ActionLing = actionLing;
                 ActionLingMax = actionLingMax;
             }
+        }
+    }
+    public class DiziInfo
+    {
+        public string Name { get; set; }
+
+        public DiziInfo() { }
+        public DiziInfo(Dizi d)
+        {
+            Name = d.Name;
         }
     }
 }

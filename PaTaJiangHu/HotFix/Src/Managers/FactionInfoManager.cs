@@ -1,13 +1,5 @@
 ﻿using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using _GameClient.Models;
-using BattleM;
-using HotFix_Project.Serialization.LitJson;
-using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
@@ -26,11 +18,17 @@ public class FactionInfoManager
     private void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Faction_Init,
-            arg =>
+            bag =>
             {
-                FactionInfoUi.SetFaction(JsonMapper.ToObject<Faction.Dto>(arg));
+                FactionInfoUi.SetFaction(bag.Get<Faction.Dto>(0));
                 FactionInfoUi.Display(true);
             });
+        Game.MessagingManager.RegEvent(EventString.Faction_SilverUpdate,
+            bag=> FactionInfoUi.SetSilver(bag.GetInt(0)));
+        Game.MessagingManager.RegEvent(EventString.Faction_YuanBaoUpdate,
+            bag => FactionInfoUi.SetYuanBao(bag.GetInt(0)));
+        Game.MessagingManager.RegEvent(EventString.Faction_Params_ActionLingUpdate,
+            bag => FactionInfoUi.SetActionToken(bag.GetInt(0), bag.GetInt(1), bag.GetInt(2), bag.GetInt(3)));
     }
 
     private void InitUi()
@@ -47,7 +45,7 @@ public class FactionInfoManager
         private Element Element_Yuanbao { get; }
         private View_actionToken ActionToken { get; }
 
-        public View_factionInfoUi(IView v) : base(v.GameObject, false)
+        public View_factionInfoUi(IView v) : base(v.GameObject, true)
         {
             Element_Silver = new Element(v.GetObject<View>("element_silver"));
             Element_Yuanbao = new Element(v.GetObject<View>("element_yuanbao"));
@@ -59,6 +57,15 @@ public class FactionInfoManager
             Element_Yuanbao.SetText(f.YuanBao.ToString());
             ActionToken.SetToken(f.ActionLing, f.ActionLingMax);
         }
+
+        public void SetSilver(int silver) => Element_Silver.SetText(silver.ToString());
+        public void SetYuanBao(int yuanBao) => Element_Yuanbao.SetText(yuanBao.ToString());
+        public void SetActionToken(int value, int max, int min, int sec)
+        {
+            ActionToken.SetToken(value, max);
+            ActionToken.SetTimer(min, sec);
+        }
+
 
         //private class
         private class Element : UiBase
@@ -97,9 +104,11 @@ public class FactionInfoManager
             }
             public void SetTimer(int min, int sec)
             {
-                Text_timerMin.text = min.ToString();
-                Text_timerSec.text = sec.ToString();
+                Text_timerMin.text = EmptyIfZero(min);
+                Text_timerSec.text = EmptyIfZero(sec);
             }
+
+            private string EmptyIfZero(int value) => value==0 ? string.Empty : value.ToString();
         }
 
     }

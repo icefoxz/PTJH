@@ -21,7 +21,7 @@ public class DiziTestManager
     private DiziGenWindow GenWindow { get; set; }
     private StaminaCountWindow StaCountWindow { get; set; }
     private MedicineTestWindow MedicineTest { get; set; }
-    private IDiziController Controller { get; set; }
+    private ITestDiziController Controller { get; set; }
     public void Init()
     {
         Controller = TestCaller.Instance.InstanceDiziController();
@@ -71,23 +71,29 @@ public class DiziTestManager
 
     private void EventReg()
     {
-        Game.MessagingManager.RegEvent(EventString.Test_DiziGenerate, arg => GenWindow.SetDizi(JsonMapper.ToObject<Dizi>(arg)));
-        Game.MessagingManager.RegEvent(EventString.Test_DiziRecruit, _ => GenWindow.Display(true));
-        Game.MessagingManager.RegEvent(EventString.Test_StaminaWindow, _ => StaCountWindow.Display(true));
-        Game.MessagingManager.RegEvent(EventString.Test_MedicineWindow, arg => MedicineTest.UpdateMedicines(arg));
-        Game.MessagingManager.RegEvent(EventString.Test_StatusUpdate, arg =>
+        Game.MessagingManager.RegEvent(EventString.Test_DiziGenerate, bag => GenWindow.SetDizi(bag.Get<Dizi>(0)));
+        Game.MessagingManager.RegEvent(EventString.Test_DiziRecruit, bag =>
         {
-            var status = JsonMapper.ToObject<TestStatus>(arg);
+            GenWindow.Display(true);
+        });
+        Game.MessagingManager.RegEvent(EventString.Test_StaminaWindow, bag =>
+        {
+            StaCountWindow.Display(true);
+        });
+        Game.MessagingManager.RegEvent(EventString.Test_MedicineWindow, bag => MedicineTest.UpdateMedicines(bag));
+        Game.MessagingManager.RegEvent(EventString.Test_StatusUpdate, bag =>
+        {
+            var status = bag.Get<TestStatus>(0);
             MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, status.Hp);
             MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, status.Mp);
             MedicineTest.Display(true);
         });
         Game.MessagingManager.RegEvent(EventString.Test_UpdateHp,
-            arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, JsonMapper.ToObject<ConValue>(arg)));
+            bag => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, bag.Get<ConValue>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_UpdateMp,
-            arg => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, JsonMapper.ToObject<ConValue>(arg)));
+            bag => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, bag.Get<ConValue>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_DiziLeveling,
-            arg => GenWindow.SetDiziGrow(JsonMapper.ToObject<Dizi>(arg)));
+            bag => GenWindow.SetDiziGrow(bag.Get<Dizi>(0)));
     }
 
     private class TestStatus
@@ -477,9 +483,9 @@ public class DiziTestManager
         }
 
         private int SelectedId { get; set; }
-        public void UpdateMedicines(string arg)
+        public void UpdateMedicines(ObjectBag bag)
         {
-            var list = JsonMapper.ToObject<DiziTestManager.MedicineUi[]>(arg).ToArray();
+            var list = bag.Get<DiziTestManager.MedicineUi[]>(0).ToArray();
             MedicineList.ClearList(ui =>
             {
                 ui.Display(false);

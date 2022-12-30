@@ -22,7 +22,7 @@ public class AdvMapController : IAdvMapController
     {
         SelectedSo = Config.MapSo;
         var map = new Map(SelectedSo);
-        Game.MessagingManager.Invoke(EventString.Test_AdvMapLoad, map);
+        Game.MessagingManager.Send(EventString.Test_AdvMapLoad, map);
     }
 
     public class Map

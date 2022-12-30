@@ -4,21 +4,14 @@ using UnityEngine;
 
 namespace _GameClient.Models
 {
+
     /// <summary>
     /// 武功系数配置
     /// </summary>
     [CreateAssetMenu(fileName = "技能系数配置", menuName = "配置/简易战斗/技能系数配置")]
     internal class SkillsCoefficientSo : ScriptableObject
     {
-        public enum Grades
-        {
-            E,
-            D,
-            C,
-            B,
-            A,
-            S,
-        }
+
         [ConditionalField(true,nameof(SetName))][ReadOnly][SerializeField]private string _maxLevel;
         [SerializeField] private LevelConfig[] 等级;
         [SerializeField] private CoRate 设置;
@@ -39,7 +32,7 @@ namespace _GameClient.Models
             return true;
         }
 
-        public int GetCoefficient(int level, Grades grade)
+        public int GetCoefficient(int level, SkillGrades grade)
         {
             if (level == 0) return 0;
             var index = level - 1;
@@ -47,12 +40,12 @@ namespace _GameClient.Models
             var cfg = Levels[index];
             return grade switch
             {
-                Grades.E => cfg.E,
-                Grades.D => cfg.D,
-                Grades.C => cfg.C,
-                Grades.B => cfg.B,
-                Grades.A => cfg.A,
-                Grades.S => cfg.S,
+                SkillGrades.E => cfg.E,
+                SkillGrades.D => cfg.D,
+                SkillGrades.C => cfg.C,
+                SkillGrades.B => cfg.B,
+                SkillGrades.A => cfg.A,
+                SkillGrades.S => cfg.S,
                 _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
             };
         }
@@ -61,7 +54,7 @@ namespace _GameClient.Models
         {
             Offend,Defend
         }
-        private int GetSubCoefficient(int level, Grades grade,Sub sub)
+        private int GetSubCoefficient(int level, SkillGrades grade,Sub sub)
         {
             var co = CoefficientRate;
             if (co.OffendRate is < 0 or > 100 || co.DefendRate is < 0 or > 100)
@@ -76,8 +69,8 @@ namespace _GameClient.Models
                 _ => throw new ArgumentOutOfRangeException(nameof(sub), sub, null)
             };
         }
-        public int GetOffendCoefficient(int level, Grades grade) => GetSubCoefficient(level, grade, Sub.Offend);
-        public int GetDefendCoefficient(int level, Grades grade) => GetSubCoefficient(level, grade, Sub.Defend);
+        public int GetOffendCoefficient(int level, SkillGrades grade) => GetSubCoefficient(level, grade, Sub.Offend);
+        public int GetDefendCoefficient(int level, SkillGrades grade) => GetSubCoefficient(level, grade, Sub.Defend);
 
         [Serializable] private class LevelConfig
         {

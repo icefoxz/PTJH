@@ -9,9 +9,11 @@ using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
 using ILRuntimeAdapters;
 using ILRuntimeDemo;
+using Newtonsoft.Json.Linq;
 using Server.Controllers.Adventures;
 using UnityEngine;
 using UnityEngine.Networking;
+using Utls;
 using Views;
 using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
 using Application = UnityEngine.Application;
@@ -84,9 +86,10 @@ namespace Systems
             appdomain.DelegateManager.RegisterMethodDelegate<object[]>();
             appdomain.DelegateManager.RegisterMethodDelegate<GameObject>();
             appdomain.DelegateManager.RegisterMethodDelegate<GameObject, IView>();
-            appdomain.DelegateManager.RegisterMethodDelegate<Newtonsoft.Json.Linq.JToken[]>();
+            appdomain.DelegateManager.RegisterMethodDelegate<JToken[]>();
             appdomain.DelegateManager.RegisterMethodDelegate<IView>();
             appdomain.DelegateManager.RegisterMethodDelegate<ILTypeInstance>();
+            appdomain.DelegateManager.RegisterMethodDelegate<ObjectBag>();
 
             appdomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appdomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());

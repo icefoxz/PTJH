@@ -9,6 +9,8 @@ internal class UiManager
     private FactionInfoManager FactionInfo { get; set; } = new FactionInfoManager();
     private DiziInfoSection DiziInfoSection { get; set; } = new DiziInfoSection();
     private DiziRecruitManager DiziRecruitManager { get; set; } = new DiziRecruitManager();
+    private DiziListViewManager DiziListViewManager { get; set; } = new DiziListViewManager();
+
     public UiManager(IMainUi mainUi)
     {
         MainUi = mainUi;
@@ -28,6 +30,7 @@ internal class UiManager
         FactionInfo.Init();
         DiziInfoSection.Init();
         DiziRecruitManager.Init();
+        DiziListViewManager.Init();
     }
 
 

@@ -65,38 +65,38 @@ public class SkillTestManager
 
     private void EventReg()
     {
-        Game.MessagingManager.RegEvent(EventString.Test_CombatSoList, arg =>
+        Game.MessagingManager.RegEvent(EventString.Test_CombatSoList, bag =>
         {
-            CombatLevel.ListCombats(JsonMapper.ToObject<SkillController.Combat[]>(arg));
+            CombatLevel.ListCombats(bag.Get<SkillController.Combat[]>(0));
             CombatLevel.Display(true);
         });
         Game.MessagingManager.RegEvent(EventString.Test_CombatSkillLeveling,
-            arg => CombatLevel.OnCombatLeveling(JsonMapper.ToObject<SkillController.Combat>(arg)));
+            bag => CombatLevel.OnCombatLeveling(bag.Get<SkillController.Combat>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_CombatSkillSelected,
-            arg => CombatLevel.OnSelectedCombat(JsonMapper.ToObject<SkillController.Combat>(arg)));
+            bag => CombatLevel.OnSelectedCombat(bag.Get<SkillController.Combat>(0)));
 
-        Game.MessagingManager.RegEvent(EventString.Test_ForceSoList, arg =>
+        Game.MessagingManager.RegEvent(EventString.Test_ForceSoList, bag =>
         {
             SelectedSkill = MyEnum.Force;
             SkillLevel.ResetUi();
-            SkillLevel.ListForce(JsonMapper.ToObject<SkillController.Force[]>(arg));
+            SkillLevel.ListForce(bag.Get<SkillController.Force[]>(0));
             SkillLevel.Display(true);
         });
-        Game.MessagingManager.RegEvent(EventString.Test_DodgeSoList, arg =>
+        Game.MessagingManager.RegEvent(EventString.Test_DodgeSoList, bag =>
         {
             SelectedSkill = MyEnum.Dodge;
             SkillLevel.ResetUi();
-            SkillLevel.ListDodge(JsonMapper.ToObject<SkillController.DodgeSkill[]>(arg));
+            SkillLevel.ListDodge(bag.Get<SkillController.DodgeSkill[]>(0));
             SkillLevel.Display(true);
         });
         Game.MessagingManager.RegEvent(EventString.Test_DodgeSkillLeveling,
-            arg => SkillLevel.DodgeUpdate(JsonMapper.ToObject<SkillController.DodgeSkill>(arg)));
+            bag => SkillLevel.DodgeUpdate(bag.Get<SkillController.DodgeSkill>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_DodgeSkillSelected,
-            arg => SkillLevel.DodgeUpdate(JsonMapper.ToObject<SkillController.DodgeSkill>(arg)));
+            bag => SkillLevel.DodgeUpdate(bag.Get<SkillController.DodgeSkill>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_ForceSkillLeveling,
-            arg => SkillLevel.ForceUpdate(JsonMapper.ToObject<SkillController.Force>(arg)));
+            bag => SkillLevel.ForceUpdate(bag.Get<SkillController.Force>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_ForceSkillSelected,
-            arg => SkillLevel.ForceUpdate(JsonMapper.ToObject<SkillController.Force>(arg)));
+            bag => SkillLevel.ForceUpdate(bag.Get<SkillController.Force>(0)));
     }
 
     private class CombatLevelWindow : UiBase

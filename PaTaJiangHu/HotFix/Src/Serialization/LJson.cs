@@ -1,7 +1,7 @@
 ﻿using System;
 using HotFix_Project.Serialization.LitJson;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Serialization;
 
 internal static class LJson
 {

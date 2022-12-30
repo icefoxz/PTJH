@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using _GameClient.Models;
 using NameM;
 using UnityEngine;
 using UnityEngine.Analytics;
@@ -8,28 +9,28 @@ using Utls;
 
 namespace Server.Controllers.Characters
 {
-    public interface IDiziController
+    public interface ITestDiziController
     {
         void OnGenerateDizi(int grade);
         void OnDiziLevel(int level);
         void OnSetStamina(int currentStamina, int minutePass);
     }
 
-    public class DiziController : IDiziController
+    public class TestTestDiziController : ITestDiziController
     {
         private StaminaTimer StaminaTimer { get; }
         private DiziConfig Config { get; }
 
-        internal DiziController(DiziConfig config)
+        internal TestTestDiziController(DiziConfig config)
         {
             Config = config;
             StaminaTimer = new GameObject(nameof(Characters.StaminaTimer)).AddComponent<StaminaTimer>();
         }
-        private DiziController.Dizi TestDizi { get; set; }
+        private TestTestDiziController.Dizi TestDizi { get; set; }
         public void OnGenerateDizi(int grade)
         {
             TestDizi = GenerateDizi(grade);
-            Game.MessagingManager.Invoke(EventString.Test_DiziGenerate, TestDizi);
+            Game.MessagingManager.Send(EventString.Test_DiziGenerate, TestDizi);
         }
         public void OnDiziLevel(int level)
         {
@@ -44,7 +45,7 @@ namespace Server.Controllers.Characters
             dizi.SetAgility(agi);
             dizi.SetStrength(str);
             dizi.SetLevel(level);
-            Game.MessagingManager.Invoke(EventString.Test_DiziLeveling, dizi);
+            Game.MessagingManager.Send(EventString.Test_DiziLeveling, dizi);
         }
         public void OnSetStamina(int currentStamina, int minutePass)
         {
@@ -59,7 +60,7 @@ namespace Server.Controllers.Characters
         {
             var name = GenerateName();
             var (str, agi, hp, mp, sta, inv) = Config.GradeConfigSo.GenerateFromGrade(grade: grade);
-            var cap = new Capable(grade: grade, dodgeSlot: 3, martialSlot: 5, inventorySlot: inv);
+            var cap = new Capable(grade: grade, dodgeSlot: 3, combatSlot: 5, bag: inv, str, agi, hp, mp);
             return new Dizi(
                 name: name, 
                 strength: str, 
@@ -95,15 +96,15 @@ namespace Server.Controllers.Characters
             public Dizi()
             {
             }
-            public Dizi(string name, int strength, int agility, int hp, int mp, int level, int stamina, string gradeTitle, Capable capable, Dictionary<int, int> condition)
+            public Dizi(string name, GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int level, int stamina, string gradeTitle, Capable capable, Dictionary<int, int> condition)
             {
                 Name = name;
-                Strength = strength;
-                Agility = agility;
-                Hp = hp;
-                MaxHp = hp;
-                Mp = mp;
-                MaxMp = mp;
+                Strength = strength.Value;
+                Agility = agility.Value;
+                Hp = hp.Value;
+                MaxHp = hp.Value;
+                Mp = mp.Value;
+                MaxMp = mp.Value;
                 Level = level;
                 Stamina = stamina;
                 Capable = capable;
@@ -126,35 +127,9 @@ namespace Server.Controllers.Characters
             public void SetAgility(int str) => Agility = str;
 
             public Dizi Clone() =>
-                new(Name, Strength, Agility, Hp, Mp, Level, Stamina, GradeTitle ,Capable,
+                new(Name, Capable.Strength, Capable.Agility, Capable.Hp, Capable.Mp, Level, Stamina, GradeTitle,
+                    Capable,
                     Condition.ToDictionary(c => c.Key, c => c.Value));
-        }
-        internal class Capable 
-        {
-            /// <summary>
-            /// 品级
-            /// </summary>
-            public int Grade { get; }
-            /// <summary>
-            /// 轻功格
-            /// </summary>
-            public int DodgeSlot { get; }
-            /// <summary>
-            /// 武功格
-            /// </summary>
-            public int MartialSlot { get; }
-            /// <summary>
-            /// 背包格
-            /// </summary>
-            public int InventorySlot { get; }
-
-            public Capable(int grade, int dodgeSlot, int martialSlot, int inventorySlot)
-            {
-                Grade = grade;
-                DodgeSlot = dodgeSlot;
-                MartialSlot = martialSlot;
-                InventorySlot = inventorySlot;
-            }
         }
 
         [Serializable]

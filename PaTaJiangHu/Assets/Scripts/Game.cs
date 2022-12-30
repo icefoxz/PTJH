@@ -93,8 +93,9 @@ public class Game : UnitySingleton<Game>
     {
         Controllers = new GameControllerServiceContainer();
         //***************Reg********************//
-        var recruitController = new RecruitController(Configure.GradeConfig);
+        var recruitController = new RecruitController(Configure.Recruit);
         Controllers.Reg(recruitController);
+        Controllers.Reg(new DiziInteractionController());
     }
 
     private static void TestFactionInventory()

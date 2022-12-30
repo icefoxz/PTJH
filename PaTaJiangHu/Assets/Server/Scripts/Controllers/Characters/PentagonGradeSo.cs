@@ -1,4 +1,5 @@
 ﻿using System;
+using _GameClient.Models;
 using UnityEngine;
 
 namespace Server.Controllers.Characters
@@ -13,6 +14,8 @@ namespace Server.Controllers.Characters
             Hp,
             Mp,
         }
+
+        [SerializeField] private SkillGrades _grade;
         [SerializeField] private MinMaxVectorInt 血;
         [SerializeField] private MinMaxVectorInt 内;
         [SerializeField] private MinMaxVectorInt 力量;
@@ -21,14 +24,15 @@ namespace Server.Controllers.Characters
         private MinMaxVectorInt Agility => 敏捷;
         private MinMaxVectorInt Hp => 血;
         private MinMaxVectorInt Mp => 内;
-        public int GenerateProp(Elements element)
+        private SkillGrades Grade => _grade;
+        public (int, SkillGrades) GenerateProp(Elements element)
         {
             return element switch
             {
-                Elements.Strength => Strength.Generate(),
-                Elements.Agility => Agility.Generate(),
-                Elements.Hp => Hp.Generate(),
-                Elements.Mp => Mp.Generate(),
+                Elements.Strength => (Strength.Generate(), Grade),
+                Elements.Agility => (Agility.Generate(), Grade),
+                Elements.Hp => (Hp.Generate(), Grade),
+                Elements.Mp => (Mp.Generate(), Grade),
                 _ => throw new ArgumentOutOfRangeException(nameof(element), element, null)
             };
         }

@@ -1,13 +1,12 @@
 ﻿using System;
-using _GameClient.Models;
-using HotFix_Project.Serialization.LitJson;
 using UnityEngine;
 using UnityEngine.UI;
-using Views;
-using HotFix_Project.Views.Bases;
 using Utls;
+using Views;
+using _GameClient.Models;
+using HotFix_Project.Views.Bases;
 
-namespace HotFix_Project.Controllers;
+namespace HotFix_Project.Managers;
 
 /// <summary>
 /// 弟子信息板块Ui控制器
@@ -18,12 +17,19 @@ public class DiziInfoSection
     public void Init()
     {
         InitUi();
-        Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected,
-            arg => DiziInfo.SetDizi(ObjectBag.DeSerialize(arg)));
+        RegEvents();
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StaminaUpdate,
         //    arg => DiziInfo.UpdateStamina(JsonMapper.ToObject<int[]>(arg)));
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StateUpdate,
         //    arg => DiziInfo.UpdateState(JsonMapper.ToObject<string[]>(arg)));
+    }
+
+    private void RegEvents()
+    {
+        Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
+        {
+            DiziInfo.SetDizi(bag);
+        });
     }
 
     private void InitUi()
@@ -48,10 +54,13 @@ public class DiziInfoSection
         public void SetDizi(ObjectBag bag)
         {
             var dizi = bag.Get<Dizi>(0);
-            SetProp(View_diziProps.Props.Strength, dizi.Grade, dizi.Strength);
-            SetProp(View_diziProps.Props.Agility, dizi.Grade, dizi.Agility);
-            SetProp(View_diziProps.Props.Hp, dizi.Grade, dizi.Hp);
-            SetProp(View_diziProps.Props.Mp, dizi.Grade, dizi.Mp);
+            var c = dizi.Capable;
+            CharInfo.SetName(dizi.Name);
+            CharInfo.SetLevel(dizi.Level);
+            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength);
+            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility);
+            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp);
+            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp);
         }
 
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
@@ -80,7 +89,7 @@ public class DiziInfoSection
 
             public void SetAvatar(Sprite avatar) => Img_charAvatar.sprite = avatar;
             public void SetName(string name) => Text_charName.text = name;
-            public void SetLevel(string level) => Text_charLevel.text = level;
+            public void SetLevel(int level) => Text_charLevel.text = $"{level}级";
             public void SetExp(int value, int max)
             {
                 Text_charExpValue.text = value.ToString();
@@ -184,7 +193,7 @@ public class DiziInfoSection
             private Element_prop Agility { get; }
             private Element_prop Hp { get; }
             private Element_prop Mp { get; }
-            public View_diziProps(IView v) : base(v.GameObject, false)
+            public View_diziProps(IView v) : base(v.GameObject, true)
             {
                 Strength = new Element_prop(v.GetObject<View>("element_propStrength"));
                 Agility = new Element_prop(v.GetObject<View>("element_propAgility"));

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -13,16 +14,21 @@ namespace Utls
     public class ObjectBag
     {
         private static Type Stringtype => typeof(string);
-        public string[] Bag { get; set; }
+        public string[] Bag { get; }
+        public string Data { get; }
+        public override string ToString() => Data;
 
         public ObjectBag()
         {
             
         }
-        public ObjectBag(string[] bag)
+
+        public ObjectBag(string dataText)
         {
-            Bag = bag;
+            Data = dataText;
+            Bag = string.IsNullOrWhiteSpace(dataText) ? Array.Empty<string>() : dataText.Split('␇');
         }
+
         public static string Serialize(params object[] objs)
         {
             var bag = new string[objs.Length];
@@ -53,12 +59,7 @@ namespace Utls
             return string.Join('␇', bag);
         }
 
-        public static ObjectBag DeSerialize(string bag)
-        {
-            if (bag == null)
-                throw new NotImplementedException("Bag = null");
-            return new(bag.Split('␇'));
-        }
+        public static ObjectBag DeSerialize(string dataText) => new(dataText);
 
         public int GetInt(int index) => int.Parse(GetValue(index));
         public float GetFloat(int index) => float.Parse(GetValue(index));
@@ -71,7 +72,9 @@ namespace Utls
             var value = GetValue(index);
             var type = typeof(T);
             if (type == Stringtype) return value as T;
-            return Json.Deserialize<T>(value);
+            var result = Json.Deserialize<T>(value);
+            if (result == null) XDebug.LogWarning($"ObjectBag.Get: {value}\n Convert is null!");
+            return result;
         }
         private string GetValue(int index) => Bag[index];
     }

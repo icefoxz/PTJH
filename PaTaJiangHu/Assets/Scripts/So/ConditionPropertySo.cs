@@ -76,9 +76,9 @@ namespace _GameClient.Models
 
         public ISimulation GetSimulation(int strength, int agility,
             int weapon, int armor,
-            SkillsCoefficientSo.Grades combatGrade, int combatLevel,
-            SkillsCoefficientSo.Grades forceGrade, int forceLevel,
-            SkillsCoefficientSo.Grades dodgeGrade, int dodgeLevel)
+            SkillGrades combatGrade, int combatLevel,
+            SkillGrades forceGrade, int forceLevel,
+            SkillGrades dodgeGrade, int dodgeLevel)
         {
             var str = GetCoefficient(strength, Coefficients.Strength);
             var arm = GetCoefficient(armor, Coefficients.Armor);
@@ -106,7 +106,7 @@ namespace _GameClient.Models
             };
         }
 
-        private float GetCoefficient(Skills skill, int level, SkillsCoefficientSo.Grades grade)
+        private float GetCoefficient(Skills skill, int level, SkillGrades grade)
         {
             return skill switch
             {
@@ -123,7 +123,7 @@ namespace _GameClient.Models
             return value / max * ratio;
         }
 
-        private float GetOffendCoefficient(Skills skill, int level, SkillsCoefficientSo.Grades grade)
+        private float GetOffendCoefficient(Skills skill, int level, SkillGrades grade)
         {
             return skill switch
             {
@@ -133,7 +133,7 @@ namespace _GameClient.Models
                 _ => throw new ArgumentOutOfRangeException(nameof(skill), skill, null)
             };
         }
-        private float GetDefendCoefficient(Skills skill, int level, SkillsCoefficientSo.Grades grade)
+        private float GetDefendCoefficient(Skills skill, int level, SkillGrades grade)
         {
             return skill switch
             {

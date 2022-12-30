@@ -13,7 +13,7 @@ internal class GameWorld
     
     public void TestFaction()
     {
-        Faction = new Faction(10000, 100, 1, new List<Dizi>());
-        Game.MessagingManager.Invoke(EventString.Faction_Init, new Faction.Dto(Faction));
+        Faction = new Faction(10000, 250, 1, new List<Dizi>());
+        Game.MessagingManager.Send(EventString.Faction_Init, new Faction.Dto(Faction));
     }
 }

@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
@@ -90,8 +92,24 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
 
     public void ResetUi()
     {
+        ResetAllLayoutChildren();
         ShowAllLayout();
         HidePanel();
+    }
+
+    private void ResetAllLayoutChildren()
+    {
+        HideLayoutChildren(TopUi);
+        HideLayoutChildren(MainPage.Top);//MidUi
+        HideLayoutChildren(MainPage.Mid);//MidUi
+        HideLayoutChildren(MainPage.Btm);//MidUi
+        HideLayoutChildren(BtmUi);
+        HideLayoutChildren(Panel.transform);
+    }
+
+    private static void HideLayoutChildren(Transform tran)
+    {
+        foreach (Transform o in tran) o.gameObject.SetActive(false);
     }
 
     private void Display(bool display,params Component[] param)
@@ -105,16 +123,24 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
 
     private void SetUi(RectTransform tran, IView view, bool resetPos = false)
     {
-        _uiMap[tran] = view;
-        view.GameObject.transform.SetParent(tran);
-        if(resetPos)
+        StartCoroutine(Set());
+        IEnumerator Set()
         {
-            var rect = (RectTransform)(view.GameObject.transform);
-            rect.SetTop(0);
-            rect.SetBottom(0);
-            rect.SetLeft(0);
-            rect.SetRight(0);
-            //((RectTransform)(view.GameObject.transform)).rect.size.Set(0, 0);
+            view.GameObject.SetActive(false);
+            _uiMap[tran] = view;
+            view.GameObject.transform.SetParent(tran);
+            if (resetPos)
+            {
+                var rect = (RectTransform)(view.GameObject.transform);
+                rect.SetTop(0);
+                rect.SetBottom(0);
+                rect.SetLeft(0);
+                rect.SetRight(0);
+                //((RectTransform)(view.GameObject.transform)).rect.size.Set(0, 0);
+            }
+
+            yield return new WaitForEndOfFrame();
+            view.GameObject.SetActive(true);
         }
     }
 }

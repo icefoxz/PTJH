@@ -17,7 +17,7 @@ public class AdvMapTestManager
     {
         var controller = TestCaller.Instance.InstanceAdvMapController();
         Game.UiBuilder.Build("view_testMap", v => TestMap = new TestMapWindow(v, controller.LoadMap));
-        Game.MessagingManager.RegEvent(EventString.Test_AdvMapLoad, arg=>TestMap.SetMap(JsonMapper.ToObject<Map>(arg)));
+        Game.MessagingManager.RegEvent(EventString.Test_AdvMapLoad, bag=>TestMap.SetMap(bag.Get<Map>(0)));
     }
     private class TestMapWindow : UiBase
     {

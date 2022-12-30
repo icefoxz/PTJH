@@ -37,7 +37,7 @@ namespace Server.Controllers.Adventures
         public void SimulateResult()
         {
             var outCome = Model.SimulateOutcome(Cfg.ConditionPropCfg, Cfg.BattleSimulatorCfg);
-            Game.MessagingManager.Invoke(EventString.Test_SimulationOutcome, new Outcome(outCome,Cfg.BattleSimulatorCfg));
+            Game.MessagingManager.Send(EventString.Test_SimulationOutcome, new Outcome(outCome,Cfg.BattleSimulatorCfg));
         }
 
         private PropCon GetCon(bool isPlayer) => isPlayer ? Model.Player : Model.Enemy;
@@ -47,7 +47,7 @@ namespace Server.Controllers.Adventures
             var ePower = GetSimulation(Model.Enemy);
             Model.Player.SetPower(pPower);
             Model.Enemy.SetPower(ePower);
-            Game.MessagingManager.Invoke(EventString.Test_SimulationUpdateModel, Model);
+            Game.MessagingManager.Send(EventString.Test_SimulationUpdateModel, Model);
         }
 
         private ISimulation GetSimulation(PropCon m)
@@ -215,7 +215,7 @@ namespace Server.Controllers.Adventures
                 public int Level { get; set; } = 1;
                 public float Power { get; set; }
 
-                internal SkillsCoefficientSo.Grades GetGrade() => (SkillsCoefficientSo.Grades)Grade;
+                internal SkillGrades GetGrade() => (SkillGrades)Grade;
 
                 public Skill()
                 {

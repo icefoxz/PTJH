@@ -1,4 +1,6 @@
 ﻿using System;
+using _GameClient.Models;
+using HotFix_Project.Serialization;
 using HotFix_Project.Serialization.LitJson;
 using HotFix_Project.Views.Bases;
 using Server.Controllers.Factions;
@@ -25,12 +27,9 @@ public class DiziRecruitManager
 
     private void RegEvents()
     {
-        Game.MessagingManager.RegEvent(EventString.Recruit_DiziGenerated, arg =>
-        {
-            DiziRecruitPage.SetDizi(ObjectBag.DeSerialize(arg));
-        });
+        Game.MessagingManager.RegEvent(EventString.Recruit_DiziGenerated, bag => DiziRecruitPage.SetDizi(bag));
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziInSlot,
-            arg => CurrentDiziIndex = JsonMapper.ToObject<int[]>(arg)[0]);
+            bag => CurrentDiziIndex = bag.Get<int[]>(0)[0]);
     }
 
 
@@ -38,7 +37,7 @@ public class DiziRecruitManager
     {
         Game.UiBuilder.Build("view_diziRecruitPage", v =>
         {
-            DiziRecruitPage = new View_diziRecruitPage(v, RecruitController.GenerateDizi, 
+            DiziRecruitPage = new View_diziRecruitPage(v, () => RecruitController.GenerateDizi(), 
                 ()=> RecruitController.RecruitDizi(CurrentDiziIndex));
             Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
         });
@@ -60,7 +59,7 @@ public class DiziRecruitManager
 
         public void SetDizi(ObjectBag bag)
         {
-            var d = LJson.ToObject<DiziController.DiziInfo>(bag.Bag[0]);
+            var d = bag.Get<DiziInfo>(0);
             RecruitWindow.SetDiziName(d.Name);
             RecruitWindow.Display(true);
         }

@@ -24,21 +24,34 @@ namespace Server.Controllers.Adventures
         public void StartAdventureMaps()
         {
             var list = Config.Maps.Select(InstanceMapData).ToList();
-            Game.MessagingManager.Invoke(EventString.Test_AdventureMap, list.ToArray());
+            Game.MessagingManager.Send(EventString.Test_AdventureMap, list);
+
+            Story InstanceMapData(AdvInterStorySo storySo)
+            {
+                var allEvents = storySo.AllEvents.Select(e => ((AdvEventSoBase)e).name).ToArray();
+                return new Story
+                {
+                    Id = storySo.Id,
+                    Name = storySo.Name,
+                    StartEventName = storySo.StartAdvEvent.ToString(),
+                    AllEvents = allEvents
+                };
+            }
+
         }
         public void OnEventInvoke(int mapId, int index)
         {
             var map = Config.Maps.First(m => m.Id == mapId);
             var advEvent = map.AllAdvEvents[index];
             var eventData = InstanceEventData(map, advEvent);
-            Game.MessagingManager.Invoke(EventString.Test_AdvEventInvoke, eventData);
+            Game.MessagingManager.Send(EventString.Test_AdvEventInvoke, eventData);
         }
 
         public void OnStartMapEvent(int mapId)
         {
             var map = Config.Maps.First(m => m.Id == mapId);
             var eventData = InstanceEventData(map, map.StartAdvEvent);
-            Game.MessagingManager.Invoke(EventString.Test_AdvEventInvoke, eventData);
+            Game.MessagingManager.Send(EventString.Test_AdvEventInvoke, eventData);
         }
 
         public class Story
@@ -175,17 +188,6 @@ namespace Server.Controllers.Adventures
             }
         }
 
-        private Story InstanceMapData(AdvInterStorySo storySo)
-        {
-            var allEvents = storySo.AllEvents.Select(e => ((AdvEventSoBase)e).name).ToArray();
-            return new Story
-            {
-                Id = storySo.Id,
-                Name = storySo.Name,
-                StartEventName = storySo.StartAdvEvent.ToString(),
-                AllEvents = allEvents
-            };
-        }
         private AdvEvent InstanceEventData(AdvInterStorySo storySo,IAdvEvent advEvent)
         {
             return GetEventData(storySo, advEvent);

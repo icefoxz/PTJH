@@ -9,11 +9,11 @@ public class TestDizi : MonoBehaviour
 {
     public void OpenRecruitWindow()
     {
-        Game.MessagingManager.Invoke(EventString.Test_DiziRecruit, null);
+        Game.MessagingManager.Send(EventString.Test_DiziRecruit, string.Empty);
     }
 
     public void OpenStaminaWindow()
     {
-        Game.MessagingManager.Invoke(EventString.Test_StaminaWindow, null);
+        Game.MessagingManager.Send(EventString.Test_StaminaWindow, string.Empty);
     }
 }

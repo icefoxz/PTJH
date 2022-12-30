@@ -25,10 +25,13 @@ internal class SimulationTestManager
         Game.UiBuilder.Build("view_testSimulation",
             v => BattleSimView = new BattleSimulationView(v, Controller));
         Game.MessagingManager.RegEvent(EventString.Test_SimulationUpdateModel,
-            arg => BattleSimView.UpdateModel(JsonMapper.ToObject<BattleSimController.TestModel>(arg)));
+            bag => BattleSimView.UpdateModel(bag.Get<BattleSimController.TestModel>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_SimulationOutcome,
-            arg => BattleSimView.UpdateMessage(JsonMapper.ToObject<BattleSimController.Outcome>(arg)));
-        Game.MessagingManager.RegEvent(EventString.Test_SimulationStart, _ => BattleSimView.Display(true));
+            bag => BattleSimView.UpdateMessage(bag.Get<BattleSimController.Outcome>(0)));
+        Game.MessagingManager.RegEvent(EventString.Test_SimulationStart, bag =>
+        {
+            BattleSimView.Display(true);
+        });
     }
 
     private class BattleSimulationView : UiBase

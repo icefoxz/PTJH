@@ -1,14 +1,11 @@
-﻿using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers;
+namespace HotFix_Project.Managers;
 
 public class WinAdvConfirmManager
 {
@@ -20,14 +17,18 @@ public class WinAdvConfirmManager
         RegEvents();
     }
 
+
     private void RegEvents()
     {
-        
+
     }
 
     private void InitUi()
     {
-        
+        Game.UiBuilder.Build("view_winAdvConfirm", v =>
+        {
+            WinAdvConfirm = new View_winAdvConfirm(v, () => XDebug.LogWarning("弟子历练! 目前历练功能未实现"));
+        });
     }
 
     private class View_winAdvConfirm : UiBase
@@ -48,13 +49,21 @@ public class WinAdvConfirmManager
             Btn_X = v.GetObject<Button>("btn_x");
             Btn_X.OnClickAdd(OnClose);
             Btn_Confirm = v.GetObject<Button>("btn_confirm");
-            //Btn_Confirm.OnClickAdd();
+            Btn_Confirm.OnClickAdd(() =>
+            {
+                onConfirmAction?.Invoke();
+                OnClose();
+            });
         }
 
-        public void SetName(string name)=> Text_diziName.text = name;
-        public void SetMessage(string message)=> Text_message.text = message;
-        public void SetRequireValue(int value)=> Text_value.text = value.ToString();
-        public void SetQuantifier(string quantifier) => Text_quantifier.text = quantifier;
+        public void Set(string diziName, string message, int cost, string quantifier)
+        {
+            Text_diziName.text = diziName;
+            Text_message.text = message;
+            Text_value.text = cost.ToString();
+            Text_quantifier.text = quantifier;
+        }
+
         private void OnClose() => Display(false);
     }
 }

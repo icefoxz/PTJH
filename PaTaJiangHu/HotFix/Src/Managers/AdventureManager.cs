@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server;
 using Server.Controllers.Adventures;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
+using Utls;
 using Views;
 using Object = UnityEngine.Object;
 
@@ -37,16 +39,16 @@ namespace HotFix_Project.Managers
 
         private void EventReg()
         {
-            Game.MessagingManager.RegEvent(EventString.Test_AdventureMap, arg =>
+            Game.MessagingManager.RegEvent(EventString.Test_AdventureMap, bag =>
             {
-                var list = LJson.ToObject<AdventureController.Story[]>(arg, true);
+                var list = bag.Get<AdventureController.Story[]>(0);
                 AdvStory.UpdateStory(list);
                 AdvStory.Display(true);
             });
-            Game.MessagingManager.RegEvent(EventString.Test_AdvEventInvoke, arg =>
+            Game.MessagingManager.RegEvent(EventString.Test_AdvEventInvoke, bag =>
             {
-                var advEvent = LJson.ToObject<AdventureController.AdvEvent>(arg, true);
-                EventWindow.PromptEvent(advEvent.AdvType, arg);
+                var advEvent = bag.Get<AdventureController.AdvEvent>(0);
+                EventWindow.PromptEvent(advEvent.AdvType, bag);
             });
         }
 
@@ -249,14 +251,14 @@ namespace HotFix_Project.Managers
                 OnNextEvent = nextEventAction;
             }
 
-            public void PromptEvent(AdvTypes advType, string arg)
+            public void PromptEvent(AdvTypes advType, ObjectBag bag)
             {
                 Display(true);
                 switch (advType)
                 {
                     case AdvTypes.Story:
                     {
-                        var storyEvent = LJson.ToObject<AdventureController.BriefEvent>(arg, true);
+                        var storyEvent = bag.Get<AdventureController.BriefEvent>(0);
                         var nextIndex = storyEvent.NextIndexes.First();
                         StoryEventView.Set(storyEvent.Name, storyEvent.Text,
                             () => OnNextEvent?.Invoke(storyEvent.StoryId, nextIndex));
@@ -266,7 +268,7 @@ namespace HotFix_Project.Managers
                     case AdvTypes.Term:
                     case AdvTypes.Pool:
                     {
-                        var optionEvent = LJson.ToObject<AdventureController.OptionEvent>(arg, true);
+                        var optionEvent = bag.Get<AdventureController.OptionEvent>(0);
                         OptionEventView.Set(optionEvent.Name, optionEvent.Story);
                         for (var i = 0; i < optionEvent.Options.Length; i++)
                         {
@@ -278,27 +280,27 @@ namespace HotFix_Project.Managers
                     }
                     case AdvTypes.Quit:
                     {
-                        var advEvent = LJson.ToObject<AdventureController.AdvEvent>(arg, true);
+                        var advEvent = bag.Get<AdventureController.AdvEvent>(0);
                         QuitEventView.Set(advEvent.Name, () => Display(false));
                         break;
                     }
                     case AdvTypes.Dialog:
                     {
-                        var dialogEvent = LJson.ToObject<AdventureController.DialogEvent>(arg, true);
+                        var dialogEvent = bag.Get<AdventureController.DialogEvent>(0);
                         var nextIndex = dialogEvent.NextIndexes.First();
                         DialogEventView.Set(dialogEvent, () => OnNextEvent?.Invoke(dialogEvent.StoryId, nextIndex));
                         break;
                     }
                     case AdvTypes.Battle:
                     {
-                        var battleEvent = LJson.ToObject<AdventureController.BattleEvent>(arg, true);
+                        var battleEvent = bag.Get<AdventureController.BattleEvent>(0);
                         BattleEventView.Set(battleEvent.Name, battleEvent.ResultEvents, battleEvent.NextIndexes,
                             eventIndex => OnNextEvent?.Invoke(battleEvent.StoryId, eventIndex));
                         break;
                     }
                     case AdvTypes.Reward:
                     {
-                        var rewardEvent = LJson.ToObject<AdventureController.RewardEvent>(arg, true);
+                        var rewardEvent = bag.Get<AdventureController.RewardEvent>(0);
                         RewardEventView.Set(rewardEvent.Name, rewardEvent.Rewards,
                             () => OnNextEvent?.Invoke(rewardEvent.StoryId, rewardEvent.NextIndexes.First()));
                         break;

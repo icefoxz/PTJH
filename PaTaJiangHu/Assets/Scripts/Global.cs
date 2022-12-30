@@ -39,4 +39,8 @@ public class EventString
     public const string Faction_Init = "Faction_Init";
     public const string Faction_DiziListUpdate = "Faction_DiziListUpdate";
     public const string Faction_DiziSelected = "Faction_DiziSelected";
+    public const string Faction_SilverUpdate = "Faction_SilverUpdate";
+    public const string Faction_YuanBaoUpdate = "Faction_YuanBaoUpdate";
+    public const string Faction_Params_ActionLingUpdate = "Faction_ActionLingUpdate";
+    public const string Dizi_AdvManagement = "Dizi_AdvManagement";
 }

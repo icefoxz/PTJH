@@ -1,21 +1,20 @@
-﻿using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Text;
-using System.Threading.Tasks;
+using _GameClient.Models;
+using HotFix_Project.Serialization;
+using HotFix_Project.Views.Bases;
+using Server.Controllers.Factions;
 using Systems.Messaging;
-using UnityEngine;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Controllers;
 
-public class DiziListViewManager
+internal class DiziListViewManager 
 {
-    private View_diziListView DiziListView { get; set; }
-
+    private DiziListView DiziList { get; set; }
+    private DiziInteractionController DiziInteraction { get; } = Game.Controllers.Get<DiziInteractionController>();
     public void Init()
     {
         InitUi();
@@ -24,56 +23,88 @@ public class DiziListViewManager
 
     private void RegEvents()
     {
-        
+        Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList(bag));
     }
 
     private void InitUi()
     {
-        
+        Game.UiBuilder.Build("view_diziListView", v =>
+        {
+            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Btm, true);
+            DiziList = new DiziListView(v, index => DiziInteraction.SelectDizi(index));
+        });
     }
 
-    private class View_diziListView : UiBase
+    private class DiziListView : UiBase
     {
-        private ScrollRect Scroll_diziListView { get; }
-        private Prefab Dizi { get; }
-        private View_topRight TopRight {get;}
-        public View_diziListView(IView v) : base(v.GameObject, true)
+        private event Action<int> OnDiziSelectedAction;
+        private ListViewUi<DiziPrefab> DiziList { get; }
+        private TopRightView TopRight { get; set; }
+
+        public DiziListView(IView v, Action<int> onDiziSelectedAction) : base(v.GameObject, true)
         {
-            Scroll_diziListView = v.GetObject<ScrollRect>("scroll_diziListView");
-            Dizi = new Prefab(v.GetObject<View>("prefab_dizi"));
-            TopRight = new View_topRight(v.GetObject<View>("view_topRight"));
+            OnDiziSelectedAction = onDiziSelectedAction;
+            DiziList = new ListViewUi<DiziPrefab>(v.GetObject<View>("prefab_dizi"),
+                v.GetObject<ScrollRect>("scroll_diziListView").content.gameObject);
+            TopRight = new TopRightView(v.GetObject<View>("view_topRight"));
         }
-        private class Prefab : UiBase
+
+
+        public void UpdateList(ObjectBag bag)
+        {
+            var list = bag.Get<DiziInfo[]>(0);
+            SetList(list);
+        }
+
+        public void ClearList() => DiziList.ClearList(ui => ui.Destroy());
+
+        public void SetList(DiziInfo[] arg)
+        {
+            ClearList();
+            for (var i = 0; i < arg.Length; i++)
+            {
+                var info = arg[i];
+                var index = i;
+                var ui = DiziList.Instance(v => new DiziPrefab(v));
+                ui.Init(info.Name, () => OnDiziSelectedAction?.Invoke(index));
+            }
+        }
+
+        private class DiziPrefab : UiBase
         {
             private Button Btn_dizi { get; }
             private Text Text_diziName { get; }
 
-            public Prefab(IView v) : base(v.GameObject, true)
+            public DiziPrefab(IView v) : base(v.GameObject, true)
             {
                 Btn_dizi = v.GetObject<Button>("btn_dizi");
-                //Btn_dizi.OnClickAdd():
                 Text_diziName = v.GetObject<Text>("text_diziName");
             }
-            public void GetDiziName(string name) => Text_diziName.text = name;
-            
+
+            public void Init(string name, Action onClickAction)
+            {
+                Text_diziName.text = name;
+                Btn_dizi.OnClickAdd(onClickAction);
+                Display(true);
+            }
         }
-        private class View_topRight : UiBase
+
+        private class TopRightView : UiBase
         {
             private Text Text_value { get; }
             private Text Text_max { get; }
 
-            public View_topRight(IView v) : base(v.GameObject, true)
+            public TopRightView(IView v) : base(v.GameObject, true)
             {
                 Text_value = v.GetObject<Text>("text_value");
                 Text_max = v.GetObject<Text>("text_max");
             }
 
-            public void SetExistingDizi(int value, int max)
+            public void Set(int value, int max)
             {
                 Text_value.text = value.ToString();
                 Text_max.text = max.ToString();
             }
         }
-
     }
 }

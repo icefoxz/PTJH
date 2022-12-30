@@ -47,12 +47,12 @@ namespace Server.Controllers.Characters
             return _configsCache[grade];
         }
 
-        public (int strength, int agility, int hp, int mp, int Stamina, int bagSlot)
+        public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int Stamina, int bagSlot)
             GenerateFromGrade(int grade)
         {
             return GeneratePops(GradeConfigs((Grades)grade));
 
-            (int strength, int agility, int hp, int mp, int Stamina, int bagSlot) GeneratePops(
+            (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int Stamina, int bagSlot) GeneratePops(
                 GradeConfig config)
             {
                 var (strength, agility, hp, mp) = config.GeneratePentagon();
@@ -92,17 +92,19 @@ namespace Server.Controllers.Characters
                 PentagonGradeSo.Elements.Hp,
                 PentagonGradeSo.Elements.Mp,
             };
-            public (int strength, int agility, int hp, int mp) GeneratePentagon()
+            public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp) GeneratePentagon()
             {
                 var ran = Pentagon.Generate(ElementArray.OrderByDescending(_ => Random.Range(0, 10)))
-                    .ToDictionary(r => r.Item1, r => r.Item2);
+                    .ToDictionary(r => r.element, r => (r.value, r.grade));
 
-                return (ran[PentagonGradeSo.Elements.Strength],
-                        ran[PentagonGradeSo.Elements.Agility],
-                        ran[PentagonGradeSo.Elements.Hp],
-                        ran[PentagonGradeSo.Elements.Mp]
+                return (InstanceValueGrade(ran[PentagonGradeSo.Elements.Strength]),
+                        InstanceValueGrade(ran[PentagonGradeSo.Elements.Agility]),
+                        InstanceValueGrade(ran[PentagonGradeSo.Elements.Hp]),
+                        InstanceValueGrade(ran[PentagonGradeSo.Elements.Mp])
                     );
             }
+
+            private GradeValue<int> InstanceValueGrade((int value, SkillGrades grade) t) => new(t.value, (int)t.grade);
         }
 
         [Serializable]
@@ -115,8 +117,12 @@ namespace Server.Controllers.Characters
 
             private PentagonGradeSo[] Ran => new []{ 随1, 随2, 随3, 随4 };
 
-            public (PentagonGradeSo.Elements, int)[] Generate(IEnumerable<PentagonGradeSo.Elements> array) =>
-                array.Select((e, i) => (e, Ran[i].GenerateProp(e))).ToArray();
+            public (PentagonGradeSo.Elements element, int value, SkillGrades grade)[] Generate(IEnumerable<PentagonGradeSo.Elements> array) =>
+                array.Select((e, i) =>
+                {
+                    var r = Ran[i].GenerateProp(e);
+                    return  (e, r.Item1, r.Item2);
+                }).ToArray();
         }
     }
 }

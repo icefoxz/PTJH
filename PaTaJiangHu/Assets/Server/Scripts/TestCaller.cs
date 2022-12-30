@@ -14,7 +14,7 @@ namespace Server
     public interface ITestCaller : ISingletonDependency
     {
         ISkillController InstanceSkillController();
-        IDiziController InstanceDiziController();
+        ITestDiziController InstanceDiziController();
         IAdventureController InstanceAdventureController();
         IAdvMapController InstanceAdvMapController();
         IBattleSimController InstanceBattleSimController();
@@ -33,15 +33,15 @@ namespace Server
     {
         //在测试模式中，controller是模拟服务器的数据控制器，在客户端使用都是直接向服务器请求的
         private AdventureController AdvController { get; set; }
-        private DiziController DiziController { get; set; }
+        private TestTestDiziController TestTestDiziController { get; set; }
         private SkillController SkillController { get; set; }
         private AdvMapController MapController { get; set; }
         private BattleSimController BattleSimController { get; set; }
 
         [SerializeField] private AdvMapController.Configure 地图;
         private AdvMapController.Configure MapConfig => 地图;
-        [SerializeField] private DiziController.DiziConfig 弟子配置;
-        private DiziController.DiziConfig DiziCfg => 弟子配置;
+        [SerializeField] private TestTestDiziController.DiziConfig 弟子配置;
+        private TestTestDiziController.DiziConfig DiziCfg => 弟子配置;
         [SerializeField] private ItemConfig 物品配置;
         private ItemConfig ItemCfg => 物品配置;
         [SerializeField] private AdventureController.AdvConfig 副本配置;
@@ -58,7 +58,7 @@ namespace Server
         }
         public IAdvMapController InstanceAdvMapController()=> MapController = new AdvMapController(MapConfig);
         public ISkillController InstanceSkillController() => SkillController = new SkillController(SkillConfig);
-        public IDiziController InstanceDiziController() => DiziController = new DiziController(DiziCfg);
+        public ITestDiziController InstanceDiziController() => TestTestDiziController = new TestTestDiziController(DiziCfg);
         public IAdventureController InstanceAdventureController() => AdvController = new AdventureController(AdvConfig);
 
         public void StartAdvMapLoad() => MapController.LoadMap();
@@ -68,7 +68,7 @@ namespace Server
         public void StartAdventureMaps() => AdvController.StartAdventureMaps();
         public void StartSimulationSo()
         {
-            Game.MessagingManager.Invoke(EventString.Test_SimulationStart, string.Empty);
+            Game.MessagingManager.Send(EventString.Test_SimulationStart, string.Empty);
             //BattleSimController.Start();
         }
 
@@ -77,24 +77,24 @@ namespace Server
         private void SetCon(ConValue con, int value, string method)
         {
             con.Set(value);
-            Game.MessagingManager.Invoke(method, con);
+            Game.MessagingManager.Send(method, con);
         }
         private void SetConMax(ConValue con, int value, string method)
         {
             con.SetMax(value);
-            Game.MessagingManager.Invoke(method, con);
+            Game.MessagingManager.Send(method, con);
         }
         private void SetConFix(ConValue con, int value, string method)
         {
             con.SetFix(value);
-            Game.MessagingManager.Invoke(method, con);
+            Game.MessagingManager.Send(method, con);
         }
         //button event
         public void StartTestMedicineWindow()
         {
             ItemCfg.Init();
-            Game.MessagingManager.Invoke(EventString.Test_StatusUpdate, new Status(TestStatus.GetCombatStatus()));
-            Game.MessagingManager.Invoke(EventString.Test_MedicineWindow, ItemCfg.Medicines.Values.ToList());
+            Game.MessagingManager.Send(EventString.Test_StatusUpdate, new Status(TestStatus.GetCombatStatus()));
+            Game.MessagingManager.Send(EventString.Test_MedicineWindow, ItemCfg.Medicines.Values.ToList());
         }
 
         public void SetHpValue(int value) => SetCon(TestStatus.Hp, value, EventString.Test_UpdateHp);
@@ -108,7 +108,7 @@ namespace Server
             var cs = TestStatus.GetCombatStatus();
             ItemCfg.Medicines[id].Recover(cs);
             TestStatus.Clone(cs);
-            Game.MessagingManager.Invoke(EventString.Test_StatusUpdate, new Status(cs));
+            Game.MessagingManager.Send(EventString.Test_StatusUpdate, new Status(cs));
         }
 
         [Serializable]internal class ItemConfig

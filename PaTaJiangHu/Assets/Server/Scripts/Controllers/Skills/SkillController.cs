@@ -6,6 +6,15 @@ using Server.Controllers.Skills;
 using So;
 using UnityEngine;
 
+public enum SkillGrades
+{
+    E,
+    D,
+    C,
+    B,
+    A,
+    S,
+}
 
 public interface ISkillController
 {
@@ -111,17 +120,17 @@ public class SkillController : ISkillController
         SelectedCombat = Config.CombatSos[index];
         var cs = SelectedCombat.GetMaxLevel();
         var dto = new Combat(cs, SelectedCombat);
-        Game.MessagingManager.Invoke(EventString.Test_CombatSkillSelected, dto);
+        Game.MessagingManager.Send(EventString.Test_CombatSkillSelected, dto);
     }
     public void OnCombatLeveling(int level)
     {
         var cs = level == 0 ? SelectedCombat.GetMaxLevel() : SelectedCombat.GetFromLevel(level);
         var dto = new Combat(cs, SelectedCombat);
-        Game.MessagingManager.Invoke(EventString.Test_CombatSkillLeveling, dto);
+        Game.MessagingManager.Send(EventString.Test_CombatSkillLeveling, dto);
     }
     public void ListCombatSkills()
     {
-        Game.MessagingManager.Invoke(EventString.Test_CombatSoList,
+        Game.MessagingManager.Send(EventString.Test_CombatSoList,
             Config.CombatSos.Select(s => new Combat(s.GetMaxLevel(), s)).ToArray());
     }
 
@@ -164,7 +173,7 @@ public class SkillController : ISkillController
         var dto = new Force(f, 
             SelectedForce.GetBuffs(SelectedForce.MaxLevel).Select(b => new Buff(b)).ToArray(),
             SelectedForce.MaxLevel);
-        Game.MessagingManager.Invoke(EventString.Test_ForceSkillSelected, dto);
+        Game.MessagingManager.Send(EventString.Test_ForceSkillSelected, dto);
     }
     public void OnForceLeveling(int level)
     {
@@ -173,11 +182,11 @@ public class SkillController : ISkillController
          var dto = new Force(f, 
              SelectedForce.GetBuffs(selectedLevel).Select(b => new Buff(b)).ToArray(),
              SelectedForce.MaxLevel);
-        Game.MessagingManager.Invoke(EventString.Test_ForceSkillLeveling, dto);
+        Game.MessagingManager.Send(EventString.Test_ForceSkillLeveling, dto);
     }
     public void ListForceSkills()
     {
-        Game.MessagingManager.Invoke(EventString.Test_ForceSoList,
+        Game.MessagingManager.Send(EventString.Test_ForceSoList,
             Config.ForceSos.Select(s =>
                     new Force(s.GetMaxLevel(), s.GetBuffs(s.MaxLevel).Select(b => new Buff(b)).ToArray(), s.MaxLevel))
                 .ToArray());
@@ -216,7 +225,7 @@ public class SkillController : ISkillController
         var dto = new DodgeSkill(dodge,
             SelectedDodge.GetBuffs(SelectedDodge.MaxLevel).Select(b => new Buff(b)).ToArray(),
             SelectedDodge.MaxLevel);
-        Game.MessagingManager.Invoke(EventString.Test_DodgeSkillSelected, dto);
+        Game.MessagingManager.Send(EventString.Test_DodgeSkillSelected, dto);
     }
     public void OnDodgeLeveling(int level)
     {
@@ -225,11 +234,11 @@ public class SkillController : ISkillController
          var dto = new DodgeSkill(dodge,
              SelectedDodge.GetBuffs(selectedLevel).Select(b => new Buff(b)).ToArray(),
              SelectedDodge.MaxLevel);
-        Game.MessagingManager.Invoke(EventString.Test_DodgeSkillLeveling, dto);
+        Game.MessagingManager.Send(EventString.Test_DodgeSkillLeveling, dto);
     }
     public void ListDodgeSkills()
     {
-        Game.MessagingManager.Invoke(EventString.Test_DodgeSoList,
+        Game.MessagingManager.Send(EventString.Test_DodgeSoList,
             Config.DodgeSos.Select(d =>
                     new DodgeSkill(d.GetMaxLevel(), d.GetBuffs(d.MaxLevel).Select(b => new Buff(b)).ToArray(),
                         d.MaxLevel))
