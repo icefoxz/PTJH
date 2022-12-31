@@ -31,7 +31,7 @@ namespace Server.Configs._script.Items
         [SerializeField] private string _name;
         [ConditionalField(true,nameof(ChangeName))][SerializeField] private int id;
         [SerializeField] private Way.Armed 类型;
-        [SerializeField] private int 伤害值;
+        [SerializeField] private int 力量加成;
         [SerializeField] private Weapon.Injuries 伤害类型;
         [SerializeField] private SkillGrades 品级;
         [SerializeField] private int 投掷次数 = 1;
@@ -39,7 +39,7 @@ namespace Server.Configs._script.Items
         public int Id => id;
         public string Name => _name;
         public Way.Armed Armed => 类型;
-        public int Damage => 伤害值;
+        public int Damage => 力量加成;
         public Weapon.Injuries Injury => 伤害类型;
         public SkillGrades Grade => 品级;
         public int FlingTimes => 投掷次数;
