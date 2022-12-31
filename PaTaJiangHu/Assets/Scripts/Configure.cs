@@ -1,6 +1,6 @@
 using System;
-using Server.Controllers.Characters;
-using Server.Controllers.Factions;
+using Server.Configs._script.Characters;
+using Server.Configs._script.Factions;
 using UnityEngine;
 
 /// <summary>

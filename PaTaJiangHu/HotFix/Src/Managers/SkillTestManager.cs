@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using BattleM;
-using HotFix_Project.Serialization.LitJson;
 using HotFix_Project.Views.Bases;
-using Server;
+using Server.Configs._script;
+using Server.Configs._script.Skills;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;

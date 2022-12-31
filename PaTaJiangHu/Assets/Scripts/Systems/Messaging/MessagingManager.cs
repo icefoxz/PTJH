@@ -49,6 +49,10 @@ namespace Systems.Messaging
             if (EventMap.ContainsKey(eventName))
                 foreach (var(_,action)  in EventMap[eventName])
                     action?.Invoke(string.IsNullOrEmpty(args) ? string.Empty : args);
+            else
+            {
+                XDebug.LogWarning($"{eventName} 没有注册事件!");
+            }
         }
 
         private string RegEvent(string eventName, Action<string> action)

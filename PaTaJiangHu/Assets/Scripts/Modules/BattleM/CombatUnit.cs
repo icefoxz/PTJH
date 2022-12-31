@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Server.Configs._script.Skills;
 
 namespace BattleM
 {
@@ -366,6 +367,8 @@ namespace BattleM
             public int Dodge => 1;
             public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
             public override string ToString() => Name;
+            public SkillGrades Grade { get; } = SkillGrades.E;
+            public int Level => 1;
         }
         private class BasicForce : IForceSkill
         {
@@ -376,7 +379,9 @@ namespace BattleM
             public int ArmorCost => 0;
             public int Armor => 0;
             public int Breath => 5;
+            public int Level => 1;
             public IBuffInstance[] GetBuffs(ICombatUnit unit,ICombatBuff.Appends append) => Array.Empty<IBuffInstance>();
+            public SkillGrades Grade { get; } = SkillGrades.E;
         }
         public int CompareTo(CombatUnit other) => BreathBar.CompareTo(other.BreathBar);
         public override string ToString() =>$"{CombatId}.{Name}[{StandingPoint}]{Status}.力({Strength})敏{Agility}";

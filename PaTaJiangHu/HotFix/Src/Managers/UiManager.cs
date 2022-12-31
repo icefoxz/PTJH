@@ -1,5 +1,4 @@
-﻿using HotFix_Project.Controllers;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace HotFix_Project.Managers;
 
@@ -10,6 +9,7 @@ internal class UiManager
     private DiziInfoSection DiziInfoSection { get; set; } = new DiziInfoSection();
     private DiziRecruitManager DiziRecruitManager { get; set; } = new DiziRecruitManager();
     private DiziListViewManager DiziListViewManager { get; set; } = new DiziListViewManager();
+    private DiziAdvManager DiziAdvManager { get; set; } = new DiziAdvManager();
 
     public UiManager(IMainUi mainUi)
     {
@@ -31,6 +31,7 @@ internal class UiManager
         DiziInfoSection.Init();
         DiziRecruitManager.Init();
         DiziListViewManager.Init();
+        DiziAdvManager.Init();
     }
 
 

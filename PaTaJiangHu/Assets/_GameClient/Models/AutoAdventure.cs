@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Server.Controllers.Adventures;
+using Server.Configs._script.Adventures;
 using UnityEngine;
 using Utls;
 

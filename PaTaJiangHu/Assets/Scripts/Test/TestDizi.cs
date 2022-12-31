@@ -1,19 +1,17 @@
-using Server.Controllers.Adventures;
-using Server;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
-
-public class TestDizi : MonoBehaviour
+namespace Test
 {
-    public void OpenRecruitWindow()
+    public class TestDizi : MonoBehaviour
     {
-        Game.MessagingManager.Send(EventString.Test_DiziRecruit, string.Empty);
-    }
+        public void OpenRecruitWindow()
+        {
+            Game.MessagingManager.Send(EventString.Test_DiziRecruit, string.Empty);
+        }
 
-    public void OpenStaminaWindow()
-    {
-        Game.MessagingManager.Send(EventString.Test_StaminaWindow, string.Empty);
+        public void OpenStaminaWindow()
+        {
+            Game.MessagingManager.Send(EventString.Test_StaminaWindow, string.Empty);
+        }
     }
 }

@@ -53,7 +53,7 @@ public class DiziInfoSection
 
         public void SetDizi(ObjectBag bag)
         {
-            var dizi = bag.Get<Dizi>(0);
+            var dizi = bag.Get<DiziDto>(0);
             var c = dizi.Capable;
             CharInfo.SetName(dizi.Name);
             CharInfo.SetLevel(dizi.Level);

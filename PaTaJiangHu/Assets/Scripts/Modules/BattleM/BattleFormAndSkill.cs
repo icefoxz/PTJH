@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Server.Configs._script.Skills;
 using UnityEngine;
 
 namespace BattleM
@@ -126,6 +127,11 @@ namespace BattleM
     /// </summary>
     public interface ISkill : ISkillName
     {
+        /// <summary>
+        /// 技能品级
+        /// </summary>
+        SkillGrades Grade { get; }
+        int Level { get; }
     }
 
     public interface ISkillName
@@ -135,7 +141,7 @@ namespace BattleM
     /// <summary>
     /// 恢复技能
     /// </summary>
-    public interface IRecovery : ISkill
+    public interface IRecovery : ISkillForm
     {
         /// <summary>
         /// 补血或气的消耗值
@@ -153,7 +159,7 @@ namespace BattleM
     /// <summary>
     /// 内功心法(战斗)
     /// </summary>
-    public interface IForceSkill : IRecovery, IBreathNode
+    public interface IForceSkill : ISkill, IRecovery, IBreathNode
     {
         /// <summary>
         /// 内功转化率

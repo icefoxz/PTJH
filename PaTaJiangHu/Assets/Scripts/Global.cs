@@ -30,9 +30,10 @@ public class EventString
     public const string Test_SimulationStart = "Test_SimulationStart";
 
     //弟子dizi
-    public const string Model_DiziInfo_StaminaUpdate = "Model_DiziInfo_StaminaUpdate";
     public const string Recruit_DiziGenerated = "Recruit_DiziGenerated";
     public const string Recruit_DiziInSlot = "Recruit_DiziInSlot";
+    public const string Dizi_AdvManagement = "Dizi_AdvManagement";
+    public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";
@@ -42,5 +43,4 @@ public class EventString
     public const string Faction_SilverUpdate = "Faction_SilverUpdate";
     public const string Faction_YuanBaoUpdate = "Faction_YuanBaoUpdate";
     public const string Faction_Params_ActionLingUpdate = "Faction_ActionLingUpdate";
-    public const string Dizi_AdvManagement = "Dizi_AdvManagement";
 }

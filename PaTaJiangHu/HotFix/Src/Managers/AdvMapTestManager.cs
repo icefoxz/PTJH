@@ -4,6 +4,7 @@ using System.Linq;
 using HotFix_Project.Serialization.LitJson;
 using HotFix_Project.Views.Bases;
 using Server;
+using Server.Configs._script;
 using Systems.Messaging;
 using UnityEngine.UI;
 using Views;

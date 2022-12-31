@@ -1,5 +1,6 @@
 ﻿using System;
 using HotFix_Project.Serialization.LitJson;
+using Utls;
 
 namespace HotFix_Project.Serialization;
 
@@ -22,4 +23,9 @@ internal static class LJson
         }
     }
     public static string ToJson(object obj) => JsonMapper.ToJson(obj);
+}
+
+internal static class ObjectBagExtension
+{
+    public static T Map<T>(this ObjectBag bag, int index) where T : class => LJson.ToObject<T>(bag.Bag[index]);
 }

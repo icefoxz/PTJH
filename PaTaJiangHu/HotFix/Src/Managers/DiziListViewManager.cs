@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Linq;
 using _GameClient.Models;
-using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
-using Server.Controllers.Factions;
+using Server.Configs._script.Factions;
 using Systems.Messaging;
 using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Controllers;
+namespace HotFix_Project.Managers;
 
 internal class DiziListViewManager 
 {
     private DiziListView DiziList { get; set; }
-    private DiziInteractionController DiziInteraction { get; } = Game.Controllers.Get<DiziInteractionController>();
+    private DiziController DiziInteraction { get; } = Game.Controllers.Get<DiziController>();
     public void Init()
     {
         InitUi();

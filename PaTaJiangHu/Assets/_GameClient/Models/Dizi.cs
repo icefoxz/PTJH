@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using BattleM;
-using Server.Controllers.Adventures;
-using Server.Controllers.Characters;
-using UnityEditor;
+using Server.Configs._script.Adventures;
+using Server.Configs._script.Skills;
 using Utls;
 
 namespace _GameClient.Models
@@ -21,20 +19,25 @@ namespace _GameClient.Models
         public int Mp { get; private set; }
         public int Level { get; private set; }
         public int Grade { get; private set; }
+        public ICombatSkill CombatSkill { get; set; }
+        public IForceSkill ForceSkill { get; set; }
+        public IDodgeSkill DodgeSkill { get; set; }
 
         private StaminaModel Stamina { get; set; }
-        private DiziSkills Skills { get; set; }
+        public Skills Skill { get; set; }
         private DiziBag Bag { get; set; }
         public Capable Capable { get; private set; }
 
         public Dizi()
         {
-            
+
         }
-        public Dizi(string name, GradeValue<int> strength, GradeValue<int> agility, 
+
+        public Dizi(string name, GradeValue<int> strength, GradeValue<int> agility,
             GradeValue<int> hp, GradeValue<int> mp, int level, int grade,
             int stamina, int bag,
-            int combatSlot, int forceSlot, int dodgeSlot)
+            int combatSlot, int forceSlot, int dodgeSlot,
+            ICombatSkill combatSkill, IForceSkill forceSkill, IDodgeSkill dodgeSkill)
         {
             Guid = Guid.NewGuid();
             Name = name;
@@ -46,16 +49,24 @@ namespace _GameClient.Models
             Grade = grade;
             Capable = new Capable(grade, dodgeSlot, combatSlot, bag, strength, agility, hp, mp);
             Stamina = new StaminaModel(stamina);
-            Skills = new DiziSkills(combatSlot, forceSlot, dodgeSlot);
+            CombatSkill = combatSkill;
+            ForceSkill = forceSkill;
+            DodgeSkill = dodgeSkill;
+            var cSlot = new ICombatSkill[combatSlot];
+            cSlot[0] = combatSkill;
+            var fSlot = new IForceSkill[forceSlot];
+            fSlot[0] = forceSkill;
+            var dSlot = new IDodgeSkill[dodgeSlot];
+            dSlot[0] = dodgeSkill;
+            Skill = new Skills(cSlot, fSlot, dSlot);
             Bag = new DiziBag(bag);
         }
 
-        public void UpdateStamina(int value,long lastUpdate)
+        public void UpdateStamina(int value, long lastUpdate)
         {
             Stamina.Update(value, lastUpdate);
-            var arg = Json.Serialize(new long[] { Stamina.Con.Value, Stamina.Con.Max, lastUpdate });
-            Game.MessagingManager.Send(EventString.Model_DiziInfo_StaminaUpdate, arg);
-
+            Game.MessagingManager.SendParams(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max,
+                lastUpdate);
         }
 
         private class StaminaModel
@@ -67,11 +78,12 @@ namespace _GameClient.Models
 
             public long LastUpdate => _lastUpdate;
 
-            public StaminaModel(int value,int max, long lastUpdate)
+            public StaminaModel(int value, int max, long lastUpdate)
             {
                 _con = new ConValue(max, max, value);
                 _lastUpdate = lastUpdate;
             }
+
             public StaminaModel(int value)
             {
                 _con = new ConValue(value, value, value);
@@ -92,6 +104,7 @@ namespace _GameClient.Models
                 Idle,
                 Adventure
             }
+
             public string ShortTitle { get; private set; }
             public string Description { get; private set; }
             public long LastUpdate { get; private set; }
@@ -111,6 +124,7 @@ namespace _GameClient.Models
                 States.Adventure => "历练中...",
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
             };
+
             private string GetShort(States state) => state switch
             {
                 States.Idle => "闲",
@@ -118,28 +132,37 @@ namespace _GameClient.Models
                 _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
             };
         }
+
         //弟子技能栏
-        private class DiziSkills
+        public class Skills
         {
             public IDodgeSkill[] DodgeSkills { get; private set; }
             public ICombatSkill[] CombatSkills { get; private set; }
             public IForceSkill[] ForceSkills { get; private set; }
 
-            public DiziSkills(ICombatSkill[] combatSlot, IForceSkill[] forceSkill, IDodgeSkill[] dodgeSlot)
+            public Skills()
+            {
+                
+            }
+            public Skills(ICombatSkill[] combatSlot, IForceSkill[] forceSkill, IDodgeSkill[] dodgeSlot)
             {
                 DodgeSkills = dodgeSlot;
                 CombatSkills = combatSlot;
                 ForceSkills = forceSkill;
             }
-            public DiziSkills(int combatSlot, int forceSkill, int dodgeSlot)
+
+            public Skills(int combatSlot, int forceSkill, int dodgeSlot)
             {
                 DodgeSkills = new IDodgeSkill[dodgeSlot];
                 CombatSkills = new ICombatSkill[combatSlot];
                 ForceSkills = new IForceSkill[forceSkill];
             }
+
+
         }
+
         //弟子背包
-        private class DiziBag 
+        private class DiziBag
         {
             private IGameItem[] _items;
             public IGameItem[] Items => _items;
@@ -148,12 +171,14 @@ namespace _GameClient.Models
             {
                 _items = new IGameItem[length];
             }
+
             public DiziBag(IGameItem[] items)
             {
                 _items = items;
             }
 
         }
+
         //弟子钱包
         private class DiziWallet
         {
@@ -167,6 +192,7 @@ namespace _GameClient.Models
             }
 
             public void ClearSilver() => Silver = 0;
+
             public void TradeSilver(int silver, bool throwIfLessThanZero = false)
             {
                 Silver += silver;
@@ -175,6 +201,88 @@ namespace _GameClient.Models
             }
         }
     }
+
+    public class DiziDto
+    {
+        public string Name  { get; private set; }
+        public int Strength { get; private set; }
+        public int Agility  { get; private set; }
+        public int Hp       { get; private set; }
+        public int Mp       { get; private set; }
+        public int Level    { get; private set; }
+        public int Grade    { get; private set; }
+        public SkillCombat CombatSkill { get; private set; }
+        public SkillForce ForceSkill { get; private set; }
+        public SkillDodge DodgeSkill { get; private set; }
+        public Capable Capable { get; private set; }
+
+        public DiziDto() { }
+        public DiziDto(Dizi d)
+        {
+            Name = d.Name;
+            Strength = d.Strength;
+            Agility = d.Agility;
+            Hp = d.Hp;
+            Mp = d.Mp;
+            Level = d.Level;
+            Grade = d.Grade;
+            CombatSkill = new SkillCombat(d.CombatSkill);
+            ForceSkill = new SkillForce(d.ForceSkill);
+            DodgeSkill = new SkillDodge(d.DodgeSkill);
+            Capable = new Capable(d.Capable);
+        }
+
+        public class SkillCombat
+        {
+            public string Name { get; set; }
+            public SkillGrades Grade { get; set; }
+            public int Level { get; set; }
+            public Way.Armed Armed { get; set; }
+
+            public SkillCombat() { }
+            public SkillCombat(ICombatSkill c)
+            {
+                Name = c.Name;
+                Grade = c.Grade;
+                Level = c.Level;
+                Armed = c.Armed;
+            }
+        }
+
+        public class SkillForce
+        {
+            public string Name { get; set; }
+            public SkillGrades Grade { get; set; }
+            public int Level { get; set; }
+
+            public SkillForce() { }
+            public SkillForce(IForceSkill f)
+            {
+                Name = f.Name;
+                Grade = f.Grade;
+                Level = f.Level;
+            }
+        }
+
+        public class SkillDodge
+        {
+            public string Name { get; set; }
+            public SkillGrades Grade { get; set; }
+            public int Level { get; set; }
+
+            public SkillDodge() { }
+            public SkillDodge(IDodgeSkill d)
+            {
+                Name = d.Name;
+                Grade = d.Grade;
+                Level = d.Level;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 资质能力
+    /// </summary>
     public class Capable
     {
         /// <summary>
@@ -198,6 +306,10 @@ namespace _GameClient.Models
         /// </summary>
         public int Bag { get; private set; }
 
+        public Capable()
+        {
+            
+        }
         public Capable(int grade, int dodgeSlot, int combatSlot, int bag, GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp)
         {
             Grade = grade;
@@ -209,6 +321,17 @@ namespace _GameClient.Models
             Hp = hp;
             Mp = mp;
         }
-    }
 
+        public Capable(Capable c)
+        {
+            Grade = c.Grade;
+            DodgeSlot = c.DodgeSlot;
+            CombatSlot = c.CombatSlot;
+            Bag = c.Bag;
+            Strength = c.Strength;
+            Agility = c.Agility;
+            Hp = c.Hp;
+            Mp = c.Mp;
+        }
+    }
 }

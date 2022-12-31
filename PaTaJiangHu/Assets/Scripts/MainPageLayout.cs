@@ -19,6 +19,10 @@ public class MainPageLayout : MonoBehaviour
     public Transform Mid => _mid;
     public Transform Btm => _btm;
 
+    public void HideAll(Sections section)
+    {
+        foreach (Transform t in GetTransform(section)) t.gameObject.SetActive(false);
+    }
     public void Set(IView view, Sections section, bool resetPos)
     {
         var sectionTran = GetTransform(section);

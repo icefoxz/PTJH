@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using Server;
-using Server.Controllers.Factions;
+using Server.Configs._script.Factions;
 using Systems;
 using Systems.Coroutines;
 using Systems.Messaging;
@@ -95,7 +95,7 @@ public class Game : UnitySingleton<Game>
         //***************Reg********************//
         var recruitController = new RecruitController(Configure.Recruit);
         Controllers.Reg(recruitController);
-        Controllers.Reg(new DiziInteractionController());
+        Controllers.Reg(new DiziController());
     }
 
     private static void TestFactionInventory()

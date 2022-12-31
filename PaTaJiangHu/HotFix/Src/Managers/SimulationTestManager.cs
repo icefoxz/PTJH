@@ -1,8 +1,7 @@
 ﻿using System;
-using HotFix_Project.Serialization.LitJson;
 using HotFix_Project.Views.Bases;
-using Server;
-using Server.Controllers.Adventures;
+using Server.Configs._script;
+using Server.Configs._script.Adventures;
 using Systems.Messaging;
 using UnityEngine.UI;
 using Views;

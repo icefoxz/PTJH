@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using MyBox;
+using Test;
 using UnityEngine;
 using UnityEngine.UI;
 using Visual.BaseUis;
