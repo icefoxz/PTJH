@@ -1,4 +1,5 @@
 using Data;
+using Server.Configs._script.Skills;
 using Systems;
 using UnityEngine;
 
@@ -102,7 +103,7 @@ namespace BattleM
         Way.Armed Armed { get; }
         int Damage { get; }
         Weapon.Injuries Injury { get; }
-        int Grade { get; }
+        SkillGrades Grade { get; }
         int FlingTimes { get; }
         void AddFlingTime(int value);
     }
@@ -119,11 +120,11 @@ namespace BattleM
         public Way.Armed Armed { get; }
         public int Damage { get; }
         public Injuries Injury { get; }
-        public int Grade { get; }
+        public SkillGrades Grade { get; }
         public int FlingTimes { get; set; }
         public void AddFlingTime(int value) => FlingTimes += value;
 
-        public Weapon(int id,string name, int damage, int grade, Injuries injury, Way.Armed armed, int flingTimes = 1)
+        public Weapon(int id,string name, int damage, SkillGrades grade, Injuries injury, Way.Armed armed, int flingTimes = 1)
         {
             Id = id;
             Name = name;

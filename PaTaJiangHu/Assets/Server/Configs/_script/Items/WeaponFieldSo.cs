@@ -2,6 +2,7 @@ using System;
 using BattleM;
 using Data;
 using MyBox;
+using Server.Configs._script.Skills;
 using UnityEditor;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace Server.Configs._script.Items
         [SerializeField] private Way.Armed 类型;
         [SerializeField] private int 伤害值;
         [SerializeField] private Weapon.Injuries 伤害类型;
-        [SerializeField] private int 品级;
+        [SerializeField] private SkillGrades 品级;
         [SerializeField] private int 投掷次数 = 1;
 
         public int Id => id;
@@ -40,7 +41,7 @@ namespace Server.Configs._script.Items
         public Way.Armed Armed => 类型;
         public int Damage => 伤害值;
         public Weapon.Injuries Injury => 伤害类型;
-        public int Grade => 品级;
+        public SkillGrades Grade => 品级;
         public int FlingTimes => 投掷次数;
         public void AddFlingTime(int value) => throw new NotImplementedException("武器So实体应该先创建引用新实例，而不是直接引用！");
     }
