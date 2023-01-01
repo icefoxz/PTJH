@@ -1,6 +1,7 @@
 ﻿using System;
 using BattleM;
 using Server.Configs._script.Adventures;
+using Server.Configs._script.Factions;
 using Server.Configs._script.Skills;
 using Utls;
 
@@ -23,7 +24,9 @@ namespace _GameClient.Models
         public IForceSkill ForceSkill { get; set; }
         public IDodgeSkill DodgeSkill { get; set; }
 
-        private StaminaModel Stamina { get; set; }
+        public IDiziStamina Stamina => _stamina;
+        private DiziStamina _stamina;
+
         public Skills Skill { get; set; }
         private DiziBag Bag { get; set; }
         public Capable Capable { get; private set; }
@@ -48,7 +51,7 @@ namespace _GameClient.Models
             Level = level;
             Grade = grade;
             Capable = new Capable(grade, dodgeSlot, combatSlot, bag, strength, agility, hp, mp);
-            Stamina = new StaminaModel(stamina);
+            _stamina = new DiziStamina(Game.Controllers.Get<StaminaController>(), stamina);
             CombatSkill = combatSkill;
             ForceSkill = forceSkill;
             DodgeSkill = dodgeSkill;
@@ -62,40 +65,12 @@ namespace _GameClient.Models
             Bag = new DiziBag(bag);
         }
 
-        public void UpdateStamina(int value, long lastUpdate)
+        public void UpdateStamina(long ticks)
         {
-            Stamina.Update(value, lastUpdate);
-            Game.MessagingManager.SendParams(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max,
-                lastUpdate);
+            _stamina.Update(ticks);
+            Game.MessagingManager.SendParams(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max);
         }
 
-        private class StaminaModel
-        {
-            private ConValue _con;
-            private long _lastUpdate;
-
-            public IGameCondition Con => _con;
-
-            public long LastUpdate => _lastUpdate;
-
-            public StaminaModel(int value, int max, long lastUpdate)
-            {
-                _con = new ConValue(max, max, value);
-                _lastUpdate = lastUpdate;
-            }
-
-            public StaminaModel(int value)
-            {
-                _con = new ConValue(value, value, value);
-                _lastUpdate = SysTime.UnixNow;
-            }
-
-            public void Update(int current, long lastUpdate)
-            {
-                Con.Set(current);
-                _lastUpdate = lastUpdate;
-            }
-        }
 
         private class StateModel
         {
@@ -211,6 +186,10 @@ namespace _GameClient.Models
         public int Mp       { get; private set; }
         public int Level    { get; private set; }
         public int Grade    { get; private set; }
+        public int StaminaValue { get; private set; }
+        public int StaminaMax { get; private set; }
+        public int StaminaMin { get; private set; }
+        public int StaminaSec { get; private set; }
         public SkillCombat CombatSkill { get; private set; }
         public SkillForce ForceSkill { get; private set; }
         public SkillDodge DodgeSkill { get; private set; }
@@ -226,6 +205,15 @@ namespace _GameClient.Models
             Mp = d.Mp;
             Level = d.Level;
             Grade = d.Grade;
+            StaminaValue = d.Stamina.Con.Value;
+            StaminaMax = d.Stamina.Con.Max;
+            var staminaFull = d.Stamina.Con.Value == d.Stamina.Con.Max;
+            if (!staminaFull)
+            {
+                var time = d.Stamina.GetCountdown();
+                StaminaMin = (int)time.TotalMinutes;
+                StaminaSec = time.Seconds;
+            }
             CombatSkill = new SkillCombat(d.CombatSkill);
             ForceSkill = new SkillForce(d.ForceSkill);
             DodgeSkill = new SkillDodge(d.DodgeSkill);

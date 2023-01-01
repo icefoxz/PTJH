@@ -1,9 +1,5 @@
 ﻿using HotFix_Project.Views.Bases;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using _GameClient.Models;
 using Server.Configs._script.Factions;
 using Systems.Messaging;
@@ -81,7 +77,7 @@ public class DiziAdvManager
             var dizi = bag.Get<DiziDto>(0);
             Combat.Set(dizi.CombatSkill.Name, dizi.CombatSkill.Level);
             Force.Set(dizi.ForceSkill.Name, dizi.ForceSkill.Level);
-            Dodge.Set(dizi.Name, dizi.DodgeSkill.Level);
+            Dodge.Set(dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
             XDebug.LogWarning($"{dizi.Name} 状态,装备未完成!");
         }
         #region element_con

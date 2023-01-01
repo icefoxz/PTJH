@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Server.Configs._script.Items
 {
     [CreateAssetMenu(fileName = "armorSo",menuName = "战斗测试/防具")]
-    [Serializable] public class ArmorFieldSo : ScriptableObject, IArmor,IDataElement
+    [Serializable] public class ArmorFieldSo : ScriptableObject, IArmor
     {
 
         [SerializeField] private string _name;

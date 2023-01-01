@@ -23,7 +23,7 @@ namespace Server.Configs._script.Characters
         private StaminaGenerateSo StaminaGen { get; set; }
         public int CurrentStamina => AdditionStamina + BaseStamina;
         public int AdditionStamina => StaminaGen.GetStamina(LastTicks);
-        public TimeSpan Countdown => StaminaGen.CountdownTotalSecs(LastTicks + StaminaGen.PerStaminaTicks * AdditionStamina);
+        public TimeSpan Countdown => StaminaGen.GetNextStaminaTimeInterval(LastTicks + StaminaGen.PerStaminaTicks * AdditionStamina);
         public TimeSpan MinPerStamina => StaminaGen.PerStamina;
         public long LastTicks { get; private set; }
         public int BaseStamina { get; private set; }

@@ -57,6 +57,7 @@ public class DiziInfoSection
             var c = dizi.Capable;
             CharInfo.SetName(dizi.Name);
             CharInfo.SetLevel(dizi.Level);
+            CharInfo.SetStamina(dizi.StaminaValue, dizi.StaminaMax, dizi.StaminaMin, dizi.StaminaSec);
             SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength);
             SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility);
             SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp);
@@ -178,10 +179,11 @@ public class DiziInfoSection
 
                     public void SetTime(int min, int sec)
                     {
-                        Text_max.text = min.ToString();
-                        Text_value.text = sec.ToString();
+                        Text_max.text = min < 0 ? string.Empty : min.ToString();
+                        Text_value.text = sec < 0 ? string.Empty : sec.ToString();
                         Display(true);
                     }
+
                     public void Hide() => Display(false);
                 }
             }
