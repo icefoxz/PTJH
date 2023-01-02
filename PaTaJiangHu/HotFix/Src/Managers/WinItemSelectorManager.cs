@@ -15,6 +15,8 @@ namespace HotFix_Project.Managers;
 public class WinItemSelectorManager
 {
     private View_winItemSelector WinItemSelector { get; set; }
+
+    
     private class View_winItemSelector : UiBase
     {
         private Button Btn_x { get; }
@@ -82,7 +84,7 @@ public class WinItemSelectorManager
                     Text_value = v.GetObject<Text>("text_value");
                     Text_max = v.GetObject<Text>("text_max");
                 }
-                public void SetTimer(int min, int sec)
+                public void SetTime(int min, int sec)
                 {
                     Text_value.text = min.ToString();
                     Text_max.text = sec.ToString();

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// 游戏逻辑控制器
+/// 游戏逻辑控制器, 主要控制与模型和数据的交互
 /// </summary>
 public interface IGameController
 {

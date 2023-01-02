@@ -24,6 +24,12 @@ namespace Server.Configs._script.Factions
         {
             var cost = RecruitConfig.GetCost();
             var yuanBaoCost = cost.yuanBao;
+            var silverCost = cost.silver;
+            if (Faction.Silver < silverCost)
+            {
+                XDebug.Log($"银两不足 = {silverCost}, 不可招募弟子!");
+                return false;
+            }
             if (Faction.YuanBao < yuanBaoCost)
             {
                 XDebug.Log($"元宝不足 = {yuanBaoCost}, 不可招募弟子!");

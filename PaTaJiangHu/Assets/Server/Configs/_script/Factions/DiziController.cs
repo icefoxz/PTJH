@@ -1,4 +1,5 @@
 ﻿using _GameClient.Models;
+using UnityEngine;
 
 namespace Server.Configs._script.Factions
 {
@@ -10,6 +11,11 @@ namespace Server.Configs._script.Factions
             var dizi = Faction.DiziList[index];
             Game.MessagingManager.Send(EventString.Faction_DiziSelected, new DiziDto(dizi));
             Game.MessagingManager.Send(EventString.Dizi_AdvManagement, new DiziDto(dizi));
+        }
+
+        public void ListDiziConditionItems()
+        {
+            //var items = Faction. Game.MessagingManager.Send(EventString.Faction_ListDiziConditionItems,, Faction.Silver);
         }
     }
 }

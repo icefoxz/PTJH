@@ -268,6 +268,18 @@ namespace _GameClient.Models
         }
     }
 
+    public class ConditionItemDto
+    {
+        public string Name { get; set; }
+        public int Amount { get; set; }
+
+        public ConditionItemDto() { }
+        public ConditionItemDto(string name, int amount)
+        {
+            Name = name;
+            Amount = amount;
+        }
+    }
     /// <summary>
     /// 资质能力
     /// </summary>

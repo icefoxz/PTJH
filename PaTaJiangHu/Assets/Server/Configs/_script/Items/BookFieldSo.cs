@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Server.Configs._script.Items
 {
     [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "配置/秘籍")]
-    [Serializable] public class BookFieldSo : BookSoBase
+    internal class BookFieldSo : BookSoBase
     {
         [SerializeField] private string _name;
         [SerializeField] private int id;
@@ -60,5 +60,4 @@ namespace Server.Configs._script.Items
         public abstract int Price { get; }
         public abstract int GetUpgradeRate(int currentLevel);
     }
-    //武功秘籍
 }

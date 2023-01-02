@@ -1,6 +1,7 @@
 ﻿using System;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
+using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
@@ -27,6 +28,7 @@ public class WinAdvConfirmManager
     {
         Game.UiBuilder.Build("view_winAdvConfirm", v =>
         {
+            
             WinAdvConfirm = new View_winAdvConfirm(v, () => XDebug.LogWarning("弟子历练! 目前历练功能未实现"));
         });
     }
@@ -55,7 +57,6 @@ public class WinAdvConfirmManager
                 OnClose();
             });
         }
-
         public void Set(string diziName, string message, int cost, string quantifier)
         {
             Text_diziName.text = diziName;
