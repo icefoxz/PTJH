@@ -14,7 +14,7 @@ namespace HotFix_Project.Src.Managers;
 
 public class WinEquipmentManager
 {
-    private View_winEquipment QinEquipment { get; set; }
+    private View_winEquipment WinEquipment { get; set; }
 
     public void Init()
     {
