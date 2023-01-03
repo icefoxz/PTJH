@@ -23,6 +23,8 @@ namespace _GameClient.Models
         public ICombatSkill CombatSkill { get; set; }
         public IForceSkill ForceSkill { get; set; }
         public IDodgeSkill DodgeSkill { get; set; }
+        public IWeapon Weapon { get; private set; }
+        public IArmor Armor { get; private set; }
 
         public IDiziStamina Stamina => _stamina;
         private DiziStamina _stamina;
@@ -169,6 +171,18 @@ namespace _GameClient.Models
                 if (throwIfLessThanZero && Silver < 0)
                     throw new InvalidOperationException($"{nameof(TradeSilver)}: silver = {Silver}");
             }
+        }
+
+        public void Wield(IWeapon weapon)
+        {
+            Weapon = weapon;
+            XDebug.Log(weapon == null ? "弟子卸下装备" : $"弟子装备{weapon.Name}!");
+        }
+
+        public void Wear(IArmor armor)
+        {
+            Armor = armor;
+            XDebug.Log(armor == null ? "弟子卸下装备" : $"弟子装备{armor.Name}!");
         }
     }
 

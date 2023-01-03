@@ -10,13 +10,15 @@ namespace _GameClient.Models
     /// </summary>
     public class Faction
     {
-        private Dictionary<string,Dizi> _diziMap;
+        private Dictionary<string, Dizi> _diziMap;
         private List<IWeapon> _weapons= new List<IWeapon>();
         private List<IArmor> _armors = new List<IArmor>();
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
         public int ActionLing { get; private set; }
-
+        /// <summary>
+        /// key = dizi.Guid, value = dizi
+        /// </summary>
         public IReadOnlyDictionary<string,Dizi> DiziMap => _diziMap;
         public IReadOnlyList<IWeapon> Weapons => _weapons;
         public IReadOnlyList<IArmor> Armors => _armors;
@@ -117,6 +119,9 @@ namespace _GameClient.Models
         }
 
         private void Log(string message) => XDebug.Log($"门派: {message}");
+
+        public ItemDto[] GetAllWeapons() => _weapons.Select(w => new ItemDto(w)).ToArray();
+        public ItemDto[] GetAllArmors() => _armors.Select(w => new ItemDto(w)).ToArray();
     }
     public class DiziInfo
     {
@@ -128,6 +133,24 @@ namespace _GameClient.Models
         {
             Name = d.Name;
             Guid = d.Guid.ToString();
+        }
+    }
+
+    public class ItemDto
+    {
+        public string ItemName { get; set; }
+        public ItemDto()
+        {
+
+        }
+        public ItemDto(IWeapon weapon)
+        {
+            ItemName = weapon.Name;
+        }
+
+        public ItemDto(IArmor armor)
+        {
+            ItemName = armor.Name;
         }
     }
 }

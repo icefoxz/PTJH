@@ -11,7 +11,8 @@ internal class UiManager
     private DiziListViewManager DiziListViewManager { get; set; } = new DiziListViewManager();
     private DiziAdvManager DiziAdvManager { get; set; } = new DiziAdvManager();
     private WinConItemSelectorManager WinConItemSelectorManager { get; set; } = new WinConItemSelectorManager();
-
+    private WinAdvConfirmManager WinAdvConfirmManager { get; set; } = new WinAdvConfirmManager();
+    private WinEquipmentManager WinEquipmentManager { get; set; } = new WinEquipmentManager();
     public UiManager(IMainUi mainUi)
     {
         MainUi = mainUi;
@@ -28,12 +29,16 @@ internal class UiManager
 
     private void InitUis()
     {
+        //板块 section
         FactionInfo.Init();
         DiziInfoSectManager.Init();
         DiziRecruitManager.Init();
         DiziListViewManager.Init();
         DiziAdvManager.Init();
+        //窗口 windows
         WinConItemSelectorManager.Init();
+        WinAdvConfirmManager.Init();
+        WinEquipmentManager.Init();
     }
 
 

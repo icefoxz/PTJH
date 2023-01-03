@@ -41,7 +41,8 @@ public class DiziAdvManager
     {
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
-            DiziAdv = new View_diziAdv(v,()=>{}, guid => DiziController.ManageDiziCondition(guid));
+            DiziAdv = new View_diziAdv(v, () => { },
+                (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType));
             MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
         });
     }
@@ -63,7 +64,7 @@ public class DiziAdvManager
         private Element_item Armor { get; }
         private View_advLayout AdvLayoutView { get; }
 
-        public View_diziAdv(IView v, Action onSwitchAction, Action<string> onItemSelectAction) : base(v.GameObject, false)
+        public View_diziAdv(IView v, Action onSwitchAction, Action<string,int> onItemSelectAction) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
@@ -74,9 +75,9 @@ public class DiziAdvManager
             Force = new Element_skill(v.GetObject<View>("element_skillForce"));
             Dodge = new Element_skill(v.GetObject<View>("element_skillDodge"));
             Weapon = new Element_item(v.GetObject<View>("element_itemWeapon"),
-                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid));
+                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 0));
             Armor = new Element_item(v.GetObject<View>("element_itemArmor"),
-                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid));
+                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 1));
             AdvLayoutView = new View_advLayout(v.GetObject<View>("view_advLayout"));
         }
 

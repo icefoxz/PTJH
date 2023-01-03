@@ -43,9 +43,11 @@ namespace Test
     [CustomEditor(typeof(Test_Faction))]
     internal class Test_FactionEditor : Editor
     {
+        
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+            if (!Application.isPlaying) return;
             var script = (Test_Faction)target;
             if (GUILayout.Button("添加物品到门派中"))
             {
