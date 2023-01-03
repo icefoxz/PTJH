@@ -34,6 +34,7 @@ public class EventString
     public const string Recruit_DiziInSlot = "Recruit_DiziInSlot";
     public const string Dizi_AdvManagement = "Dizi_AdvManagement";
     public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";
+    public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";

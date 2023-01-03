@@ -60,17 +60,24 @@ namespace Test
                 return CombatUnit.Instance(Name, Strength, Agility, status, Force, CombatSkill.GetMaxLevel(), Dodge, Equipment);
             }
         }
-        [Serializable] private class Equipment : IEquip
+
+        [Serializable]
+        private class Equipment : IEquip
         {
             [SerializeField] private WeaponFieldSo 武器;
             [SerializeField] private ArmorFieldSo 防具;
             [SerializeField] private bool 暗器与武器是同一个;
+
             //[ConditionalField(nameof(暗器与武器是同一个), true)] 
             [SerializeField] private WeaponFieldSo 暗器;
+            private IWeapon _weapon;
+            private IWeapon _fling;
+            private IArmor _armor;
             private bool IsWeaponFling => 暗器与武器是同一个;
-            public IWeapon Weapon => 武器;
-            public IWeapon Fling => IsWeaponFling ? 武器 : 暗器;
-            public IArmor Armor => 防具;
+
+            public IWeapon Weapon => _weapon ??= 武器.Instance();
+            public IWeapon Fling => _fling ??= IsWeaponFling ? 武器.Instance() : 暗器.Instance();
+            public IArmor Armor => _armor ??= 防具.Instance();
         }
     }
 }

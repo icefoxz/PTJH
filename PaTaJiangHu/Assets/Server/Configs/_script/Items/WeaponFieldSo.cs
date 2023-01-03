@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Server.Configs._script.Items
 {
     [CreateAssetMenu(fileName = "weaponSo", menuName = "战斗测试/武器")]
-    [Serializable] public class WeaponFieldSo : ScriptableObject, IWeapon,IDataElement
+    [Serializable] public class WeaponFieldSo : ScriptableObject, IDataElement
     {
         private bool ChangeName()
         {
@@ -43,6 +43,31 @@ namespace Server.Configs._script.Items
         public Weapon.Injuries Injury => 伤害类型;
         public SkillGrades Grade => 品级;
         public int FlingTimes => 投掷次数;
-        public void AddFlingTime(int value) => throw new NotImplementedException("武器So实体应该先创建引用新实例，而不是直接引用！");
+        public IWeapon Instance() => new WeaponField(Id, Name, Armed, Damage, Injury, Grade, FlingTimes);
+        private class WeaponField : IWeapon
+        {
+            public int Id { get; }
+            public string Name { get; }
+            public Way.Armed Armed { get; }
+            public int Damage { get; }
+            public Weapon.Injuries Injury { get; }
+            public SkillGrades Grade { get; }
+            public int FlingTimes { get;  }
+
+            public WeaponField(int id, string name, Way.Armed armed, int damage, Weapon.Injuries injury, SkillGrades grade, int flingTimes)
+            {
+                Id = id;
+                Name = name;
+                Armed = armed;
+                Damage = damage;
+                Injury = injury;
+                Grade = grade;
+                FlingTimes = flingTimes;
+            }
+            public void AddFlingTime(int value)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

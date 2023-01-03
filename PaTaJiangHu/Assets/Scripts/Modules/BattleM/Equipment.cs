@@ -74,23 +74,31 @@ namespace BattleM
     public interface IArmor: IDataElement
     {
         int Def { get; }
+        SkillGrades Grade { get; }
+        int Price { get; }
     }
 
     public class Armor : IArmor
     {
         public string Name { get; }
         public int Def { get; }
+        public SkillGrades Grade { get; }
+        public int Price { get; }
         public int Id { get; }
 
-        public Armor(string name, int def, int id)
+        public Armor(string name, int def, int id, int price, SkillGrades grade)
         {
             Name = name;
             Def = def;
             Id = id;
+            Price = price;
+            Grade = grade;
         }
 
         public Armor(IArmor a)
         {
+            Grade = a.Grade;
+            Price = a.Price;
             Id = a.Id;
             Name = a.Name;
             Def = a.Def;

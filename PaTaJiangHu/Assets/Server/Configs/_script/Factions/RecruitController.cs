@@ -45,7 +45,8 @@ namespace Server.Configs._script.Factions
             var forceSkill = GradeConfig.GenerateForceSkill(randomGrade);
             var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
             var diziIndex = TempDiziList.Count;
-            var dizi = new Dizi(name.Text, strength, agility, hp, mp, 1, randomGrade, stamina,
+            var guid = Guid.NewGuid().ToString();
+            var dizi = new Dizi(guid, name.Text, strength, agility, hp, mp, 1, randomGrade, stamina,
                 bag, 1, 1, 1, combatSkill.GetFromLevel(1), forceSkill.GetFromLevel(1), dodgeSkill.GetFromLevel(1));
             
             TempDiziList.Add(dizi);

@@ -44,7 +44,7 @@ public class Game : UnitySingleton<Game>
     }
 
     public static MainUi MainUi { get; private set; }
-    internal static GameWorld World { get; private set; }
+    public static GameWorld World { get; private set; }
     private static Configure Configure { get; set; }
     public static bool IsInit { get; private set; }
     internal void Init(Res res, IlService ilService, MainUi mainUi, Configure configure)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,6 +17,12 @@ namespace Views
         GameObject GetObject(string objName);
         T GetObject<T>(string objName);
         T GetObject<T>(int index);
+        void StartCo(IEnumerator enumerator);
+        void StopCo(IEnumerator enumerator);
+        void StopAllCo();
+        event Action OnDisableEvent;
+        string name { get; }
+        View GetView();
     }
     /// <summary>
     /// 挂在Ui父件的身上的整合插件
@@ -23,6 +30,9 @@ namespace Views
     public class View : MonoBehaviour, IView
     {
         [SerializeField] private GameObject[] _components;
+        public event Action OnDisableEvent;
+
+        public View GetView() => this;
         public IReadOnlyDictionary<string, GameObject> GetMap() => _components.ToDictionary(c => c.name, c => c);
         public GameObject GameObject => gameObject;
         public GameObject[] GetObjects() => _components.ToArray();
@@ -32,7 +42,23 @@ namespace Views
             if (!obj) throw new NullReferenceException($"View.{name} 找不到物件名：{objName}");
             return obj;
         }
-        public T GetObject<T>(string objName) => GetObject(objName).GetComponent<T>();
-        public T GetObject<T>(int index) => _components[index].GetComponent<T>();
+        public T GetObject<T>(string objName)
+        {
+            var obj = GetObject(objName).GetComponent<T>();
+            return CheckNull(obj);
+        }
+
+        private static T CheckNull<T>(T obj)
+        {
+            if (obj == null) throw new NullReferenceException($"物件与{typeof(T).Name}不匹配, 请确保控件存在.");
+            return obj;
+        }
+
+        public T GetObject<T>(int index) => CheckNull(_components[index].GetComponent<T>());
+        void OnDisable() => OnDisableEvent?.Invoke();
+
+        public void StartCo(IEnumerator enumerator) => StartCoroutine(enumerator);
+        public void StopCo(IEnumerator enumerator) => StopCoroutine(enumerator);
+        public void StopAllCo() => StopAllCoroutines();
     }
 }

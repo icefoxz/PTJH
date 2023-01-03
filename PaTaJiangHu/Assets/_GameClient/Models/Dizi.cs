@@ -12,7 +12,7 @@ namespace _GameClient.Models
     /// </summary>
     public class Dizi
     {
-        public Guid Guid { get; private set; }
+        public string Guid { get; private set; }
         public string Name { get; private set; }
         public int Strength { get; private set; }
         public int Agility { get; private set; }
@@ -31,18 +31,13 @@ namespace _GameClient.Models
         private DiziBag Bag { get; set; }
         public Capable Capable { get; private set; }
 
-        public Dizi()
-        {
-
-        }
-
-        public Dizi(string name, GradeValue<int> strength, GradeValue<int> agility,
+        internal Dizi(string guid,string name, GradeValue<int> strength, GradeValue<int> agility,
             GradeValue<int> hp, GradeValue<int> mp, int level, int grade,
             int stamina, int bag,
             int combatSlot, int forceSlot, int dodgeSlot,
             ICombatSkill combatSkill, IForceSkill forceSkill, IDodgeSkill dodgeSkill)
         {
-            Guid = Guid.NewGuid();
+            Guid = guid;
             Name = name;
             Strength = strength.Value;
             Agility = agility.Value;
@@ -65,7 +60,7 @@ namespace _GameClient.Models
             Bag = new DiziBag(bag);
         }
 
-        public void UpdateStamina(long ticks)
+        internal void UpdateStamina(long ticks)
         {
             _stamina.Update(ticks);
             Game.MessagingManager.SendParams(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max);
@@ -179,6 +174,7 @@ namespace _GameClient.Models
 
     public class DiziDto
     {
+        public string Guid { get; private set; }
         public string Name  { get; private set; }
         public int Strength { get; private set; }
         public int Agility  { get; private set; }
@@ -198,6 +194,7 @@ namespace _GameClient.Models
         public DiziDto() { }
         public DiziDto(Dizi d)
         {
+            Guid = d.Guid;
             Name = d.Name;
             Strength = d.Strength;
             Agility = d.Agility;

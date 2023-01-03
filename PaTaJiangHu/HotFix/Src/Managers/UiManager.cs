@@ -6,10 +6,11 @@ internal class UiManager
 {
     private IMainUi MainUi { get; }
     private FactionInfoManager FactionInfo { get; set; } = new FactionInfoManager();
-    private DiziInfoSection DiziInfoSection { get; set; } = new DiziInfoSection();
+    private DiziInfoSectManager DiziInfoSectManager { get; set; } = new DiziInfoSectManager();
     private DiziRecruitManager DiziRecruitManager { get; set; } = new DiziRecruitManager();
     private DiziListViewManager DiziListViewManager { get; set; } = new DiziListViewManager();
     private DiziAdvManager DiziAdvManager { get; set; } = new DiziAdvManager();
+    private WinConItemSelectorManager WinConItemSelectorManager { get; set; } = new WinConItemSelectorManager();
 
     public UiManager(IMainUi mainUi)
     {
@@ -28,10 +29,11 @@ internal class UiManager
     private void InitUis()
     {
         FactionInfo.Init();
-        DiziInfoSection.Init();
+        DiziInfoSectManager.Init();
         DiziRecruitManager.Init();
         DiziListViewManager.Init();
         DiziAdvManager.Init();
+        WinConItemSelectorManager.Init();
     }
 
 

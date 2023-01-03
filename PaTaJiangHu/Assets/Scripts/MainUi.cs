@@ -17,7 +17,7 @@ public interface IMainUi : ISingletonDependency
     void ShowTop();
     void ShowMid();
     void ShowBtm();
-    void ShowWindow();
+    void ShowWindow(IView v);
     void ShowPanel();
     void HideTop();
     void HideMid();
@@ -53,6 +53,8 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     public Image Panel => _panel;
     public MainPageLayout MainPage => _mainPage;
     private Dictionary<RectTransform,IView> _uiMap;
+    private Dictionary<IView, View> _windowMap = new Dictionary<IView, View>();
+    public IReadOnlyDictionary<IView, View> WindowMap => _windowMap;
 
     public void Init()
     {
@@ -69,13 +71,24 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     public void SetTop(IView view, bool resetPos) => SetUi(TopUi, view, resetPos);
     public void SetMid(IView view, bool resetPos) => SetUi(MidUi, view, resetPos);
     public void SetBtm(IView view, bool resetPos) => SetUi(BtmUi, view, resetPos);
-    public void SetWindow(IView view, bool resetPos) => SetUi(Window, view, resetPos);
+    public void SetWindow(IView view, bool resetPos)
+    {
+        _windowMap.Add(view, view.GetView());
+        SetUi(Window, view, resetPos);
+    }
+
     public void SetPanel(IView view) => SetUi(Panel.rectTransform, view);
 
     public void ShowTop() => Display(true, TopUi);
     public void ShowMid() => Display(true, MidUi);
     public void ShowBtm() => Display(true, BtmUi);
-    public void ShowWindow() => Display(true, Window);
+    public void ShowWindow(IView v)
+    {
+        var view = WindowMap[v];
+        HideLayoutChildren(Window);
+        Display(true, Window, view);
+    }
+
     public void ShowPanel() => Display(true, Panel);
     public void HideTop() => Display(false, TopUi);
     public void HideMid() => Display(false, MidUi);
@@ -112,7 +125,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         foreach (Transform o in tran) o.gameObject.SetActive(false);
     }
 
-    private void Display(bool display,params Component[] param)
+    private void Display(bool display, params Component[] param)
     {
         for (var i = 0; i < param.Length; i++)
         {

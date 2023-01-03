@@ -13,7 +13,13 @@ namespace Utls
 {
     public class ObjectBag
     {
-        private static Type Stringtype => typeof(string);
+        private static Type StringType => typeof(string);
+        private static Type IntType => typeof(int);
+        private static Type FloatType => typeof(float);
+        private static Type DoubleType => typeof(double);
+        private static Type CharType => typeof(char);
+        private static Type LongType => typeof(long);
+        private static Type BoolType => typeof(bool);
         public string[] Bag { get; }
         public string Data { get; }
         public override string ToString() => Data;
@@ -67,15 +73,23 @@ namespace Utls
         public char GetChar(int index) => char.Parse(GetValue(index));
         public long GetLong(int index) => long.Parse(GetValue(index));
         public bool GetBool(int index) => GetInt(index) == 1;
+
         public T Get<T>(int index) where T : class
         {
             var value = GetValue(index);
             var type = typeof(T);
-            if (type == Stringtype) return value as T;
+            if (type == StringType) return value as T;
+            if (type == IntType) return GetInt(index) as T;
+            if (type == FloatType) return GetFloat(index) as T;
+            if (type == DoubleType) return GetDouble(index) as T;
+            if (type == CharType) return GetChar(index) as T;
+            if (type == LongType) return GetLong(index) as T;
+            if (type == BoolType) return GetBool(index) as T;
             var result = Json.Deserialize<T>(value);
             if (result == null) XDebug.LogWarning($"ObjectBag.Get: {value}\n Convert is null!");
             return result;
         }
+
         private string GetValue(int index) => Bag[index];
     }
 }

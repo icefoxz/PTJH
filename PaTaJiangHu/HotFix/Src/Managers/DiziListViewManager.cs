@@ -29,17 +29,17 @@ internal class DiziListViewManager
         Game.UiBuilder.Build("view_diziListView", v =>
         {
             Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Btm, true);
-            DiziList = new DiziListView(v, index => DiziInteraction.SelectDizi(index));
+            DiziList = new DiziListView(v, key => DiziInteraction.SelectDizi(key));
         });
     }
 
     private class DiziListView : UiBase
     {
-        private event Action<int> OnDiziSelectedAction;
+        private event Action<string> OnDiziSelectedAction;
         private ListViewUi<DiziPrefab> DiziList { get; }
         private TopRightView TopRight { get; set; }
 
-        public DiziListView(IView v, Action<int> onDiziSelectedAction) : base(v.GameObject, true)
+        public DiziListView(IView v, Action<string> onDiziSelectedAction) : base(v.GameObject, true)
         {
             OnDiziSelectedAction = onDiziSelectedAction;
             DiziList = new ListViewUi<DiziPrefab>(v.GetObject<View>("prefab_dizi"),
@@ -62,9 +62,8 @@ internal class DiziListViewManager
             for (var i = 0; i < arg.Length; i++)
             {
                 var info = arg[i];
-                var index = i;
                 var ui = DiziList.Instance(v => new DiziPrefab(v));
-                ui.Init(info.Name, () => OnDiziSelectedAction?.Invoke(index));
+                ui.Init(info.Name, () => OnDiziSelectedAction?.Invoke(info.Guid));
             }
         }
 

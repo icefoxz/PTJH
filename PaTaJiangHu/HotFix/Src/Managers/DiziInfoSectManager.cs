@@ -1,21 +1,27 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
 using _GameClient.Models;
 using HotFix_Project.Views.Bases;
+using Server.Configs._script.Factions;
+using Systems.Messaging;
 
 namespace HotFix_Project.Managers;
 
 /// <summary>
 /// 弟子信息板块Ui控制器
 /// </summary>
-public class DiziInfoSection
+public class DiziInfoSectManager
 {
     private View_diziInfoSect DiziInfo { get; set; }
+    private DiziController Controller { get; set; }
+
     public void Init()
     {
+        Controller = Game.Controllers.Get<DiziController>();
         InitUi();
         RegEvents();
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StaminaUpdate,
@@ -28,15 +34,16 @@ public class DiziInfoSection
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
         {
-            DiziInfo.SetDizi(bag);
+            DiziInfo.SetDizi(bag.Get<string>(0));
         });
     }
+
 
     private void InitUi()
     {
         Game.UiBuilder.Build("view_diziInfoSect", v =>
         {
-            DiziInfo = new View_diziInfoSect(v);
+            DiziInfo = new View_diziInfoSect(v, guid => Controller.ManageDiziCondition(guid));
             Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Top, true);
         });
     }
@@ -45,23 +52,46 @@ public class DiziInfoSection
     {
         private View_charInfo CharInfo { get; }
         private View_diziProps DiziProps { get; }
-        public View_diziInfoSect(IView v) : base(v.GameObject, true)
+        public View_diziInfoSect(IView v,Action<string> onStaminaBtnClick) : base(v.GameObject, true)
         {
-            CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"));
+            CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"),
+                () => onStaminaBtnClick(SelectedDizi?.Guid));
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
         }
 
-        public void SetDizi(ObjectBag bag)
+        public Dizi SelectedDizi { get; set; }
+
+        public void SetDizi(string guid)
         {
-            var dizi = bag.Get<DiziDto>(0);
+            var faction = Game.World.Faction;
+            var dizi = faction.DiziMap[guid];
+            SelectedDizi = dizi;
+            
+            //var dizi = bag.Get<DiziDto>(0);
             var c = dizi.Capable;
             CharInfo.SetName(dizi.Name);
             CharInfo.SetLevel(dizi.Level);
-            CharInfo.SetStamina(dizi.StaminaValue, dizi.StaminaMax, dizi.StaminaMin, dizi.StaminaSec);
+            UpdateDiziStamina();
             SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength);
             SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility);
             SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp);
             SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp);
+            View.StopAllCo();
+            View.StartCo(UpdateStaminaEverySecond());
+
+        }
+        IEnumerator UpdateStaminaEverySecond()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(1);
+                UpdateDiziStamina();
+            }
+        }
+        void UpdateDiziStamina()
+        {
+            var (stamina, max, min, sec) = SelectedDizi.Stamina.GetStaminaValue();
+            CharInfo.SetStamina(stamina, max, min, sec);
         }
 
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
@@ -77,7 +107,7 @@ public class DiziInfoSection
             private Scrollbar Scrbar_exp { get; }
 
             private View_statusList StatusList { get; }
-            public View_charInfo(IView v) : base(v.GameObject, true)
+            public View_charInfo(IView v,Action onStaminaBtnClick) : base(v.GameObject, true)
             {
                 Img_charAvatar = v.GetObject<Image>("img_charAvatar");
                 Text_charName = v.GetObject<Text>("text_charName");
@@ -85,7 +115,7 @@ public class DiziInfoSection
                 Text_charExpValue = v.GetObject<Text>("text_charExpValue");
                 Text_charExpMax = v.GetObject<Text>("text_charExpMax");
                 Scrbar_exp = v.GetObject<Scrollbar>("scrbar_exp");
-                StatusList = new View_statusList(v.GetObject<View>("view_statusList"));
+                StatusList = new View_statusList(v.GetObject<View>("view_statusList"), onStaminaBtnClick);
             }
 
             public void SetAvatar(Sprite avatar) => Img_charAvatar.sprite = avatar;
@@ -110,10 +140,10 @@ public class DiziInfoSection
                 private Text Text_powerValue { get; }
                 private View_Stamina StaminaView { get; }
                 private View_State StateView { get; }
-                public View_statusList(IView v) : base(v.GameObject, true)
+                public View_statusList(IView v, Action onStaminaBtnAction) : base(v.GameObject, true)
                 {
                     Text_powerValue = v.GetObject<Text>("text_powerValue");
-                    StaminaView = new View_Stamina(v.GetObject<View>("view_stamina"));
+                    StaminaView = new View_Stamina(v.GetObject<View>("view_stamina"), onStaminaBtnAction);
                     StateView = new View_State(v.GetObject<View>("view_state"));
                 }
 
@@ -135,12 +165,15 @@ public class DiziInfoSection
                     private Text Text_staminaMax { get; }
                     private Text Text_staminaValue { get; }
                     private View_time TimeView { get; }
+                    private Button Btn_stamina { get; }
 
-                    public View_Stamina(IView v) : base(v.GameObject, true)
+                    public View_Stamina(IView v, Action onStaminaBtnAction) : base(v.GameObject, true)
                     {
                         Text_staminaMax = v.GetObject<Text>("text_staminaMax");
                         Text_staminaValue = v.GetObject<Text>("text_staminaValue");
                         TimeView = new View_time(v.GetObject<View>("view_timeView"));
+                        Btn_stamina = v.GetObject<Button>("btn_stamina");
+                        Btn_stamina.OnClickAdd(onStaminaBtnAction);
                     }
                     public void SetStamina(int value, int max)
                     {
@@ -156,7 +189,7 @@ public class DiziInfoSection
                     private Text Text_stateDescription { get; }
                     private View_time TimeView { get; }
 
-                    public View_State(IView v) : base(v.GameObject, false)
+                    public View_State(IView v) : base(v.GameObject, true)
                     {
                         Text_stateTitle = v.GetObject<Text>("text_stateTitle");
                         Text_stateDescription = v.GetObject<Text>("text_stateDescription");
@@ -170,18 +203,21 @@ public class DiziInfoSection
                 {
                     private Text Text_value { get; }
                     private Text Text_max { get; }
+                    private GameObject Go_timeView { get; }
 
                     public View_time(IView v) : base(v.GameObject, true)
                     {
                         Text_value = v.GetObject<Text>("text_value");
                         Text_max = v.GetObject<Text>("text_max");
+                        Go_timeView = v.GetObject("go_timeView");
                     }
 
                     public void SetTime(int min, int sec)
                     {
-                        Text_max.text = min < 0 ? string.Empty : min.ToString();
-                        Text_value.text = sec < 0 ? string.Empty : sec.ToString();
-                        Display(true);
+                        var full = min <= 0 && sec <= 0;
+                        Go_timeView.SetActive(!full);
+                        Text_value.text = min.ToString();
+                        Text_max.text = sec.ToString();
                     }
 
                     public void Hide() => Display(false);

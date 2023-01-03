@@ -9,6 +9,7 @@ namespace _GameClient.Models
         IGameCondition Con { get; }
         long ZeroTicks { get; }
         TimeSpan GetCountdown();
+        (int stamina, int max, int min, int sec) GetStaminaValue();
     }
 
     public class DiziStamina : IDiziStamina
@@ -34,6 +35,19 @@ namespace _GameClient.Models
             Update(controller.GetZeroTicksFromStamina(max));
         }
 
+        public (int stamina, int max, int min, int sec) GetStaminaValue()
+        {
+            var isFull = Con.Max == Con.Value;
+            var min = -1;
+            var sec = -1;
+            if (!isFull)
+            {
+                var cd = GetCountdown();
+                min = (int)cd.TotalMinutes;
+                sec = cd.Seconds;
+            }
+            return (Con.Value, Con.Max, min, sec);
+        }
         public void Update(long zeroTicks)
         {
             _zeroTicks = zeroTicks;

@@ -14,8 +14,19 @@ namespace HotFix_Project.Views.Bases
         protected GameObject gameObject { get; }
         protected Transform transform => gameObject.transform;
         protected Transform parent => gameObject.transform.parent;
+        public IView View { get; private set; }
+
+        protected UiBase(IView v, bool display)
+        {
+            View = v;
+            gameObject = v.GameObject;
+            Display(display);
+        }
+
+
         protected UiBase(GameObject gameObject,bool display)
         {
+            View = gameObject.GetComponent<View>();
             this.gameObject = gameObject;
             Display(display);
         }

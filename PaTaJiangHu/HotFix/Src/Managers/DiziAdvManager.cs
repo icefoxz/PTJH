@@ -41,7 +41,7 @@ public class DiziAdvManager
     {
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
-            DiziAdv = new View_diziAdv(v,()=>{});
+            DiziAdv = new View_diziAdv(v,()=>{}, guid => DiziController.ManageDiziCondition(guid));
             MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
         });
     }
@@ -62,7 +62,8 @@ public class DiziAdvManager
         private Element_item Weapon { get; }
         private Element_item Armor { get; }
         private View_advLayout AdvLayoutView { get; }
-        public View_diziAdv(IView v, Action onSwitchAction) : base(v.GameObject, false)
+
+        public View_diziAdv(IView v, Action onSwitchAction, Action<string> onItemSelectAction) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
@@ -72,18 +73,28 @@ public class DiziAdvManager
             Combat = new Element_skill(v.GetObject<View>("element_skillCombat"));
             Force = new Element_skill(v.GetObject<View>("element_skillForce"));
             Dodge = new Element_skill(v.GetObject<View>("element_skillDodge"));
-            Weapon = new Element_item(v.GetObject<View>("element_itemWeapon"));
-            Armor = new Element_item(v.GetObject<View>("element_itemArmor"));
+            Weapon = new Element_item(v.GetObject<View>("element_itemWeapon"),
+                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid));
+            Armor = new Element_item(v.GetObject<View>("element_itemArmor"),
+                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid));
             AdvLayoutView = new View_advLayout(v.GetObject<View>("view_advLayout"));
         }
+
+        private Dizi SelectedDizi { get; set; }
         public void Set(ObjectBag bag)
         {
-            var dizi = bag.Get<DiziDto>(0);
+            //var dizi = bag.Get<DiziDto>(0);
+            var guid = bag.Get<string>(0);
+            XDebug.Log(bag.Data);
+            var dizi = Game.World.Faction.DiziMap[guid];
+            SelectedDizi = dizi;
             Combat.Set(dizi.CombatSkill.Name, dizi.CombatSkill.Level);
             Force.Set(dizi.ForceSkill.Name, dizi.ForceSkill.Level);
             Dodge.Set(dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
             XDebug.LogWarning($"{dizi.Name} 状态,装备未完成!");
         }
+
+
         #region element_con
         public void SetCon(Conditions con,string title,int value,int max)
         {
@@ -163,11 +174,16 @@ public class DiziAdvManager
             private Image Img_item { get; }
             private Text Text_title { get; }
             private Image Img_empty { get; }
-            public Element_item(IView v) : base(v.GameObject, true)
+            private Button ElementButton { get; }
+
+            public Element_item(IView v, Action onClickAction) : base(v.GameObject, true)
             {
                 Img_item = v.GetObject<Image>("img_item");
                 Text_title = v.GetObject<Text>("text_title");
                 Img_empty = v.GetObject<Image>("img_empty");
+                ElementButton = v.GameObject.GetComponent<Button>();
+                ElementButton.OnClickAdd(onClickAction);
+
             }
             public void SetImage(Sprite img)=> Img_item.sprite = img;
             public void SetEmpty(bool empty)=> Img_empty.gameObject.SetActive(empty);

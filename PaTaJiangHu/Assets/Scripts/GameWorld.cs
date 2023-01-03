@@ -4,7 +4,7 @@ using _GameClient.Models;
 /// <summary>
 /// 游戏世界，管理所有游戏模型
 /// </summary>
-internal class GameWorld
+public class GameWorld
 {
     /// <summary>
     /// 玩家门派
