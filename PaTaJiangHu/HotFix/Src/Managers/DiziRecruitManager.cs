@@ -57,8 +57,8 @@ public class DiziRecruitManager
 
         public void SetDizi(ObjectBag bag)
         {
-            var d = bag.Get<DiziInfo>(0);
-            RecruitWindow.SetDiziName(d.Name);
+            var diziName = bag.Get<string>(0);
+            RecruitWindow.SetDiziName(diziName);
             RecruitWindow.Display(true);
         }
 

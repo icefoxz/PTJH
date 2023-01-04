@@ -1,9 +1,5 @@
 ﻿using HotFix_Project.Views.Bases;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using _GameClient.Models;
 using Server.Configs._script.Factions;
 using Systems.Messaging;
@@ -35,6 +31,8 @@ public class DiziAdvManager
             MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
             DiziAdv.Display(true);
         });
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update());
     }
 
     private void InitUi()
@@ -54,101 +52,63 @@ public class DiziAdvManager
         public enum Items { Weapon,Armor }
 
         private Button Btn_Switch { get; }
-        private Element_con Food { get; }
-        private Element_con State { get; }
-        private Element_con Silver { get; }
-        private Element_skill Combat { get; }
-        private Element_skill Force { get; }
-        private Element_skill Dodge { get; }
-        private Element_item Weapon { get; }
-        private Element_item Armor { get; }
+        private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
         public View_diziAdv(IView v, Action onSwitchAction, Action<string,int> onItemSelectAction) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
-            Food = new Element_con(v.GetObject<View>("element_conFood"));
-            State = new Element_con(v.GetObject<View>("element_conState"));
-            Silver = new Element_con(v.GetObject<View>("element_conSilver"));
-            Combat = new Element_skill(v.GetObject<View>("element_skillCombat"));
-            Force = new Element_skill(v.GetObject<View>("element_skillForce"));
-            Dodge = new Element_skill(v.GetObject<View>("element_skillDodge"));
-            Weapon = new Element_item(v.GetObject<View>("element_itemWeapon"),
-                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 0));
-            Armor = new Element_item(v.GetObject<View>("element_itemArmor"),
-                () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 1));
-            AdvLayoutView = new View_advLayout(v.GetObject<View>("view_advLayout"));
+            ElementMgr = new ElementManager(
+                new Element_con(v.GetObject<View>("element_conFood")),
+                new Element_con(v.GetObject<View>("element_conState")),
+                new Element_con(v.GetObject<View>("element_conSilver")),
+                new Element_skill(v.GetObject<View>("element_skillCombat")),
+                new Element_skill(v.GetObject<View>("element_skillForce")),
+                new Element_skill(v.GetObject<View>("element_skillDodge")),
+                new Element_item(v.GetObject<View>("element_itemWeapon"),
+                    () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 0)),
+                new Element_item(v.GetObject<View>("element_itemArmor"),
+                    () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 1))
+            );
+            //AdvLayoutView = new View_advLayout(v.GetObject<View>("view_advLayout"));
         }
 
-        private Dizi SelectedDizi { get; set; }
+        private Dizi SelectedDizi { get; set; }//cache
         public void Set(ObjectBag bag)
         {
-            //var dizi = bag.Get<DiziDto>(0);
             var guid = bag.Get<string>(0);
-            XDebug.Log(bag.Data);
             var dizi = Game.World.Faction.DiziMap[guid];
             SelectedDizi = dizi;
-            Combat.Set(dizi.CombatSkill.Name, dizi.CombatSkill.Level);
-            Force.Set(dizi.ForceSkill.Name, dizi.ForceSkill.Level);
-            Dodge.Set(dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
-            XDebug.LogWarning($"{dizi.Name} 状态,装备未完成!");
+            SetDizi(dizi);
+        }
+        public void Update()
+        {
+            SetDizi(SelectedDizi);
+        }
+
+        private void SetDizi(Dizi dizi)
+        {
+            SetDiziElements(dizi);
+            var isInAdventure = dizi.Adventure == null;
+            //AdvLayoutView.Set();
+            XDebug.LogWarning($"{dizi.Name} 历练板块未完成!");
         }
 
 
-        #region element_con
-        public void SetCon(Conditions con,string title,int value,int max)
+        private void SetDiziElements(Dizi dizi)
         {
-            var conUi = GetConditionUi(con);
-            conUi.Set(title, value, max);
+            ElementMgr.SetSkill(Skills.Combat, dizi.CombatSkill.Name, dizi.CombatSkill.Level);
+            ElementMgr.SetSkill(Skills.Force, dizi.ForceSkill.Name, dizi.ForceSkill.Level);
+            ElementMgr.SetSkill(Skills.Dodge, dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
+            if (dizi.Weapon == null) ElementMgr.ClearItem(Items.Weapon);
+            else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name);
+            if (dizi.Armor == null) ElementMgr.ClearItem(Items.Armor);
+            else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name);
+            ElementMgr.SetConValue(Conditions.Food, dizi.Food.Value, dizi.Food.Max);
+            ElementMgr.SetConValue(Conditions.Energy, dizi.Energy.Value, dizi.Energy.Max);
+            ElementMgr.SetConValue(Conditions.Silver, dizi.Silver.Value, dizi.Silver.Max);
         }
-        private Element_con GetConditionUi(Conditions con) =>
-            con switch
-            {
-                Conditions.Food => Food,
-                Conditions.Energy => State,
-                Conditions.Silver => Silver,
-                _ => throw new ArgumentOutOfRangeException(nameof(con), con, null)
-            };
-
-        #endregion
-
-        #region element_skill
-        public void SetSkill(Skills skill, string skillName, int level)
-        {
-            var skillUi = GetSkillUi(skill);
-            skillUi.Set(skillName, level);
-        }
-        private Element_skill GetSkillUi(Skills skill)
-        {
-            var skillUi = skill switch
-            {
-                Skills.Combat => Combat,
-                Skills.Force => Force,
-                Skills.Dodge => Dodge,
-                _ => throw new ArgumentOutOfRangeException(nameof(skill), skill, null)
-            };
-            return skillUi;
-        }
-
-        #endregion
-
-        #region element_item
-        public void ClearItem(Items item) => ClearItem(GetItemUi(item));
-        public void SetWeapon(Items item,string weaponName) => SetItem(GetItemUi(item), weaponName);
-        private Element_item GetItemUi(Items item) => item switch
-        {
-            Items.Weapon => Weapon,
-            Items.Armor => Armor,
-            _ => throw new ArgumentOutOfRangeException(nameof(item), item, null)
-        };
-        private void SetItem(Element_item item,string title)
-        {
-            item.SetTitle(title);
-            item.SetEmpty(false);
-        }
-        private void ClearItem(Element_item item) => item.SetEmpty(true);
-        #endregion
 
         private class Element_skill : UiBase
         {
@@ -186,9 +146,24 @@ public class DiziAdvManager
                 ElementButton.OnClickAdd(onClickAction);
 
             }
-            public void SetImage(Sprite img)=> Img_item.sprite = img;
-            public void SetEmpty(bool empty)=> Img_empty.gameObject.SetActive(empty);
-            public void SetTitle(string title) => Text_title.text = title;
+            public void SetImage(Sprite img)
+            {
+                Img_item.sprite = img;
+                Img_item.gameObject.SetActive(true);
+            }
+
+            public void SetEmpty(bool empty)
+            {
+                Img_empty.gameObject.SetActive(empty);
+                Img_item.gameObject.SetActive(!empty);
+                Text_title.gameObject.SetActive(!empty);
+            }
+
+            public void SetTitle(string title)
+            {
+                Text_title.text = title;
+                Text_title.gameObject.SetActive(true);
+            }
         }
         private class Element_con : UiBase
         {
@@ -203,68 +178,75 @@ public class DiziAdvManager
                 Text_max = v.GetObject<Text>("text_max");
                 Text_title = v.GetObject<Text>("text_title");
             }
-            public void Set(string title, int value, int max)
+            public void SetTitle(string title)
+            {
+                Text_title.text = title;
+            }
+            public void SetValue(int value, int max)
             {
                 Text_value.text = value.ToString();
                 Text_max.text = max.ToString();
-                Text_title.text = title;
+                Scrbar_condition.size = 1f * value / max;
             }
         }
         private class View_advLayout : UiBase
         {
-            private ScrollRect Scroll_advLog { get; }
-            private Prefab Prefab_Log { get; }
             private Button Btn_recall { get; }
             private Image Img_costIco { get; }
             private Text Text_cost { get; }
-            private Element_equit Slot0 { get; }
-            private Element_equit Slot1 { get; }
-            private Element_equit Slot2 { get; }
             private Button Btn_advStart { get; }
 
-            public View_advLayout(IView v/*, Action onRecallAction, Action onAdvStartAction*/) : base(v.GameObject, true)
+            private ListViewUi<LogPrefab> LogView { get; }
+            private Element_equip[] ItemSlots { get; }
+
+            public View_advLayout(IView v, Action onAdvStartAction, Action onRecallAction) : base(v.GameObject, true)
             {
-                Scroll_advLog = v.GetObject<ScrollRect>("scroll_advLog");
-                Prefab_Log = new Prefab(v.GetObject<View>("prefab_log"));
-                Btn_recall = v.GetObject<Button>("btn_recall");
-                ///Btn_recall.OnClickAdd(() =>
-                ///{
-                ///    onRecallAction?.Invoke();
-                ///});
+                var scroll_advLog = v.GetObject<ScrollRect>("scroll_advLog");
+                LogView = new ListViewUi<LogPrefab>(v.GetObject<View>("prefab_log"), scroll_advLog);
                 Img_costIco = v.GetObject<Image>("img_costIco");
                 Text_cost = v.GetObject<Text>("text_cost");
-                Slot0 = new Element_equit(v.GetObject<View>("element_equitSlot0"));
-                Slot1 = new Element_equit(v.GetObject<View>("element_equitSlot1"));
-                Slot2 = new Element_equit(v.GetObject<View>("element_equitSlot2"));
+                var slot0 = new Element_equip(v.GetObject<View>("element_equipSlot0"));
+                var slot1 = new Element_equip(v.GetObject<View>("element_equipSlot1"));
+                var slot2 = new Element_equip(v.GetObject<View>("element_equipSlot2"));
+                ItemSlots = new[] { slot0, slot1, slot2 };
+                Btn_recall = v.GetObject<Button>("btn_recall");
                 Btn_advStart = v.GetObject<Button>("btn_advStart");
-                ///Btn_advStart.OnClickAdd(() =>
-                ///{
-                ///    onAdvStartAction?.Invoke();
-                ///});
+                Btn_recall.OnClickAdd(() => onRecallAction?.Invoke());
+                Btn_advStart.OnClickAdd(() => onAdvStartAction?.Invoke());
             }
-            public void Set(Sprite icon, int cost)
+            public void SetCost(Sprite icon, int cost)
             {
                 Img_costIco.sprite = icon;
                 Text_cost.text = cost.ToString();
             }
-            private class Prefab : UiBase
+
+            public void SetPrepareState()
+            {
+                Btn_advStart.gameObject.SetActive(true);
+                foreach (var slot in ItemSlots)
+                {
+                    slot.SetTimer(0,0);
+                }
+            }
+
+            private class LogPrefab : UiBase
             {
                 private Text Prefab_Log { get; }
-                public Prefab(IView v) :base(v.GameObject, false)
+                public LogPrefab(IView v) :base(v.GameObject, false)
                 {
                     Prefab_Log = v.GetObject<Text>("prefab_log");
                 }
                 public void LogMessage(string message) => Prefab_Log.text = message;
             }
 
-            private class Element_equit : UiBase
+            private class Element_equip : UiBase
             {
                 private Scrollbar Scrbar_item { get; }
                 private Image Img_ico { get; }
                 private Text Text_min { get; }
                 private Text Text_sec { get; }
                 
-                public Element_equit(IView v) : base(v.GameObject, true)
+                public Element_equip(IView v) : base(v.GameObject, true)
                 {
                     Scrbar_item = v.GetObject<Scrollbar>("scrbar_item");
                     Img_ico = v.GetObject<Image>("img_ico");
@@ -278,6 +260,99 @@ public class DiziAdvManager
                     Text_sec.text = sec.ToString();
                 }
             }
+        }
+
+        private class ElementManager
+        {
+            private Element_con Food { get; }
+            private Element_con State { get; }
+            private Element_con Silver { get; }
+            private Element_skill Combat { get; }
+            private Element_skill Force { get; }
+            private Element_skill Dodge { get; }
+            private Element_item Weapon { get; }
+            private Element_item Armor { get; }
+
+            public ElementManager(Element_con food, Element_con state, Element_con silver, Element_skill combat,
+                Element_skill force, Element_skill dodge, Element_item weapon, Element_item armor)
+            {
+                Food = food;
+                State = state;
+                Silver = silver;
+                Combat = combat;
+                Force = force;
+                Dodge = dodge;
+                Weapon = weapon;
+                Armor = armor;
+            }
+
+            #region element_con
+
+            public void SetConValue(Conditions con, int value, int max)
+            {
+                var conUi = GetConditionUi(con);
+                conUi.SetValue(value, max);
+            }
+            public void SetConTitle(Conditions con, string title)
+            {
+                var conUi = GetConditionUi(con);
+                conUi.SetTitle(title);
+            }
+
+            private Element_con GetConditionUi(Conditions con) =>
+                con switch
+                {
+                    Conditions.Food => Food,
+                    Conditions.Energy => State,
+                    Conditions.Silver => Silver,
+                    _ => throw new ArgumentOutOfRangeException(nameof(con), con, null)
+                };
+
+            #endregion
+
+            #region element_skill
+
+            public void SetSkill(Skills skill, string skillName, int level)
+            {
+                var skillUi = GetSkillUi(skill);
+                skillUi.Set(skillName, level);
+            }
+
+            private Element_skill GetSkillUi(Skills skill)
+            {
+                var skillUi = skill switch
+                {
+                    Skills.Combat => Combat,
+                    Skills.Force => Force,
+                    Skills.Dodge => Dodge,
+                    _ => throw new ArgumentOutOfRangeException(nameof(skill), skill, null)
+                };
+                return skillUi;
+            }
+
+            #endregion
+
+            #region element_item
+
+            public void ClearItem(Items item) => ClearItem(GetItemUi(item));
+            public void SetItem(Items item, string weaponName) => SetItem(GetItemUi(item), weaponName);
+
+            private Element_item GetItemUi(Items item) => item switch
+            {
+                Items.Weapon => Weapon,
+                Items.Armor => Armor,
+                _ => throw new ArgumentOutOfRangeException(nameof(item), item, null)
+            };
+
+            private void SetItem(Element_item item, string title)
+            {
+                item.SetTitle(title);
+                item.SetEmpty(false);
+            }
+
+            private void ClearItem(Element_item item) => item.SetEmpty(true);
+
+            #endregion
         }
     }
 }

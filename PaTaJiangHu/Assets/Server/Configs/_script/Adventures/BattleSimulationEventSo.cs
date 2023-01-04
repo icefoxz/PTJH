@@ -9,7 +9,7 @@ namespace Server.Configs._script.Adventures
     [CreateAssetMenu(fileName = "id_战斗事件名", menuName = "事件/历练/战斗事件")]
     internal class BattleSimulationEventSo : AdvAutoEventSoBase
     {
-        private AdvEventSoBase[] _allEvents;
+        [SerializeField] private AdvEventSoBase[] _allEvents;
 
         [SerializeField] private string 战斗前文本;
 

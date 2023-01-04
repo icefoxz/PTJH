@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Views;
 using Object = UnityEngine.Object;
 
@@ -48,6 +49,15 @@ namespace HotFix_Project.Views.Bases
         {
             Prefab = prefab;
             if (hideChildrenViews) HideChildren();
+        }
+        public ListViewUi(View prefab, RectTransform transform, bool hideChildrenViews = true) : this(prefab,
+            transform.gameObject, hideChildrenViews)
+        {
+        }
+
+        public ListViewUi(View prefab, ScrollRect scrollRect, bool hideChildrenViews = true) : this(prefab,
+            scrollRect.content, hideChildrenViews)
+        {
         }
 
         public void HideChildren()

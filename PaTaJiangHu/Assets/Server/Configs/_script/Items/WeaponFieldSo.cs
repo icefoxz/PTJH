@@ -1,26 +1,14 @@
 using System;
 using BattleM;
-using Data;
 using MyBox;
 using Server.Configs._script.Skills;
-using UnityEditor;
 using UnityEngine;
 
 namespace Server.Configs._script.Items
 {
     [CreateAssetMenu(fileName = "weaponSo", menuName = "战斗测试/武器")]
-    [Serializable] public class WeaponFieldSo : ScriptableObject, IDataElement
+    [Serializable] public class WeaponFieldSo : AutoNameScriptableObject
     {
-        private bool ChangeName()
-        {
-            var path = AssetDatabase.GetAssetPath(this);
-            var newName = $"{id}_{_name}";
-            var err = AssetDatabase.RenameAsset(path, newName);
-
-            if (!string.IsNullOrWhiteSpace(err)) Debug.LogError(err);
-            return true;
-        }
-
         private bool GetItem()
         {
             if (So == null) So = this;
@@ -28,16 +16,12 @@ namespace Server.Configs._script.Items
         }
 
         [ConditionalField(true,nameof(GetItem))][ReadOnly][SerializeField] private WeaponFieldSo So;
-        [SerializeField] private string _name;
-        [ConditionalField(true,nameof(ChangeName))][SerializeField] private int id;
         [SerializeField] private Way.Armed 类型;
         [SerializeField] private int 力量加成;
         [SerializeField] private Weapon.Injuries 伤害类型;
         [SerializeField] private SkillGrades 品级;
         [SerializeField] private int 投掷次数 = 1;
 
-        public int Id => id;
-        public string Name => _name;
         public Way.Armed Armed => 类型;
         public int Damage => 力量加成;
         public Weapon.Injuries Injury => 伤害类型;

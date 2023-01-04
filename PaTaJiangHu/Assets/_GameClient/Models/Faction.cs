@@ -33,11 +33,10 @@ namespace _GameClient.Models
 
         internal void AddDizi(Dizi dizi)
         {
-            _diziMap.Add(dizi.Guid.ToString(), dizi);
+            _diziMap.Add(dizi.Guid, dizi);
             Log($"添加弟子{dizi.Name}");
-            Game.MessagingManager.Send(EventString.Faction_DiziAdd, new DiziInfo(dizi));
-            var list = DiziMap.Values.Select(d => new DiziInfo(d)).ToList();
-            Game.MessagingManager.Send(EventString.Faction_DiziListUpdate, list);
+            Game.MessagingManager.Send(EventString.Faction_DiziAdd, dizi);
+            Game.MessagingManager.Send(EventString.Faction_DiziListUpdate, string.Empty);
         }
 
         internal void RemoveDizi(Dizi dizi)
@@ -120,37 +119,5 @@ namespace _GameClient.Models
 
         private void Log(string message) => XDebug.Log($"门派: {message}");
 
-        public ItemDto[] GetAllWeapons() => _weapons.Select(w => new ItemDto(w)).ToArray();
-        public ItemDto[] GetAllArmors() => _armors.Select(w => new ItemDto(w)).ToArray();
-    }
-    public class DiziInfo
-    {
-        public string Name { get; set; }
-        public string Guid { get; set; }
-
-        public DiziInfo() { }
-        public DiziInfo(Dizi d)
-        {
-            Name = d.Name;
-            Guid = d.Guid.ToString();
-        }
-    }
-
-    public class ItemDto
-    {
-        public string ItemName { get; set; }
-        public ItemDto()
-        {
-
-        }
-        public ItemDto(IWeapon weapon)
-        {
-            ItemName = weapon.Name;
-        }
-
-        public ItemDto(IArmor armor)
-        {
-            ItemName = armor.Name;
-        }
     }
 }

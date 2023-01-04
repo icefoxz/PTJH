@@ -36,6 +36,8 @@ public class EventString
     public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";
     public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";
     public const string Dizi_EquipmentManagement = "Dizi_EquipmentManagement";//装备管理
+    public const string Dizi_ItemEquipped = "Dizi_ItemEquipped";//装备物品
+    public const string Dizi_ItemUnEquipped = "Dizi_ItemUnEquipped";//卸下物品
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";//给门派加弟子

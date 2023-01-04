@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Views.Bases;
 using Server.Configs._script.Factions;
@@ -50,16 +52,16 @@ internal class DiziListViewManager
 
         public void UpdateList(ObjectBag bag)
         {
-            var list = bag.Get<DiziInfo[]>(0);
+            var list = Game.World.Faction.DiziMap.Values.ToList();
             SetList(list);
         }
 
-        public void ClearList() => DiziList.ClearList(ui => ui.Destroy());
+        private void ClearList() => DiziList.ClearList(ui => ui.Destroy());
 
-        public void SetList(DiziInfo[] arg)
+        private void SetList(List<Dizi> arg)
         {
             ClearList();
-            for (var i = 0; i < arg.Length; i++)
+            for (var i = 0; i < arg.Count; i++)
             {
                 var info = arg[i];
                 var ui = DiziList.Instance(v => new DiziPrefab(v));

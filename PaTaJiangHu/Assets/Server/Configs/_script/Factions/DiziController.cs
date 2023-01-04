@@ -1,6 +1,7 @@
 ﻿using _GameClient.Models;
 using System;
 using UnityEngine;
+using Utls;
 
 namespace Server.Configs._script.Factions
 {
@@ -44,18 +45,24 @@ namespace Server.Configs._script.Factions
             {
                 case 0:
                 {
+                    if (dizi.Weapon != null) Faction.AddWeapon(dizi.Weapon);
                     var weapon = Faction.Weapons[index];
                     dizi.Wield(weapon);
+                    Faction.RemoveWeapon(weapon);
                     break;
                 }
                 case 1:
                 {
+                    if (dizi.Armor!= null) Faction.AddArmor(dizi.Armor);
                     var armor = Faction.Armors[index];
                     dizi.Wear(armor);
+                    Faction.RemoveArmor(armor);
                     break;
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
             }
+
+            Game.MessagingManager.Send(EventString.Dizi_ItemEquipped, string.Empty);
         }
         public void DiziUnEquipItem(string guid, int itemType)
         {
@@ -64,16 +71,22 @@ namespace Server.Configs._script.Factions
             {
                 case 0:
                 {
+                    var weapon = dizi.Weapon;
                     dizi.Wield(null);
+                    Faction.AddWeapon(weapon);
                     break;
                 }
                 case 1:
                 {
+                    var armor = dizi.Armor;
                     dizi.Wear(null);
+                    Faction.RemoveArmor(armor);
                     break;
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
             }
+
+            Game.MessagingManager.Send(EventString.Dizi_ItemUnEquipped, string.Empty);
         }
     }
 }

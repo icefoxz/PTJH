@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using Utls;
 using Views;
 using _GameClient.Models;
+using BattleM;
 using HotFix_Project.Views.Bases;
 using Server.Configs._script.Factions;
 using Systems.Messaging;
@@ -36,6 +37,8 @@ public class DiziInfoSectManager
         {
             DiziInfo.SetDizi(bag.Get<string>(0));
         });
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziInfo.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziInfo.Update());
     }
 
 
@@ -59,7 +62,7 @@ public class DiziInfoSectManager
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
         }
 
-        public Dizi SelectedDizi { get; set; }
+        private Dizi SelectedDizi { get; set; }
 
         public void SetDizi(string guid)
         {
@@ -68,18 +71,29 @@ public class DiziInfoSectManager
             SelectedDizi = dizi;
             
             //var dizi = bag.Get<DiziDto>(0);
+            SetDizi(dizi);
+        }
+        public void Update()
+        {
+            SetDizi(SelectedDizi);
+            XDebug.Log($"弟子【{SelectedDizi.Name}】更新了!");
+        }
+
+        private void SetDizi(Dizi dizi)
+        {
             var c = dizi.Capable;
             CharInfo.SetName(dizi.Name);
             CharInfo.SetLevel(dizi.Level);
             UpdateDiziStamina();
-            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength);
+
+            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength, dizi.Weapon?.Damage ?? 0);
             SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility);
             SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp);
             SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp);
             View.StopAllCo();
             View.StartCo(UpdateStaminaEverySecond());
-
         }
+
         IEnumerator UpdateStaminaEverySecond()
         {
             while (true)
@@ -93,7 +107,6 @@ public class DiziInfoSectManager
             var (stamina, max, min, sec) = SelectedDizi.Stamina.GetStaminaValue();
             CharInfo.SetStamina(stamina, max, min, sec);
         }
-
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
         private void SetProp(View_diziProps.Props prop, int grade, int value, int equip = 0, int condition = 0) =>
             DiziProps.Set(prop, grade, value, equip, condition);
@@ -278,7 +291,7 @@ public class DiziInfoSectManager
                     Text_equip.text = SetText(equip);
                     Text_condition.text = SetText(condition);
 
-                    string SetText(int v) => v == 0 ? string.Empty : v.ToString();
+                    string SetText(int v,string prefix = "") => v == 0 ? string.Empty : prefix + v;
                 }
 
                 private static string GetGrade(int grade) => grade switch

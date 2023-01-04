@@ -51,7 +51,7 @@ namespace Server.Configs._script.Factions
             
             TempDiziList.Add(dizi);
             var list = new List<int> { diziIndex };
-            Game.MessagingManager.Send(EventString.Recruit_DiziGenerated, new DiziInfo(dizi));
+            Game.MessagingManager.Send(EventString.Recruit_DiziGenerated, dizi.Name);
             Game.MessagingManager.Send(EventString.Recruit_DiziInSlot, list);
             return true;
         }

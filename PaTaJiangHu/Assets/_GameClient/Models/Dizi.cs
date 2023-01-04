@@ -28,10 +28,18 @@ namespace _GameClient.Models
 
         public IDiziStamina Stamina => _stamina;
         private DiziStamina _stamina;
+        private ConValue _food;
+        private ConValue _energy;
+        private ConValue _silver;
 
         public Skills Skill { get; set; }
         private DiziBag Bag { get; set; }
         public Capable Capable { get; private set; }
+
+        public IConditionValue Food => _food;
+        public IConditionValue Energy => _energy;
+        public IConditionValue Silver => _silver;
+        public DiziAdventure Adventure { get; private set; }
 
         internal Dizi(string guid,string name, GradeValue<int> strength, GradeValue<int> agility,
             GradeValue<int> hp, GradeValue<int> mp, int level, int grade,
@@ -60,6 +68,9 @@ namespace _GameClient.Models
             dSlot[0] = dodgeSkill;
             Skill = new Skills(cSlot, fSlot, dSlot);
             Bag = new DiziBag(bag);
+            _food = new ConValue(100);
+            _energy = new ConValue(100);
+            _silver = new ConValue(100);
         }
 
         internal void UpdateStamina(long ticks)
@@ -173,124 +184,19 @@ namespace _GameClient.Models
             }
         }
 
-        public void Wield(IWeapon weapon)
+        internal void Wield(IWeapon weapon)
         {
             Weapon = weapon;
             XDebug.Log(weapon == null ? "弟子卸下装备" : $"弟子装备{weapon.Name}!");
         }
 
-        public void Wear(IArmor armor)
+        internal void Wear(IArmor armor)
         {
             Armor = armor;
             XDebug.Log(armor == null ? "弟子卸下装备" : $"弟子装备{armor.Name}!");
         }
     }
 
-    public class DiziDto
-    {
-        public string Guid { get; private set; }
-        public string Name  { get; private set; }
-        public int Strength { get; private set; }
-        public int Agility  { get; private set; }
-        public int Hp       { get; private set; }
-        public int Mp       { get; private set; }
-        public int Level    { get; private set; }
-        public int Grade    { get; private set; }
-        public int StaminaValue { get; private set; }
-        public int StaminaMax { get; private set; }
-        public int StaminaMin { get; private set; }
-        public int StaminaSec { get; private set; }
-        public SkillCombat CombatSkill { get; private set; }
-        public SkillForce ForceSkill { get; private set; }
-        public SkillDodge DodgeSkill { get; private set; }
-        public Capable Capable { get; private set; }
-
-        public DiziDto() { }
-        public DiziDto(Dizi d)
-        {
-            Guid = d.Guid;
-            Name = d.Name;
-            Strength = d.Strength;
-            Agility = d.Agility;
-            Hp = d.Hp;
-            Mp = d.Mp;
-            Level = d.Level;
-            Grade = d.Grade;
-            StaminaValue = d.Stamina.Con.Value;
-            StaminaMax = d.Stamina.Con.Max;
-            var staminaFull = d.Stamina.Con.Value == d.Stamina.Con.Max;
-            if (!staminaFull)
-            {
-                var time = d.Stamina.GetCountdown();
-                StaminaMin = (int)time.TotalMinutes;
-                StaminaSec = time.Seconds;
-            }
-            CombatSkill = new SkillCombat(d.CombatSkill);
-            ForceSkill = new SkillForce(d.ForceSkill);
-            DodgeSkill = new SkillDodge(d.DodgeSkill);
-            Capable = new Capable(d.Capable);
-        }
-
-        public class SkillCombat
-        {
-            public string Name { get; set; }
-            public SkillGrades Grade { get; set; }
-            public int Level { get; set; }
-            public Way.Armed Armed { get; set; }
-
-            public SkillCombat() { }
-            public SkillCombat(ICombatSkill c)
-            {
-                Name = c.Name;
-                Grade = c.Grade;
-                Level = c.Level;
-                Armed = c.Armed;
-            }
-        }
-
-        public class SkillForce
-        {
-            public string Name { get; set; }
-            public SkillGrades Grade { get; set; }
-            public int Level { get; set; }
-
-            public SkillForce() { }
-            public SkillForce(IForceSkill f)
-            {
-                Name = f.Name;
-                Grade = f.Grade;
-                Level = f.Level;
-            }
-        }
-
-        public class SkillDodge
-        {
-            public string Name { get; set; }
-            public SkillGrades Grade { get; set; }
-            public int Level { get; set; }
-
-            public SkillDodge() { }
-            public SkillDodge(IDodgeSkill d)
-            {
-                Name = d.Name;
-                Grade = d.Grade;
-                Level = d.Level;
-            }
-        }
-    }
-
-    public class ConditionItemDto
-    {
-        public string Name { get; set; }
-        public int Amount { get; set; }
-
-        public ConditionItemDto() { }
-        public ConditionItemDto(string name, int amount)
-        {
-            Name = name;
-            Amount = amount;
-        }
-    }
     /// <summary>
     /// 资质能力
     /// </summary>

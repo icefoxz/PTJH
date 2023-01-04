@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using _GameClient.Models;
 using BattleM;
+using HotFix_Project.Models.Charators;
 using HotFix_Project.Views.Bases;
 using Server.Configs._script.Factions;
 using Systems.Messaging;
@@ -32,16 +34,17 @@ public class WinEquipmentManager
             WinEquipment.Set(guid, itemType); //weapon or armor
             Game.MainUi.ShowWindow(WinEquipment.View);
         });
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => WinEquipment.OnItemEquipped());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => WinEquipment.OnItemUnequipped());
     }
 
     private void InitUis()
     {
         Game.UiBuilder.Build("view_winEquipment", v =>
         {
-            WinEquipment = new View_winEquipment(v, (guid, index, itemType) =>
-            {
-                DiziController.DiziEquip(guid, index, itemType);
-            }, (guid, itemType) => DiziController.DiziUnEquipItem(guid, itemType));
+            WinEquipment = new View_winEquipment(v,
+                (guid, index, itemType)=>DiziController.DiziEquip(guid,index,itemType),
+                (guid, itemType) => DiziController.DiziUnEquipItem(guid, itemType));
             Game.MainUi.SetWindow(v, resetPos: true);
         });
     }
@@ -70,18 +73,43 @@ public class WinEquipmentManager
             Scroll_items = v.GetObject<ScrollRect>("scroll_items");
             ItemView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), Scroll_items.content.gameObject);
             Btn_unequip = v.GetObject<Button>("btn_unequip");
-            Btn_unequip.OnClickAdd(() => onUnequip?.Invoke(SelectedDizi, SelectedType));
+            Btn_unequip.OnClickAdd(() =>
+            {
+                if (!IsDiziEquipped) return;
+                onUnequip?.Invoke(SelectedDiziGuid, SelectedType);
+                ListItems((ItemTypes)SelectedType);
+            });
             Btn_equip = v.GetObject<Button>("btn_equip");
-            Btn_equip.OnClickAdd(() => onEquip?.Invoke(SelectedDizi, SelectedIndex, SelectedType));
+            Btn_equip.OnClickAdd(() =>
+            {
+                if (SelectedItemIndex < 0) return;
+                onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType);
+                ListItems((ItemTypes)SelectedType);
+            });//装备按键
         }
 
-        private string SelectedDizi { get; set; }
-        private int SelectedIndex { get; set; }
+        public void OnItemEquipped()
+        {
+            for (var index = 0; index < ItemView.List.Count; index++)
+            {
+                var ui = ItemView.List[index];
+                ui.SetEquipped(SelectedItemIndex == index);
+            }
+        }
+
+        public void OnItemUnequipped()
+        {
+            foreach (var ui in ItemView.List) ui.SetEquipped(false);
+        }
+
+        private string SelectedDiziGuid { get; set; }
+        private int SelectedItemIndex { get; set; }
         private int SelectedType { get; set; }
+        private bool IsDiziEquipped { get; set; }
 
         public void Set(string guid, int itemType)
         {
-            SelectedDizi = guid;
+            SelectedDiziGuid = guid;
             SelectedType = itemType;
             var item = (ItemTypes)itemType;
             ListItems(item);
@@ -91,19 +119,40 @@ public class WinEquipmentManager
         private void ListItems(ItemTypes type)
         {
             var faction = Game.World.Faction;
-            var items = type switch
+            var selectedDizi = Game.World.Faction.DiziMap[SelectedDiziGuid];
+            var items = new List<(string name,int factionIndex)>();
+            IsDiziEquipped = false;
+            switch (type)
             {
-                ItemTypes.Weapon => faction.GetAllWeapons(),
-                ItemTypes.Armor => faction.GetAllArmors(),
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            };
+                case ItemTypes.Weapon:
+                    IsDiziEquipped = selectedDizi.Weapon != null;
+                    if (IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, -1));
+                    for (var i = 0; i < faction.Weapons.Count; i++)
+                    {
+                        var item = faction.Weapons[i];
+                        items.Add((item.Name, i));
+                    }
+                    break;
+                case ItemTypes.Armor:
+                    IsDiziEquipped = selectedDizi.Armor != null;
+                    if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, -1));
+                    for (var i = 0; i < faction.Armors.Count; i++)
+                    {
+                        var item = faction.Armors[i];
+                        items.Add((item.Name, i));
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
             ItemView.ClearList(ui => ui.Display(false));
-            for (var i = 0; i < items.Length; i++)
+            for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
                 var index = i;
-                var ui = ItemView.Instance(v => new Prefab_Item(v, () => OnSelectedItem(index)));
-                ui.SetName(item.ItemName);
+                var ui = ItemView.Instance(v => new Prefab_Item(v, () => OnSelectedItem(index), item.factionIndex));
+                ui.SetEquipped(IsDiziEquipped && index == 0);
+                ui.SetName(item.name);
             }
         }
 
@@ -113,7 +162,7 @@ public class WinEquipmentManager
             {
                 var ui = ItemView.List[i];
                 ui.SetSelected(i == index);
-                SelectedIndex = index;
+                SelectedItemIndex = ui.ItemIndex;
             }
         }
 
@@ -124,9 +173,12 @@ public class WinEquipmentManager
             private Image Img_equipped { get; }
             private Text Text_name { get; }
             private Button SelectBtn { get; }
+            public int ItemIndex { get; }
 
-            public Prefab_Item(IView v,Action onclickAction) : base(v.GameObject, true)
+            public Prefab_Item(IView v, Action onclickAction, int itemIndex) : base(v.GameObject, true)
             {
+                ItemIndex = itemIndex;
+                
                 Img_selected = v.GetObject<Image>("img_selected");
                 Img_item = v.GetObject<Image>("img_item");
                 Img_equipped = v.GetObject<Image>("img_equipped");
@@ -153,7 +205,29 @@ public class WinEquipmentManager
             {
                 Text_name.text = name;
             }
-        }
 
+            public void SetEquipped(bool isEquipped)
+            {
+                Img_equipped.gameObject.SetActive(isEquipped);
+            }
+        }
+        
+        public class ItemDto
+        {
+            public string ItemName { get; set; }
+            public ItemDto()
+            {
+
+            }
+            public ItemDto(IWeapon weapon)
+            {
+                ItemName = weapon.Name;
+            }
+
+            public ItemDto(IArmor armor)
+            {
+                ItemName = armor.Name;
+            }
+        }
     }
 }

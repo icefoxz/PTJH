@@ -1,6 +1,8 @@
 ﻿using System;
 using BattleM;
+using QFramework;
 using Server.Configs._script.Factions;
+using Utls;
 
 namespace _GameClient.Models
 {
@@ -12,27 +14,23 @@ namespace _GameClient.Models
         (int stamina, int max, int min, int sec) GetStaminaValue();
     }
 
-    public class DiziStamina : IDiziStamina
+    public class DiziStamina : TimeValueTicker, IDiziStamina
     {
         private ConValue _con;
-        private long _zeroTicks;
 
         private StaminaController Controller { get; }
         public IGameCondition Con => _con;
 
-        public long ZeroTicks => _zeroTicks;
         public TimeSpan GetCountdown() => Controller.GetCountdown(ZeroTicks);
-        public DiziStamina(StaminaController controller,long zeroTicks, int max)
+        public DiziStamina(StaminaController controller,long zeroTicks, int max):base(zeroTicks)
         {
             Controller = controller;
             _con = new ConValue(max);
-            Update(zeroTicks);
         }
-        public DiziStamina(StaminaController controller, int max)
+        public DiziStamina(StaminaController controller, int max):base(controller.GetZeroTicksFromStamina(max))
         {
             Controller = controller;
             _con = new ConValue(max);
-            Update(controller.GetZeroTicksFromStamina(max));
         }
 
         public (int stamina, int max, int min, int sec) GetStaminaValue()
@@ -48,10 +46,10 @@ namespace _GameClient.Models
             }
             return (Con.Value, Con.Max, min, sec);
         }
-        public void Update(long zeroTicks)
+
+        protected override void OnUpdate()
         {
-            _zeroTicks = zeroTicks;
-            var current = Controller.GetDiziStamina(_zeroTicks, _con.Max);
+            var current = Controller.GetDiziStamina(ZeroTicks, _con.Max);
             Con.Set(current);
         }
     }
