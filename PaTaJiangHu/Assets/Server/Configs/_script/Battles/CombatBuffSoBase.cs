@@ -4,7 +4,7 @@ using System.Linq;
 using BattleM;
 using UnityEngine;
 
-namespace Server.Configs._script.Battles
+namespace Server.Configs.Battles
 {
     public abstract class CombatBuffSoBase : ScriptableObject,ICombatBuff
     {

@@ -2,7 +2,7 @@
 using MyBox;
 using UnityEngine;
 
-namespace Server.Configs._script.Characters
+namespace Server.Configs.Characters
 {
     [CreateAssetMenu(fileName = "LevelingConfig", menuName = "配置/升等配置")]
     internal class LevelConfigSo : ScriptableObject

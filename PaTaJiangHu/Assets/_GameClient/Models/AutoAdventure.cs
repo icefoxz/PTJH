@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Server.Configs._script.Adventures;
+using Server.Configs.Adventures;
 using UnityEngine;
 using Utls;
 
@@ -46,7 +46,7 @@ namespace _GameClient.Models
         public float[] MileMap => Recorder.MileMap.ToArray();
         private int AdventureCoId { get; set; }
 
-        public void Init(AutoAdvMapSo mapSo)
+        public void Init(AdventureMapSo mapSo)
         {
             JourneyReturnSec = mapSo.JourneyReturnSec;
             Picker = new StoryPicker(mapSo);
@@ -90,11 +90,7 @@ namespace _GameClient.Models
         private void TryInvokeStory(int miles)
         {
             var startEvent = Picker.PickStory(miles);
-            if (startEvent is IAdvAutoEvent autoEvent)
-            {
-                autoEvent.OnLogsTrigger += OnLogEvent;
-            }
-            
+            startEvent.OnLogsTrigger += OnLogEvent;
         }
 
         private void OnLogEvent(string[] logs)
@@ -107,9 +103,9 @@ namespace _GameClient.Models
         // 故事获取器, 仅处理获取故事的逻辑
         private class StoryPicker
         {
-            private AutoAdvMapSo Map { get; }
+            private AdventureMapSo Map { get; }
 
-            public StoryPicker(AutoAdvMapSo map)
+            public StoryPicker(AdventureMapSo map)
             {
                 Map = map;
             }
@@ -118,16 +114,16 @@ namespace _GameClient.Models
 
             private IAdvPlace PickPlace(int mile)
             {
-                var majorMile = mile % Map.MajorMile;//获取余数, 如果余数是0表示Major故事里数==当前里数
-                if (majorMile == Map.MajorMile) return PickMajorPlace();
-                var minorMile = mile % Map.MinorMile;//获取余数
-                if (minorMile == Map.MinorMile) return PickMinorPlace();
+                //var majorMile = mile % Map.MajorMile;//获取余数, 如果余数是0表示Major故事里数==当前里数
+                //if (majorMile == Map.MajorMile) return PickMajorPlace();
+                //var minorMile = mile % Map.MinorMile;//获取余数
+                //if (minorMile == Map.MinorMile) return PickMinorPlace();
                 return null;
             }
-            private IAdvPlace PickMajorPlace() => Map.PickMajorPlace();
-            private IAdvPlace PickMinorPlace() => Map.PickMinorPlace();
+            private IAdvPlace PickMajorPlace(int mile) => Map.PickMajorPlace(mile);
+            //private IAdvPlace PickMinorPlace() => Map.PickMinorPlace();
         }
-        // 时间
+        //时间记录器
         private record TimeRecorder
         {
             private List<float> _mileMap;
@@ -152,7 +148,7 @@ namespace _GameClient.Models
             }
             public TimeSpan TotalTimeSpan() => TimeSpan.FromMilliseconds(SysTime.UnixNow - StartTime);
             public void AddMile(float sec) => _mileMap.Add(sec);
-            public void End()=> EndTime = SysTime.UnixNow;
+            public void End() => EndTime = SysTime.UnixNow;
         }
     }
 

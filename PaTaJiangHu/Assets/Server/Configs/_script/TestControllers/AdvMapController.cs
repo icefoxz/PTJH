@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using Server.Configs._script.Adventures;
+using Server.Configs.Adventures;
 using UnityEngine;
 
-namespace Server.Configs._script.TestControllers
+namespace Server.Configs.TestControllers
 {
     public interface IAdvMapController
     {
@@ -19,7 +19,7 @@ namespace Server.Configs._script.TestControllers
             Config = config;
         }
 
-        private AdvMapSo SelectedSo { get; set; }
+        private TravelMapSo SelectedSo { get; set; }
         public void LoadMap()
         {
             SelectedSo = Config.MapSo;
@@ -36,7 +36,7 @@ namespace Server.Configs._script.TestControllers
             public Path[] Paths { get; set; }
 
             public Map(){ }
-            internal Map(AdvMapSo so)
+            internal Map(TravelMapSo so)
             {
                 Name = so.Name;
                 SoName = so.name;
@@ -87,9 +87,9 @@ namespace Server.Configs._script.TestControllers
 
         [Serializable] internal class Configure
         {
-            [SerializeField] private AdvMapSo 地图;
+            [SerializeField] private TravelMapSo 地图;
 
-            public AdvMapSo MapSo => 地图;
+            public TravelMapSo MapSo => 地图;
         }
     }
 }

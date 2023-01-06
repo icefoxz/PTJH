@@ -3,10 +3,10 @@ using System.Linq;
 using System.Text;
 using BattleM;
 using MyBox;
-using Server.Configs._script.Battles;
+using Server.Configs.Battles;
 using UnityEngine;
 
-namespace Server.Configs._script.Skills
+namespace Server.Configs.Skills
 {
     /// <summary>
     /// 内功等级配置

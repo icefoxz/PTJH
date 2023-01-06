@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using MyBox;
-using Server.Configs._script.BattleSimulation;
+using Server.Configs.BattleSimulation;
+using Server.Configs.Items;
 using UnityEngine;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
     public enum AdvTypes
     {
@@ -24,6 +25,7 @@ namespace Server.Configs._script.Adventures
     /// </summary>
     public interface IAdvEventArg
     {
+        string DiziName { get; }
         ITerm Term { get; }
         int Result { get; }
         ISimulationOutcome SimOutcome { get; }
@@ -33,11 +35,15 @@ namespace Server.Configs._script.Adventures
     {
         string name { get; }
         /// <summary>
-        /// 获取下个事件
+        /// 执行事件
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        IAdvEvent GetNextEvent(IAdvEventArg arg);
+        void EventInvoke(IAdvEventArg arg);
+        /// <summary>
+        /// 下个事件触发
+        /// </summary>
+        event Action<IAdvEvent> OnNextEvent;
         /// <summary>
         /// 所有事件
         /// </summary>
@@ -46,30 +52,20 @@ namespace Server.Configs._script.Adventures
         /// 事件类别
         /// </summary>
         AdvTypes AdvType { get; }
-    }
-
-    public interface IAdvAutoEvent : IAdvEvent
-    {
         /// <summary>
-        /// OnLogsTrigger(string charName, out string[] logs)
+        /// 文本Log事件, 注意: 有些事件如:选择事件, 或是玩家交互事件有可能是不执行触发的.
         /// </summary>
         event Action<string[]> OnLogsTrigger;
     }
 
-    public interface IAdvInterStory
+
+    public interface IAdvStory
     {
         IAdvEvent StartAdvEvent { get; }
         IAdvEvent[] AllAdvEvents { get; }
     }
 
-    public interface IAdvAutoStory
-    {
-        int Id { get; }
-        string Name { get; }
-        IAdvAutoEvent StartAutoEvent { get; }
-    }
-
-    internal abstract class AdvStorySoBase : ScriptableObject
+    internal abstract class AdvStorySoBase : AutoDashNamingObject
     {
         public IAdvEvent[] AllEvents => _allEvents;
         [Header("下列事件自动生成，别自行添加")][ReadOnly][SerializeField] private AdvEventSoBase[] _allEvents;
@@ -83,7 +79,7 @@ namespace Server.Configs._script.Adventures
                 return true;
             }
 
-            _allEvents = Enumerable.Select<IAdvEvent, AdvEventSoBase>(GetAllEvents(), e => (AdvEventSoBase)e).ToArray();
+            _allEvents = GetAllEvents().Select(e => (AdvEventSoBase)e).ToArray();
             return true;
         }
 

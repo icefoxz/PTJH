@@ -1,13 +1,12 @@
 using System;
 using BattleM;
-using Data;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs._script.Items
+namespace Server.Configs.Items
 {
     [CreateAssetMenu(fileName = "armorSo",menuName = "战斗测试/防具")]
-    [Serializable] public class ArmorFieldSo : AutoNameScriptableObject
+    [Serializable] public class ArmorFieldSo : AutoUnderscoreNamingObject
     {
         [SerializeField] private int 护甲;
         [SerializeField] private SkillGrades _grade;

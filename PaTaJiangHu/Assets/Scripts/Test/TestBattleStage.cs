@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using BattleM;
-using Server.Configs._script.Battles;
-using Server.Configs._script.Items;
+using Server.Configs.Battles;
+using Server.Configs.Items;
 using UnityEngine;
 using Visual.BattleUi;
 

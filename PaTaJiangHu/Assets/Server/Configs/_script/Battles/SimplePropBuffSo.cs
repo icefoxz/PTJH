@@ -5,7 +5,7 @@ using BattleM;
 using MyBox;
 using UnityEngine;
 
-namespace Server.Configs._script.Battles
+namespace Server.Configs.Battles
 {
     [CreateAssetMenu(fileName = "buffSo", menuName = "战斗测试/Buff")]
     [Serializable]

@@ -1,8 +1,8 @@
 ﻿using System;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs._script.Characters
+namespace Server.Configs.Characters
 {
     [CreateAssetMenu(fileName = "PentagonGrade", menuName = "配置/五维配置")]
     public class PentagonGradeSo : ScriptableObject

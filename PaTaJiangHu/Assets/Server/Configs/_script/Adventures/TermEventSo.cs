@@ -5,7 +5,7 @@ using BattleM;
 using UnityEngine;
 using Utls;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
     /// <summary>
     /// 条款
@@ -26,19 +26,25 @@ namespace Server.Configs._script.Adventures
     [CreateAssetMenu(fileName = "id_条件事件名", menuName = "事件/条件事件")]
     internal class TermEventSo : AdvEventSoBase
     {
+        [SerializeField] private string 事件名;
         [SerializeField] private TermField.Modes _mode;
         [SerializeField] private NoTermField 无条件事件;
         [SerializeField] private TermField[] 条件;
 
-        public override IAdvEvent GetNextEvent(IAdvEventArg arg)
+        public override string Name => 事件名;
+
+        public override void EventInvoke(IAdvEventArg arg)
         {
-            return _mode switch
+            var nextEvent = _mode switch
             {
                 TermField.Modes.First => GetFirstInTermEvent(arg.Term),
                 TermField.Modes.Random => GetInTermEvents(arg.Term).RandomPick(),
                 _ => throw new ArgumentOutOfRangeException()
             };
+            OnNextEvent?.Invoke(nextEvent);
         }
+
+        public override event Action<IAdvEvent> OnNextEvent;
 
         /// <summary>
         /// NoTerm = 0 index
@@ -53,6 +59,7 @@ namespace Server.Configs._script.Adventures
             }
         }
         public override AdvTypes AdvType => AdvTypes.Term;
+        public override event Action<string[]> OnLogsTrigger;//条件事件不触发
         private TermField[] TermFields => 条件;
         private NoTermField NoTermEvent => 无条件事件;
         public (string title, IAdvEvent advEvent)[] GetInTermEventsWithTitle(ITerm term)

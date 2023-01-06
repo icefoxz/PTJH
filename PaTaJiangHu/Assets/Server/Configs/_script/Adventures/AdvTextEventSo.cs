@@ -1,11 +1,12 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_文本事件名", menuName = "事件/历练/文本事件")]
-    internal class AdvTextEventSo : AdvAutoEventSoBase
+    [CreateAssetMenu(fileName = "id_文本事件名", menuName = "事件/文本事件")]
+    internal class AdvTextEventSo : AdvEventSoBase
     {
+        [SerializeField] private string 事件名;
         [SerializeField] private AdvEventSoBase 下个事件;
         [SerializeField] [TextArea] private string 文本;
         public override event Action<string[]> OnLogsTrigger;
@@ -17,10 +18,14 @@ namespace Server.Configs._script.Adventures
         //[SerializeField] private int _id;
         //public override int Id => _id;
 
-        public override IAdvEvent GetNextEvent(IAdvEventArg arg)
+        public override string Name => 事件名;
+
+        public override void EventInvoke(IAdvEventArg arg)
         {
             OnLogsTrigger?.Invoke(new[] { Text });
-            return Next;
+            OnNextEvent?.Invoke(Next);
         }
+
+        public override event Action<IAdvEvent> OnNextEvent;
     }
 }

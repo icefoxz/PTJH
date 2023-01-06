@@ -1,5 +1,5 @@
 using Data;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 using Systems;
 using UnityEngine;
 

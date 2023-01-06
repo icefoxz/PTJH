@@ -2,10 +2,11 @@ using System.Linq;
 using BattleM;
 using Data;
 using MyBox;
-using Server.Configs._script.Skills;
+using Server.Configs.Skills;
+using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs._script.Battles
+namespace Server.Configs.Battles
 {
     [CreateAssetMenu(fileName = "forceSo", menuName = "战斗测试/内功")]
     internal class ForceFieldSo : ScriptableObject, IDataElement

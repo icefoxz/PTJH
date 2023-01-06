@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 using UnityEngine;
 
 namespace BattleM

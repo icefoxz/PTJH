@@ -1,8 +1,8 @@
 ﻿using System;
 using BattleM;
 using HotFix_Project.Views.Bases;
-using Server.Configs._script;
-using Server.Configs._script.Skills;
+using Server.Configs;
+using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;

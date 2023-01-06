@@ -1,9 +1,9 @@
 ﻿using System;
 using MyBox;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs._script.BattleSimulation
+namespace Server.Configs.BattleSimulation
 {
 
     /// <summary>

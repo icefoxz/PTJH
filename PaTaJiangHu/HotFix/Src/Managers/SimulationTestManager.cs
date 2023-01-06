@@ -1,7 +1,7 @@
 ﻿using System;
 using HotFix_Project.Views.Bases;
-using Server.Configs._script;
-using Server.Configs._script.Adventures;
+using Server.Configs;
+using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine.UI;
 using Views;

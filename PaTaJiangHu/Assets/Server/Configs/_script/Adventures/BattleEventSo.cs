@@ -2,10 +2,10 @@
 using MyBox;
 using UnityEngine;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
     [CreateAssetMenu(fileName = "id_战斗事件名", menuName = "事件/副本/战斗事件")]
-    internal class BattleEventSo : AdvInterEventSoBase
+    internal class BattleEventSo : AdvEventSoBase
     {
         public enum Result
         {
@@ -22,14 +22,18 @@ namespace Server.Configs._script.Adventures
             [InspectorName("试探")]Test,
             [InspectorName("决斗")]Duel,
         }
+
         [SerializeField] private Types 类型;
         [SerializeField] private AdvEventSoBase 胜利;
         [SerializeField] private AdvEventSoBase 战败;
         [ConditionalField(nameof(类型), false, Types.Test)] [SerializeField] private AdvEventSoBase 击杀;
         [ConditionalField(nameof(类型), false, Types.Test)] [SerializeField] private AdvEventSoBase 逃脱;
-        public override IAdvEvent GetNextEvent(IAdvEventArg arg)
+
+        public override string Name => "战斗";
+
+        public override void EventInvoke(IAdvEventArg arg)
         {
-            return arg.Result switch
+            var nextEvent = arg.Result switch
             {
                 0 => NextEvent(Result.Win, Finalized.Exhausted),
                 1 => NextEvent(Result.Lose, Finalized.Exhausted),
@@ -37,7 +41,10 @@ namespace Server.Configs._script.Adventures
                 3 => NextEvent(Result.Lose, Finalized.Escaped),
                 _ => throw new ArgumentOutOfRangeException($"{nameof(arg.Result)}", arg.Result.ToString())
             };
+            OnNextEvent?.Invoke(nextEvent);
         }
+
+        public override event Action<IAdvEvent> OnNextEvent;
 
         /// <summary>
         /// [0].Win<br/>[1].Lose<br/>[2].Kill<br/>[3].Escape
@@ -49,8 +56,9 @@ namespace Server.Configs._script.Adventures
             _ => throw new ArgumentOutOfRangeException()
         };
         public override AdvTypes AdvType => AdvTypes.Battle;
+        public override event Action<string[]> OnLogsTrigger;
 
-        public IAdvEvent NextEvent(Result result, Finalized finalize)
+        private IAdvEvent NextEvent(Result result, Finalized finalize)
         {
             var next = result switch
             {

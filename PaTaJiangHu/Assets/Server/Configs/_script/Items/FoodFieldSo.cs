@@ -1,7 +1,7 @@
 using Data;
 using UnityEngine;
 
-namespace Server.Configs._script.Items
+namespace Server.Configs.Items
 {
     [CreateAssetMenu(fileName = "id_秘籍名字", menuName = "配置/秘籍")]
     internal class FoodFieldSo : FoodBase

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using HotFix_Project.Views.Bases;
-using Server.Configs._script;
-using Server.Configs._script.Adventures;
+using Server.Configs;
+using Server.Configs.Adventures;
+using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;

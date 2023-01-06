@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using Server;
-using Server.Configs._script.Factions;
+using Server.Controllers;
 using Systems;
 using Systems.Coroutines;
 using Systems.Messaging;
@@ -93,7 +93,7 @@ public class Game : UnitySingleton<Game>
     {
         Controllers = new GameControllerServiceContainer();
         //***************Reg********************//
-        Controllers.Reg(new RecruitController(Configure.Recruit));
+        Controllers.Reg(new RecruitController(Configure.RecruitCfg));
         Controllers.Reg(new DiziController());
         Controllers.Reg(new StaminaController(Configure.DiziCfg));
         Controllers.Reg(new DiziAdvController());

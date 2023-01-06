@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Server.Configs._script.Factions
+namespace Server.Configs.Factions
 {
     [CreateAssetMenu(fileName = "RecruitConfig", menuName = "配置/招募配置")]
     internal class RecruitConfigSo : ScriptableObject

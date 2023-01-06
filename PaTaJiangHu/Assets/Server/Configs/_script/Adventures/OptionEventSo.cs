@@ -2,19 +2,28 @@
 using System.Linq;
 using UnityEngine;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
     [CreateAssetMenu(fileName = "id_选择事件名", menuName = "事件/副本/选择事件")]
-    internal class OptionEventSo : AdvInterEventSoBase
+    internal class OptionEventSo : AdvEventSoBase
     {
         [SerializeField][TextArea] private string 文本;
         [SerializeField]private OptionField[] _options;
 
         //[SerializeField] private int _id;
         //public override int Id => _id;
-        public override IAdvEvent GetNextEvent(IAdvEventArg arg) => _options[arg.Result].Event;
+        public override string Name { get; } = "选择";
+
+        public override void EventInvoke(IAdvEventArg arg)
+        {
+            var nexEvent = _options[arg.Result].Event;
+            OnNextEvent?.Invoke(nexEvent);
+        }
+
+        public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => _options.Select(o => o.Event).ToArray();
         public override AdvTypes AdvType => AdvTypes.Option;
+        public override event Action<string[]> OnLogsTrigger;//选择事件不触发log
         public string Story => 文本;
         public string[] GetOptions => _options.Select(o => o.Title).ToArray();
 

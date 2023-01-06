@@ -3,7 +3,7 @@ using MyBox;
 using UnityEngine;
 using Utls;
 
-namespace Server.Configs._script.Skills
+namespace Server.Configs.Skills
 {
     public abstract class SkillGradeSo<T> : ScriptableObject where T : ScriptableObject
     {

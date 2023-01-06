@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Server.Configs._script.Characters
+namespace Server.Configs.Characters
 {
     [Serializable] internal class MinMaxVectorInt
     {

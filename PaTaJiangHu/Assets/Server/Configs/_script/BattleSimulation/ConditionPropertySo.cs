@@ -1,9 +1,9 @@
 ﻿using System;
 using MyBox;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs._script.BattleSimulation
+namespace Server.Configs.BattleSimulation
 {
     [CreateAssetMenu(fileName = "状态属性配置", menuName = "配置/简易战斗/状态属性配置")]
     internal class ConditionPropertySo : ScriptableObject

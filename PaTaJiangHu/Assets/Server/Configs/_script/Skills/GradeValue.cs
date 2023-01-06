@@ -1,4 +1,4 @@
-namespace Server.Configs._script.Skills
+namespace Server.Configs.Skills
 {
     /// <summary>
     /// 品级值, 主要声明该值为什么品级

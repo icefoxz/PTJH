@@ -1,8 +1,7 @@
 ﻿using System;
 using BattleM;
-using Server.Configs._script.Adventures;
-using Server.Configs._script.Factions;
-using Server.Configs._script.Skills;
+using Server.Configs.Skills;
+using Server.Controllers;
 using Utls;
 
 namespace _GameClient.Models
@@ -33,7 +32,6 @@ namespace _GameClient.Models
         private ConValue _silver;
 
         public Skills Skill { get; set; }
-        public DiziBag Bag { get; set; }
         public Capable Capable { get; private set; }
 
         public IConditionValue Food => _food;
@@ -67,7 +65,6 @@ namespace _GameClient.Models
             var dSlot = new IDodgeSkill[dodgeSlot];
             dSlot[0] = dodgeSkill;
             Skill = new Skills(cSlot, fSlot, dSlot);
-            Bag = new DiziBag(bag);
             _food = new ConValue(100);
             _energy = new ConValue(100);
             _silver = new ConValue(100);
@@ -140,26 +137,6 @@ namespace _GameClient.Models
                 CombatSkills = new ICombatSkill[combatSlot];
                 ForceSkills = new IForceSkill[forceSkill];
             }
-
-
-        }
-
-        //弟子背包
-        public class DiziBag
-        {
-            private IGameItem[] _items;
-            public IGameItem[] Items => _items;
-
-            public DiziBag(int length)
-            {
-                _items = new IGameItem[length];
-            }
-
-            public DiziBag(IGameItem[] items)
-            {
-                _items = items;
-            }
-
         }
 
         //弟子钱包

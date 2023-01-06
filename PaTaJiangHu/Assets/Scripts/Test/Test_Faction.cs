@@ -1,5 +1,5 @@
 ﻿using System;
-using Server.Configs._script.Items;
+using Server.Configs.Items;
 using UnityEditor;
 using UnityEngine;
 using Utls;

@@ -1,12 +1,12 @@
 using System;
-using System.Linq;
 using System.Text;
 using BattleM;
 using MyBox;
-using Server.Configs._script.Battles;
+using Server.Configs.Battles;
+using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs._script.Skills
+namespace Server.Configs.Skills
 {
     [CreateAssetMenu(fileName = "dodgeLevelSo", menuName = "战斗测试/轻功等级配置")]
     internal class DodgeLevelingSo : ScriptableObject,ILeveling<IDodgeSkill>

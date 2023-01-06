@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Server.Configs._script.BattleSimulation;
+using Server.Configs.BattleSimulation;
 using UnityEngine;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_战斗事件名", menuName = "事件/历练/战斗事件")]
-    internal class BattleSimulationEventSo : AdvAutoEventSoBase
+    [CreateAssetMenu(fileName = "id_模拟战斗事件名", menuName = "事件/历练/模拟战斗事件")]
+    internal class BattleSimulationEventSo : AdvEventSoBase
     {
         [SerializeField] private AdvEventSoBase[] _allEvents;
 
@@ -16,12 +16,17 @@ namespace Server.Configs._script.Adventures
         private string IntroLog => 战斗前文本;
         public override event Action<string[]> OnLogsTrigger;
 
-        public override IAdvEvent GetNextEvent(IAdvEventArg arg)
+        public override string Name { get; } = "战斗";
+
+        public override void EventInvoke(IAdvEventArg arg)
         {
             var logs = GetResult(arg.SimOutcome);
             OnLogsTrigger?.Invoke(logs);
-            return AllEvents[arg.Result];
+            var nextEvent = AllEvents[arg.Result];
+            OnNextEvent?.Invoke(nextEvent);
         }
+
+        public override event Action<IAdvEvent> OnNextEvent;
 
         public override IAdvEvent[] AllEvents => _allEvents;
         public override AdvTypes AdvType => AdvTypes.Simulation;

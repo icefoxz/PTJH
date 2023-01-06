@@ -1,4 +1,4 @@
-namespace Server.Configs._script.Skills
+namespace Server.Configs.Skills
 {
     internal interface ILeveling<out T>
     {

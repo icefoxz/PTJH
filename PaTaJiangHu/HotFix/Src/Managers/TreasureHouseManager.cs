@@ -1,19 +1,12 @@
-﻿using _GameClient.Models;
-using BattleM;
-using HotFix_Project.Views.Bases;
-using Server.Configs._script.Adventures;
-using Server.Configs._script.Factions;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Src.Managers;
+namespace HotFix_Project.Managers;
 
 public class TreasureHouseManager
 {

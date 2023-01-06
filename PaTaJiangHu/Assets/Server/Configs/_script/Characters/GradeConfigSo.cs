@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using MyBox;
-using Server.Configs._script.Battles;
-using Server.Configs._script.Skills;
+using Server.Configs.Battles;
+using Server.Configs.Skills;
+using Server.Controllers;
 using UnityEngine;
 using Utls;
 using Random = UnityEngine.Random;
 
-namespace Server.Configs._script.Characters
+namespace Server.Configs.Characters
 {
     [CreateAssetMenu(fileName = "GradeConfig", menuName = "资质/弟子生成配置")]
     internal class GradeConfigSo : ScriptableObject

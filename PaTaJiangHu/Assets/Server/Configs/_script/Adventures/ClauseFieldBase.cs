@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using Utls;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
     /// <summary>
     /// 条款基类

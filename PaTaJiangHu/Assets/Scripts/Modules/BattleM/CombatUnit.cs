@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 
 namespace BattleM
 {

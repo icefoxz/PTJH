@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BattleM;
-using Server.Configs._script.Adventures;
-using Server.Configs._script.Characters;
-using Server.Configs._script.Items;
-using Server.Configs._script.Skills;
-using Server.Configs._script.TestControllers;
+using Server.Configs.Items;
+using Server.Configs.TestControllers;
+using Server.Controllers;
 using UnityEngine;
 using Utls;
 
-namespace Server.Configs._script
+namespace Server.Configs
 {
     public interface ITestCaller : ISingletonDependency
     {

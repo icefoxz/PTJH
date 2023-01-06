@@ -5,7 +5,7 @@ using MyBox;
 using UnityEngine;
 using Utls;
 
-namespace Server.Configs._script.BattleSimulation
+namespace Server.Configs.BattleSimulation
 {
     public interface ISimulationOutcome
     {

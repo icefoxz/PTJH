@@ -1,8 +1,7 @@
 ﻿using HotFix_Project.Views.Bases;
 using System;
 using _GameClient.Models;
-using Server.Configs._script.Adventures;
-using Server.Configs._script.Factions;
+using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
@@ -255,10 +254,10 @@ public class DiziAdvManager
             private void SetRewardItems(Dizi dizi)
             {
                 RewardItemView.ClearList(p => p.Destroy());
-                for (var i = 0; i < dizi.Bag.Items.Length; i++)
+                if (dizi.Adventure == null)
                 {
-                    var item = dizi.Bag.Items[i];
-                    RewardItemView.Instance(v => new Prefab_rewardItem(v));
+                    for (var i = 0; i < dizi.Capable.Bag; i++) 
+                        RewardItemView.Instance(v => new Prefab_rewardItem(v));
                 }
             }
 

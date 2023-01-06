@@ -2,7 +2,7 @@ using System;
 using MyBox;
 using UnityEngine;
 
-namespace Server.Configs._script.Skills
+namespace Server.Configs.Skills
 {
     [Serializable] internal class SoValueConfig
     {

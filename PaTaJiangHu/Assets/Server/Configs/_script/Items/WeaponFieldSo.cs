@@ -1,13 +1,13 @@
 using System;
 using BattleM;
 using MyBox;
-using Server.Configs._script.Skills;
+using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs._script.Items
+namespace Server.Configs.Items
 {
     [CreateAssetMenu(fileName = "weaponSo", menuName = "战斗测试/武器")]
-    [Serializable] public class WeaponFieldSo : AutoNameScriptableObject
+    [Serializable] public class WeaponFieldSo : AutoUnderscoreNamingObject
     {
         private bool GetItem()
         {

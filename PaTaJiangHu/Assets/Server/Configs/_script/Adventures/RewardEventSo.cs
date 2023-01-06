@@ -2,10 +2,10 @@
 using System.Linq;
 using Data;
 using MyBox;
-using Server.Configs._script.Items;
+using Server.Configs.Items;
 using UnityEngine;
 
-namespace Server.Configs._script.Adventures
+namespace Server.Configs.Adventures
 {
     /// <summary>
     /// 游戏物品大类(功能性, 不细化)
@@ -59,9 +59,19 @@ namespace Server.Configs._script.Adventures
         private RewardField GameReward => 奖励;
         //[SerializeField] private int _id;
         //public override int Id => _id;
-        public override IAdvEvent GetNextEvent(IAdvEventArg arg) => Next;
+        public override string Name { get; } = "奖励";
+        public override void EventInvoke(IAdvEventArg arg)
+        {
+            OnLogsTrigger?.Invoke(GameReward.AllItemFields.Select(GenerateLogFromItem).ToArray());
+            OnNextEvent?.Invoke(Next);
+        }
+
+        private string GenerateLogFromItem(GameItem item) => "{0}" + $"获得【{item.Name}】x{item.Amount}。";
+
+        public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => new[] { Next };
         public override AdvTypes AdvType => AdvTypes.Reward;
+        public override event Action<string[]> OnLogsTrigger;
         private IAdvEvent Next => 下个事件;
         public IGameReward Reward => GameReward;
 

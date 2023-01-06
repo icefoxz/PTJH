@@ -1,7 +1,7 @@
 ﻿using System;
 using BattleM;
 using QFramework;
-using Server.Configs._script.Factions;
+using Server.Controllers;
 using Utls;
 
 namespace _GameClient.Models

@@ -2,7 +2,7 @@
 using BattleM;
 using UnityEngine;
 
-namespace Server.Configs._script.Items
+namespace Server.Configs.Items
 {
     internal interface IMedicine
     {
