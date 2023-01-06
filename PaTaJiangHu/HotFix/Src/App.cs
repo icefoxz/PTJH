@@ -35,7 +35,6 @@ namespace HotFix_Project
 
         public void InitTest()
         {
-            Init();
             TestUiManager.Test();
             //TestAsync();
             //TestCoroutine();

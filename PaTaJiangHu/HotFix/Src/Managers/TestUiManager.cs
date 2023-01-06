@@ -1,5 +1,6 @@
 ﻿using HotFix_Project.Serialization.LitJson;
 using Server;
+using Utls;
 
 namespace HotFix_Project.Managers;
 
@@ -13,6 +14,7 @@ internal class TestUiManager
 
     public void Test()
     {
+        XDebug.Log($"{nameof(TestUiManager)}.{nameof(Test)} Run!");
         AdventureManager.Init();
         DiziTestManager.Init();
         SkillTestManager.Init();

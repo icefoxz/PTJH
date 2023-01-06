@@ -96,11 +96,12 @@ public class Game : UnitySingleton<Game>
         Controllers.Reg(new RecruitController(Configure.Recruit));
         Controllers.Reg(new DiziController());
         Controllers.Reg(new StaminaController(Configure.DiziCfg));
+        Controllers.Reg(new DiziAdvController());
     }
 
     private static void TestFactionInventory()
     {
-        Game.UiBuilder.Build("view_fractionInventory", v =>
+        UiBuilder.Build("view_fractionInventory", v =>
         {
             MainUi.SetPanel(v);
             var rect = (RectTransform)v.GameObject.transform;
