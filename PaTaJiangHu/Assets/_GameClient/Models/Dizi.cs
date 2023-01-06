@@ -33,7 +33,7 @@ namespace _GameClient.Models
         private ConValue _silver;
 
         public Skills Skill { get; set; }
-        private DiziBag Bag { get; set; }
+        public DiziBag Bag { get; set; }
         public Capable Capable { get; private set; }
 
         public IConditionValue Food => _food;
@@ -145,7 +145,7 @@ namespace _GameClient.Models
         }
 
         //弟子背包
-        private class DiziBag
+        public class DiziBag
         {
             private IGameItem[] _items;
             public IGameItem[] Items => _items;

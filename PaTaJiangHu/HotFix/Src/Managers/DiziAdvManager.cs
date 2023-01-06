@@ -1,6 +1,7 @@
 ﻿using HotFix_Project.Views.Bases;
 using System;
 using _GameClient.Models;
+using Server.Configs._script.Adventures;
 using Server.Configs._script.Factions;
 using Systems.Messaging;
 using UnityEngine;
@@ -15,9 +16,12 @@ public class DiziAdvManager
     private View_diziAdv DiziAdv { get; set; }
     private MainUi MainUi { get; set; }
     private DiziController DiziController { get; set; }
+    private DiziAdvController DiziAdvController { get; set; }
+    
     public void Init()
     {
         DiziController = Game.Controllers.Get<DiziController>();
+        DiziAdvController = Game.Controllers.Get<DiziAdvController>();
         MainUi = Game.MainUi;
         InitUi();
         RegEvents();
@@ -39,8 +43,12 @@ public class DiziAdvManager
     {
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
-            DiziAdv = new View_diziAdv(v, () => { },
-                (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType));
+            DiziAdv = new View_diziAdv(v, 
+                (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
+                guid => DiziAdvController.StartAdventure(guid),
+                guid => { XDebug.LogWarning("弟子回召! 功能未完!"); },
+                () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
+            );
             MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
         });
     }
@@ -55,7 +63,7 @@ public class DiziAdvManager
         private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
-        public View_diziAdv(IView v, Action onSwitchAction, Action<string,int> onItemSelectAction) : base(v.GameObject, false)
+        public View_diziAdv(IView v, Action<string,int> onItemSelectAction, Action<string> onAdvStartAction,Action<string> onAdvRecallAction, Action onSwitchAction) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
@@ -71,7 +79,9 @@ public class DiziAdvManager
                 new Element_item(v.GetObject<View>("element_itemArmor"),
                     () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 1))
             );
-            //AdvLayoutView = new View_advLayout(v.GetObject<View>("view_advLayout"));
+            AdvLayoutView = new View_advLayout(v.GetObject<View>("view_advLayout"),
+                () => onAdvStartAction?.Invoke(SelectedDizi?.Guid),
+                () => onAdvRecallAction?.Invoke(SelectedDizi?.Guid));
         }
 
         private Dizi SelectedDizi { get; set; }//cache
@@ -90,9 +100,11 @@ public class DiziAdvManager
         private void SetDizi(Dizi dizi)
         {
             SetDiziElements(dizi);
-            var isInAdventure = dizi.Adventure == null;
-            //AdvLayoutView.Set();
-            XDebug.LogWarning($"{dizi.Name} 历练板块未完成!");
+            var isInAdventure = dizi.Adventure != null;
+            if (!isInAdventure)
+                AdvLayoutView.SetPrepareState(dizi); //准备模式
+            else
+                AdvLayoutView.SetAdventure(dizi); //历练模式
         }
 
 
@@ -191,18 +203,24 @@ public class DiziAdvManager
         }
         private class View_advLayout : UiBase
         {
+            private enum Modes
+            {
+                Prepare, Adventure
+            }
             private Button Btn_recall { get; }
             private Image Img_costIco { get; }
             private Text Text_cost { get; }
             private Button Btn_advStart { get; }
 
             private ListViewUi<LogPrefab> LogView { get; }
+            private ListViewUi<Prefab_rewardItem> RewardItemView { get; }
             private Element_equip[] ItemSlots { get; }
 
             public View_advLayout(IView v, Action onAdvStartAction, Action onRecallAction) : base(v.GameObject, true)
             {
                 var scroll_advLog = v.GetObject<ScrollRect>("scroll_advLog");
                 LogView = new ListViewUi<LogPrefab>(v.GetObject<View>("prefab_log"), scroll_advLog);
+                RewardItemView = new ListViewUi<Prefab_rewardItem>(v, "prefab_rewardItem", "scroll_rewardItem");
                 Img_costIco = v.GetObject<Image>("img_costIco");
                 Text_cost = v.GetObject<Text>("text_cost");
                 var slot0 = new Element_equip(v.GetObject<View>("element_equipSlot0"));
@@ -220,13 +238,34 @@ public class DiziAdvManager
                 Text_cost.text = cost.ToString();
             }
 
-            public void SetPrepareState()
+            public void SetPrepareState(Dizi dizi)
             {
-                Btn_advStart.gameObject.SetActive(true);
-                foreach (var slot in ItemSlots)
+                foreach (var slot in ItemSlots) slot.SetTimer();
+                SetMode(Modes.Prepare);
+                SetRewardItems(dizi);
+            }
+
+            public void SetAdventure(Dizi dizi)
+            {
+                XDebug.LogWarning("弟子历练未设置!");
+                SetMode(Modes.Adventure);
+                SetRewardItems(dizi);
+            }
+
+            private void SetRewardItems(Dizi dizi)
+            {
+                RewardItemView.ClearList(p => p.Destroy());
+                for (var i = 0; i < dizi.Bag.Items.Length; i++)
                 {
-                    slot.SetTimer(0,0);
+                    var item = dizi.Bag.Items[i];
+                    RewardItemView.Instance(v => new Prefab_rewardItem(v));
                 }
+            }
+
+            private void SetMode(Modes mode)
+            {
+                Btn_advStart.gameObject.SetActive(mode == Modes.Prepare);
+                Btn_recall.gameObject.SetActive(mode == Modes.Adventure);
             }
 
             private class LogPrefab : UiBase
@@ -241,25 +280,77 @@ public class DiziAdvManager
 
             private class Element_equip : UiBase
             {
+                private enum Modes{Empty,Content,InUse}
                 private Scrollbar Scrbar_item { get; }
                 private Image Img_ico { get; }
-                private Text Text_min { get; }
-                private Text Text_sec { get; }
+                private Text Text_timerMin { get; }
+                private Text Text_timerSec { get; }
+                private GameObject Go_timer { get; }
+                private GameObject Go_slidingArea { get; }
                 
                 public Element_equip(IView v) : base(v.GameObject, true)
                 {
                     Scrbar_item = v.GetObject<Scrollbar>("scrbar_item");
                     Img_ico = v.GetObject<Image>("img_ico");
-                    Text_min = v.GetObject<Text>("text_min");
-                    Text_sec = v.GetObject<Text>("text_sec");
+                    Text_timerMin = v.GetObject<Text>("text_timerMin");
+                    Text_timerSec = v.GetObject<Text>("text_timerSec");
+                    Go_timer = v.GetObject("go_timer");
+                    Go_slidingArea = v.GetObject("go_slidingArea");
+                    SetMode(Modes.Empty);
                 }
-                public void SetIcon(Sprite icon) => Img_ico.sprite = icon;
-                public void SetTimer(int min, int sec)
+
+                private void SetMode(Modes mode)
                 {
-                    Text_min.text = min.ToString();
-                    Text_sec.text = sec.ToString();
+                    Go_slidingArea.SetActive(mode == Modes.InUse);
+                    Go_timer.SetActive(mode == Modes.InUse);
+                    Img_ico.gameObject.SetActive(mode != Modes.Empty);
+                }
+                public void ClearItem() => SetMode(Modes.Empty);
+                public void SetIcon(Sprite icon)
+                {
+                    Img_ico.sprite = icon;
+                    SetMode(Modes.Content);
+                }
+
+                public void SetTimer(int min = -1, int sec = -1)
+                {
+                    var isDefault = min <= 0 && sec <= 0;
+                    if (!isDefault) SetMode(Modes.InUse);
+                    Text_timerMin.text = isDefault ? string.Empty : min.ToString();
+                    Text_timerSec.text = isDefault ? string.Empty : sec.ToString();
                 }
             }
+
+            private class Prefab_rewardItem : UiBase
+            {
+                private enum Modes
+                {
+                    Empty,Item,Disable,
+                }
+                private Image Img_ico { get; }
+                private Image Img_x { get; }
+
+                public Prefab_rewardItem(IView v) : base(v, true)
+                {
+                    Img_ico = v.GetObject<Image>("img_ico");
+                    Img_x = v.GetObject<Image>("img_x");
+                    SetEmpty();
+                }
+
+                public void SetIco(Sprite ico)
+                {
+                    Img_ico.sprite = ico;
+                    Set(Modes.Item);
+                }
+                public void SetEmpty() => Set(Modes.Empty);
+                public void SetDisable() => Set(Modes.Disable);
+                private void Set(Modes mode)
+                {
+                    Img_ico.gameObject.SetActive(mode == Modes.Item);
+                    Img_x.gameObject.SetActive(mode == Modes.Disable);
+                }
+            }
+
         }
 
         private class ElementManager

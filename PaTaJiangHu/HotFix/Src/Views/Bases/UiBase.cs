@@ -60,6 +60,12 @@ namespace HotFix_Project.Views.Bases
         {
         }
 
+        public ListViewUi(IView v, string prefabName, string scrollRectName, bool hideChildrenViews = true) : this(
+            v.GetObject<View>(prefabName),
+            v.GetObject<ScrollRect>(scrollRectName), hideChildrenViews)
+        {
+        }
+
         public void HideChildren()
         {
             foreach (Transform view in transform)
