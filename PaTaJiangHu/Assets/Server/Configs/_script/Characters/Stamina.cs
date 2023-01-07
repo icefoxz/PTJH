@@ -20,7 +20,7 @@ namespace Server.Configs.Characters
         public int GetStamina(long lastTick)
         {
             var intervalTick = SysTime.UnixNow - lastTick;
-            var intervalTimeSpan = SysTime.TickFromMilliseconds(intervalTick);
+            var intervalTimeSpan = SysTime.MillisecondsToTimeSpan(intervalTick);
             var perStamina = PerStamina;
             var stamina = (int)(intervalTimeSpan / perStamina);
             return stamina;

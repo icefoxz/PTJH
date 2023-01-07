@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Core;
 using Data;
 using MyBox;
 using Server.Configs.Items;
@@ -7,39 +8,6 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    /// <summary>
-    /// 游戏物品大类(功能性, 不细化)
-    /// </summary>
-    public enum ItemType
-    {
-        /// <summary>
-        /// 丹药
-        /// </summary>
-        Medicine,
-        /// <summary>
-        /// 装备
-        /// </summary>
-        Equipment,
-        /// <summary>
-        /// 书籍
-        /// </summary>
-        Book,
-        /// <summary>
-        /// 包裹, 游戏物品的容器
-        /// </summary>
-        Parcel,
-        /// <summary>
-        /// 故事道具
-        /// </summary>
-        StoryProps
-    }
-    public interface IGameItem
-    {
-        int Id { get; }
-        string Name { get; }
-        int Amount { get; }
-        ItemType Type { get; }
-    }
     public interface IGameReward
     {
         IGameItem[] Weapons { get; }
@@ -56,7 +24,10 @@ namespace Server.Configs.Adventures
     {
         [SerializeField] private AdvEventSoBase 下个事件;
         [SerializeField] private RewardField 奖励;
+        [SerializeField] private int 弟子经验;
         private RewardField GameReward => 奖励;
+
+        private int Exp => 弟子经验;
         //[SerializeField] private int _id;
         //public override int Id => _id;
         public override string Name { get; } = "奖励";

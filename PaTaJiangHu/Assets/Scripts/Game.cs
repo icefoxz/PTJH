@@ -96,7 +96,7 @@ public class Game : UnitySingleton<Game>
         Controllers.Reg(new RecruitController(Configure.RecruitCfg));
         Controllers.Reg(new DiziController());
         Controllers.Reg(new StaminaController(Configure.DiziCfg));
-        Controllers.Reg(new DiziAdvController());
+        Controllers.Reg(new DiziAdvController(Configure.AdvConfig));
     }
 
     private static void TestFactionInventory()

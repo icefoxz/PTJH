@@ -37,7 +37,7 @@ namespace _GameClient.Models
         public IConditionValue Food => _food;
         public IConditionValue Energy => _energy;
         public IConditionValue Silver => _silver;
-        public DiziAdventure Adventure { get; private set; }
+        public AutoAdventure Adventure { get; set; }
 
         internal Dizi(string guid,string name, GradeValue<int> strength, GradeValue<int> agility,
             GradeValue<int> hp, GradeValue<int> mp, int level, int grade,
@@ -172,6 +172,13 @@ namespace _GameClient.Models
             Armor = armor;
             XDebug.Log(armor == null ? "弟子卸下装备" : $"弟子装备{armor.Name}!");
         }
+
+        internal void StartAdventure(long startTime,int returnSecs,int messageSecs)
+        {
+            Adventure = new AutoAdventure(startTime, returnSecs, messageSecs, this);
+        }
+
+        internal void QuitAdventure(long now,int lastMile) => Adventure.Quit(now, lastMile);
     }
 
     /// <summary>

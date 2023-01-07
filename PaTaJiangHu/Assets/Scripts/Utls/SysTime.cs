@@ -46,7 +46,7 @@ namespace Utls
         /// <returns></returns>
         public static bool IsInRange(long fromTicks, TimeSpan range, long verifyTime)
         {
-            var timeSpan = TickFromMilliseconds(verifyTime - fromTicks);
+            var timeSpan = MillisecondsToTimeSpan(verifyTime - fromTicks);
             return timeSpan <= range;
         }
         /// <summary>
@@ -54,7 +54,7 @@ namespace Utls
         /// </summary>
         /// <param name="milliseconds"></param>
         /// <returns></returns>
-        public static TimeSpan TickFromMilliseconds(long milliseconds) => 
+        public static TimeSpan MillisecondsToTimeSpan(long milliseconds) => 
             TimeSpan.FromMilliseconds(milliseconds);
         /// <summary>
         /// 从时间戳转换UTC时间

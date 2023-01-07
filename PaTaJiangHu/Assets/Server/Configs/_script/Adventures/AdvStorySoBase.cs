@@ -61,6 +61,7 @@ namespace Server.Configs.Adventures
 
     public interface IAdvStory
     {
+        string Name { get; }
         IAdvEvent StartAdvEvent { get; }
         IAdvEvent[] AllAdvEvents { get; }
     }

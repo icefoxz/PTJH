@@ -15,41 +15,35 @@ namespace Systems.Coroutines
     public class CoroutineService : DependencySingleton<ICoroutineService>, ICoroutineService
     {
         private ObjectPool<CoroutineInstance> _pool;
-        private readonly List<CoroutineInstance> _list = new List<CoroutineInstance>();
+        private readonly Dictionary<int,CoroutineInstance> _map = new Dictionary<int,CoroutineInstance>();
         [SerializeField] private CoroutineInstance _prefab;
 
         protected override void OnAwake()
         {
             base.OnAwake();
-            _pool = new ObjectPool<CoroutineInstance>(InstanceCo);
+            _pool = new ObjectPool<CoroutineInstance>(() =>
+                {
+                    var co = Instantiate(_prefab, transform);
+                    _map.Add(co.GetInstanceID(), co);
+                    return co;
+
+                }, null, null,
+                co => _map.Remove(co.GetInstanceID()));
         }
 
         public int RunCo(IEnumerator enumerator)
         {
-            var co = InstanceCo();
-            co.StartCo(enumerator, () => Remove(co));
-            return _list.IndexOf(co);
+            var co = _pool.Get();
+            var instanceId = co.GetInstanceID();
+            co.StartCo(enumerator, () => StopCo(instanceId));
+            return instanceId;
         }
 
         public void StopCo(int index)
         {
-            var co = _list[index];
+            var co = _map[index];
             co.StopCo();
-            Remove(co);
-        }
-
-        private void Remove(CoroutineInstance co)
-        {
-            _list.Remove(co);
             _pool.Release(co);
-            Destroy(co.gameObject);
-        }
-
-        private CoroutineInstance InstanceCo()
-        {
-            var co = Instantiate(_prefab, transform);
-            _list.Add(co);
-            return co;
         }
     }
 

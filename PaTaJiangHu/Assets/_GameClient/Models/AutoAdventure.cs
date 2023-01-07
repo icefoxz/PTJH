@@ -1,155 +1,159 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Server.Configs.Adventures;
+using Core;
+using Server.Controllers;
 using UnityEngine;
-using Utls;
 
 namespace _GameClient.Models
 {
     /// <summary>
     /// (自动)挂机历练模型
     /// </summary>
-    internal class AutoAdventure 
+    public class AutoAdventure
     {
-        /// <summary>
-        /// 挂机状态
-        /// </summary>
         public enum States
         {
-            /// <summary>
-            /// 在旅程中
-            /// </summary>
-            Traveling,
-            /// <summary>
-            /// 故事中
-            /// </summary>
-            Story,
-            /// <summary>
-            /// 结束状态
-            /// </summary>
-            End
+            None,
+            Process,
+            Return,
         }
+        private List<string> _messageLog = new List<string>();
+        private Queue<string> _printQueue;
 
-        private States _state;
-        public States State => _state;
-
-        private StoryPicker Picker { get; set; }
         /// <summary>
         /// 回程秒数
         /// </summary>
-        public int JourneyReturnSec { get; private set; }
-        private TimeRecorder Recorder { get; set; }
-        public TimeSpan TotalTimeSpan => Recorder.TotalTimeSpan();
-        public long StartTime => Recorder.StartTime;
-        public float[] MileMap => Recorder.MileMap.ToArray();
-        private int AdventureCoId { get; set; }
+        public int JourneyReturnSec { get; }
+        public States State { get; private set; }
+        //public TimeSpan TotalTimeSpan => Recorder.TotalTimeSpan();
+        //public float[] MileMap => Recorder.MileMap.ToArray();
+        //开始时间
+        public long StartTime { get; }
 
-        public void Init(AdventureMapSo mapSo)
+        //上次更新时间
+        public long LastUpdate { get; private set; }
+
+        //当前里数
+        public int LastMile { get; private set; }
+
+        private IReadOnlyList<string> MessageLog => _messageLog;
+        private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
+        private Dizi Dizi { get; }
+        private DiziBag Bag { get; }
+        private int MessageSecs { get; } //文本展示间隔(秒)
+        private int AdventureCoId { get; set; } = -1; //历练CoroutineId
+        private int MessageCoId { get; set; } = -1;//信息CoroutineId
+        private int ReturnCoId { get; set; } = -1;//回归CoroutineId
+        public Equipment Equipment { get; }
+
+        public AutoAdventure(long startTime, int journeyReturnSec, int messageSecs, Dizi dizi)
         {
-            JourneyReturnSec = mapSo.JourneyReturnSec;
-            Picker = new StoryPicker(mapSo);
+            MessageSecs = messageSecs;
+            JourneyReturnSec = journeyReturnSec;
+            StartTime = startTime;
+            LastUpdate = startTime;
+            Dizi = dizi;
+            State = States.Process;
+            PollingStoryPerSec();
         }
 
-        private void SetState(States state)
+        //轮询控制器是否有故事发生
+        private void PollingStoryPerSec()
         {
-            if (State == state) throw new NotImplementedException("状态相同!");
-            if (State == States.End) throw new NotImplementedException("状态结束不允许再改.");
-            _state = state;
+            AdventureCoId = Game.CoService.RunCo(RequestEverySec());
+
+            IEnumerator RequestEverySec()
+            {
+                yield return new WaitForSeconds(1);
+                AdvController.CheckMile(Dizi.Guid);
+            }
         }
 
-        /// <summary>
-        /// 开始冒险
-        /// </summary>
-        public void StartAdventure()
+        //停止轮询
+        private void StopPollingStory()
         {
-            Recorder = new TimeRecorder();
-            SetState(States.Traveling);
-            AdventureCoId = Game.CoService.RunCo(UpdateEverySec());
-        }
-
-        public void StopAdventure()
-        {
-            Recorder.End();
-            SetState(States.End);
             Game.CoService.StopCo(AdventureCoId);
+            AdventureCoId = -1;
         }
 
-        private IEnumerator UpdateEverySec(float sec = 1f)
+        internal void StartStory(long now, int lasMile)
         {
-            var changeableSecs = sec;//todo 这里添加历练物品(马匹)可改变秒数
-            yield return new WaitForSeconds(changeableSecs);
-            Recorder.AddMile(changeableSecs);
-            if (CheckIfStoryAvailable())
+            if (AdventureCoId < 0)
+                throw new NotImplementedException($"AdvCoId = {AdventureCoId}");
+            StopPollingStory();
+            UpdateTime(now, lasMile);
+        }
+
+        private void UpdateTime(long now, int lasMile)
+        {
+            LastUpdate = now;
+            LastMile = lasMile;
+        }
+
+        internal void OnMessageLog(long lasTick, int totalMiles, IReadOnlyList<string> messages)
+        {
+            UpdateTime(lasTick, totalMiles);
+            if (MessageCoId > 0)//如果新故事进来,但旧故事未完成播放
             {
-                TryInvokeStory(Recorder.TotalMiles);
+                _messageLog.AddRange(_printQueue);//直接加入信息列
+                _printQueue = new Queue<string>(messages);//播放信息队列放入新故事
+                Game.MessagingManager.SendParams(EventString.Dizi_Adv_MessagesUpdate, Dizi.Guid);
+                return;
+            }
+
+            //如果播放队列已经空了
+            _printQueue = new Queue<string>(messages);//播放信息队列放入新故事
+            MessageCoId = Game.CoService.RunCo(PrintAdvLogMessage());
+
+            IEnumerator PrintAdvLogMessage()
+            {
+                //循环播放直到播放队列空
+                while (_printQueue.Count > 0)
+                {
+                    var message = _printQueue.Dequeue();
+                    Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, message);
+                    yield return new WaitForSeconds(MessageSecs);
+                }
+                Game.CoService.StopCo(MessageCoId);
+                MessageCoId = -1;
             }
         }
 
-        private void TryInvokeStory(int miles)
+        internal void Quit(long now,int lastMile)
         {
-            var startEvent = Picker.PickStory(miles);
-            startEvent.OnLogsTrigger += OnLogEvent;
-        }
+            UpdateTime(now,lastMile);
+            State = States.Return;
+            ReturnCoId = Game.CoService.RunCo(ReturnFromAdventure());
 
-        private void OnLogEvent(string[] logs)
-        {
-            throw new NotImplementedException();
-        }
-
-        private bool CheckIfStoryAvailable() => State == States.Traveling;
-
-        // 故事获取器, 仅处理获取故事的逻辑
-        private class StoryPicker
-        {
-            private AdventureMapSo Map { get; }
-
-            public StoryPicker(AdventureMapSo map)
+            IEnumerator ReturnFromAdventure()
             {
-                Map = map;
+                yield return new WaitForSeconds(JourneyReturnSec);
+                State = States.None;
+                Game.CoService.StopCo(ReturnCoId);
             }
-
-            public IAdvEvent PickStory(int mile) => PickPlace(mile).GetStory().StartAdvEvent;
-
-            private IAdvPlace PickPlace(int mile)
-            {
-                //var majorMile = mile % Map.MajorMile;//获取余数, 如果余数是0表示Major故事里数==当前里数
-                //if (majorMile == Map.MajorMile) return PickMajorPlace();
-                //var minorMile = mile % Map.MinorMile;//获取余数
-                //if (minorMile == Map.MinorMile) return PickMinorPlace();
-                return null;
-            }
-            private IAdvPlace PickMajorPlace(int mile) => Map.PickMajorPlace(mile);
-            //private IAdvPlace PickMinorPlace() => Map.PickMinorPlace();
-        }
-        //时间记录器
-        private record TimeRecorder
-        {
-            private List<float> _mileMap;
-
-            /// <summary>
-            /// 开始时间(Unix戳 milliseconds)
-            /// </summary>
-            public long StartTime { get; }
-            public long EndTime { get; private set; }
-
-            /// <summary>
-            /// 每一里的秒数记录器
-            /// </summary>
-            public IReadOnlyList<float> MileMap => _mileMap;
-
-            public int TotalMiles => _mileMap.Count;
-
-            public TimeRecorder()
-            {
-                _mileMap = new List<float>();
-                StartTime = SysTime.UnixNow;
-            }
-            public TimeSpan TotalTimeSpan() => TimeSpan.FromMilliseconds(SysTime.UnixNow - StartTime);
-            public void AddMile(float sec) => _mileMap.Add(sec);
-            public void End() => EndTime = SysTime.UnixNow;
         }
     }
 
+
+    public class Equipment
+    {
+
+    }
+    public class DiziBag
+    {
+        private IGameItem[] _items;
+        public IGameItem[] Items => _items;
+
+        public DiziBag(int length)
+        {
+            _items = new IGameItem[length];
+        }
+
+        public DiziBag(IGameItem[] items)
+        {
+            _items = items;
+        }
+
+    }
 }

@@ -42,9 +42,10 @@ public class DiziAdvManager
     {
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
-            DiziAdv = new View_diziAdv(v, (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
-                guid => DiziAdvController.StartAdventure(guid),
-                guid => { XDebug.LogWarning("弟子回召! 功能未完!"); },
+            DiziAdv = new View_diziAdv(v, 
+                (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
+                guid => DiziAdvController.AdventureStart(guid),
+                guid => DiziAdvController.AdventureRecall(guid),
                 () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
             );
             MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);

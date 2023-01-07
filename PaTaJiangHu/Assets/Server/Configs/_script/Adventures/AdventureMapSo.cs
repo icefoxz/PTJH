@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using MyBox;
 using Server.Configs.Items;
 using UnityEngine;
 using Utls;
@@ -18,7 +20,7 @@ namespace Server.Configs.Adventures
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;
 
         //public int MinorMile => MinorPlace.Mile;
-        public IAdvPlace PickMajorPlace(int mile) => MajorPlace.GetRandomPlace(mile);
+        public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => MajorPlace.GetRandomPlace(fromMiles, toMiles);
         //public IAdvPlace PickMinorPlace() => MinorPlace.GetWeightedPlace();
 
         [Serializable]
@@ -27,12 +29,15 @@ namespace Server.Configs.Adventures
             [SerializeField] private MilePlace[] 地点配置;
             private MilePlace[] MilePlaces => 地点配置;
 
-            public AdvPlaceSo GetRandomPlace(int mile) => MilePlaces
-                .GroupBy(p => p.Mile)
-                .Where(p => p.Key <= mile)
-                .OrderByDescending(p => p.Key)
-                .First()
-                .SelectMany(p => p.PlaceSos).RandomPick();
+            public IAdvPlace[] GetRandomPlace(int fromMile, int toMiles)
+            {
+                return MilePlaces.Where(p => p.Mile >= fromMile && p.Mile < toMiles)
+                    .GroupBy(p => p.Mile)
+                    .OrderByDescending(p => p.Key)
+                    .Select(places => (IAdvPlace)places.RandomPick().PlaceSos.RandomPick())
+                    .ToArray();
+            }
+
 
             [Serializable]
             private class MilePlace

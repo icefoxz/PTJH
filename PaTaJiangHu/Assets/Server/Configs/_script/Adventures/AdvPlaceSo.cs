@@ -11,7 +11,8 @@ namespace Server.Configs.Adventures
         int Id { get; }
         string Name { get; }
         IAdvStory[] Stories { get; }
-        IAdvStory GetStory();
+        IAdvStory WeighPickStory();
+        IAdvStory RandomPickStory();
     }
 
     /// <summary>
@@ -24,7 +25,8 @@ namespace Server.Configs.Adventures
 
         private AdvStoryWeight[] AdvStories => 故事;
         public IAdvStory[] Stories => AdvStories.Select(s => s.Story).ToArray();
-        public IAdvStory GetStory() => AdvStories.WeightPick().Story;
+        public IAdvStory WeighPickStory() => AdvStories.WeightPick().Story;
+        public IAdvStory RandomPickStory() => AdvStories.RandomPick().Story;
 
         [Serializable] private class AdvStoryWeight : IWeightElement
         {
