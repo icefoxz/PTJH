@@ -60,6 +60,10 @@ public class DiziRecruitManager
             RecruitWindow.SetDiziName(diziName);
             RecruitWindow.Display(true);
         }
+        public void SetText(int cost)
+        {
+            Text_SilverCost.text = cost.ToString();
+        }
 
         //private class
         private class View_RecruitWindow : UiBase

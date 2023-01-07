@@ -42,8 +42,7 @@ public class DiziAdvManager
     {
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
-            DiziAdv = new View_diziAdv(v, 
-                (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
+            DiziAdv = new View_diziAdv(v, (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
                 guid => DiziAdvController.StartAdventure(guid),
                 guid => { XDebug.LogWarning("弟子回召! 功能未完!"); },
                 () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
@@ -55,7 +54,7 @@ public class DiziAdvManager
     private class View_diziAdv : UiBase
     {
         public enum Skills { Combat,Force,Dodge }
-        public enum Conditions { Food, Energy, Silver }
+        public enum Conditions { Food, State, Silver, Injury, Inner }
         public enum Items { Weapon,Armor }
 
         private Button Btn_Switch { get; }
@@ -70,6 +69,8 @@ public class DiziAdvManager
                 new Element_con(v.GetObject<View>("element_conFood")),
                 new Element_con(v.GetObject<View>("element_conState")),
                 new Element_con(v.GetObject<View>("element_conSilver")),
+                new Element_con(v.GetObject<View>("element_conInjury")),
+                new Element_con(v.GetObject<View>("element_conInner")),
                 new Element_skill(v.GetObject<View>("element_skillCombat")),
                 new Element_skill(v.GetObject<View>("element_skillForce")),
                 new Element_skill(v.GetObject<View>("element_skillDodge")),
@@ -117,8 +118,10 @@ public class DiziAdvManager
             if (dizi.Armor == null) ElementMgr.ClearItem(Items.Armor);
             else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name);
             ElementMgr.SetConValue(Conditions.Food, dizi.Food.Value, dizi.Food.Max);
-            ElementMgr.SetConValue(Conditions.Energy, dizi.Energy.Value, dizi.Energy.Max);
+            ElementMgr.SetConValue(Conditions.State, dizi.Energy.Value, dizi.Energy.Max);
             ElementMgr.SetConValue(Conditions.Silver, dizi.Silver.Value, dizi.Silver.Max);
+           //ElementMgr.SetConValue(Conditions.Injury, dizi.Injury.Value, dizi.Injury.Max);
+            //ElementMgr.SetConValue(Conditions.Inner, dizi.Inner.Value, dizi.Inner.Max);
         }
 
         private class Element_skill : UiBase
@@ -357,18 +360,22 @@ public class DiziAdvManager
             private Element_con Food { get; }
             private Element_con State { get; }
             private Element_con Silver { get; }
+            private Element_con Injury { get; }
+            private Element_con Inner { get; }
             private Element_skill Combat { get; }
             private Element_skill Force { get; }
             private Element_skill Dodge { get; }
             private Element_item Weapon { get; }
             private Element_item Armor { get; }
 
-            public ElementManager(Element_con food, Element_con state, Element_con silver, Element_skill combat,
+            public ElementManager(Element_con food, Element_con state, Element_con silver, Element_con injury, Element_con inner, Element_skill combat,
                 Element_skill force, Element_skill dodge, Element_item weapon, Element_item armor)
             {
                 Food = food;
                 State = state;
                 Silver = silver;
+                Injury = injury;
+                Inner = inner;
                 Combat = combat;
                 Force = force;
                 Dodge = dodge;
@@ -393,8 +400,10 @@ public class DiziAdvManager
                 con switch
                 {
                     Conditions.Food => Food,
-                    Conditions.Energy => State,
+                    Conditions.State => State,
                     Conditions.Silver => Silver,
+                    Conditions.Injury => Injury,
+                    Conditions.Inner => Inner,
                     _ => throw new ArgumentOutOfRangeException(nameof(con), con, null)
                 };
 

@@ -7,15 +7,20 @@ using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
+using HotFix_Project.Serialization.LitJson;
+using Server.Configs.Items;
+using Server.Controllers;
 
 namespace HotFix_Project.Managers;
 
 public class WinConItemSelectorManager
 {
     private View_winConItemSelector WinConItemSelector { get; set; }
+    private DiziController DiziController { get; set; }
 
     public void Init()
     {
+        DiziController = Game.Controllers.Get<DiziController>();
         InitUi();
         RegEvents();
     }
@@ -24,12 +29,10 @@ public class WinConItemSelectorManager
     {
         Game.UiBuilder.Build("view_winConItemSelector", v =>
         {
-            WinConItemSelector = new View_winConItemSelector(v, () =>
-            {
-                Game.MainUi.HideWindow();
-                WinConItemSelector.Display(false);
-            });
-            Game.MainUi.SetWindow(v, true);
+            WinConItemSelector = new View_winConItemSelector(v,
+                () => XDebug.Log("10硬币已派发！"),
+                () => XDebug.Log("物品已使用！"));
+            Game.MainUi.SetWindow(v, resetPos: true);
         });
     }
 
@@ -45,19 +48,28 @@ public class WinConItemSelectorManager
 
     private class View_winConItemSelector : UiBase
     {
+        public enum Conditions { Food, State, Silver, Injury, Inner }
         private Button Btn_x { get; }
+        private ScrollRect Scroll_items { get; }
         private View_Stamina StaminaView { get; }
         private View_Btns BtnsView { get; }
-
         private ListViewUi<Prefab_Item> ItemListView { get; }
-        public View_winConItemSelector(IView v,Action onCloseAction) : base(v.GameObject, false)
+        private ElementManager ElementMgr { get; }
+        public View_winConItemSelector(IView v, Action onSilverApply, Action onUse) : base(v.GameObject, false)
         {
             Btn_x = v.GetObject<Button>("btn_x");
-            var itemScroll = v.GetObject<ScrollRect>("scroll_items");
+            Scroll_items = v.GetObject<ScrollRect>("scroll_items");
             StaminaView = new View_Stamina(v.GetObject<View>("view_stamina"));
-            BtnsView = new View_Btns(v.GetObject<View>("view_btns"));
-            ItemListView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), itemScroll.content.gameObject);
-            Btn_x.OnClickAdd(onCloseAction);
+            BtnsView = new View_Btns(v.GetObject<View>("view_btns"), onSilverApply, onUse);
+            ItemListView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), Scroll_items);
+            Btn_x.OnClickAdd(() => { Display(false); });
+            ElementMgr = new ElementManager(
+                new Element_con(v.GetObject<View>("element_food")),
+                new Element_con(v.GetObject<View>("element_state")),
+                new Element_con(v.GetObject<View>("element_silver")),
+                new Element_con(v.GetObject<View>("element_injury")),
+                new Element_con(v.GetObject<View>("element_inner"))
+            );
         }
 
         private Dizi SelectedDizi { get; set; }
@@ -99,6 +111,22 @@ public class WinConItemSelectorManager
             var (stamina, max, min, sec) = SelectedDizi.Stamina.GetStaminaValue();
             StaminaView.Set(stamina, max);
             StaminaView.SetTime(min, sec);
+        }
+        public void Update()
+        {
+            SetDizi(SelectedDizi);
+        }
+        private void SetDizi(Dizi dizi)
+        {
+            SetDiziElements(dizi);
+        }
+        private void SetDiziElements(Dizi dizi)
+        {
+            ElementMgr.SetConValue(Conditions.Food, dizi.Food.Value, dizi.Food.Max);
+            ElementMgr.SetConValue(Conditions.State, dizi.Energy.Value, dizi.Energy.Max);
+            ElementMgr.SetConValue(Conditions.Silver, dizi.Silver.Value, dizi.Silver.Max);
+            //ElementMgr.SetConValue(Conditions.Injury, dizi.Injury.Value, dizi.Injury.Max);
+            //ElementMgr.SetConValue(Conditions.Silver, dizi.Inner.Value, dizi.Inner.Max);
         }
 
         private class Prefab_Item : UiBase
@@ -167,22 +195,79 @@ public class WinConItemSelectorManager
             private Button Btn_silver { get; }
             private Button Btn_use { get; }
             private Text Text_silver { get; }
-            public View_Btns(IView v/*, Action onSilverApply, Action onUse*/) : base(v.GameObject, true)
+            public View_Btns(IView v, Action onSilverApply, Action onUse) : base(v.GameObject, true)
             {
                 Btn_silver = v.GetObject<Button>("btn_silver");
-                Btn_silver.OnClickAdd(() =>
-                {
-                    ///onSilverApply?.Invoke();
-                });
+                Btn_silver.OnClickAdd(onSilverApply);
                 Btn_use = v.GetObject<Button>("btn_use");
-                Btn_use.OnClickAdd(() =>
-                {
-                    ///onUse?.Invoke();
-                    ///Display(false);
-                });
+                Btn_use.OnClickAdd(onUse);
                 Text_silver = v.GetObject<Text>("text_silver");
             }
             public void SetText(int cost) => Text_silver.text = cost.ToString();
+        }
+
+        private class ElementManager
+        {
+            private Element_con Food { get; }
+            private Element_con State { get; }
+            private Element_con Silver { get; }
+            private Element_con Injury { get; }
+            private Element_con Inner { get; }
+            public ElementManager(Element_con food, Element_con state, Element_con silver, Element_con injury,
+                Element_con inner)
+            {
+                Food = food;
+                State = state;
+                Silver = silver;
+                Injury = injury;
+                Inner = inner;
+            }
+            private Element_con GetConditionUi(Conditions con) =>
+                con switch
+                {
+                    Conditions.Food => Food,
+                    Conditions.State => State,
+                    Conditions.Silver => Silver,
+                    Conditions.Injury => Injury,
+                    Conditions.Inner => Inner,
+                    _ => throw new ArgumentOutOfRangeException(nameof(con), con, null)
+                };
+            public void SetConValue(Conditions con, int value, int max)
+            {
+                var conUi = GetConditionUi(con);
+                conUi.SetValue(value, max);
+            }
+            public void SetConTitle(Conditions con, string title)
+            {
+                var conUi = GetConditionUi(con);
+                conUi.SetTitle(title);
+            }
+        }
+
+        private class Element_con : UiBase
+        {
+            private Scrollbar Scrbar_condition { get; }
+            private Text Text_value { get; }
+            private Text Text_max { get; }
+            private Text Text_title { get; }
+            public Element_con(IView v) : base(v.GameObject, true)
+            {
+                Scrbar_condition = v.GetObject<Scrollbar>("scrbar_condition");
+                Text_value = v.GetObject<Text>("text_value");
+                Text_max = v.GetObject<Text>("text_max");
+                Text_title = v.GetObject<Text>("text_title");
+            }
+            public void SetTitle(string title)
+            {
+                Text_title.text = title;
+            }
+            public void SetValue(int value, int max)
+            {
+                Text_value.text = value.ToString();
+                Text_max.text = max.ToString();
+                Scrbar_condition.size = 1f * value / max;
+            }
+            
         }
     }
 }
