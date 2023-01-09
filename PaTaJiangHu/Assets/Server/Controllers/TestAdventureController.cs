@@ -205,7 +205,7 @@ namespace Server.Controllers
                     AdvTypes.Battle => new BattleEvent(mSo, aEvent as BattleEventSo),
                     AdvTypes.Term => new OptionEvent(mSo, advEvent as TermEventSo, new TestTerm()),
                     AdvTypes.Reward => new RewardEvent(mSo, aEvent as RewardEventSo),
-                    _ => throw new ArgumentOutOfRangeException()
+                    _ => throw new ArgumentOutOfRangeException($"未支持事件={advEvent.AdvType}!")
                 };
                 return advEventData;
             }

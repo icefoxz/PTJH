@@ -188,6 +188,7 @@ namespace Server.Controllers
                     case AdvTypes.Dialog:
                     case AdvTypes.Pool:
                     case AdvTypes.Term:
+                    case AdvTypes.Adjust:
                     case AdvTypes.Reward: break;//其余的直接执行判断
                     case AdvTypes.Simulation://执行模拟战斗
                         if (advEvent is not BattleSimulationEventSo bs)
@@ -213,6 +214,7 @@ namespace Server.Controllers
                 public ITerm Term { get; }
                 public int InteractionResult => 0;//历练不会有交互结果
                 public ISimulationOutcome SimOutcome { get; private set; }
+                public IAdjustment Adjustment { get; private set; }
 
                 public AdvArg(Dizi dizi)
                 {

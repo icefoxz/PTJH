@@ -23,13 +23,14 @@ namespace Server.Configs.Adventures
             [InspectorName("决斗")]Duel,
         }
 
+        [SerializeField] private string 事件名 = "战斗";
         [SerializeField] private Types 类型;
         [SerializeField] private AdvEventSoBase 胜利;
         [SerializeField] private AdvEventSoBase 战败;
         [ConditionalField(nameof(类型), false, Types.Test)] [SerializeField] private AdvEventSoBase 击杀;
         [ConditionalField(nameof(类型), false, Types.Test)] [SerializeField] private AdvEventSoBase 逃脱;
 
-        public override string Name => "战斗";
+        public override string Name => 事件名;
 
         public override void EventInvoke(IAdvEventArg arg)
         {

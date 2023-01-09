@@ -306,6 +306,8 @@ namespace HotFix_Project.Managers
                             () => OnNextEvent?.Invoke(rewardEvent.StoryId, rewardEvent.NextIndexes.First()));
                         break;
                     }
+                    case AdvTypes.Adjust:
+                    case AdvTypes.Simulation:
                     default:
                         throw new ArgumentOutOfRangeException(nameof(advType), advType.ToString(), null);
                 }

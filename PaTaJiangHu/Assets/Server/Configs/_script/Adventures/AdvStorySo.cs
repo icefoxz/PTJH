@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MyBox;
+using UnityEditor;
 using UnityEngine;
 
 namespace Server.Configs.Adventures
@@ -28,4 +29,19 @@ namespace Server.Configs.Adventures
 
         protected override IAdvEvent BeginEvent => StartAdvEvent;
     }
+
+    [CustomEditor(typeof(AdvStorySo))]
+    internal class AdvStorySoBaseEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+            var script = (AdvStorySo)target;
+            if (GUILayout.Button("根据故事名为事件"))
+            {
+                script.RenameAllEvents();
+            }
+        }
+    }
+
 }

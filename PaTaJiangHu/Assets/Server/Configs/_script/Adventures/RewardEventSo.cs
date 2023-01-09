@@ -23,15 +23,17 @@ namespace Server.Configs.Adventures
     [CreateAssetMenu(fileName = "id_奖励件名", menuName = "事件/奖励事件")]
     internal class RewardEventSo : AdvEventSoBase
     {
+        [SerializeField] private string 事件名 = "奖励";
         [SerializeField] private AdvEventSoBase 下个事件;
         [SerializeField] private RewardField 奖励;
         [SerializeField] private int 弟子经验;
         private RewardField GameReward => 奖励;
 
         private int Exp => 弟子经验;
+
         //[SerializeField] private int _id;
+        public override string Name => 事件名;
         //public override int Id => _id;
-        public override string Name { get; } = "奖励";
         public override void EventInvoke(IAdvEventArg arg)
         {
             OnLogsTrigger?.Invoke(GenerateRewardMessages(arg.DiziName));

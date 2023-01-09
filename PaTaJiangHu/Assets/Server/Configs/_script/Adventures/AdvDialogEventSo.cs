@@ -9,7 +9,6 @@ namespace Server.Configs.Adventures
     internal class AdvDialogEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名;
-        [SerializeField] private string _name;
         [SerializeField] private AdvEventSoBase 下个事件;
         [SerializeField] private DialogField[] _dialogs;
 

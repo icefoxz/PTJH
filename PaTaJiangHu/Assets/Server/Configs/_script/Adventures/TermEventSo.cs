@@ -32,7 +32,6 @@ namespace Server.Configs.Adventures
         [SerializeField] private TermField[] 条件;
 
         public override string Name => 事件名;
-
         public override void EventInvoke(IAdvEventArg arg)
         {
             var nextEvent = _mode switch

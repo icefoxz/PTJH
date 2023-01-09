@@ -7,12 +7,13 @@ namespace Server.Configs.Adventures
     [CreateAssetMenu(fileName = "id_选择事件名", menuName = "事件/副本/选择事件")]
     internal class OptionEventSo : AdvEventSoBase
     {
+        [SerializeField] private string 事件名 = "选择";
         [SerializeField][TextArea] private string 文本;
-        [SerializeField]private OptionField[] _options;
+        [SerializeField] private OptionField[] _options;
 
         //[SerializeField] private int _id;
         //public override int Id => _id;
-        public override string Name { get; } = "选择";
+        public override string Name => 事件名;
 
         public override void EventInvoke(IAdvEventArg arg)
         {

@@ -7,9 +7,10 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_模拟战斗事件名", menuName = "事件/历练/模拟战斗事件")]
+    [CreateAssetMenu(fileName = "id_模拟战斗事件名", menuName = "事件/模拟战斗事件")]
     internal class BattleSimulationEventSo : AdvEventSoBase
     {
+        [SerializeField] private string 事件名 = "战斗";
         [SerializeField] private string 战斗前文本;
         [SerializeField] private BattleResult 战果;
         [SerializeField] private CombatNpcSo _npc;
@@ -19,7 +20,7 @@ namespace Server.Configs.Adventures
         private string IntroLog => 战斗前文本;
         public override event Action<string[]> OnLogsTrigger;
 
-        public override string Name { get; } = "战斗";
+        public override string Name => 事件名;
 
         public override void EventInvoke(IAdvEventArg arg)
         {

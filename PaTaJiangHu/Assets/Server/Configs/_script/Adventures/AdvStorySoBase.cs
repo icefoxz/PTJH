@@ -4,6 +4,7 @@ using System.Linq;
 using MyBox;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Items;
+using UnityEditor;
 using UnityEngine;
 
 namespace Server.Configs.Adventures
@@ -18,7 +19,8 @@ namespace Server.Configs.Adventures
         Battle,
         Term,
         Reward,
-        Simulation
+        Adjust,
+        Simulation,
     }
     /// <summary>
     /// 事件参数, 用于影响事件导向的接口规范
@@ -29,6 +31,12 @@ namespace Server.Configs.Adventures
         ITerm Term { get; }
         int InteractionResult { get; }
         ISimulationOutcome SimOutcome { get; }
+        IAdjustment Adjustment { get; }
+    }
+
+    public interface IAdjustment
+    {
+
     }
 
     public interface IAdvEvent
@@ -66,7 +74,7 @@ namespace Server.Configs.Adventures
         IAdvEvent[] AllAdvEvents { get; }
     }
 
-    internal abstract class AdvStorySoBase : AutoBacktickNamingObject
+    internal abstract class AdvStorySoBase : AutoDashNamingObject
     {
         protected bool GetItem()
         {
@@ -118,5 +126,18 @@ namespace Server.Configs.Adventures
 
             return checkedList.Distinct().ToArray();
         }
+
+        public void RenameAllEvents()
+        {
+            foreach (var e in _allEvents)
+            {
+                var path = AssetDatabase.GetAssetPath(e);
+                var newName = string.Join(Dash, Id, Name, e.Name);
+                var err = AssetDatabase.RenameAsset(path, newName);
+                if (!string.IsNullOrWhiteSpace(err)) Debug.LogError(err);
+            }
+        }
+
+        private const char Dash = '_';
     }
 }

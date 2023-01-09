@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using MyBox;
 using Server.Configs.Items;
@@ -9,7 +8,7 @@ using Utls;
 namespace Server.Configs.Adventures
 {
     [CreateAssetMenu(fileName = "id_历练地图名", menuName = "事件/上层/历练地图")]
-    internal class AdventureMapSo : AutoDashNamingObject
+    internal class AdventureMapSo : AutoHashNamingObject
     {
         private bool GetItem()
         {
@@ -19,12 +18,15 @@ namespace Server.Configs.Adventures
         [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdventureMapSo So;
 
         [SerializeField] private MajorPlaceConfig 固定里数触发配置;
+        [SerializeField] private MinorPlaceConfig 小故事;
         //[SerializeField] private MinorPlaceConfig 随机触发配置;
         [SerializeField] private int 回程秒数 = 10;
 
         public int JourneyReturnSec => 回程秒数;
         //private MinorPlaceConfig MinorPlace => 随机触发配置;
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;
+
+        private MinorPlaceConfig MinorPlace => 小故事;
 
         //public int MinorMile => MinorPlace.Mile;
         public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => MajorPlace.GetRandomPlace(fromMiles, toMiles);
@@ -62,6 +64,35 @@ namespace Server.Configs.Adventures
                         return 地点;
                     }
                 }
+            }
+
+        }
+        [Serializable]
+        private class MinorPlaceConfig
+        {
+            [SerializeField] private MilePlace[] 地点配置;
+            private MilePlace[] MilePlaces => 地点配置;
+
+            //public IAdvPlace[] GetRandomPlace(int fromMile, int toMiles)
+            //{
+            //    return MilePlaces.Where(p => fromMile < p.Mile && p.Mile <= toMiles)
+            //        .GroupBy(p => p.Mile)
+            //        .OrderBy(p => p.Key)
+            //        .Select(places => (IAdvPlace)places.RandomPick().PlaceSos.RandomPick())
+            //        .ToArray();
+            //}
+
+            //public int[] GetAllTriggerMiles() => MilePlaces.Select(o => o.Mile).ToArray();
+
+            [Serializable]
+            private class MilePlace
+            {
+                [SerializeField] private Vector2Int 里;
+                [SerializeField] private AdvPlaceSo 地点;
+                [SerializeField] private int 里数间隔;
+                public Vector2Int Mile => 里;
+                public int MileInterval => 里数间隔;
+                public AdvPlaceSo PlaceSos => 地点;
             }
 
         }
