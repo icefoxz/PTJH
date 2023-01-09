@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using _GameClient.Models;
 using BattleM;
+using Server.Configs.Adventures;
 using Server.Configs.Items;
+using Server.Configs.Skills;
 using Server.Configs.TestControllers;
 using Server.Controllers;
 using UnityEngine;
@@ -14,9 +17,10 @@ namespace Server.Configs
     {
         ISkillController InstanceSkillController();
         ITestDiziController InstanceDiziController();
-        IAdventureController InstanceAdventureController();
+        ITestAdventureController InstanceAdventureController();
         IAdvMapController InstanceAdvMapController();
         IBattleSimController InstanceBattleSimController();
+        string InitAutoAdventure();
         void SetHpValue(int value);
         void SetHpMax(int value);
         void SetHpFix(int value);
@@ -31,7 +35,7 @@ namespace Server.Configs
     public class TestCaller : DependencySingleton<ITestCaller>, ITestCaller
     {
         //在测试模式中，controller是模拟服务器的数据控制器，在客户端使用都是直接向服务器请求的
-        private AdventureController AdvController { get; set; }
+        private TestAdventureController AdvController { get; set; }
         private TestTestDiziController TestTestDiziController { get; set; }
         private SkillController SkillController { get; set; }
         private AdvMapController MapController { get; set; }
@@ -43,12 +47,14 @@ namespace Server.Configs
         private TestTestDiziController.DiziConfig DiziCfg => 弟子配置;
         [SerializeField] private ItemConfig 物品配置;
         private ItemConfig ItemCfg => 物品配置;
-        [SerializeField] private AdventureController.AdvConfig 副本配置;
-        private AdventureController.AdvConfig AdvConfig => 副本配置;
+        [SerializeField] private TestAdventureController.AdvConfig 副本配置;
+        private TestAdventureController.AdvConfig AdvConfig => 副本配置;
         [SerializeField] private SkillController.Configure 技能配置;
         private SkillController.Configure SkillConfig => 技能配置;
         [SerializeField] private BattleSimController.Configure 模拟战斗配置;
         private BattleSimController.Configure BattleSimConfig => 模拟战斗配置;
+        [SerializeField] private AutoAdventureConfig 历练配置;
+        private AutoAdventureConfig AutoAdventureCfg => 历练配置;
 
         public IBattleSimController InstanceBattleSimController()
         {
@@ -58,7 +64,7 @@ namespace Server.Configs
         public IAdvMapController InstanceAdvMapController()=> MapController = new AdvMapController(MapConfig);
         public ISkillController InstanceSkillController() => SkillController = new SkillController(SkillConfig);
         public ITestDiziController InstanceDiziController() => TestTestDiziController = new TestTestDiziController(DiziCfg);
-        public IAdventureController InstanceAdventureController() => AdvController = new AdventureController(AdvConfig);
+        public ITestAdventureController InstanceAdventureController() => AdvController = new TestAdventureController(AdvConfig);
 
         public void StartAdvMapLoad() => MapController.LoadMap();
         public void StartCombatLevelTest() => SkillController.ListCombatSkills();
@@ -69,6 +75,23 @@ namespace Server.Configs
         {
             Game.MessagingManager.Send(EventString.Test_SimulationStart, string.Empty);
             //BattleSimController.Start();
+        }
+
+        public void StartAutoAdventure() => Game.MessagingManager.Send(EventString.Test_AutoAdvDiziInit, string.Empty);
+        public string InitAutoAdventure()
+        {
+            Game.World.TestFaction();
+            var faction = Game.World.Faction;
+            var p = AutoAdventureCfg.Player;
+            var dizi = new Dizi(guid: Guid.NewGuid().ToString(), name: p.Name,
+                strength: new GradeValue<int>(p.Strength, 0),
+                agility: new GradeValue<int>(p.Agility, 0),
+                hp: new GradeValue<int>(p.Hp, 0),
+                mp: new GradeValue<int>(p.Mp, 0),
+                level: 1, grade: 0, stamina: 50, bag: 5, combatSlot: 1, forceSlot: 1, dodgeSlot: 1,
+                combatSkill: p.GetCombat(), forceSkill: p.GetForce(), dodgeSkill: p.GetDodge());
+            faction.AddDizi(dizi);
+            return dizi.Guid;
         }
 
         public UnitStatus TestStatus { get; } = new(100, 100, 100);
@@ -154,6 +177,12 @@ namespace Server.Configs
                     Fix = c.Fix;
                 }
             }
+        }
+
+        [Serializable]internal class AutoAdventureConfig
+        {
+            [SerializeField] private CombatNpcSo 测试玩家;
+            public CombatNpcSo Player => 测试玩家;
         }
     }
 }

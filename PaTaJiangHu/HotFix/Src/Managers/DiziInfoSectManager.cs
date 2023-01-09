@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using Utls;
 using Views;
 using _GameClient.Models;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;

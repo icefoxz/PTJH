@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Core;
 using Data;
@@ -33,11 +34,17 @@ namespace Server.Configs.Adventures
         public override string Name { get; } = "奖励";
         public override void EventInvoke(IAdvEventArg arg)
         {
-            OnLogsTrigger?.Invoke(GameReward.AllItemFields.Select(GenerateLogFromItem).ToArray());
+            OnLogsTrigger?.Invoke(GenerateRewardMessages(arg.DiziName));
             OnNextEvent?.Invoke(Next);
         }
 
-        private string GenerateLogFromItem(GameItem item) => "{0}" + $"获得【{item.Name}】x{item.Amount}。";
+        private string[] GenerateRewardMessages(string diziName)
+        {
+            var messages = new List<string>(GameReward.AllItemFields.Select(m => GenerateLogFromItem(m, diziName)));
+            messages.Insert(0, $"{diziName}获得经验【{Exp}】");
+            return messages.ToArray();
+        }
+        private string GenerateLogFromItem(GameItem item, string diziName) => $"{diziName}获得【{item.Name}】x{item.Amount}。";
 
         public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => new[] { Next };
@@ -174,7 +181,7 @@ namespace Server.Configs.Adventures
             }
             private void UpdateName(ScriptableObject so)
             {
-                var title = string.Empty;
+                var title = "未命名";
                 var id = Id;
                 if (so)
                 {

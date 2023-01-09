@@ -45,7 +45,7 @@ namespace BattleM
         ///// <summary>
         ///// 体能,Condition Point
         ///// </summary>
-        //IGameCondition Tp { get; }
+        //IGameCondition Tp { get; } 
         /// <summary>
         /// 内力,Force Point
         /// </summary>

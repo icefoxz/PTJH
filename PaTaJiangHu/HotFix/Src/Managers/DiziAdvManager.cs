@@ -1,6 +1,7 @@
 ﻿using HotFix_Project.Views.Bases;
 using System;
 using _GameClient.Models;
+using HotFix_Project.Serialization;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
@@ -34,8 +35,9 @@ public class DiziAdvManager
             MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
             DiziAdv.Display(true);
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update(bag.Get<string>(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update(bag.Get<string>(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update(bag.Get<string>(0)));
     }
 
     private void InitUi()
@@ -93,21 +95,20 @@ public class DiziAdvManager
             SelectedDizi = dizi;
             SetDizi(dizi);
         }
-        public void Update()
+        public void Update(string guid)
         {
+            if (SelectedDizi.Guid != guid) return;
             SetDizi(SelectedDizi);
         }
 
         private void SetDizi(Dizi dizi)
         {
             SetDiziElements(dizi);
-            var isInAdventure = dizi.Adventure != null;
-            if (!isInAdventure)
-                AdvLayoutView.SetPrepareState(dizi); //准备模式
-            else
+            if (dizi.Adventure is {State:AutoAdventure.States.Progress})
                 AdvLayoutView.SetAdventure(dizi); //历练模式
+            else
+                AdvLayoutView.SetPrepareState(dizi); //准备模式
         }
-
 
         private void SetDiziElements(Dizi dizi)
         {

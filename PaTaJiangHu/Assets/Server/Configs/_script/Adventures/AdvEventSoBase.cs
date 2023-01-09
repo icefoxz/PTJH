@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyBox;
+using System;
 using UnityEngine;
 
 namespace Server.Configs.Adventures
@@ -8,6 +9,13 @@ namespace Server.Configs.Adventures
     /// </summary>
     internal abstract class AdvEventSoBase : ScriptableObject, IAdvEvent
     {
+        protected bool GetItem()
+        {
+            if (So == null) So = this;
+            return true;
+        }
+        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdvEventSoBase So;
+
         public abstract string Name { get; }
         public abstract void EventInvoke(IAdvEventArg arg);
         public abstract event Action<IAdvEvent> OnNextEvent;

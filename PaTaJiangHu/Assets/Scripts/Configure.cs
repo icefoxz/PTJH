@@ -1,5 +1,6 @@
 using System;
 using Server.Configs.Adventures;
+using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
 using UnityEngine;
@@ -9,16 +10,12 @@ using UnityEngine;
 /// </summary>
 internal class Configure : MonoBehaviour
 {
-    [SerializeField] private Config.Recruit 招募配置;
-    [SerializeField] private Config.Dizi 弟子配置;
-    [SerializeField] private Config.Adventure 历练配置;
+    [SerializeField] private ConfigureSo 游戏配置;
 
-    public Config.Recruit RecruitCfg => 招募配置;
-    public Config.Dizi DiziCfg => 弟子配置;
-    public Config.Adventure AdvConfig => 历练配置;
+    public Config Config => 游戏配置.Config;
 }
 
-internal class Config
+[Serializable] internal class Config
 {
     //招募配置
     [SerializeField] private Recruit 招募配置;
@@ -46,6 +43,10 @@ internal class Config
     [Serializable] internal class Adventure
     {
         [SerializeField] private AdventureConfigSo 历练配置;
+        [SerializeField] private BattleSimulatorConfigSo 战斗模拟器;
+        [SerializeField] private ConditionPropertySo 状态属性系数配置;
+        internal BattleSimulatorConfigSo BattleSimulation => 战斗模拟器;
+        internal ConditionPropertySo ConditionProperty => 状态属性系数配置;
         internal AdventureConfigSo AdventureCfg => 历练配置;
     }
 }

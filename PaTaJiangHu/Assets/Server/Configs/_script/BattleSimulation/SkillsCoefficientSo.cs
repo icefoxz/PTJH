@@ -107,8 +107,9 @@ namespace Server.Configs.BattleSimulation
         }
     }
 
-    public interface ISimulation
+    public interface ISimCombat
     {
+        string Name { get; }
         float Offend { get; }
         float Defend { get; }
         float Strength { get; }

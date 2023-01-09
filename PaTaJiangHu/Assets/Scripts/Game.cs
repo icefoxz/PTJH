@@ -45,9 +45,9 @@ public class Game : UnitySingleton<Game>
 
     public static MainUi MainUi { get; private set; }
     public static GameWorld World { get; private set; }
-    private static Configure Configure { get; set; }
+    private static Config Config { get; set; }
     public static bool IsInit { get; private set; }
-    internal void Init(Res res, IlService ilService, MainUi mainUi, Configure configure)
+    internal void Init(Res res, IlService ilService, MainUi mainUi, Config config)
     {
         if (IsInit) throw new InvalidOperationException("Double Init!");
         IsInit = true;
@@ -61,7 +61,8 @@ public class Game : UnitySingleton<Game>
         IlService = ilService;
         MainUi = mainUi;
         MainUi.Init();
-        Configure = configure;
+        Config = config;
+        World = new GameWorld();//Init World Model
         //SceneCanvas = sceneCanvas;
         InitControllers();
     }
@@ -72,8 +73,6 @@ public class Game : UnitySingleton<Game>
     public static void Run()
     {
         Instance.Log();
-        World = new GameWorld();
-        Debug.Log("TestFaction Init!");
         Instance.StartGameAfterASecond();
         //TestFactionInventory();
     }
@@ -93,10 +92,12 @@ public class Game : UnitySingleton<Game>
     {
         Controllers = new GameControllerServiceContainer();
         //***************Reg********************//
-        Controllers.Reg(new RecruitController(Configure.RecruitCfg));
+        Controllers.Reg(new RecruitController(Config.RecruitCfg));
         Controllers.Reg(new DiziController());
-        Controllers.Reg(new StaminaController(Configure.DiziCfg));
-        Controllers.Reg(new DiziAdvController(Configure.AdvConfig));
+        Controllers.Reg(new StaminaController(Config.DiziCfg));
+        Controllers.Reg(new DiziAdvController(Config.AdvCfg.AdventureCfg, 
+            Config.AdvCfg.BattleSimulation,
+            Config.AdvCfg.ConditionProperty));
     }
 
     private static void TestFactionInventory()

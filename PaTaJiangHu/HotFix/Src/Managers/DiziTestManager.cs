@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BattleM;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs;
 using Server.Configs.Characters;
@@ -30,12 +31,12 @@ public class DiziTestManager
 
     private void InitUi()
     {
-        Game.UiBuilder.Build("view_diziGenerate", v =>
+        Game.UiBuilder.Build("test_diziGenerate", v =>
         {
             GenWindow = new DiziGenWindow(v, level => Controller.OnDiziLevel(level));
             GenWindow.SetButtons(Controller.OnGenerateDizi, () => GenWindow.Display(false));
         });
-        Game.UiBuilder.Build("view_diziStamina", (go, v) =>
+        Game.UiBuilder.Build("test_diziStamina", (go, v) =>
         {
             StaCountWindow = new StaminaCountWindow(go,
                 v.GetObject<InputField>("input_minutes"),
@@ -60,7 +61,7 @@ public class DiziTestManager
                 StaCountWindow.InputStamina,
                 StaCountWindow.InputMinutes));
         });
-        Game.UiBuilder.Build("view_medicineFunction", (go, v) =>
+        Game.UiBuilder.Build("test_medicineFunction", (go, v) =>
         {
             MedicineTest = new MedicineTestWindow(go.GetComponent<View>(), id => TestCaller.Instance.UseMedicine(id));
             MedicineTest.Set(MedicineTestWindow.Cons.Hp, TestCaller.Instance.SetHpValue, TestCaller.Instance.SetHpMax, TestCaller.Instance.SetHpFix);

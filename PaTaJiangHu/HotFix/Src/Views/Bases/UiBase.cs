@@ -41,9 +41,20 @@ namespace HotFix_Project.Views.Bases
 
     internal class ListViewUi<T> : UiBase
     {
+        private readonly ScrollRect _scrollRect;
         private List<T> _list { get; } = new List<T>();
         public IReadOnlyList<T> List => _list;
         private View Prefab { get; }
+
+        private ScrollRect ScrollRect
+        {
+            get
+            {
+                if (_scrollRect == null)
+                    throw new InvalidOperationException("如果要调用ScrollRect,请在构造的时候传入scrollrect控件");
+                return _scrollRect;
+            }
+        }
 
         public ListViewUi(View prefab, GameObject contentGo, bool hideChildrenViews = true) : base(contentGo, true)
         {
@@ -55,9 +66,11 @@ namespace HotFix_Project.Views.Bases
         {
         }
 
-        public ListViewUi(View prefab, ScrollRect scrollRect, bool hideChildrenViews = true) : this(prefab,
-            scrollRect.content, hideChildrenViews)
+        public ListViewUi(View prefab, ScrollRect scrollRect, bool hideChildrenViews = true) : base(scrollRect.content.gameObject, hideChildrenViews)
         {
+            Prefab = prefab;
+            if (hideChildrenViews) HideChildren();
+            _scrollRect = scrollRect;
         }
 
         public ListViewUi(IView v, string prefabName, string scrollRectName, bool hideChildrenViews = true) : this(
@@ -86,5 +99,15 @@ namespace HotFix_Project.Views.Bases
             _list.Clear();
         }
         public void Remove(T obj) => _list.Remove(obj);
+
+        public void SetVerticalScrollPosition(float value)
+        {
+            ScrollRect.verticalNormalizedPosition = value;
+        }
+
+        public void SetHorizontalScrollPosition(float value)
+        {
+            ScrollRect.horizontalNormalizedPosition = value;
+        }
     }
 }

@@ -33,13 +33,13 @@ namespace Server.Configs.Adventures
 
         public override void EventInvoke(IAdvEventArg arg)
         {
-            var nextEvent = arg.Result switch
+            var nextEvent = arg.InteractionResult switch
             {
                 0 => NextEvent(Result.Win, Finalized.Exhausted),
                 1 => NextEvent(Result.Lose, Finalized.Exhausted),
                 2 => NextEvent(Result.Win, Finalized.Escaped),
                 3 => NextEvent(Result.Lose, Finalized.Escaped),
-                _ => throw new ArgumentOutOfRangeException($"{nameof(arg.Result)}", arg.Result.ToString())
+                _ => throw new ArgumentOutOfRangeException($"{nameof(arg.InteractionResult)}", arg.InteractionResult.ToString())
             };
             OnNextEvent?.Invoke(nextEvent);
         }

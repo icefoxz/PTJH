@@ -20,7 +20,7 @@ namespace Server.Configs.Adventures
     /// </summary>
     public interface ITerm
     {
-        ICombatStatus Status { get; }
+        IConditionValue Stamina { get; }
     }
 
     [CreateAssetMenu(fileName = "id_条件事件名", menuName = "事件/条件事件")]

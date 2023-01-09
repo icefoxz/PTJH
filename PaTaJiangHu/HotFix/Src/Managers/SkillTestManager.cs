@@ -1,5 +1,6 @@
 ﻿using System;
 using BattleM;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs;
 using Server.Controllers;
@@ -30,12 +31,12 @@ public class SkillTestManager
 
     private void InitUi()
     {
-        Game.UiBuilder.Build("view_testCombatSo",
+        Game.UiBuilder.Build("test_testCombatSo",
             v => CombatLevel = new CombatLevelWindow(v,
                 Controller.ListCombatSkills,
                 Controller.SelectCombat,
                 Controller.OnCombatLeveling, false));
-        Game.UiBuilder.Build("view_testSkillSo",
+        Game.UiBuilder.Build("test_testSkillSo",
             v => SkillLevel = new SkillLevelWindow(v,
                 OnSkillSelected,
                 OnSkillLeveling, false));

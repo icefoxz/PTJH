@@ -2,6 +2,7 @@
 using System.Collections;
 using HotFix_Project.Views.Bases;
 using _GameClient.Models;
+using HotFix_Project.Serialization;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,11 +65,11 @@ public class WinConItemSelectorManager
             ItemListView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), Scroll_items);
             Btn_x.OnClickAdd(() => { Display(false); });
             ElementMgr = new ElementManager(
-                new Element_con(v.GetObject<View>("element_food")),
-                new Element_con(v.GetObject<View>("element_state")),
-                new Element_con(v.GetObject<View>("element_silver")),
-                new Element_con(v.GetObject<View>("element_injury")),
-                new Element_con(v.GetObject<View>("element_inner"))
+                new Element_con(v.GetObject<View>("element_conFood")),
+                new Element_con(v.GetObject<View>("element_conState")),
+                new Element_con(v.GetObject<View>("element_conSilver")),
+                new Element_con(v.GetObject<View>("element_conInjury")),
+                new Element_con(v.GetObject<View>("element_conInner"))
             );
         }
 

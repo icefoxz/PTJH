@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Server.Configs.Adventures
@@ -19,7 +20,7 @@ namespace Server.Configs.Adventures
 
         public override void EventInvoke(IAdvEventArg arg)
         {
-            OnLogsTrigger?.Invoke(Story);
+            OnLogsTrigger?.Invoke(Story.Select(m => string.Format(m, arg.DiziName)).ToArray());
             OnNextEvent?.Invoke(Next);
         }
 

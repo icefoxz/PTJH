@@ -24,7 +24,7 @@ namespace Server.Configs.Adventures
         IMinMax EventRange { get; }
     }
 
-    [CreateAssetMenu(fileName = "id_地图名", menuName = "事件/上层/副本地图")]
+    [CreateAssetMenu(fileName = "id_副本地图名", menuName = "事件/上层/副本地图")]
     internal class TravelMapSo : ScriptableObject, IAdvMap
     {
         [SerializeField] private int _id;

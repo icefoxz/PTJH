@@ -1,7 +1,10 @@
 ﻿using System;
 using BattleM;
+using Server.Configs.Adventures;
 using Server.Configs.Skills;
 using Server.Controllers;
+using UnityEditor;
+using UnityEditor.VersionControl;
 using Utls;
 
 namespace _GameClient.Models
@@ -9,7 +12,7 @@ namespace _GameClient.Models
     /// <summary>
     /// 弟子模型
     /// </summary>
-    public class Dizi
+    public class Dizi : ITerm
     {
         public string Guid { get; private set; }
         public string Name { get; private set; }
@@ -24,6 +27,15 @@ namespace _GameClient.Models
         public IDodgeSkill DodgeSkill { get; set; }
         public IWeapon Weapon { get; private set; }
         public IArmor Armor { get; private set; }
+        /// <summary>
+        /// 武器战力
+        /// </summary>
+        public int WeaponPower => Weapon?.Damage ?? 0;
+        /// <summary>
+        /// 防具战力
+        /// </summary>
+        public int ArmorPower => Armor?.Def ?? 0;
+
 
         public IDiziStamina Stamina => _stamina;
         private DiziStamina _stamina;
@@ -69,6 +81,11 @@ namespace _GameClient.Models
             _energy = new ConValue(100);
             _silver = new ConValue(100);
         }
+
+        #region ITerm
+
+        IConditionValue ITerm.Stamina => Stamina.Con;
+        #endregion
 
         internal void UpdateStamina(long ticks)
         {
@@ -176,9 +193,20 @@ namespace _GameClient.Models
         internal void StartAdventure(long startTime,int returnSecs,int messageSecs)
         {
             Adventure = new AutoAdventure(startTime, returnSecs, messageSecs, this);
+            Game.MessagingManager.Send(EventString.Dizi_Adv_Start, Guid);
         }
 
-        internal void QuitAdventure(long now,int lastMile) => Adventure.Quit(now, lastMile);
+        internal void StartAdventureStory(DiziAdventureStory story)
+        {
+            if (Adventure.State == AutoAdventure.States.None)
+                throw new NotImplementedException();
+            Adventure.RegStory(story);
+        }
+        internal void QuitAdventure(long now,int lastMile)
+        {
+            Adventure.Quit(now, lastMile);
+            Game.MessagingManager.Send(EventString.Dizi_Adv_Recall, Guid);
+        }
     }
 
     /// <summary>

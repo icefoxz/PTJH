@@ -4,11 +4,11 @@ using UnityEngine.Events;
 
 namespace Systems.Coroutines
 {
-    public class CoroutineInstance : MonoBehaviour
+    internal class CoroutineInstance : MonoBehaviour
     {
         public Coroutine Coroutine { get; set; }
 
-        public void StartCo(IEnumerator enumerator,UnityAction callBackAction)
+        public void StartCo(IEnumerator enumerator, UnityAction callBackAction)
         {
             Coroutine = StartCoroutine(CoroutineMethod(enumerator, callBackAction));
         }

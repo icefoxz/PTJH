@@ -8,9 +8,16 @@ using Utls;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "历练/地图")]
+    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "事件/上层/历练地图")]
     internal class AdventureMapSo : AutoDashNamingObject
     {
+        private bool GetItem()
+        {
+            if (So == null) So = this;
+            return true;
+        }
+        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdventureMapSo So;
+
         [SerializeField] private MajorPlaceConfig 固定里数触发配置;
         //[SerializeField] private MinorPlaceConfig 随机触发配置;
         [SerializeField] private int 回程秒数 = 10;
@@ -22,7 +29,7 @@ namespace Server.Configs.Adventures
         //public int MinorMile => MinorPlace.Mile;
         public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => MajorPlace.GetRandomPlace(fromMiles, toMiles);
         //public IAdvPlace PickMinorPlace() => MinorPlace.GetWeightedPlace();
-
+        public int[] ListMajorMiles() => MajorPlace.GetAllTriggerMiles();
         [Serializable]
         private class MajorPlaceConfig
         {
@@ -31,13 +38,14 @@ namespace Server.Configs.Adventures
 
             public IAdvPlace[] GetRandomPlace(int fromMile, int toMiles)
             {
-                return MilePlaces.Where(p => p.Mile >= fromMile && p.Mile < toMiles)
+                return MilePlaces.Where(p => fromMile < p.Mile && p.Mile <= toMiles)
                     .GroupBy(p => p.Mile)
-                    .OrderByDescending(p => p.Key)
+                    .OrderBy(p => p.Key)
                     .Select(places => (IAdvPlace)places.RandomPick().PlaceSos.RandomPick())
                     .ToArray();
             }
 
+            public int[] GetAllTriggerMiles() => MilePlaces.Select(o => o.Mile).ToArray();
 
             [Serializable]
             private class MilePlace
@@ -45,8 +53,17 @@ namespace Server.Configs.Adventures
                 [SerializeField] private int 里;
                 [SerializeField] private AdvPlaceSo[] 地点;
                 public int Mile => 里;
-                public AdvPlaceSo[] PlaceSos => 地点;
+                public AdvPlaceSo[] PlaceSos
+                {
+                    get
+                    {
+                        if (地点.Any(p => p == null))
+                            throw new NotImplementedException($"{nameof(AdventureMapSo)}.地点=null!");
+                        return 地点;
+                    }
+                }
             }
+
         }
 
         //[Serializable] private class MinorPlaceConfig

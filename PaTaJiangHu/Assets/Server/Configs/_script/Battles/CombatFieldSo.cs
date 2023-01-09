@@ -52,8 +52,8 @@ namespace Server.Configs.Battles
 
         private int MaxLevel()
         {
-            var comMax = Combats.Max(c => c.UnlockLevel);
-            var exMax = Exerts.Max(e => e.UnlockLevel);
+            var comMax = Combats.Any() ? Combats.Max(c => c.UnlockLevel) : 1;
+            var exMax = Exerts.Any() ? Exerts.Max(e => e.UnlockLevel) : 1;
             return Math.Max(comMax, exMax);
         }
 

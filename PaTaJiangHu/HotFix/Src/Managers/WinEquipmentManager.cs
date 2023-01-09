@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using BattleM;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;

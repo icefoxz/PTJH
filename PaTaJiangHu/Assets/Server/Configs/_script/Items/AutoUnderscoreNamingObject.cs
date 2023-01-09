@@ -46,4 +46,23 @@ namespace Server.Configs.Items
         public virtual int Id => id;
         public virtual string Name => _name;
     }
+    public class AutoBacktickNamingObject : ScriptableObject, IDataElement
+    {
+        private const char Backtick = '`';
+        [SerializeField] protected string _name;
+        [ConditionalField(true,nameof(ChangeName))][SerializeField] protected int id;
+
+        protected bool ChangeName()
+        {
+            var path = AssetDatabase.GetAssetPath(this);
+            var newName = string.Join(Backtick, id, _name);
+            var err = AssetDatabase.RenameAsset(path, newName);
+
+            if (!string.IsNullOrWhiteSpace(err)) Debug.LogError(err);
+            return true;
+        }
+
+        public virtual int Id => id;
+        public virtual string Name => _name;
+    }
 }

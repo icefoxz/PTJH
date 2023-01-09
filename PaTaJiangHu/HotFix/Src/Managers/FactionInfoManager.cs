@@ -1,5 +1,6 @@
 ﻿using HotFix_Project.Views.Bases;
 using _GameClient.Models;
+using HotFix_Project.Serialization;
 using UnityEngine.UI;
 using Views;
 

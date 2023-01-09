@@ -16,7 +16,7 @@ namespace Server.Configs.Adventures
 
         public override void EventInvoke(IAdvEventArg arg)
         {
-            var nexEvent = _options[arg.Result].Event;
+            var nexEvent = _options[arg.InteractionResult].Event;
             OnNextEvent?.Invoke(nexEvent);
         }
 

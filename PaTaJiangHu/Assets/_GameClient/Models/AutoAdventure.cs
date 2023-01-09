@@ -15,37 +15,45 @@ namespace _GameClient.Models
         public enum States
         {
             None,
-            Process,
-            Return,
+            Progress,
+            Recall,
         }
-        private List<string> _messageLog = new List<string>();
-        private Queue<string> _printQueue;
-
+        private enum Modes
+        {
+            Polling,
+            Story
+        }
         /// <summary>
         /// 回程秒数
         /// </summary>
         public int JourneyReturnSec { get; }
+        /// <summary>
+        /// 当前状态
+        /// </summary>
         public States State { get; private set; }
-        //public TimeSpan TotalTimeSpan => Recorder.TotalTimeSpan();
-        //public float[] MileMap => Recorder.MileMap.ToArray();
-        //开始时间
+        private Modes Mode { get; set; }//内部使用的状态模式
+        /// <summary>
+        /// 开始时间
+        /// </summary>
         public long StartTime { get; }
-
-        //上次更新时间
+        /// <summary>
+        /// 上次更新时间
+        /// </summary>
         public long LastUpdate { get; private set; }
-
-        //当前里数
+        /// <summary>
+        /// 当前里数
+        /// </summary>
         public int LastMile { get; private set; }
 
-        private IReadOnlyList<string> MessageLog => _messageLog;
-        private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
+        private int MessageSecs { get; } //文本展示间隔(秒)
+        //private int AdventureCoId { get; set; } //历练CoroutineId
+        //private int MessageCoId { get; set; } //信息CoroutineId
+        private int ServiceCoId { get; set; }
         private Dizi Dizi { get; }
         private DiziBag Bag { get; }
-        private int MessageSecs { get; } //文本展示间隔(秒)
-        private int AdventureCoId { get; set; } = -1; //历练CoroutineId
-        private int MessageCoId { get; set; } = -1;//信息CoroutineId
-        private int ReturnCoId { get; set; } = -1;//回归CoroutineId
         public Equipment Equipment { get; }
+        private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
+        private Queue<DiziAdventureStory> Stories { get; set; } = new Queue<DiziAdventureStory>();
 
         public AutoAdventure(long startTime, int journeyReturnSec, int messageSecs, Dizi dizi)
         {
@@ -54,83 +62,86 @@ namespace _GameClient.Models
             StartTime = startTime;
             LastUpdate = startTime;
             Dizi = dizi;
-            State = States.Process;
-            PollingStoryPerSec();
+            State = States.Progress;
+            StartService();
         }
 
-        //轮询控制器是否有故事发生
-        private void PollingStoryPerSec()
+        private void StartService()
         {
-            AdventureCoId = Game.CoService.RunCo(RequestEverySec());
-
-            IEnumerator RequestEverySec()
+            ServiceCoId = Game.CoService.RunCo(UpdateEverySecond(), () => ServiceCoId = 0);
+            IEnumerator UpdateEverySecond()
             {
-                yield return new WaitForSeconds(1);
-                AdvController.CheckMile(Dizi.Guid);
-            }
-        }
-
-        //停止轮询
-        private void StopPollingStory()
-        {
-            Game.CoService.StopCo(AdventureCoId);
-            AdventureCoId = -1;
-        }
-
-        internal void StartStory(long now, int lasMile)
-        {
-            if (AdventureCoId < 0)
-                throw new NotImplementedException($"AdvCoId = {AdventureCoId}");
-            StopPollingStory();
-            UpdateTime(now, lasMile);
-        }
-
-        private void UpdateTime(long now, int lasMile)
-        {
-            LastUpdate = now;
-            LastMile = lasMile;
-        }
-
-        internal void OnMessageLog(long lasTick, int totalMiles, IReadOnlyList<string> messages)
-        {
-            UpdateTime(lasTick, totalMiles);
-            if (MessageCoId > 0)//如果新故事进来,但旧故事未完成播放
-            {
-                _messageLog.AddRange(_printQueue);//直接加入信息列
-                _printQueue = new Queue<string>(messages);//播放信息队列放入新故事
-                Game.MessagingManager.SendParams(EventString.Dizi_Adv_MessagesUpdate, Dizi.Guid);
-                return;
-            }
-
-            //如果播放队列已经空了
-            _printQueue = new Queue<string>(messages);//播放信息队列放入新故事
-            MessageCoId = Game.CoService.RunCo(PrintAdvLogMessage());
-
-            IEnumerator PrintAdvLogMessage()
-            {
-                //循环播放直到播放队列空
-                while (_printQueue.Count > 0)
+                yield return new WaitForEndOfFrame();
+                while (State == States.Progress)
                 {
-                    var message = _printQueue.Dequeue();
-                    Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, message);
-                    yield return new WaitForSeconds(MessageSecs);
+                    switch (Mode)
+                    {
+                        case Modes.Polling:
+                        {
+                            //每秒轮询是否触发故事
+                            AdvController.CheckMile(Dizi.Guid);
+                            yield return new WaitForSeconds(1);
+                            break;
+                        }
+                        case Modes.Story:
+                        {
+                            //当进入故事模式
+                            //循环播放直到播放队列空
+                            while (Stories.Count > 0)
+                            {
+                                var st = Stories.Dequeue();
+                                var messages = new Queue<string>(st.Messages);
+                                while (messages.Count > 0)
+                                {
+                                    var message = messages.Dequeue();
+                                    var isStoryEnd = messages.Count == 0;
+                                    Game.MessagingManager.SendParams(
+                                        EventString.Dizi_Adv_EventMessage, Dizi.Guid,
+                                        message, isStoryEnd);
+                                    yield return new WaitForSeconds(MessageSecs);
+                                }
+                            }
+                            Mode = Modes.Polling;//循环结束自动回到轮询故事
+                            break;
+                        }
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
-                Game.CoService.StopCo(MessageCoId);
-                MessageCoId = -1;
             }
+        }
+
+        //更新冒险位置
+        private void UpdateTime(long updatedTicks, int updatedMiles)
+        {
+            LastUpdate = updatedTicks;
+            LastMile = updatedMiles;
+        }
+
+        internal void RegStory(DiziAdventureStory story)
+        {
+            Mode = Modes.Story;
+            UpdateTime(story.NowTicks, story.LastMiles);//更新发生地点 & 最新里数
+            Stories.Enqueue(story);
         }
 
         internal void Quit(long now,int lastMile)
         {
             UpdateTime(now,lastMile);
-            State = States.Return;
-            ReturnCoId = Game.CoService.RunCo(ReturnFromAdventure());
+            State = States.Recall;
+            Game.CoService.RunCo(ReturnFromAdventure());
 
             IEnumerator ReturnFromAdventure()
             {
+                yield return new WaitUntil(() => Mode == Modes.Polling);
+                if (ServiceCoId != 0) Game.CoService.StopCo(ServiceCoId);
+                Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, $"{Dizi.Name}回程中...",
+                    false);
                 yield return new WaitForSeconds(JourneyReturnSec);
                 State = States.None;
-                Game.CoService.StopCo(ReturnCoId);
+                Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, $"{Dizi.Name}已回到山门!",
+                    true);
+                Game.MessagingManager.Send(EventString.Dizi_Adv_End, Dizi.Guid);
             }
         }
     }

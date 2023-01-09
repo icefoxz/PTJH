@@ -1,4 +1,5 @@
 ﻿using System;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs;
 using Server.Controllers;
@@ -21,7 +22,7 @@ internal class SimulationTestManager
 
     private void InitUi()
     {
-        Game.UiBuilder.Build("view_testSimulation",
+        Game.UiBuilder.Build("test_testSimulation",
             v => BattleSimView = new BattleSimulationView(v, Controller));
         Game.MessagingManager.RegEvent(EventString.Test_SimulationUpdateModel,
             bag => BattleSimView.UpdateModel(bag.Get<BattleSimController.TestModel>(0)));

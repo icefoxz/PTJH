@@ -50,9 +50,9 @@ namespace Server.Controllers
             Game.MessagingManager.Send(EventString.Test_SimulationUpdateModel, Model);
         }
 
-        private ISimulation GetSimulation(PropCon m)
+        private ISimCombat GetSimulation(PropCon m)
         {
-            return Cfg.ConditionPropCfg.GetSimulation(m.Strength, m.Agility, m.Weapon, m.Armor, m.Combat.GetGrade(),
+            return Cfg.ConditionPropCfg.GetSimulation(m.Name,m.Strength, m.Agility, m.Weapon, m.Armor, m.Combat.GetGrade(),
                 m.Combat.Level, m.Force.GetGrade(), m.Force.Level, m.Dodge.GetGrade(), m.Dodge.Level);
         }
 
@@ -138,10 +138,10 @@ namespace Server.Controllers
         [Serializable] internal class Configure
         {
             [SerializeField] private ConditionPropertySo 状态属性配置;
-            [SerializeField] private BattleSimulatorConfig 体力扣除配置;
+            [SerializeField] private BattleSimulatorConfigSo 体力扣除配置;
 
             internal ConditionPropertySo ConditionPropCfg => 状态属性配置;
-            internal BattleSimulatorConfig BattleSimulatorCfg => 体力扣除配置;
+            internal BattleSimulatorConfigSo BattleSimulatorCfg => 体力扣除配置;
         }
 
         public class TestModel 
@@ -163,13 +163,15 @@ namespace Server.Controllers
             }
 
             internal ISimulationOutcome SimulateOutcome(ConditionPropertySo conditionCfg,
-                BattleSimulatorConfig simCfg)
+                BattleSimulatorConfigSo simCfg)
             {
                 var p = Player;
                 var e = Enemy;
-                var player = conditionCfg.GetSimulation(p.Strength, p.Agility, p.Weapon, p.Armor, p.Combat.GetGrade(),
+                var player = conditionCfg.GetSimulation(p.Name, p.Strength, p.Agility, p.Weapon, p.Armor,
+                    p.Combat.GetGrade(),
                     p.Combat.Level, p.Force.GetGrade(), p.Force.Level, p.Dodge.GetGrade(), p.Dodge.Level);
-                var enemy = conditionCfg.GetSimulation(e.Strength, e.Agility, e.Weapon, e.Armor, e.Combat.GetGrade(),
+                var enemy = conditionCfg.GetSimulation(e.Name, e.Strength, e.Agility, e.Weapon, e.Armor,
+                    e.Combat.GetGrade(),
                     e.Combat.Level, e.Force.GetGrade(), e.Force.Level, e.Dodge.GetGrade(), e.Dodge.Level);
                 var outCome = simCfg.CountSimulationOutcome(player, enemy);
                 return outCome;
@@ -188,6 +190,7 @@ namespace Server.Controllers
                 Dodge
             }
 
+            public string Name { get; set; }
             public int Strength { get; set; }
             public int Agility { get; set; }
             public int Weapon { get; set; }
@@ -318,7 +321,7 @@ namespace Server.Controllers
                 }
             }
 
-            internal void SetPower(ISimulation s)
+            internal void SetPower(ISimCombat s)
             {
                 StrengthPower = s.Strength;
                 AgilityPower = s.Agility;
@@ -347,7 +350,7 @@ namespace Server.Controllers
             {
                 
             }
-            internal Outcome(ISimulationOutcome o, BattleSimulatorConfig simCfg)
+            internal Outcome(ISimulationOutcome o, BattleSimulatorConfigSo simCfg)
             {
                 Rounds = o.Rounds.Select(r => new Round(r)).ToArray();
                 IsPlayerWin = o.IsPlayerWin;
@@ -356,7 +359,7 @@ namespace Server.Controllers
                 EnemyOffend = o.EnemyOffend;
                 PlayerDefend = o.PlayerDefend;
                 EnemyDefend = o.EnemyDefend;
-                Result = simCfg.GetValue(RemainingHp);
+                Result = o.Result;
             }
 
             public class Round : ISimulationRound
@@ -366,7 +369,6 @@ namespace Server.Controllers
 
                 public Round()
                 {
-                    
                 }
 
                 public Round(ISimulationRound r)

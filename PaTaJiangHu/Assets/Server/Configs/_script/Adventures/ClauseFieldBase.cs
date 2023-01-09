@@ -3,6 +3,7 @@ using BattleM;
 using MyBox;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utls;
 
 namespace Server.Configs.Adventures
@@ -62,26 +63,19 @@ namespace Server.Configs.Adventures
     [Serializable]
     internal class StatusClauseField : ClauseFieldBase<ICombatStatus>
     {
-        [SerializeField] private ConValueSettingField _hp;
-        [SerializeField] private ConValueSettingField _mp;
+        [FormerlySerializedAs("_hp")][SerializeField] private ConValueSettingField Stamina;
 
-        private ConValueSettingField HpClause => _hp;
-        private ConValueSettingField MpClause => _mp;
+        private ConValueSettingField StaminaClause => Stamina;
+
 
         public override bool IsInTerm(ITerm term)
         {
-            var hp = term.Status.Hp;
-            var mp = term.Status.Mp;
-            var isHpInTerm = HpClause.InTerm(hp.Value, hp.Max);
-            var isMpInTerm = MpClause.InTerm(mp.Value, mp.Max);
-            return isHpInTerm && isMpInTerm;
+            var sta = term.Stamina;
+            var isHpInTerm = StaminaClause.InTerm(sta.Value, sta.Max);
+            return isHpInTerm;
         }
 
-        public void ResetDefault()
-        {
-            _hp.ResetDefault();
-            _mp.ResetDefault();
-        }
+        public void ResetDefault() => Stamina.ResetDefault();
 
         [Serializable]
         private class ConValueSettingField

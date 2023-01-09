@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs;
 using Systems.Messaging;
@@ -15,8 +16,14 @@ public class AdvMapTestManager
     public void Init()
     {
         var controller = TestCaller.Instance.InstanceAdvMapController();
-        Game.UiBuilder.Build("view_testMap", v => TestMap = new TestMapWindow(v, controller.LoadMap));
-        Game.MessagingManager.RegEvent(EventString.Test_AdvMapLoad, bag=>TestMap.SetMap(bag.Get<Map>(0)));
+        Game.UiBuilder.Build("test_testMap", v =>
+        {
+            TestMap = new TestMapWindow(v, controller.LoadMap);
+        });
+        Game.MessagingManager.RegEvent(EventString.Test_AdvMapLoad, bag =>
+        {
+            TestMap.SetBag(bag.Get<string>(0));
+        });
     }
     private class TestMapWindow : UiBase
     {
@@ -35,16 +42,17 @@ public class AdvMapTestManager
             Text_title = v.GetObject<Text>("text_title");
             Scroll_path = v.GetObject<ScrollRect>("scroll_path");
             Scroll_place = v.GetObject<ScrollRect>("scroll_place");
-            PathView = new ListViewUi<PathUi>(v.GetObject<View>("prefab_path"), Scroll_path.content.gameObject);
-            PlaceView = new ListViewUi<PlaceUi>(v.GetObject<View>("prefab_place"), Scroll_place.content.gameObject);
+            PathView = new ListViewUi<PathUi>(v.GetObject<View>("prefab_path"), Scroll_path);
+            PlaceView = new ListViewUi<PlaceUi>(v.GetObject<View>("prefab_place"), Scroll_place);
             PropView = new ListViewUi<PropUi>(v.GetObject<View>("prefab_prop"), v.GetObject("trans_prop"));
         }
         private Dictionary<int, Path[]> PlacePathMap { get; set; }
         private Map Map { get; set; }
         private Dictionary<int, PlaceUi> PlaceMap { get; } = new Dictionary<int, PlaceUi>();
 
-        public void SetMap(Map map)
+        public void SetBag(string arg)
         {
+            var map = LJson.ToObject<Map>(arg);
             PropView.ClearList(p=>p.Destroy());
             PathView.ClearList(p=>p.Destroy());
             PlaceView.ClearList(p=>p.Destroy());

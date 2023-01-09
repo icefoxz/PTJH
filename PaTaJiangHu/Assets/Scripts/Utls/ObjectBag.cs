@@ -74,21 +74,23 @@ namespace Utls
         public long GetLong(int index) => long.Parse(GetValue(index));
         public bool GetBool(int index) => GetInt(index) == 1;
 
-        public T Get<T>(int index) where T : class
+        public string GetString(int index)
         {
-            var value = GetValue(index);
-            var type = typeof(T);
-            if (type == StringType) return value as T;
-            if (type == IntType) return GetInt(index) as T;
-            if (type == FloatType) return GetFloat(index) as T;
-            if (type == DoubleType) return GetDouble(index) as T;
-            if (type == CharType) return GetChar(index) as T;
-            if (type == LongType) return GetLong(index) as T;
-            if (type == BoolType) return GetBool(index) as T;
-            var result = Json.Deserialize<T>(value);
-            if (result == null) XDebug.LogWarning($"ObjectBag.Get: {value}\n Convert is null!");
-            return result;
+            //var value = GetValue(index);
+            //var type = typeof(T);
+            //if (type == StringType) return value as T;
+            //if (type == IntType) return GetInt(index) as T;
+            //if (type == FloatType) return GetFloat(index) as T;
+            //if (type == DoubleType) return GetDouble(index) as T;
+            //if (type == CharType) return GetChar(index) as T;
+            //if (type == LongType) return GetLong(index) as T;
+            //if (type == BoolType) return GetBool(index) as T;
+            //var result = Json.Deserialize<T>(value);
+            //if (result == null) XDebug.LogWarning($"ObjectBag.Get: {value}\n Convert is null!");
+            //return result;
+            return GetValue(index);
         }
+
 
         private string GetValue(int index) => Bag[index];
     }

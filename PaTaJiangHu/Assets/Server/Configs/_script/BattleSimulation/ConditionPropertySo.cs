@@ -75,7 +75,7 @@ namespace Server.Configs.BattleSimulation
         private float CombatRatio => 武功占比;
         private float DodgeRatio => 轻功占比;
 
-        public ISimulation GetSimulation(int strength, int agility,
+        public ISimCombat GetSimulation(string charName,int strength, int agility,
             int weapon, int armor,
             SkillGrades combatGrade, int combatLevel,
             SkillGrades forceGrade, int forceLevel,
@@ -91,7 +91,7 @@ namespace Server.Configs.BattleSimulation
             var dod = GetCoefficient(Skills.Dodge, dodgeLevel, dodgeGrade);
             var off = (str * 0.5f) + wea + comOff;
             var def = (str * 0.5f) + arm + agi + foc + dod + comDef;
-            return new Simulation((int)Math.Round(off), (int)Math.Round(def),
+            return new SimCombat(charName, (int)Math.Round(off), (int)Math.Round(def),
                 str, agi, wea, arm, comOff + comDef, foc, dod);
         }
 
@@ -145,8 +145,9 @@ namespace Server.Configs.BattleSimulation
             };
         }
 
-        private record Simulation : ISimulation
+        private record SimCombat : ISimCombat
         {
+            public string Name { get; }
             public float Offend { get; }
             public float Defend { get; }
             public float Strength { get; }
@@ -157,8 +158,9 @@ namespace Server.Configs.BattleSimulation
             public float Force { get; }
             public float Dodge { get; }
 
-            public Simulation(float offend, float defend, float strength, float agility, float weapon, float armor, float combat, float force, float dodge)
+            public SimCombat(string name, float offend, float defend, float strength, float agility, float weapon, float armor, float combat, float force, float dodge)
             {
+                Name = name;
                 Offend = offend;
                 Defend = defend;
                 Strength = strength;
@@ -170,5 +172,7 @@ namespace Server.Configs.BattleSimulation
                 Dodge = dodge;
             }
         }
+
     }
+
 }
