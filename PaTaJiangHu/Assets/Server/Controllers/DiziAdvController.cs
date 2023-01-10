@@ -54,6 +54,8 @@ namespace Server.Controllers
             var lastUpdate = dizi.Adventure.LastUpdate;
             var now = SysTime.UnixNow;
             var miles = GetMiles(now, lastUpdate);
+            //如果里数=0表示未去到任何地方,直接放回上个里数
+            if (miles == 0) return lastMile;
             var totalMiles = lastMile + miles;
             OnMileTrigger(now, lastMile, totalMiles, diziGuid);
             return totalMiles;
@@ -70,7 +72,7 @@ namespace Server.Controllers
         {
             var dizi = Faction.DiziMap[diziGuid];
             if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return;
-            var places = AdventureCfg.AdvMap.PickMajorPlace(fromMiles, toMiles);//根据当前路段找出故事地点
+            var places = AdventureCfg.AdvMap.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
             if (places.Length > 0)
             {
                 //当获取到地点, 执行故事
@@ -80,10 +82,21 @@ namespace Server.Controllers
             }
         }
         /// <summary>
-        /// 获取所有的触发故事点的里数
+        /// 获取所有的触发主要故事点的里数
         /// </summary>
         /// <returns></returns>
         public int[] GetMajorMiles() => AdventureCfg.AdvMap.ListMajorMiles();
+
+        /// <summary>
+        /// 获取所有触发小故事的里数
+        /// </summary>
+        /// <returns></returns>
+        public int[] GetMinorMiles(string diziGuid)
+        {
+            var dizi = Faction.DiziMap[diziGuid];
+            var miles = AdventureCfg.AdvMap.ListMinorMiles();
+            return miles;
+        }
 
         //获取故事信息
         private async Task<DiziAdventureStory[]> ProcessStory(IAdvPlace[] places, long nowTicks, int updatedMiles, Dizi dizi)

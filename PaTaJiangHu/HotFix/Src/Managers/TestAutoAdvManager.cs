@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
@@ -45,8 +46,9 @@ internal class TestAutoAdvManager
         {
             AutoAdv.Display(true);
             AutoAdv.ClearMessages();
-            var miles = AdvController.GetMajorMiles();
-            AutoAdv.UpdateMiles(miles);
+            var major = AdvController.GetMajorMiles();
+            var minor = AdvController.GetMinorMiles(DiziGuid);
+            AutoAdv.UpdateMiles(major.Concat(minor).Distinct().ToArray());
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_EventMessage, bag =>
         {

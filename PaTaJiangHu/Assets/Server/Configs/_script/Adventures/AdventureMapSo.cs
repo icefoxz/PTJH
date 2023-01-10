@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MyBox;
 using Server.Configs.Items;
@@ -29,21 +30,52 @@ namespace Server.Configs.Adventures
         private MinorPlaceConfig MinorPlace => 小故事;
 
         //public int MinorMile => MinorPlace.Mile;
-        public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => MajorPlace.GetRandomPlace(fromMiles, toMiles);
-        //public IAdvPlace PickMinorPlace() => MinorPlace.GetWeightedPlace();
+        public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => fromMiles != toMiles
+            ? MajorPlace.GetRandomPlace(fromMiles, toMiles).Select(m => m.place).ToArray()
+            : Array.Empty<IAdvPlace>();
+
+        public IAdvPlace[] PickAllTriggerPlaces(int fromMiles, int toMiles)
+        {
+            var majorMap = MajorPlace.GetRandomPlace(fromMiles, toMiles);
+            //如果from == to表示完全没走过,所以产出地方(还在原地)
+            if (fromMiles != toMiles)
+            {
+                var minorList = MinorPlace.GetAllTriggerMiles(fromMiles, toMiles)
+                    .Except(majorMap.Select(m => m.mile))
+                    .ToArray();
+                var minorMap = MinorPlace.GetRandomPlace(minorList);
+                return majorMap.Concat(minorMap).OrderBy(m => m.mile).Select(m => m.place).ToArray();
+            }
+            return Array.Empty<IAdvPlace>();
+        }
+        /// <summary>
+        /// 列出所有大故事的里数
+        /// </summary>
+        /// <returns></returns>
         public int[] ListMajorMiles() => MajorPlace.GetAllTriggerMiles();
-        [Serializable]
-        private class MajorPlaceConfig
+        /// <summary>
+        /// 列出所有小故事的里数
+        /// </summary>
+        /// <param name="fromMiles"></param>
+        /// <param name="toMiles"></param>
+        /// <returns></returns>
+        public int[] ListMinorMiles(int fromMiles, int toMiles) => MinorPlace.GetAllTriggerMiles(fromMiles, toMiles);
+        /// <summary>
+        /// 列出所有小故事的里数
+        /// </summary>
+        /// <returns></returns>
+        public int[] ListMinorMiles() => MinorPlace.GetAllTriggerMiles();
+        [Serializable] private class MajorPlaceConfig
         {
             [SerializeField] private MilePlace[] 地点配置;
             private MilePlace[] MilePlaces => 地点配置;
 
-            public IAdvPlace[] GetRandomPlace(int fromMile, int toMiles)
+            public (int mile, IAdvPlace place)[] GetRandomPlace(int fromMile, int toMiles)
             {
                 return MilePlaces.Where(p => fromMile < p.Mile && p.Mile <= toMiles)
                     .GroupBy(p => p.Mile)
                     .OrderBy(p => p.Key)
-                    .Select(places => (IAdvPlace)places.RandomPick().PlaceSos.RandomPick())
+                    .Select(places => (places.Key, (IAdvPlace)places.RandomPick().PlaceSos.RandomPick()))
                     .ToArray();
             }
 
@@ -67,22 +99,21 @@ namespace Server.Configs.Adventures
             }
 
         }
-        [Serializable]
-        private class MinorPlaceConfig
+        [Serializable] private class MinorPlaceConfig
         {
             [SerializeField] private MilePlace[] 地点配置;
             private MilePlace[] MilePlaces => 地点配置;
 
-            //public IAdvPlace[] GetRandomPlace(int fromMile, int toMiles)
-            //{
-            //    return MilePlaces.Where(p => fromMile < p.Mile && p.Mile <= toMiles)
-            //        .GroupBy(p => p.Mile)
-            //        .OrderBy(p => p.Key)
-            //        .Select(places => (IAdvPlace)places.RandomPick().PlaceSos.RandomPick())
-            //        .ToArray();
-            //}
+            public (int mile, IAdvPlace place)[] GetRandomPlace(int[] mileList) =>
+                mileList.Select(m => (m, (IAdvPlace)MilePlaces
+                        .Where(p => p.IsInRange(m))
+                        .RandomPick().PlaceSo))
+                    .ToArray();
 
-            //public int[] GetAllTriggerMiles() => MilePlaces.Select(o => o.Mile).ToArray();
+            public int[] GetAllTriggerMiles(int fromMiles, int toMiles) =>
+                MilePlaces.SelectMany(m => m.GetAllTriggerMiles(fromMiles, toMiles)).Distinct().ToArray();
+            public int[] GetAllTriggerMiles() =>
+                MilePlaces.SelectMany(m => m.GetAllTriggerMiles()).Distinct().ToArray();
 
             [Serializable]
             private class MilePlace
@@ -90,11 +121,42 @@ namespace Server.Configs.Adventures
                 [SerializeField] private Vector2Int 里;
                 [SerializeField] private AdvPlaceSo 地点;
                 [SerializeField] private int 里数间隔;
-                public Vector2Int Mile => 里;
-                public int MileInterval => 里数间隔;
-                public AdvPlaceSo PlaceSos => 地点;
-            }
+                public Vector2Int Mile
+                {
+                    get
+                    {
+                        if (里.y < 里.x)
+                            throw new NotImplementedException("注意,当前里x数大于y!");
+                        return 里;
+                    }
+                }
 
+                public int MileInterval => 里数间隔;
+                public AdvPlaceSo PlaceSo => 地点;
+                
+                // 是否在触发范围内
+                public bool IsInRange(int miles)=> miles >= Mile.x && miles <= Mile.y;
+                
+                // 算出所有触发里数
+                public int[] GetAllTriggerMiles(int fromMiles = 0, int toMiles = -1)
+                {
+                    var x = Mile.x;
+                    var y = Mile.y;
+                    var interval = MileInterval;
+                    var miles = new List<int>();
+                    var current = x;
+                    while (current < y)
+                    {
+                        if (current > fromMiles)
+                            if (toMiles == -1 || current <= toMiles)
+                                miles.Add(current);
+
+                        current += interval;
+                    }
+
+                    return miles.ToArray();
+                }
+            }
         }
 
         //[Serializable] private class MinorPlaceConfig

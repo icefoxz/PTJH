@@ -22,7 +22,7 @@ namespace Server.Configs.Adventures
 
         public override void EventInvoke(IAdvEventArg arg)
         {
-            OnLogsTrigger?.Invoke(new[] { Text });
+            OnLogsTrigger?.Invoke(new[] { string.Format(Text, arg.DiziName) });
             OnNextEvent?.Invoke(Next);
         }
 
