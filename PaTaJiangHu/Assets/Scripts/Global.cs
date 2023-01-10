@@ -29,7 +29,6 @@ public class EventString
     public const string Test_SimulationUpdateModel = "Test_SimulationUpdateModel";
     public const string Test_SimulationStart = "Test_SimulationStart";
 
-    public const string Test_AutoAdv_ListMajorMiles = "Test_AutoAdv_ListMajorMiles";
     public const string Test_AutoAdvDiziInit = "Test_AutoAdvDiziInit";
 
     //弟子dizi
