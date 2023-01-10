@@ -30,7 +30,6 @@ namespace Server.Configs.Adventures
         private RewardField GameReward => 奖励;
 
         private int Exp => 弟子经验;
-
         //[SerializeField] private int _id;
         public override string Name => 事件名;
         //public override int Id => _id;
