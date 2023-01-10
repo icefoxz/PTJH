@@ -38,6 +38,7 @@ public class EventString
     public const string Dizi_AdvManagement = "Dizi_AdvManagement";//历练管理项
     public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";
     public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";
+    public const string Dizi_ConditionUpdate = "Dizi_ConditionUpdate";//弟子状态更新
     public const string Dizi_EquipmentManagement = "Dizi_EquipmentManagement";//装备管理
     public const string Dizi_ItemEquipped = "Dizi_ItemEquipped";//装备物品
     public const string Dizi_ItemUnEquipped = "Dizi_ItemUnEquipped";//卸下物品

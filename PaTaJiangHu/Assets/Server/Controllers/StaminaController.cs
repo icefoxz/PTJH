@@ -7,6 +7,7 @@ namespace Server.Controllers
 {
     public class StaminaController : IGameController
     {
+        private Faction Faction => Game.World.Faction;
         private Stamina StaminaGenerator { get; }
         public int MaxStamina = 100;
 
@@ -15,9 +16,11 @@ namespace Server.Controllers
             StaminaGenerator = diziCfg.StaminaCfg;
         }
 
-        public void ConsumeStamina(Dizi dizi,int stamina)
+        public void ConsumeStamina(string diziGuid,int stamina,bool autoAlign = false)
         {
+            var dizi = Faction.DiziMap[diziGuid];
             var con = dizi.Stamina.Con;
+            if (autoAlign) stamina = Math.Min(con.Value, stamina);//大于原有体力, 体力归零
             if (con.Value < stamina)
                 XDebug.LogWarning($"体力 = {con} 不够消费 {stamina}!");
             var newStamina = con.Value - stamina;

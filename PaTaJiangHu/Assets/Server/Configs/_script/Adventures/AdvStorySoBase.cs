@@ -4,6 +4,7 @@ using System.Linq;
 using MyBox;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Items;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -36,7 +37,17 @@ namespace Server.Configs.Adventures
 
     public interface IAdjustment
     {
+        public enum Types
+        {
+            Stamina = 0,
+            Silver = 1,
+            Food = 2,
+            Condition = 3,
+            Injury = 4,
+            Inner = 5,
+        }
 
+        void Set(Types type, int value, bool percentage);
     }
 
     public interface IAdvEvent

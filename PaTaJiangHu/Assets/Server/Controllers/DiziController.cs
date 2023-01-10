@@ -1,5 +1,6 @@
 ﻿using System;
 using _GameClient.Models;
+using Server.Configs.Adventures;
 
 namespace Server.Controllers
 {
@@ -85,6 +86,20 @@ namespace Server.Controllers
             }
 
             Game.MessagingManager.Send(EventString.Dizi_ItemUnEquipped, string.Empty);
+        }
+
+        public void AddDiziCon(string guid, IAdjustment.Types type, int adjValue)
+        {
+            var dizi = Faction.DiziMap[guid];
+            if (type == IAdjustment.Types.Stamina)
+            {
+                var staminaController = Game.Controllers.Get<StaminaController>();
+                staminaController.ConsumeStamina(guid, adjValue, true);
+            }
+            else
+            {
+                dizi.SetCon(type, adjValue);
+            }
         }
     }
 }

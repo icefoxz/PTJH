@@ -40,19 +40,28 @@ namespace _GameClient.Models
         public IDiziStamina Stamina => _stamina;
         private DiziStamina _stamina;
         private ConValue _food;
-        private ConValue _energy;
+        private ConValue _emotion;
         private ConValue _silver;
+        private ConValue _injury;
+        private ConValue _inner;
 
         public Skills Skill { get; set; }
         public Capable Capable { get; private set; }
 
         public IConditionValue Food => _food;
-        public IConditionValue Energy => _energy;
+        public IConditionValue Emotion => _emotion;
         public IConditionValue Silver => _silver;
+        public IConditionValue Injury => _injury;
+        public IConditionValue Inner => _inner;
+
         public AutoAdventure Adventure { get; set; }
 
-        internal Dizi(string guid,string name, GradeValue<int> strength, GradeValue<int> agility,
-            GradeValue<int> hp, GradeValue<int> mp, int level, int grade,
+        internal Dizi(string guid, string name, 
+            GradeValue<int> strength, 
+            GradeValue<int> agility,
+            GradeValue<int> hp, 
+            GradeValue<int> mp, 
+            int level, int grade,
             int stamina, int bag,
             int combatSlot, int forceSlot, int dodgeSlot,
             ICombatSkill combatSkill, IForceSkill forceSkill, IDodgeSkill dodgeSkill)
@@ -78,8 +87,10 @@ namespace _GameClient.Models
             dSlot[0] = dodgeSkill;
             Skill = new Skills(cSlot, fSlot, dSlot);
             _food = new ConValue(100);
-            _energy = new ConValue(100);
+            _emotion = new ConValue(100);
             _silver = new ConValue(100);
+            _injury = new ConValue(100);
+            _inner = new ConValue(100);
         }
 
         #region ITerm
@@ -206,6 +217,22 @@ namespace _GameClient.Models
         {
             Adventure.Quit(now, lastMile);
             Game.MessagingManager.Send(EventString.Dizi_Adv_Recall, Guid);
+        }
+
+        public void SetCon(IAdjustment.Types type, int value)
+        {
+            var con = type switch
+            {
+                IAdjustment.Types.Stamina => throw new NotImplementedException("体力状态不允许这里设!请用StaminaController"),
+                IAdjustment.Types.Silver => _silver,
+                IAdjustment.Types.Food => _food,
+                IAdjustment.Types.Condition => _emotion,
+                IAdjustment.Types.Injury => _injury,
+                IAdjustment.Types.Inner => _inner,
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
+            con.Add(value);
+            Game.MessagingManager.SendParams(EventString.Dizi_ConditionUpdate, type, value);
         }
     }
 

@@ -221,24 +221,46 @@ namespace Server.Controllers
                 advEvent.EventInvoke(arg);
             }
 
-            private class AdvArg : IAdvEventArg
+            private class AdvArg : IAdvEventArg , IAdjustment
             {
-                public string DiziName { get; }
+                public string DiziName => Dizi.Name;
+                private Dizi Dizi { get; }
                 public ITerm Term { get; }
                 public int InteractionResult => 0;//历练不会有交互结果
                 public ISimulationOutcome SimOutcome { get; private set; }
-                public IAdjustment Adjustment { get; private set; }
+                public IAdjustment Adjustment => this;
 
                 public AdvArg(Dizi dizi)
                 {
-                    DiziName = dizi.Name;
-                    Term = dizi;
+                    Term = Dizi = dizi;
                 }
 
                 public void SetSimulationOutcome(ISimulationOutcome simulationOutcome)
                     => SimOutcome = simulationOutcome;
+
+                public void Set(IAdjustment.Types type, int value, bool percentage)
+                {
+                    var controller = Game.Controllers.Get<DiziController>();
+                    var adjValue = value;
+                    if (percentage)
+                    {
+                        var conMax = type switch
+                        {
+                            IAdjustment.Types.Stamina => Dizi.Stamina.Con.Max,
+                            IAdjustment.Types.Silver => Dizi.Silver.Max,
+                            IAdjustment.Types.Food => Dizi.Food.Max,
+                            IAdjustment.Types.Condition => Dizi.Emotion.Max,
+                            IAdjustment.Types.Injury => Dizi.Injury.Max,
+                            IAdjustment.Types.Inner => Dizi.Inner.Max,
+                            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+                        };
+                        adjValue = (int)(conMax * value * 0.01f);
+                    }
+                    controller.AddDiziCon(Dizi.Guid, type, adjValue);
+                }
             }
         }
+
         #endregion
     }
 
