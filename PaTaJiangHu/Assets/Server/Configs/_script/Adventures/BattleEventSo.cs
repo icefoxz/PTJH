@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_战斗事件名", menuName = "事件/副本/战斗事件")]
+    [CreateAssetMenu(fileName = "id_战斗事件名", menuName = "副本/战斗事件")]
     internal class BattleEventSo : AdvEventSoBase
     {
         public enum Result

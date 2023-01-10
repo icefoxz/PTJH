@@ -8,7 +8,7 @@ using Utls;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "事件/上层/历练地图")]
+    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "历练/历练地图")]
     internal class AdventureMapSo : AutoHashNamingObject
     {
         private bool GetItem()

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_选择事件名", menuName = "事件/副本/选择事件")]
+    [CreateAssetMenu(fileName = "id_选择事件名", menuName = "副本/选择事件")]
     internal class OptionEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名 = "选择";
