@@ -57,12 +57,12 @@ namespace Server.Configs.Adventures
         [Serializable] private class RewardField : IGameReward
         {
             [ConditionalField(true, nameof(UpdateAllList))] [SerializeField] private string justUpdate;
-            [SerializeField] private GameItem[] 武器;
-            [SerializeField] private GameItem[] 防具;
-            [SerializeField] private GameItem[] 丹药;
-            [SerializeField] private GameItem[] 秘籍;
-            [SerializeField] private GameItem[] 故事道具;
-            [SerializeField] private GameItem[] 功能道具;
+            [SerializeField] private WeaponItem[] 武器;
+            [SerializeField] private ArmorItem[] 防具;
+            [SerializeField] private MedicineItem[] 丹药;
+            [SerializeField] private BookItem[] 秘籍;
+            [SerializeField] private StoryPropItem[] 故事道具;
+            [SerializeField] private FunctionPropItem[] 功能道具;
 
             public IGameItem[] Weapons => 武器;
             public IGameItem[] Armor => 防具;
@@ -78,7 +78,9 @@ namespace Server.Configs.Adventures
                 .Concat(FunctionProps)
                 .ToArray();
 
-            public GameItem[] AllItemFields => 武器.Concat(防具).Concat(丹药).Concat(秘籍).Concat(故事道具).Concat(功能道具).ToArray();
+            public GameItem[] AllItemFields => 武器.Cast<GameItem>()
+                .Concat(防具).Concat(丹药).Concat(秘籍).Concat(故事道具)
+                .Concat(功能道具).ToArray();
 
             private bool UpdateAllList()
             {
@@ -93,7 +95,65 @@ namespace Server.Configs.Adventures
 
             private void UpdateList(GameItem[] gi, GameItem.Kinds kind) => gi.ForEach(g => g.UpdateList(kind));
         }
-        [Serializable] private class GameItem : IGameItem
+        [Serializable] private class WeaponItem : GameItem
+        {
+            [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
+            protected override bool IsSupportSo(out ScriptableObject so)
+            {
+                so = null;
+                if (Kind != Kinds.Weapon) return false;
+                so = 武器;
+                return true;
+            }
+        }
+        [Serializable] private class ArmorItem : GameItem
+        {
+            [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 装备;
+            protected override bool IsSupportSo(out ScriptableObject so)
+            {
+                so = null;
+                if (Kind != Kinds.Armor) return false;
+                so = 装备;
+                return true;
+            }
+        }
+        [Serializable] private class MedicineItem : GameItem
+        {
+            protected override bool IsSupportSo(out ScriptableObject so)
+            {
+                so = null;
+                return true;
+            }
+        }
+        [Serializable] private class BookItem : GameItem
+        {
+            [ConditionalField(true, nameof(TryUseSo))][SerializeField] private BookSoBase 残卷;
+            protected override bool IsSupportSo(out ScriptableObject so)
+            {
+                so = null;
+                if (Kind != Kinds.Book) return false;
+                so = 残卷;
+                return true;
+            }
+        }
+        [Serializable] private class StoryPropItem : GameItem
+        {
+            protected override bool IsSupportSo(out ScriptableObject so)
+            {
+                so = null;
+                return true;
+            }
+        }
+        [Serializable] private class FunctionPropItem : GameItem
+        {
+            protected override bool IsSupportSo(out ScriptableObject so)
+            {
+                so = null;
+                return true;
+            }
+        }
+
+        [Serializable] private abstract class GameItem : IGameItem
         {
             private const string m_Weapon = "武器";
             private const string m_Armor = "防具";
@@ -116,7 +176,7 @@ namespace Server.Configs.Adventures
             //[ConditionalField(true, nameof(IsSupportSo))]
             [ConditionalField(true, nameof(CheckSupport))] [SerializeField] private bool 引用;
             [ConditionalField(true, nameof(TryUseSo), true)] [SerializeField] private int _id;
-            [ConditionalField(true, nameof(TryUseSo))] [SerializeField] private BookSoBase 残卷;
+            
             [SerializeField] private int 数量 = 1;
             public int Id => _id;
             public string Name => _name;
@@ -141,8 +201,8 @@ namespace Server.Configs.Adventures
                 _kind = kind;
                 TryUseSo();
             }
-
-            private bool TryUseSo()
+            
+            protected bool TryUseSo()
             {
                 ScriptableObject so = null;
                 var supported = IsSupportSo(out so);
@@ -157,29 +217,7 @@ namespace Server.Configs.Adventures
             }
 
             private bool CheckSupport() => IsSupportSo(out _);
-            private bool IsSupportSo(out ScriptableObject so)
-            {
-                so = null;
-                switch (Kind)
-                {
-                    case Kinds.Weapon:
-                        break;
-                    case Kinds.Armor:
-                        break;
-                    case Kinds.Medicine:
-                        break;
-                    case Kinds.Book:
-                        so = 残卷;
-                        return true;
-                    case Kinds.StoryProp:
-                        break;
-                    case Kinds.FunctionProp:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                return false;
-            }
+            protected abstract bool IsSupportSo(out ScriptableObject so);
             private void UpdateName(ScriptableObject so)
             {
                 var title = "未命名";
