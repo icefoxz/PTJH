@@ -56,6 +56,18 @@ namespace Server.Configs.Adventures
 
             private bool RenameElement()
             {
+                switch (Kind)
+                {
+                    case Kinds.Silver:
+                    case Kinds.Food:
+                    case Kinds.Condition:
+                    case Kinds.Injury:
+                    case Kinds.Inner:
+                        break;
+                    default:
+                        _name = string.Empty;
+                        return true;
+                }
                 _name = $"{GetString(Kind)}:{Value}{(Percentage ? "%" : string.Empty)}";
                 return true;
             }

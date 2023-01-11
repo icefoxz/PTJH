@@ -93,7 +93,7 @@ namespace Server.Configs.Adventures
                 return false;
             }
 
-            private void UpdateList(GameItem[] gi, GameItem.Kinds kind) => gi.ForEach(g => g.UpdateList(kind));
+            private void UpdateList(GameItem[] gi, GameItem.Kinds kind) => gi?.ForEach(g => g?.UpdateList(kind));
         }
         [Serializable] private class WeaponItem : GameItem
         {

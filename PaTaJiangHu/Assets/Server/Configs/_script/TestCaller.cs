@@ -27,7 +27,6 @@ namespace Server.Configs
         void SetMpValue(int value);
         void SetMpMax(int value);
         void SetMpFix(int value);
-        void UseMedicine(int id);
     }
     /// <summary>
     /// 请求中间管道。处理请求与事件的数据交互
@@ -45,8 +44,6 @@ namespace Server.Configs
         private AdvMapController.Configure MapConfig => 地图;
         [SerializeField] private TestTestDiziController.DiziConfig 弟子配置;
         private TestTestDiziController.DiziConfig DiziCfg => 弟子配置;
-        [SerializeField] private ItemConfig 物品配置;
-        private ItemConfig ItemCfg => 物品配置;
         [SerializeField] private TestAdventureController.AdvConfig 副本配置;
         private TestAdventureController.AdvConfig AdvConfig => 副本配置;
         [SerializeField] private SkillController.Configure 技能配置;
@@ -111,13 +108,6 @@ namespace Server.Configs
             con.SetFix(value);
             Game.MessagingManager.Send(method, con);
         }
-        //button event
-        public void StartTestMedicineWindow()
-        {
-            ItemCfg.Init();
-            Game.MessagingManager.Send(EventString.Test_StatusUpdate, new Status(TestStatus.GetCombatStatus()));
-            Game.MessagingManager.Send(EventString.Test_MedicineWindow, ItemCfg.Medicines.Values.ToList());
-        }
 
         public void SetHpValue(int value) => SetCon(TestStatus.Hp, value, EventString.Test_UpdateHp);
         public void SetHpMax(int value) => SetConMax(TestStatus.Hp, value, EventString.Test_UpdateHp);
@@ -125,25 +115,6 @@ namespace Server.Configs
         public void SetMpValue(int value) => SetCon(TestStatus.Mp, value, EventString.Test_UpdateMp);
         public void SetMpMax(int value) => SetConMax(TestStatus.Mp, value, EventString.Test_UpdateMp);
         public void SetMpFix(int value) => SetConFix(TestStatus.Mp, value, EventString.Test_UpdateMp);
-        public void UseMedicine(int id)
-        {
-            var cs = TestStatus.GetCombatStatus();
-            ItemCfg.Medicines[id].Recover(cs);
-            TestStatus.Clone(cs);
-            Game.MessagingManager.Send(EventString.Test_StatusUpdate, new Status(cs));
-        }
-
-        [Serializable]internal class ItemConfig
-        {
-            [SerializeField]private MedicineFieldsSo[] 丹药配置;
-
-            public Dictionary<int, IMedicine> Medicines { get; private set; }
-
-            public void Init()
-            {
-                Medicines = 丹药配置.SelectMany(m => m.GetMedicines).ToDictionary(m => m.Id, m => m);
-            }
-        }
 
         public class Status
         {
