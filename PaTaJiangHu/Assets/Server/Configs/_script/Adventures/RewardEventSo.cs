@@ -9,15 +9,14 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
+    public interface IAdvPackage
+    {
+        IStackableGameItem[] AllItems { get; }
+    }
     public interface IGameReward
     {
-        IGameItem[] Weapons { get; }
-        IGameItem[] Armor { get; }
-        IGameItem[] Medicines { get; }
-        IGameItem[] Scrolls { get; }
-        IGameItem[] StoryProps { get; }
-        IGameItem[] FunctionProps { get; }
-        IGameItem[] AllItems { get; }
+        IAdvPackage[] Packages { get; }
+        IStackableGameItem[] AllItems { get; }
     }
 
     [CreateAssetMenu(fileName = "id_奖励件名", menuName = "事件/奖励事件")]
@@ -53,10 +52,10 @@ namespace Server.Configs.Adventures
         public override event Action<string[]> OnLogsTrigger;
         private IAdvEvent Next => 下个事件;
         public IGameReward Reward => GameReward;
-
+        
         [Serializable] private class RewardField : IGameReward
         {
-            [ConditionalField(true, nameof(UpdateAllList))] [SerializeField] private string justUpdate;
+            [SerializeField] private AdvPackage[] 奖励包;
             [SerializeField] private WeaponItem[] 武器;
             [SerializeField] private ArmorItem[] 防具;
             [SerializeField] private MedicineItem[] 丹药;
@@ -64,16 +63,17 @@ namespace Server.Configs.Adventures
             [SerializeField] private StoryPropItem[] 故事道具;
             [SerializeField] private FunctionPropItem[] 功能道具;
 
-            public IGameItem[] Weapons => 武器;
-            public IGameItem[] Armor => 防具;
-            public IGameItem[] Medicines => 丹药;
-            public IGameItem[] Scrolls => 秘籍;
-            public IGameItem[] StoryProps => 故事道具;
-            public IGameItem[] FunctionProps => 功能道具;
+            public IAdvPackage[] Packages => 奖励包;
+            public IStackableGameItem[] Weapons => 武器;
+            public IStackableGameItem[] Armor => 防具;
+            public IStackableGameItem[] Medicines => 丹药;
+            public IStackableGameItem[] Book => 秘籍;
+            public IStackableGameItem[] StoryProps => 故事道具;
+            public IStackableGameItem[] FunctionProps => 功能道具;
 
-            public IGameItem[] AllItems => Weapons.Concat(Armor)
+            public IStackableGameItem[] AllItems => Weapons.Concat(Armor)
                 .Concat(Medicines)
-                .Concat(Scrolls)
+                .Concat(Book)
                 .Concat(StoryProps)
                 .Concat(FunctionProps)
                 .ToArray();
@@ -81,79 +81,88 @@ namespace Server.Configs.Adventures
             public GameItem[] AllItemFields => 武器.Cast<GameItem>()
                 .Concat(防具).Concat(丹药).Concat(秘籍).Concat(故事道具)
                 .Concat(功能道具).ToArray();
-
-            private bool UpdateAllList()
+        }
+        [Serializable] private class AdvPackage : IAdvPackage
+        {
+            private bool ChangeElementName()
             {
-                UpdateList(武器, GameItem.Kinds.Weapon);
-                UpdateList(防具, GameItem.Kinds.Armor);
-                UpdateList(丹药, GameItem.Kinds.Medicine);
-                UpdateList(秘籍, GameItem.Kinds.Book);
-                UpdateList(故事道具, GameItem.Kinds.StoryProp);
-                UpdateList(功能道具, GameItem.Kinds.FunctionProp);
-                return false;
+                var weaponText = GetText("武器", Weapons?.Sum(w => w.Amount) ?? 0);
+                var armorText = GetText("防具", Armor?.Sum(w => w.Amount) ?? 0);
+                var medicineText = GetText("丹药", Medicines?.Sum(w => w.Amount) ?? 0);
+                var bookText = GetText("秘籍", Book?.Sum(w => w.Amount) ?? 0);
+                var list = new List<string> { weaponText, armorText, medicineText, bookText };
+                _name = string.Join(',', list.Where(s => !string.IsNullOrWhiteSpace(s)));
+                return true;
+
+                string GetText(string title,int count) => count > 0 ? $"{title}x{count}" : string.Empty;
             }
 
-            private void UpdateList(GameItem[] gi, GameItem.Kinds kind) => gi?.ForEach(g => g?.UpdateList(kind));
+
+            [ConditionalField(true,nameof(ChangeElementName))][SerializeField][ReadOnly]private string _name;
+
+            [SerializeField] private WeaponItem[] 武器;
+            [SerializeField] private ArmorItem[] 防具;
+            [SerializeField] private MedicineItem[] 丹药;
+            [SerializeField] private BookItem[] 秘籍;
+
+            public IStackableGameItem[] Weapons => 武器;
+            public IStackableGameItem[] Armor => 防具;
+            public IStackableGameItem[] Medicines => 丹药;
+            public IStackableGameItem[] Book => 秘籍;
+            public IStackableGameItem[] AllItems => Weapons
+                .Concat(Armor)
+                .Concat(Medicines)
+                .Concat(Book)
+                .ToArray();
         }
         [Serializable] private class WeaponItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
-            protected override bool IsSupportSo(out ScriptableObject so)
-            {
-                so = null;
-                if (Kind != Kinds.Weapon) return false;
-                so = 武器;
-                return true;
-            }
+            public override string Name => 武器?.Name;
+            public override Kinds Kind => Kinds.Weapon;
+            protected override ScriptableObject So => 武器;
+            protected override bool IsSupportSo => true;
         }
         [Serializable] private class ArmorItem : GameItem
         {
-            [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 装备;
-            protected override bool IsSupportSo(out ScriptableObject so)
-            {
-                so = null;
-                if (Kind != Kinds.Armor) return false;
-                so = 装备;
-                return true;
-            }
+            [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 防具;
+            public override string Name => 防具?.Name;
+            public override Kinds Kind => Kinds.Armor;
+            protected override ScriptableObject So => 防具;
+            protected override bool IsSupportSo => true;
         }
         [Serializable] private class MedicineItem : GameItem
         {
-            protected override bool IsSupportSo(out ScriptableObject so)
-            {
-                so = null;
-                return true;
-            }
+            [ConditionalField(true, nameof(TryUseSo))][SerializeField] private MedicineFieldSo 丹药;
+            public override string Name => 丹药?.Name;
+            public override Kinds Kind => Kinds.Medicine;
+            protected override ScriptableObject So => 丹药;
+            protected override bool IsSupportSo => true;
         }
         [Serializable] private class BookItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private BookSoBase 残卷;
-            protected override bool IsSupportSo(out ScriptableObject so)
-            {
-                so = null;
-                if (Kind != Kinds.Book) return false;
-                so = 残卷;
-                return true;
-            }
+            public override string Name => 残卷?.Name;
+            public override Kinds Kind => Kinds.Book;
+            protected override ScriptableObject So => 残卷; 
+            protected override bool IsSupportSo => true;
         }
         [Serializable] private class StoryPropItem : GameItem
         {
-            protected override bool IsSupportSo(out ScriptableObject so)
-            {
-                so = null;
-                return true;
-            }
+            public override string Name { get; }
+            public override Kinds Kind => Kinds.StoryProp;
+            protected override ScriptableObject So { get; }
+            protected override bool IsSupportSo => false;
         }
         [Serializable] private class FunctionPropItem : GameItem
         {
-            protected override bool IsSupportSo(out ScriptableObject so)
-            {
-                so = null;
-                return true;
-            }
+            public override string Name { get; }
+            public override Kinds Kind => Kinds.FunctionProp;
+            protected override ScriptableObject So { get; }
+            protected override bool IsSupportSo => false;
         }
 
-        [Serializable] private abstract class GameItem : IGameItem
+        [Serializable] private abstract class GameItem : IStackableGameItem
         {
             private const string m_Weapon = "武器";
             private const string m_Armor = "防具";
@@ -172,16 +181,16 @@ namespace Server.Configs.Adventures
             }
 
             [HideInInspector][SerializeField] private string _name;
-            [HideInInspector][SerializeField] private Kinds _kind;
             //[ConditionalField(true, nameof(IsSupportSo))]
             [ConditionalField(true, nameof(CheckSupport))] [SerializeField] private bool 引用;
             [ConditionalField(true, nameof(TryUseSo), true)] [SerializeField] private int _id;
             
             [SerializeField] private int 数量 = 1;
+            [SerializeField] private int 价钱;
+            public int Price => 价钱;
             public int Id => _id;
-            public string Name => _name;
+            public abstract string Name { get; }
             public int Amount => 数量;
-
             public ItemType Type => Kind switch
             {
                 Kinds.Weapon => ItemType.Equipment,
@@ -192,20 +201,15 @@ namespace Server.Configs.Adventures
                 Kinds.FunctionProp => ItemType.StoryProps,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            public Kinds Kind => _kind;
-
+            public abstract Kinds Kind { get; }
+            protected abstract ScriptableObject So { get; }
             private bool UseSo() => 引用;
+            protected abstract bool IsSupportSo { get; }
 
-            public void UpdateList(Kinds kind)
-            {
-                _kind = kind;
-                TryUseSo();
-            }
-            
             protected bool TryUseSo()
             {
-                ScriptableObject so = null;
-                var supported = IsSupportSo(out so);
+                ScriptableObject so = So;
+                var supported = IsSupportSo;
                 if (!UseSo())
                 {
                     UpdateName(null);
@@ -216,19 +220,19 @@ namespace Server.Configs.Adventures
                 return supported;
             }
 
-            private bool CheckSupport() => IsSupportSo(out _);
-            protected abstract bool IsSupportSo(out ScriptableObject so);
+            private bool CheckSupport() => IsSupportSo;
+
             private void UpdateName(ScriptableObject so)
             {
                 var title = "未命名";
                 var id = Id;
                 if (so)
                 {
-                    var d = so.As<IDataElement>();
+                    var d = (IDataElement)so;
                     title = d.Name;
                     id = d.Id;
                 }
-                _name = $"{id}.{title}({GetKindName(_kind)}):{Amount}";
+                _name = $"{id}.{title}({GetKindName(Kind)}):{Amount}";
             }
             public static string GetKindName(Kinds kind)
             {

@@ -153,15 +153,15 @@ namespace _GameClient.Models
     }
     public class DiziBag
     {
-        private IGameItem[] _items;
-        public IGameItem[] Items => _items;
+        private IStackableGameItem[] _items;
+        public IStackableGameItem[] Items => _items;
 
         public DiziBag(int length)
         {
-            _items = new IGameItem[length];
+            _items = new IStackableGameItem[length];
         }
 
-        public DiziBag(IGameItem[] items)
+        public DiziBag(IStackableGameItem[] items)
         {
             _items = items;
         }

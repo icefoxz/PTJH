@@ -1,13 +1,35 @@
-using Core;
-using Data;
-using MyBox;
 using System;
+using Core;
+using MyBox;
 using UnityEngine;
 
 namespace Server.Configs.Items
 {
-    [CreateAssetMenu(fileName = "id_食物名字", menuName = "物件/弟子/食物")]
-    internal class FoodFieldSo : AutoUnderscoreNamingObject, IGameItem
+    public enum Treatments
+    {
+        [InspectorName("体力")] Stamina,
+        [InspectorName("食物")] Food,
+        [InspectorName("精神")] Emotion,
+        [InspectorName("外伤")] Injury,
+        [InspectorName("内伤")] Inner
+    }
+
+    public interface ITreatment
+    {
+        Treatments Treatment { get; }
+        int GetValue(int max);
+    }
+    public interface IMedicine
+    {
+        int Id { get; }
+        string Name { get; }
+        ITreatment[] Treatments { get; }
+        int Amount { get; }
+        void Consume(int value);
+    }
+
+    [CreateAssetMenu(fileName = "id_medicine", menuName = "物件/弟子/药品")]
+    internal class MedicineFieldSo : AutoUnderscoreNamingObject , IGameItem
     {
         private bool GetItem()
         {
@@ -15,19 +37,18 @@ namespace Server.Configs.Items
             return true;
         }
 
-        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private FoodFieldSo So;
+        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private MedicineFieldSo So;
         [SerializeField] private int 价钱;
-        [SerializeField] private TreatmentMap[] 效果;
+        [SerializeField]private TreatmentMap[] 药效;
 
-        private TreatmentMap[] TreatmentMaps => 效果;
+        private TreatmentMap[] TreatmentMaps=> 药效;
         public ItemType Type => ItemType.Medicine;
         public int Price => 价钱;
 
         public IMedicine Instance(int amount) =>
             new Medicine(Id, Name, TreatmentMaps, amount);
 
-        [Serializable]
-        private class TreatmentMap : ITreatment
+        [Serializable] private class TreatmentMap : ITreatment
         {
             private const string StaminaText = "体力";
             private const string FoodText = "食物";
@@ -52,7 +73,7 @@ namespace Server.Configs.Items
                 return true;
             }
 
-            [ConditionalField(true, nameof(OnChangeElementName))][SerializeField][ReadOnly] private string _name;
+            [ConditionalField(true,nameof(OnChangeElementName))][SerializeField][ReadOnly] private string _name;
             [SerializeField] private Treatments 治疗;
             [SerializeField] private int 值;
             [SerializeField] private bool 是百分比;

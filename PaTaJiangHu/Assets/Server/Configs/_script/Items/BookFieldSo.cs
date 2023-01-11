@@ -6,9 +6,15 @@ using UnityEngine;
 
 namespace Server.Configs.Items
 {
-    [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "配置/秘籍")]
+    [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "物件/弟子/秘籍")]
     internal class BookFieldSo : BookSoBase
     {
+        private bool GetItem()
+        {
+            if (So == null) So = this;
+            return true;
+        }
+        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private BookFieldSo So;
         [SerializeField] private string _name;
         [SerializeField] private int id;
         [SerializeField] private int 价钱;

@@ -28,11 +28,17 @@ namespace Core
         /// </summary>
         StoryProps
     }
+
     public interface IGameItem
     {
         int Id { get; }
         string Name { get; }
-        int Amount { get; }
         ItemType Type { get; }
+        int Price { get; }
+    }
+
+    public interface IStackableGameItem : IGameItem
+    {
+        int Amount { get; }
     }
 }

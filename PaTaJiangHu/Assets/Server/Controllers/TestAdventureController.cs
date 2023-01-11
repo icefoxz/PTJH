@@ -176,11 +176,7 @@ namespace Server.Controllers
             internal RewardEvent(AdvStorySo storySo, RewardEventSo so) : base(storySo, so)
             {
                 var r = so.Reward;
-                Rewards = r.Weapons.Concat(r.Armor)
-                    .Concat(r.Medicines)
-                    .Concat(r.StoryProps)
-                    .Concat(r.FunctionProps)
-                    .Concat(r.Scrolls).Select(i => $"{i.Name} x{i.Amount}").ToArray();
+                Rewards = r.AllItems.Select(i => $"{i.Name} x{i.Amount}").ToArray();
             }
 
             public RewardEvent()

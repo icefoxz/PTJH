@@ -1,13 +1,14 @@
 using System;
 using BattleM;
+using Core;
 using MyBox;
 using Server.Controllers;
 using UnityEngine;
 
 namespace Server.Configs.Items
 {
-    [CreateAssetMenu(fileName = "weaponSo", menuName = "战斗测试/武器")]
-    [Serializable] public class WeaponFieldSo : AutoUnderscoreNamingObject
+    [CreateAssetMenu(fileName = "weaponSo", menuName = "物件/弟子/武器")]
+    [Serializable] internal class WeaponFieldSo : AutoUnderscoreNamingObject, IGameItem
     {
         private bool GetItem()
         {
@@ -20,8 +21,11 @@ namespace Server.Configs.Items
         [SerializeField] private int 力量加成;
         [SerializeField] private Weapon.Injuries 伤害类型;
         [SerializeField] private SkillGrades 品级;
+        [SerializeField] private int 价钱;
         [SerializeField] private int 投掷次数 = 1;
 
+        public ItemType Type => ItemType.Equipment;
+        public int Price => 价钱;
         public Way.Armed Armed => 类型;
         public int Damage => 力量加成;
         public Weapon.Injuries Injury => 伤害类型;

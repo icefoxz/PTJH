@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Server.Configs.Items
 {
-    [CreateAssetMenu(fileName = "armorSo",menuName = "战斗测试/防具")]
+    [CreateAssetMenu(fileName = "armorSo",menuName = "物件/弟子/防具")]
     [Serializable] public class ArmorFieldSo : AutoUnderscoreNamingObject
     {
         [SerializeField] private int 护甲;
