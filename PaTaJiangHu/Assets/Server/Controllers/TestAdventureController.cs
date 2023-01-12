@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using BattleM;
+using Core;
 using MyBox;
 using Server.Configs.Adventures;
 using UnityEngine;
@@ -210,6 +211,16 @@ namespace Server.Controllers
         {
             public override string ToString()=> Stamina.ToString();
             public IConditionValue Stamina => new ConValue(100);
+            public IConditionValue Silver { get; }
+            public IConditionValue Food { get; }
+            public IConditionValue Emotion { get; }
+            public IConditionValue Injury { get; }
+            public IConditionValue Inner { get; }
+            public IWeapon Weapon { get; }
+            public IArmor Armor { get; }
+            public int Level { get; }
+            public int Power { get; }
+            public IGameItem[] Items { get; }
         }
 
         [Serializable] internal class AdvConfig

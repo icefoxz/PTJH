@@ -11,10 +11,12 @@ namespace Server.Configs.Adventures
     {
         [SerializeField] private string 事件名;
         [SerializeField] private AdvEventSoBase 下个事件;
+        [TextArea][SerializeField] private string 事件描述;
         [SerializeField] private Adjustment 调整;
         [SerializeField] private ConAdjustment[] 状态;
 
         public override string Name => 事件名;
+        private string Brief => 事件描述;
         private AdvEventSoBase NextEvent => 下个事件;
         private Adjustment Adjust => 调整;
         private ConAdjustment[] ConFields => 状态;
@@ -22,10 +24,15 @@ namespace Server.Configs.Adventures
         public override void EventInvoke(IAdvEventArg arg)
         {
             var nextEvent = NextEvent;
-
-            var list = new List<string> { Adjust.Set(arg.Adjustment) };
+            var list = new List<string>
+            {
+                Brief,
+                Adjust.Set(arg.Adjustment)
+            };
             list.AddRange(ConFields.Select(a => a.Set(arg.Adjustment)));
-            var messages = list.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            var messages = list.Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => string.Format(s, arg.DiziName))
+                .ToArray();
             if (messages.Any()) OnLogsTrigger?.Invoke(messages);
             OnNextEvent?.Invoke(nextEvent);
         }
@@ -107,16 +114,19 @@ namespace Server.Configs.Adventures
             }
         }
 
-        [Serializable]
-        public class Adjustment
+        [Serializable] public class Adjustment
         {
-            [SerializeField] private int 弟子体力;
-            [SerializeField] private bool 百分比;
+            [SerializeField] private bool 调整弟子体力;
+            [ConditionalField(nameof(调整弟子体力))][SerializeField] private int 弟子体力;
+            [ConditionalField(nameof(调整弟子体力))][SerializeField] private bool 百分比;
+
+            private bool AdjustStamina => 调整弟子体力;
+
             private int Stamina => 弟子体力;
             private bool Percentage => 百分比;
             public string Set(IAdjustment adj)
             {
-                adj.Set(IAdjustment.Types.Stamina, Stamina, Percentage);
+                if(AdjustStamina) adj.Set(IAdjustment.Types.Stamina, Stamina, Percentage);
                 return string.Empty;
             }
         }

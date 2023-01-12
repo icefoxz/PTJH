@@ -254,7 +254,7 @@ namespace Server.Controllers
                             IAdjustment.Types.Inner => Dizi.Inner.Max,
                             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
                         };
-                        adjValue = (int)(conMax * value * 0.01f);
+                        adjValue = value.PercentInt(conMax);
                     }
                     controller.AddDiziCon(Dizi.Guid, type, adjValue);
                 }

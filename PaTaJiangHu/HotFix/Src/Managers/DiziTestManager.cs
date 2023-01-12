@@ -61,12 +61,12 @@ public class DiziTestManager
                 StaCountWindow.InputStamina,
                 StaCountWindow.InputMinutes));
         });
-        Game.UiBuilder.Build("test_medicineFunction", (go, v) =>
-        {
-            //MedicineTest = new MedicineTestWindow(go.GetComponent<View>(), id => TestCaller.Instance.UseMedicine(id));
-            MedicineTest.Set(MedicineTestWindow.Cons.Hp, TestCaller.Instance.SetHpValue, TestCaller.Instance.SetHpMax, TestCaller.Instance.SetHpFix);
-            MedicineTest.Set(MedicineTestWindow.Cons.Mp, TestCaller.Instance.SetMpValue, TestCaller.Instance.SetMpMax, TestCaller.Instance.SetMpFix);
-        });
+        //Game.UiBuilder.Build("test_medicineFunction", (go, v) =>
+        //{
+        //    //MedicineTest = new MedicineTestWindow(go.GetComponent<View>(), id => TestCaller.Instance.UseMedicine(id));
+        //    MedicineTest.Set(MedicineTestWindow.Cons.Hp, TestCaller.Instance.SetHpValue, TestCaller.Instance.SetHpMax, TestCaller.Instance.SetHpFix);
+        //    MedicineTest.Set(MedicineTestWindow.Cons.Mp, TestCaller.Instance.SetMpValue, TestCaller.Instance.SetMpMax, TestCaller.Instance.SetMpFix);
+        //});
     }
 
     private void EventReg()

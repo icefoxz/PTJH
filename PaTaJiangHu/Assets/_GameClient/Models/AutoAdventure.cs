@@ -51,6 +51,7 @@ namespace _GameClient.Models
         private int ServiceCoId { get; set; }
         private Dizi Dizi { get; }
         private DiziBag Bag { get; }
+        public IGameItem[] BagItems => Bag.Items;
         public Equipment Equipment { get; }
         private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
         private Queue<DiziAdventureStory> Stories { get; set; } = new Queue<DiziAdventureStory>();

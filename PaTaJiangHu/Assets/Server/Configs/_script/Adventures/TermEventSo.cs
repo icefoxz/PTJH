@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BattleM;
+using Core;
 using UnityEngine;
 using Utls;
 
@@ -21,6 +22,16 @@ namespace Server.Configs.Adventures
     public interface ITerm
     {
         IConditionValue Stamina { get; }
+        IConditionValue Silver { get; }
+        IConditionValue Food { get; }
+        IConditionValue Emotion { get; }
+        IConditionValue Injury { get; }
+        IConditionValue Inner { get; }
+        IWeapon Weapon { get; }
+        IArmor Armor { get; }
+        int Level { get; }
+        int Power { get; }
+        IGameItem[] Items { get; }
     }
 
     [CreateAssetMenu(fileName = "id_条件事件名", menuName = "事件/条件事件")]

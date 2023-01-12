@@ -1,5 +1,6 @@
 ﻿using System;
 using BattleM;
+using Core;
 using Server.Configs.Adventures;
 using Server.Configs.Skills;
 using Server.Controllers;
@@ -21,6 +22,8 @@ namespace _GameClient.Models
         public int Hp { get; private set; }
         public int Mp { get; private set; }
         public int Level { get; private set; }
+        public int Power { get; }
+        public IGameItem[] Items => Adventure?.BagItems?? Array.Empty<IGameItem>();
         public int Grade { get; private set; }
         public ICombatSkill CombatSkill { get; set; }
         public IForceSkill ForceSkill { get; set; }

@@ -22,4 +22,22 @@ namespace Utls
     {
         public static int RandomXYRange(this Vector2Int vector) => Sys.Random.Next(vector.x, vector.y + 1);
     }
+
+    public static class IntExtension
+    {
+        /// <summary>
+        /// 计算百分比
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static double Percentage(this double value, double max) => 100d * value / max;
+        /// <summary>
+        /// 计算百分比
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        public static int PercentInt(this int value, int max) => (int)Percentage(value, max);
+    }
 }

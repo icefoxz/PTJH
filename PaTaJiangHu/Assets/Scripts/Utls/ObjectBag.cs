@@ -51,6 +51,12 @@ namespace Utls
                     bag[index] = Json.Serialize(o);
                     continue;
                 }
+
+                if (o.GetType().IsEnum)
+                {
+                    bag[index] = ((int)o).ToString();
+                    continue;
+                }
                 bag[index] = o switch
                 {
                     int i => i.ToString(),
