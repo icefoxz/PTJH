@@ -41,8 +41,8 @@ namespace Server.Configs.Adventures
             [InspectorName("切换会重置数据，支持ctrl+z恢复")] Default,
             [InspectorName("重置")] Reset,
         }
-        [SerializeField] private bool 描述事件;
         [ConditionalField(nameof(描述事件))][SerializeField] private string _title;
+        [SerializeField] private bool 描述事件;
         [SerializeField] private AdvEventSoBase 事件;
         [SerializeField] private StatusClauseField 状态条件;
         //[ConditionalField(true, nameof(ResetDefault))][SerializeField] private Resetter 重置器;
