@@ -152,20 +152,20 @@ namespace _GameClient.Models
         IConditionValue ITerm.Stamina => Stamina.Con;
         #endregion
 
-        internal void UpdateStamina(long ticks)
+        internal void StaminaUpdate(long ticks)
         {
             _stamina.Update(ticks);
             Log($"体力更新 = {_stamina.Con}");
             SendEvent(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max);
         }
 
-        internal void SetLevel(int level)
+        internal void LevelSet(int level)
         {
             Level = level;
             Log($"等级设置 = {Level}");
         }
 
-        internal void SetExp(int exp, int max = 0)
+        internal void ExpSet(int exp, int max = 0)
         {
             if (max > 0) _exp.SetMax(max);
             _exp.Set(exp);
@@ -266,25 +266,25 @@ namespace _GameClient.Models
             Log(armor == null ? $"卸下{Armor.Name}" : $"装备{armor.Name}!");
             Armor = armor;
         }
-        internal void StartAdventure(long startTime,int returnSecs,int messageSecs)
+        internal void AdventureStart(long startTime,int returnSecs,int messageSecs)
         {
             Adventure = new AutoAdventure(startTime, returnSecs, messageSecs, this);
             Log("开始历练.");
             SendEvent(EventString.Dizi_Adv_Start, Guid);
         }
-        internal void StartAdventureStory(DiziAdvLog story)
+        internal void AdventureStoryStart(DiziAdvLog story)
         {
-            if (Adventure.State == AutoAdventure.States.None)
+            if (Adventure.State == AutoAdventure.States.End)
                 throw new NotImplementedException();
             Adventure.RegStory(story);
         }
-        internal void QuitAdventure(long now,int lastMile)
+        internal void AdventureRecall(long now,int lastMile)
         {
-            Adventure.Quit(now, lastMile);
+            Adventure.Recall(now, lastMile);
             Log($"停止历练, 里数: {lastMile}");
             SendEvent(EventString.Dizi_Adv_Recall, Guid);
         }
-        internal void SetCon(IAdjustment.Types type, int value)
+        internal void ConSet(IAdjustment.Types type, int value)
         {
             var con = type switch
             {

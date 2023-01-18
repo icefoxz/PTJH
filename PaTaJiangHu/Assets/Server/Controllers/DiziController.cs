@@ -44,9 +44,9 @@ namespace Server.Controllers
                 level++;
                 balance = newValue - max;
                 //升级
-                dizi.SetLevel(level);
+                dizi.LevelSet(level);
             }
-            dizi.SetExp(balance);
+            dizi.ExpSet(balance);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Server.Controllers
             }
             else
             {
-                dizi.SetCon(type, adjValue);
+                dizi.ConSet(type, adjValue);
             }
         }
     }

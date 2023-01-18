@@ -32,6 +32,7 @@ namespace _GameClient.Models
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
         public int ActionLing { get; private set; }
+        public int MaxDizi { get; private set; } = 10;
         /// <summary>
         /// key = dizi.Guid, value = dizi
         /// </summary>
