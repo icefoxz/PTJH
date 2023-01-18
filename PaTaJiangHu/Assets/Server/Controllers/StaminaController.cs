@@ -20,7 +20,7 @@ namespace Server.Controllers
                 XDebug.LogWarning($"体力 = {con} 不够消费 {stamina}!");
             var newStamina = con.Value - stamina;
             var newZeroTicks = GetZeroTicksFromStamina(newStamina);
-            dizi.UpdateStamina(newZeroTicks);
+            dizi.StaminaUpdate(newZeroTicks);
         }
 
         public int GetDiziStamina(long zeroTicks, int max)

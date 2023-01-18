@@ -14,9 +14,9 @@ namespace _GameClient.Models
     {
         public enum States
         {
-            None,
             Progress,
             Recall,
+            End,
         }
         private enum Modes
         {
@@ -126,7 +126,7 @@ namespace _GameClient.Models
             Stories.Enqueue(story);
         }
 
-        internal void Quit(long now,int lastMile)
+        internal void Recall(long now,int lastMile)
         {
             UpdateTime(now,lastMile);
             State = States.Recall;
@@ -139,7 +139,7 @@ namespace _GameClient.Models
                 Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, $"{Dizi.Name}回程中...",
                     false);
                 yield return new WaitForSeconds(JourneyReturnSec);
-                State = States.None;
+                State = States.End;
                 Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, $"{Dizi.Name}已回到山门!",
                     true);
                 Game.MessagingManager.Send(EventString.Dizi_Adv_End, Dizi.Guid);

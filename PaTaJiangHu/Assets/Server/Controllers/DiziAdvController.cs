@@ -13,7 +13,7 @@ namespace Server.Controllers
     /// </summary>
     public class DiziAdvController : IGameController
     {
-        /*注意,由于游戏方便, 这里的 '里' 这个单位用 'mile' 命名, 但与现实中的里单位没关系*/
+        /*注意,为了游戏方便, 这里的 '里' 这个单位用 'mile' 命名, 但与现实中的英里单位没关系*/
         private int EventLogSecs => AdventureCfg.EventLogSecs;//信息弹出秒数间隔
         private int JourneyReturnSec => AdventureCfg.AdvMap.JourneyReturnSec;//回城秒数
         private int MinuteInMile => AdventureCfg.MinuteInMile;//多少分钟 = 1里
@@ -26,7 +26,7 @@ namespace Server.Controllers
         public void AdventureStart(string guid)
         {
             var dizi = Faction.GetDizi(guid);
-            dizi.StartAdventure(SysTime.UnixNow, JourneyReturnSec, EventLogSecs);
+            dizi.AdventureStart(SysTime.UnixNow, JourneyReturnSec, EventLogSecs);
         }
 
         public void AdventureRecall(string guid)
@@ -35,7 +35,7 @@ namespace Server.Controllers
             var dizi = Faction.GetDizi(guid);
             var lastMile = CheckMile(dizi.Guid);
             if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return;
-            dizi.QuitAdventure(now, lastMile);
+            dizi.AdventureRecall(now, lastMile);
         }
 
         public int CheckMile(string diziGuid)
@@ -69,7 +69,7 @@ namespace Server.Controllers
                 //当获取到地点, 执行故事
                 var stories = await ProcessStory(places, now, toMiles, dizi);
                 foreach (var story in stories) 
-                    dizi.StartAdventureStory(story);
+                    dizi.AdventureStoryStart(story);
             }
         }
         /// <summary>

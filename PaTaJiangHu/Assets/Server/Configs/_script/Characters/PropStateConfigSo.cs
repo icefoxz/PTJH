@@ -33,8 +33,8 @@ namespace Server.Configs.Characters
         private int RangeCount(PropCfg propCfg, double foodRatio, double emoRatio, double injuryRatio, double innerRatio, int max)
         {
             var rate = propCfg.GetCfgRatio(foodRatio, emoRatio, injuryRatio, innerRatio);
-            var cfg = propCfg.Cfgs.First(c => c.IsInRange(rate));
-            return cfg.GetAdjustmentValue(max);
+            var cfg = propCfg.Cfgs.FirstOrDefault(c => c.IsInRange(rate));
+            return cfg?.GetAdjustmentValue(max) ?? max;
         }
         private enum Conditions
         {

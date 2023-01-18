@@ -40,6 +40,7 @@ internal class DiziListViewManager
         private event Action<string> OnDiziSelectedAction;
         private ListViewUi<DiziPrefab> DiziList { get; }
         private TopRightView TopRight { get; set; }
+        private int MaxDizi = 10;
 
         public DiziListView(IView v, Action<string> onDiziSelectedAction) : base(v.GameObject, true)
         {
@@ -47,6 +48,7 @@ internal class DiziListViewManager
             DiziList = new ListViewUi<DiziPrefab>(v.GetObject<View>("prefab_dizi"),
                 v.GetObject<ScrollRect>("scroll_diziListView").content.gameObject);
             TopRight = new TopRightView(v.GetObject<View>("view_topRight"));
+            TopRight.Set(0, MaxDizi);
         }
 
 
@@ -54,6 +56,7 @@ internal class DiziListViewManager
         {
             var list = Game.World.Faction.DiziList.ToList();
             SetList(list);
+            TopRight.Set(list.Count, MaxDizi);
         }
 
         private void ClearList() => DiziList.ClearList(ui => ui.Destroy());

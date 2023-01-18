@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using _GameClient.Models;
 using BattleM;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
@@ -15,7 +16,6 @@ public class WinEquipmentManager
 {
     private View_winEquipment WinEquipment { get; set; }
     private DiziController DiziController { get; set; }
-
     public void Init()
     {
         DiziController = Game.Controllers.Get<DiziController>();
