@@ -33,12 +33,17 @@ namespace Core
     {
         int Id { get; }
         string Name { get; }
+        string About { get; }
         ItemType Type { get; }
         int Price { get; }
     }
-
-    public interface IStackableGameItem : IGameItem
+    /// <summary>
+    /// 堆叠
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface IStacking<out T> 
     {
+        T Item { get; }
         int Amount { get; }
     }
 }

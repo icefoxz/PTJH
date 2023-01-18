@@ -37,7 +37,7 @@ namespace Server.Configs.Adventures
         {
             DrawDefaultInspector();
             var script = (AdvStorySo)target;
-            if (GUILayout.Button("根据故事名为事件"))
+            if (GUILayout.Button("为子事件添加前缀(故事名)"))
             {
                 script.RenameAllEvents();
             }

@@ -93,7 +93,7 @@ public class WinConItemSelectorManager
         {
             Display(true);
             //var dizi = bag.Get<DiziDto>(0);
-            SelectedDizi = Game.World.Faction.DiziMap[guid];
+            SelectedDizi = Game.World.Faction.GetDizi(guid);
             UpdateDiziStamina();
             View.StopAllCo();
             View.StartCo(SetTimeEverySec());

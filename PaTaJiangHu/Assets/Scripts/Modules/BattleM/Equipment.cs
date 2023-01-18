@@ -1,3 +1,4 @@
+using Core;
 using Data;
 using Server.Controllers;
 using Systems;
@@ -71,32 +72,35 @@ namespace BattleM
         }
     }
 
-    public interface IArmor: IDataElement
+    public interface IArmor: IGameItem
     {
         int Def { get; }
         SkillGrades Grade { get; }
-        int Price { get; }
     }
 
     public class Armor : IArmor
     {
         public string Name { get; }
+        public string About { get; }
+        public ItemType Type => ItemType.Equipment;
         public int Def { get; }
         public SkillGrades Grade { get; }
         public int Price { get; }
         public int Id { get; }
 
-        public Armor(string name, int def, int id, int price, SkillGrades grade)
+        public Armor(string name, int def, int id, int price, SkillGrades grade, string about)
         {
             Name = name;
             Def = def;
             Id = id;
             Price = price;
             Grade = grade;
+            About = about;
         }
 
         public Armor(IArmor a)
         {
+            About = a.About;
             Grade = a.Grade;
             Price = a.Price;
             Id = a.Id;
@@ -105,9 +109,8 @@ namespace BattleM
         }
     }
 
-    public interface IWeapon : IIdElement
+    public interface IWeapon : IGameItem
     {
-        string Name { get; }
         Way.Armed Armed { get; }
         int Damage { get; }
         Weapon.Injuries Injury { get; }
@@ -125,6 +128,9 @@ namespace BattleM
         }
         public int Id { get; }
         public string Name { get; }
+        public string About { get; }
+        public ItemType Type => ItemType.Equipment;
+        public int Price { get; }
         public Way.Armed Armed { get; }
         public int Damage { get; }
         public Injuries Injury { get; }
@@ -132,7 +138,7 @@ namespace BattleM
         public int FlingTimes { get; set; }
         public void AddFlingTime(int value) => FlingTimes += value;
 
-        public Weapon(int id,string name, int damage, SkillGrades grade, Injuries injury, Way.Armed armed, int flingTimes = 1)
+        public Weapon(int id,string name, int damage, SkillGrades grade, Injuries injury, Way.Armed armed, string about, int price, int flingTimes = 1)
         {
             Id = id;
             Name = name;
@@ -140,11 +146,15 @@ namespace BattleM
             Grade = grade;
             Injury = injury;
             Armed = armed;
+            About = about;
+            Price = price;
             FlingTimes = flingTimes;
         }
 
         public Weapon(IWeapon w)
         {
+            About = w.About;
+            Price = w.Price;
             Id = w.Id;
             Name = w.Name;
             Damage = w.Damage;

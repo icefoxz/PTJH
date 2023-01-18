@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BattleM;
 using Core;
 using Data;
 using MyBox;
@@ -11,12 +12,12 @@ namespace Server.Configs.Adventures
 {
     public interface IAdvPackage
     {
-        IStackableGameItem[] AllItems { get; }
+        IStacking<IGameItem>[] AllItems { get; }
     }
     public interface IGameReward
     {
         IAdvPackage[] Packages { get; }
-        IStackableGameItem[] AllItems { get; }
+        IStacking<IGameItem>[] AllItems { get; }
     }
 
     [CreateAssetMenu(fileName = "id_奖励件名", menuName = "事件/奖励事件")]
@@ -64,14 +65,14 @@ namespace Server.Configs.Adventures
             [SerializeField] private FunctionPropItem[] 功能道具;
 
             public IAdvPackage[] Packages => 奖励包;
-            public IStackableGameItem[] Weapons => 武器;
-            public IStackableGameItem[] Armor => 防具;
-            public IStackableGameItem[] Medicines => 丹药;
-            public IStackableGameItem[] Book => 秘籍;
-            public IStackableGameItem[] StoryProps => 故事道具;
-            public IStackableGameItem[] FunctionProps => 功能道具;
+            public IStacking<IGameItem>[] Weapons => 武器;
+            public IStacking<IGameItem>[] Armor => 防具;
+            public IStacking<IGameItem>[] Medicines => 丹药;
+            public IStacking<IGameItem>[] Book => 秘籍;
+            public IStacking<IGameItem>[] StoryProps => 故事道具;
+            public IStacking<IGameItem>[] FunctionProps => 功能道具;
 
-            public IStackableGameItem[] AllItems => Weapons.Concat(Armor)
+            public IStacking<IGameItem>[] AllItems => Weapons.Concat(Armor)
                 .Concat(Medicines)
                 .Concat(Book)
                 .Concat(StoryProps)
@@ -105,11 +106,11 @@ namespace Server.Configs.Adventures
             [SerializeField] private MedicineItem[] 丹药;
             [SerializeField] private BookItem[] 秘籍;
 
-            public IStackableGameItem[] Weapons => 武器;
-            public IStackableGameItem[] Armor => 防具;
-            public IStackableGameItem[] Medicines => 丹药;
-            public IStackableGameItem[] Book => 秘籍;
-            public IStackableGameItem[] AllItems => Weapons
+            public IStacking<IGameItem>[] Weapons => 武器;
+            public IStacking<IGameItem>[] Armor => 防具;
+            public IStacking<IGameItem>[] Medicines => 丹药;
+            public IStacking<IGameItem>[] Book => 秘籍;
+            public IStacking<IGameItem>[] AllItems => Weapons
                 .Concat(Armor)
                 .Concat(Medicines)
                 .Concat(Book)
@@ -118,6 +119,7 @@ namespace Server.Configs.Adventures
         [Serializable] private class WeaponItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
+            public override int Price => 武器?.Price ?? 0;
             public override string Name => 武器?.Name;
             public override Kinds Kind => Kinds.Weapon;
             protected override ScriptableObject So => 武器;
@@ -126,6 +128,7 @@ namespace Server.Configs.Adventures
         [Serializable] private class ArmorItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 防具;
+            public override int Price => 防具?.Price ?? 0;
             public override string Name => 防具?.Name;
             public override Kinds Kind => Kinds.Armor;
             protected override ScriptableObject So => 防具;
@@ -134,6 +137,7 @@ namespace Server.Configs.Adventures
         [Serializable] private class MedicineItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private MedicineFieldSo 丹药;
+            public override int Price => 丹药?.Price ?? 0;
             public override string Name => 丹药?.Name;
             public override Kinds Kind => Kinds.Medicine;
             protected override ScriptableObject So => 丹药;
@@ -142,6 +146,7 @@ namespace Server.Configs.Adventures
         [Serializable] private class BookItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private BookSoBase 残卷;
+            public override int Price => 残卷?.Price ?? 0;
             public override string Name => 残卷?.Name;
             public override Kinds Kind => Kinds.Book;
             protected override ScriptableObject So => 残卷; 
@@ -149,6 +154,7 @@ namespace Server.Configs.Adventures
         }
         [Serializable] private class StoryPropItem : GameItem
         {
+            public override int Price { get; }
             public override string Name { get; }
             public override Kinds Kind => Kinds.StoryProp;
             protected override ScriptableObject So { get; }
@@ -156,13 +162,14 @@ namespace Server.Configs.Adventures
         }
         [Serializable] private class FunctionPropItem : GameItem
         {
+            public override int Price { get; }
             public override string Name { get; }
             public override Kinds Kind => Kinds.FunctionProp;
             protected override ScriptableObject So { get; }
             protected override bool IsSupportSo => false;
         }
 
-        [Serializable] private abstract class GameItem : IStackableGameItem
+        [Serializable] private abstract class GameItem : IStacking<IGameItem>,IGameItem
         {
             private const string m_Weapon = "武器";
             private const string m_Armor = "防具";
@@ -186,10 +193,14 @@ namespace Server.Configs.Adventures
             [ConditionalField(true, nameof(TryUseSo), true)] [SerializeField] private int _id;
             
             [SerializeField] private int 数量 = 1;
-            [SerializeField] private int 价钱;
-            public int Price => 价钱;
+            [SerializeField][TextArea] private string 说明;
+            public abstract int Price { get; }
             public int Id => _id;
             public abstract string Name { get; }
+
+            public string About => 说明;
+
+            public IGameItem Item => this;
             public int Amount => 数量;
             public ItemType Type => Kind switch
             {

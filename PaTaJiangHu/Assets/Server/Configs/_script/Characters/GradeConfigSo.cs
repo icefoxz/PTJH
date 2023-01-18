@@ -14,7 +14,7 @@ namespace Server.Configs.Characters
     [CreateAssetMenu(fileName = "GradeConfig", menuName = "资质/弟子生成配置")]
     internal class GradeConfigSo : ScriptableObject
     {
-        public enum Grades
+        internal enum Grades
         {
             [InspectorName("白")]F,
             [InspectorName("绿")]E,

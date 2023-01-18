@@ -76,7 +76,11 @@ namespace Systems.Messaging
             return RegEvent(eventName, ObjBagSerialize);
             void ObjBagSerialize(string arg) => action?.Invoke(ObjectBag.DeSerialize(arg));
         }
-
+        /// <summary>
+        /// 删除事件方法(仅仅是删除一个事件方法, 其余的监听方法依然有效)
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="key"></param>
         public void RemoveEvent(string eventName, string key)
         {
             if (EventMap[eventName].ContainsKey(key))

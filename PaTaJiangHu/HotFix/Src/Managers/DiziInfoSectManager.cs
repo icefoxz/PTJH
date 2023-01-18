@@ -67,7 +67,7 @@ public class DiziInfoSectManager
         public void SetDizi(string guid)
         {
             var faction = Game.World.Faction;
-            var dizi = faction.DiziMap[guid];
+            var dizi = faction.GetDizi(guid);
             SelectedDizi = dizi;
             
             //var dizi = bag.Get<DiziDto>(0);

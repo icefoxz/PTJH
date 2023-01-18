@@ -2,6 +2,7 @@
 using BattleM;
 using Core;
 using Server.Configs.Adventures;
+using Server.Configs.Characters;
 using Server.Configs.Skills;
 using Server.Controllers;
 using UnityEditor;
@@ -13,17 +14,21 @@ namespace _GameClient.Models
     /// <summary>
     /// 弟子模型
     /// </summary>
-    public class Dizi : ITerm
+    public class Dizi : ModelBase, ITerm
     {
-        public string Guid { get; private set; }
-        public string Name { get; private set; }
-        public int Strength { get; private set; }
-        public int Agility { get; private set; }
-        public int Hp { get; private set; }
-        public int Mp { get; private set; }
+        protected override string LogPrefix => Name;
+        public string Guid { get; }
+        public string Name { get; }
+        public int Strength => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Strength, Capable.Strength.Value, Level);
+        public int Agility => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Agility, Capable.Agility.Value, Level);
+        public int Hp => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Hp, Capable.Hp.Value, Level);
+        public int Mp => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Mp, Capable.Mp.Value, Level);
         public int Level { get; private set; }
+
+        public IConditionValue Exp => _exp;
+
         public int Power { get; }
-        public IGameItem[] Items => Adventure?.BagItems?? Array.Empty<IGameItem>();
+        public IStacking<IGameItem>[] Items => Adventure?.BagItems?? Array.Empty<IStacking<IGameItem>>();
         public int Grade { get; private set; }
         public ICombatSkill CombatSkill { get; set; }
         public IForceSkill ForceSkill { get; set; }
@@ -39,6 +44,7 @@ namespace _GameClient.Models
         /// </summary>
         public int ArmorPower => Armor?.Def ?? 0;
 
+        private ConValue _exp;
 
         public IDiziStamina Stamina => _stamina;
         private DiziStamina _stamina;
@@ -59,6 +65,8 @@ namespace _GameClient.Models
 
         public AutoAdventure Adventure { get; set; }
 
+        private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
+
         internal Dizi(string guid, string name, 
             GradeValue<int> strength, 
             GradeValue<int> agility,
@@ -71,10 +79,6 @@ namespace _GameClient.Models
         {
             Guid = guid;
             Name = name;
-            Strength = strength.Value;
-            Agility = agility.Value;
-            Hp = hp.Value;
-            Mp = mp.Value;
             Level = level;
             Grade = grade;
             Capable = new Capable(grade, dodgeSlot, combatSlot, bag, strength, agility, hp, mp);
@@ -104,9 +108,22 @@ namespace _GameClient.Models
         internal void UpdateStamina(long ticks)
         {
             _stamina.Update(ticks);
-            Game.MessagingManager.SendParams(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max);
+            Log($"体力更新 = {_stamina.Con}");
+            SendEvent(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max);
         }
 
+        internal void SetLevel(int level)
+        {
+            Level = level;
+            Log($"等级设置 = {Level}");
+        }
+
+        internal void SetExp(int exp, int max = 0)
+        {
+            if (max > 0) _exp.SetMax(max);
+            _exp.Set(exp);
+            Log($"经验设置 = {_exp}");
+        }
 
         private class StateModel
         {
@@ -194,23 +211,21 @@ namespace _GameClient.Models
 
         internal void Wield(IWeapon weapon)
         {
+            Log(weapon == null ? $"卸下{Weapon.Name}" : $"装备{weapon.Name}!");
             Weapon = weapon;
-            XDebug.Log(weapon == null ? "弟子卸下装备" : $"弟子装备{weapon.Name}!");
         }
-
         internal void Wear(IArmor armor)
         {
+            Log(armor == null ? $"卸下{Armor.Name}" : $"装备{armor.Name}!");
             Armor = armor;
-            XDebug.Log(armor == null ? "弟子卸下装备" : $"弟子装备{armor.Name}!");
         }
-
         internal void StartAdventure(long startTime,int returnSecs,int messageSecs)
         {
             Adventure = new AutoAdventure(startTime, returnSecs, messageSecs, this);
-            Game.MessagingManager.Send(EventString.Dizi_Adv_Start, Guid);
+            Log("开始历练.");
+            SendEvent(EventString.Dizi_Adv_Start, Guid);
         }
-
-        internal void StartAdventureStory(DiziAdventureStory story)
+        internal void StartAdventureStory(DiziAdvLog story)
         {
             if (Adventure.State == AutoAdventure.States.None)
                 throw new NotImplementedException();
@@ -219,10 +234,10 @@ namespace _GameClient.Models
         internal void QuitAdventure(long now,int lastMile)
         {
             Adventure.Quit(now, lastMile);
-            Game.MessagingManager.Send(EventString.Dizi_Adv_Recall, Guid);
+            Log($"停止历练, 里数: {lastMile}");
+            SendEvent(EventString.Dizi_Adv_Recall, Guid);
         }
-
-        public void SetCon(IAdjustment.Types type, int value)
+        internal void SetCon(IAdjustment.Types type, int value)
         {
             var con = type switch
             {
@@ -235,62 +250,17 @@ namespace _GameClient.Models
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
             con.Add(value);
-            Game.MessagingManager.SendParams(EventString.Dizi_ConditionUpdate, type, value);
+            Log($"状态[{type}]设置: {con}");
+            SendEvent(EventString.Dizi_ConditionUpdate, type, value);
         }
-    }
-
-    /// <summary>
-    /// 资质能力
-    /// </summary>
-    public class Capable
-    {
-        /// <summary>
-        /// 品级
-        /// </summary>
-        public int Grade { get; private set; }
-        public GradeValue<int> Strength { get; private set; }
-        public GradeValue<int> Agility { get; private set; }
-        public GradeValue<int> Hp { get; private set; }
-        public GradeValue<int> Mp { get; private set; }
-        /// <summary>
-        /// 轻功格
-        /// </summary>
-        public int DodgeSlot { get; private set; }
-        /// <summary>
-        /// 武功格
-        /// </summary>
-        public int CombatSlot { get; private set; }
-        /// <summary>
-        /// 背包格
-        /// </summary>
-        public int Bag { get; private set; }
-
-        public Capable()
-        {
-            
-        }
-        public Capable(int grade, int dodgeSlot, int combatSlot, int bag, GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp)
-        {
-            Grade = grade;
-            DodgeSlot = dodgeSlot;
-            CombatSlot = combatSlot;
-            Bag = bag;
-            Strength = strength;
-            Agility = agility;
-            Hp = hp;
-            Mp = mp;
-        }
-
-        public Capable(Capable c)
-        {
-            Grade = c.Grade;
-            DodgeSlot = c.DodgeSlot;
-            CombatSlot = c.CombatSlot;
-            Bag = c.Bag;
-            Strength = c.Strength;
-            Agility = c.Agility;
-            Hp = c.Hp;
-            Mp = c.Mp;
-        }
+        //internal void SetProps(int str, int agi, int hp, int mp)
+        //{
+        //    Hp = hp;
+        //    Mp = mp;
+        //    Strength = str;
+        //    Agility = agi;
+        //    Log($"属性更新: 力【{Strength}】,敏【{Agility}】,血【{Hp}】,内【{Mp}】");
+        //    SendEvent(EventString.Dizi_Props_Update, Strength, Agility, Hp, Mp);
+        //}
     }
 }

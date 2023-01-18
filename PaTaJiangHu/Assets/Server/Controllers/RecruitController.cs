@@ -12,14 +12,10 @@ namespace Server.Controllers
     public class RecruitController : IGameController
     {
         private Faction Faction => Game.World.Faction;
-        private GradeConfigSo GradeConfig { get; }
-        private RecruitConfigSo RecruitConfig { get; }
+        private GradeConfigSo GradeConfig => RecruitCfg.GradeCfg;
+        private RecruitConfigSo RecruitConfig => RecruitCfg.RecruitCfg;
         private List<Dizi> TempDiziList { get; } = new List<Dizi>();
-        internal RecruitController(Config.Recruit cfg)
-        {
-            GradeConfig = cfg.GradeCfg;
-            RecruitConfig = cfg.RecruitCfg;
-        }
+        private Config.Recruit RecruitCfg => Game.Config.RecruitCfg;
 
         public bool GenerateDizi()
         {

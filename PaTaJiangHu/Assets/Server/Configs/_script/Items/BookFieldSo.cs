@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Core;
 using Data;
 using MyBox;
 using UnityEngine;
@@ -19,9 +20,13 @@ namespace Server.Configs.Items
         [SerializeField] private int id;
         [SerializeField] private int 价钱;
         [SerializeField] private LevelMap[] _levelMap;
+        [SerializeField][TextArea] private string 说明;
         [ConditionalField(true,nameof(CountMaxLevel))][ReadOnly] [SerializeField] private int 最高等级;
         public override int Id => id;
         public override string Name => _name;
+
+        public override string About => 说明;
+
         public override int Price => 价钱;
         public bool CountMaxLevel()
         {
@@ -59,10 +64,12 @@ namespace Server.Configs.Items
             }
         }
     }
-    public abstract class BookSoBase : ScriptableObject, IDataElement
+    public abstract class BookSoBase : ScriptableObject, IGameItem
     {
         public abstract int Id { get; }
         public abstract string Name { get; }
+        public abstract string About { get; }
+        public ItemType Type => ItemType.Book;
         public abstract int Price { get; }
         public abstract int GetUpgradeRate(int currentLevel);
     }

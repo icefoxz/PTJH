@@ -1,4 +1,6 @@
 ﻿using System;
+using _GameClient.Models;
+using System.Collections.Generic;
 using Server.Configs.Items;
 using UnityEditor;
 using UnityEngine;
@@ -10,14 +12,23 @@ namespace Test
     {
         [SerializeField] private ItemToAdd<WeaponFieldSo>[] _weapons;
         [SerializeField] private ItemToAdd<ArmorFieldSo>[] _armors;
+        [SerializeField] private ItemToAdd<MedicineFieldSo>[] _medicines;
 
         private ItemToAdd<WeaponFieldSo>[] Weapons => _weapons;
         private ItemToAdd<ArmorFieldSo>[] Armors => _armors;
+        private ItemToAdd<MedicineFieldSo>[] Medicines => _medicines;
 
+        public static void TestFaction()
+        {
+            XDebug.Log("TestFaction Init!");
+            Game.World.SetFaction(new Faction(silver: 10000, yuanBao: 500, actionLing: 1, diziMap: new List<Dizi>()));
+        }
         public void AddItemToFaction()
         {
-            AddItem(Weapons, i => Game.World.Faction.AddWeapon(i.Instance()));
-            AddItem(Armors, i => Game.World.Faction.AddArmor(i.Instance()));
+            var faction = Game.World.Faction;
+            AddItem(Weapons, i => faction.AddWeapon(i.Instance()));
+            AddItem(Armors, i => faction.AddArmor(i.Instance()));
+            AddItem(Medicines, i => faction.AddMedicine(i, 1));
         }
 
         private void AddItem<T>(ItemToAdd<T>[] items, Action<T> addAction) where T : ScriptableObject

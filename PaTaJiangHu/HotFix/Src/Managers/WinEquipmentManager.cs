@@ -117,7 +117,7 @@ public class WinEquipmentManager
         private void ListItems(ItemTypes type)
         {
             var faction = Game.World.Faction;
-            var selectedDizi = Game.World.Faction.DiziMap[SelectedDiziGuid];
+            var selectedDizi = Game.World.Faction.GetDizi(SelectedDiziGuid);
             var items = new List<(string name,int factionIndex)>();
             IsDiziEquipped = false;
             switch (type)

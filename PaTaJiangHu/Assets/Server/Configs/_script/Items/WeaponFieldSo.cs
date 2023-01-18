@@ -23,6 +23,9 @@ namespace Server.Configs.Items
         [SerializeField] private SkillGrades 品级;
         [SerializeField] private int 价钱;
         [SerializeField] private int 投掷次数 = 1;
+        [SerializeField][TextArea] private string 说明;
+
+        public string About => 说明;
 
         public ItemType Type => ItemType.Equipment;
         public int Price => 价钱;
@@ -31,18 +34,21 @@ namespace Server.Configs.Items
         public Weapon.Injuries Injury => 伤害类型;
         public SkillGrades Grade => 品级;
         public int FlingTimes => 投掷次数;
-        public IWeapon Instance() => new WeaponField(Id, Name, Armed, Damage, Injury, Grade, FlingTimes);
+        public IWeapon Instance() => new WeaponField(Id, Name, Armed, Damage, Injury, Grade, Price, About, FlingTimes);
         private class WeaponField : IWeapon
         {
             public int Id { get; }
             public string Name { get; }
+            public string About { get; }
+            public ItemType Type => ItemType.Equipment;
+            public int Price { get; }
             public Way.Armed Armed { get; }
             public int Damage { get; }
             public Weapon.Injuries Injury { get; }
             public SkillGrades Grade { get; }
             public int FlingTimes { get;  }
 
-            public WeaponField(int id, string name, Way.Armed armed, int damage, Weapon.Injuries injury, SkillGrades grade, int flingTimes)
+            public WeaponField(int id, string name, Way.Armed armed, int damage, Weapon.Injuries injury, SkillGrades grade, int price, string about, int flingTimes)
             {
                 Id = id;
                 Name = name;
@@ -51,6 +57,8 @@ namespace Server.Configs.Items
                 Injury = injury;
                 Grade = grade;
                 FlingTimes = flingTimes;
+                About = about;
+                Price = price;
             }
             public void AddFlingTime(int value)
             {

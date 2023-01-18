@@ -7,15 +7,16 @@ using Utls;
 /// </summary>
 public class GameWorld
 {
+    private Faction _faction;
+
     /// <summary>
     /// 玩家门派
     /// </summary>
-    public Faction Faction { get; set; }
-    
-    public void TestFaction()
+    public Faction Faction => _faction;
+
+    public void SetFaction(Faction faction)
     {
-        Faction = new Faction(silver: 10000, yuanBao: 500, actionLing: 1, diziMap: new List<Dizi>());
-        XDebug.Log("TestFaction Init!");
-        Game.MessagingManager.Send(eventName: EventString.Faction_Init, obj: new Faction.Dto(f: Faction));
+        _faction = faction;
+        Game.MessagingManager.Send(eventName: EventString.Faction_Init, obj: new Faction.Dto(f: _faction));
     }
 }

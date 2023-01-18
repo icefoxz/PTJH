@@ -51,10 +51,10 @@ namespace _GameClient.Models
         private int ServiceCoId { get; set; }
         private Dizi Dizi { get; }
         private DiziBag Bag { get; }
-        public IGameItem[] BagItems => Bag.Items;
+        public IStacking<IGameItem>[] BagItems => Bag.Items;
         public Equipment Equipment { get; }
         private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
-        private Queue<DiziAdventureStory> Stories { get; set; } = new Queue<DiziAdventureStory>();
+        private Queue<DiziAdvLog> Stories { get; set; } = new Queue<DiziAdvLog>();
 
         public AutoAdventure(long startTime, int journeyReturnSec, int messageSecs, Dizi dizi)
         {
@@ -119,7 +119,7 @@ namespace _GameClient.Models
             LastMile = updatedMiles;
         }
 
-        internal void RegStory(DiziAdventureStory story)
+        internal void RegStory(DiziAdvLog story)
         {
             Mode = Modes.Story;
             UpdateTime(story.NowTicks, story.LastMiles);//更新发生地点 & 最新里数
@@ -154,15 +154,15 @@ namespace _GameClient.Models
     }
     public class DiziBag
     {
-        private IStackableGameItem[] _items;
-        public IStackableGameItem[] Items => _items;
+        private IStacking<IGameItem>[] _items;
+        public IStacking<IGameItem>[] Items => _items;
 
         public DiziBag(int length)
         {
-            _items = new IStackableGameItem[length];
+            _items = new IStacking<IGameItem>[length];
         }
 
-        public DiziBag(IStackableGameItem[] items)
+        public DiziBag(IStacking<IGameItem>[] items)
         {
             _items = items;
         }

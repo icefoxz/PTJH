@@ -177,7 +177,7 @@ namespace Server.Controllers
             internal RewardEvent(AdvStorySo storySo, RewardEventSo so) : base(storySo, so)
             {
                 var r = so.Reward;
-                Rewards = r.AllItems.Select(i => $"{i.Name} x{i.Amount}").ToArray();
+                Rewards = r.AllItems.Select(i => $"{i.Item.Name} x{i.Amount}").ToArray();
             }
 
             public RewardEvent()
@@ -220,7 +220,7 @@ namespace Server.Controllers
             public IArmor Armor { get; }
             public int Level { get; }
             public int Power { get; }
-            public IGameItem[] Items { get; }
+            public IStacking<IGameItem>[] Items { get; }
         }
 
         [Serializable] internal class AdvConfig

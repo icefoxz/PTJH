@@ -29,7 +29,7 @@ internal class TestAutoAdvManager
                 AutoAdv = new Test_AutoAdv(v, () => AdvController.AdventureStart(DiziGuid),
                     mile =>
                     {
-                        var dizi = Game.World.Faction.DiziMap[DiziGuid];
+                        var dizi = Game.World.Faction.GetDizi(DiziGuid);
                         var lastMile = dizi.Adventure is { State: AutoAdventure.States.Progress }
                             ? dizi.Adventure.LastMile
                             : 0;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MyBox;
 using UnityEngine;
 
@@ -11,7 +12,14 @@ namespace Server.Configs.Characters
         [SerializeField] private LevelingConfig[] 敏捷成长;
         [SerializeField] private LevelingConfig[] 血成长;
         [SerializeField] private LevelingConfig[] 内成长;
-
+        private Props[] _props;
+        public Props[] GetProsArray => _props ??= new[]
+        {
+            Props.Strength, 
+            Props.Agility, 
+            Props.Hp, 
+            Props.Mp
+        };
         public enum Props
         {
             [InspectorName("力量")] Strength,
@@ -24,6 +32,9 @@ namespace Server.Configs.Characters
         private LevelingConfig[] AgilityGrowingRate => 敏捷成长;
         private LevelingConfig[] HpGrowingRate => 血成长;
         private LevelingConfig[] MpGrowingRate => 内成长;
+
+        public int MaxLevel => new[]
+            { StrengthGrowingRate.Length, AgilityGrowingRate.Length, HpGrowingRate.Length, MpGrowingRate.Length }.Min();
 
         public int GetLeveledValue(Props prop, int baseValue, int level)
         {

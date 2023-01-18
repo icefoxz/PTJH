@@ -31,7 +31,7 @@ namespace Server.Configs.Adventures
         IArmor Armor { get; }
         int Level { get; }
         int Power { get; }
-        IGameItem[] Items { get; }
+        IStacking<IGameItem>[] Items { get; }
     }
 
     [CreateAssetMenu(fileName = "id_条件事件名", menuName = "事件/条件事件")]

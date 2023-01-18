@@ -1,31 +1,50 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BattleM;
+using Core;
+using Server.Configs.Items;
 using Utls;
 
 namespace _GameClient.Models
 {
+    public interface IFaction
+    {
+        int Silver { get; }
+        int YuanBao { get; }
+        int ActionLing { get; }
+        IReadOnlyList<IWeapon> Weapons { get; }
+        IReadOnlyList<IArmor> Armors { get; }
+        ICollection<Dizi> DiziList { get; }
+        Dizi GetDizi(string guid);
+    }
+
     /// <summary>
     /// 门派模型
     /// </summary>
-    public class Faction
+    public class Faction : ModelBase, IFaction
     {
-        private Dictionary<string, Dizi> _diziMap;
+        protected override string LogPrefix { get; } = "门派";
+
         private List<IWeapon> _weapons= new List<IWeapon>();
         private List<IArmor> _armors = new List<IArmor>();
+        private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
         public int ActionLing { get; private set; }
         /// <summary>
         /// key = dizi.Guid, value = dizi
         /// </summary>
-        public IReadOnlyDictionary<string,Dizi> DiziMap => _diziMap;
+        private Dictionary<string,Dizi> DiziMap { get; }
         public IReadOnlyList<IWeapon> Weapons => _weapons;
         public IReadOnlyList<IArmor> Armors => _armors;
+        public ICollection<Dizi> DiziList => DiziMap.Values;
+
+        public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
 
         internal Faction(int silver, int yuanBao, int actionLing, List<Dizi> diziMap)
         {
-            _diziMap = diziMap.ToDictionary(d => d.Guid.ToString(), d => d);
+            DiziMap = diziMap.ToDictionary(d => d.Guid.ToString(), d => d);
             Silver = silver;
             YuanBao = yuanBao;
             ActionLing = actionLing;
@@ -33,16 +52,16 @@ namespace _GameClient.Models
 
         internal void AddDizi(Dizi dizi)
         {
-            _diziMap.Add(dizi.Guid, dizi);
+            DiziMap.Add(dizi.Guid, dizi);
             Log($"添加弟子{dizi.Name}");
-            Game.MessagingManager.Send(EventString.Faction_DiziAdd, dizi);
-            Game.MessagingManager.Send(EventString.Faction_DiziListUpdate, string.Empty);
+            SendEvent(EventString.Faction_DiziAdd, dizi.Guid);
+            SendEvent(EventString.Faction_DiziListUpdate, string.Empty);
         }
 
         internal void RemoveDizi(Dizi dizi)
         {
             Log($"移除弟子{dizi.Name}");
-            _diziMap.Remove(dizi.Guid.ToString());
+            DiziMap.Remove(dizi.Guid);
         }
 
         internal void AddSilver(int silver)
@@ -50,7 +69,7 @@ namespace _GameClient.Models
             var last = Silver;
             Silver += silver;
             Log($"银两【{last}】增加了{silver},总:【{Silver}】");
-            Game.MessagingManager.Send(EventString.Faction_SilverUpdate, Silver);
+            SendEvent(EventString.Faction_SilverUpdate, Silver);
         }
 
         internal void AddYuanBao(int yuanBao)
@@ -58,7 +77,7 @@ namespace _GameClient.Models
             var last = YuanBao;
             YuanBao += yuanBao;
             Log($"元宝【{last}】增加了{yuanBao},总:【{YuanBao}】");
-            Game.MessagingManager.Send(EventString.Faction_YuanBaoUpdate, YuanBao);
+            SendEvent(EventString.Faction_YuanBaoUpdate, YuanBao);
         }
 
         internal void AddLing(int ling)
@@ -66,7 +85,7 @@ namespace _GameClient.Models
             var last = ActionLing;
             ActionLing += ling;
             Log($"行动令【{last}】增加了{ling},总:【{ActionLing}】");
-            Game.MessagingManager.SendParams(EventString.Faction_Params_ActionLingUpdate, ActionLing, 100, 0, 0);
+            SendEvent(EventString.Faction_Params_ActionLingUpdate, ActionLing, 100, 0, 0);
         }
 
         public class Dto
@@ -117,7 +136,28 @@ namespace _GameClient.Models
             Log($"移除防具【{armor.Name}】");
         }
 
-        private void Log(string message) => XDebug.Log($"门派: {message}");
+        internal void AddMedicine(IMedicine med, int amount)
+        {
+            if (!Medicines.ContainsKey(med))
+                Medicines.Add(med, 0);
+            Medicines[med] += amount;
+            Log($"添加药品【{med.Name}】x{amount}, 总: {Medicines[med]}");
+        }
 
+        internal void RemoveMedicine(IMedicine med,int amount)
+        {
+            if (!Medicines.ContainsKey(med))
+                LogError($"找不到{med.Name},Id = {med.Id}");
+            if (Medicines[med] < amount) LogError($"{med.Name}:{Medicines[med]} < {amount}! ");
+            Medicines[med] -= amount;
+            Log($"移除药品【{med.Name}】");
+        }
+
+        public Dizi GetDizi(string guid)
+        {
+            if(DiziMap.TryGetValue(guid, out var dizi)) return dizi;
+            LogWarning($"找不到弟子 = {guid}");
+            return null;
+        }
     }
 }

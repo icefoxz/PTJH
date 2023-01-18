@@ -6,6 +6,7 @@ using Systems;
 using Systems.Coroutines;
 using Systems.Messaging;
 using Systems.Updaters;
+using Test;
 using UnityEngine;
 using Utls;
 using Views;
@@ -45,7 +46,7 @@ public class Game : UnitySingleton<Game>
 
     public static MainUi MainUi { get; private set; }
     public static GameWorld World { get; private set; }
-    private static Config Config { get; set; }
+    internal static Config Config { get; set; }
     public static bool IsInit { get; private set; }
     internal void Init(Res res, IlService ilService, MainUi mainUi, Config config)
     {
@@ -84,7 +85,7 @@ public class Game : UnitySingleton<Game>
         IEnumerator StartAfterSec(float innerSec)
         {
             yield return new WaitForSeconds(innerSec);
-            World.TestFaction();
+            Test_Faction.TestFaction();
         }
     }
 
@@ -92,12 +93,10 @@ public class Game : UnitySingleton<Game>
     {
         Controllers = new GameControllerServiceContainer();
         //***************Reg********************//
-        Controllers.Reg(new RecruitController(Config.RecruitCfg));
+        Controllers.Reg(new RecruitController());
         Controllers.Reg(new DiziController());
-        Controllers.Reg(new StaminaController(Config.DiziCfg));
-        Controllers.Reg(new DiziAdvController(Config.AdvCfg.AdventureCfg, 
-            Config.AdvCfg.BattleSimulation,
-            Config.AdvCfg.ConditionProperty));
+        Controllers.Reg(new StaminaController());
+        Controllers.Reg(new DiziAdvController());
     }
 
     private static void TestFactionInventory()

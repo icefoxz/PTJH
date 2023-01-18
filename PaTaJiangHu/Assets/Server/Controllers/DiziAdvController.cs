@@ -17,31 +17,22 @@ namespace Server.Controllers
         private int EventLogSecs => AdventureCfg.EventLogSecs;//信息弹出秒数间隔
         private int JourneyReturnSec => AdventureCfg.AdvMap.JourneyReturnSec;//回城秒数
         private int MinuteInMile => AdventureCfg.MinuteInMile;//多少分钟 = 1里
-        private AdventureConfigSo AdventureCfg { get; }
-        private BattleSimulatorConfigSo BattleSimulation { get; }
-        private ConditionPropertySo ConditionProperty { get; }
+        private AdventureConfigSo AdventureCfg => Game.Config.AdvCfg.AdventureCfg;
+        private BattleSimulatorConfigSo BattleSimulation => Game.Config.AdvCfg.BattleSimulation;
+        private ConditionPropertySo ConditionProperty => Game.Config.AdvCfg.ConditionProperty;
 
         private Faction Faction => Game.World.Faction;
 
-        internal DiziAdvController(AdventureConfigSo adventureCfg,
-            BattleSimulatorConfigSo battleSimulation,
-            ConditionPropertySo conditionProperty)
-        {
-            AdventureCfg = adventureCfg;
-            BattleSimulation = battleSimulation;
-            ConditionProperty = conditionProperty;
-        }
-
         public void AdventureStart(string guid)
         {
-            var dizi = Faction.DiziMap[guid];
+            var dizi = Faction.GetDizi(guid);
             dizi.StartAdventure(SysTime.UnixNow, JourneyReturnSec, EventLogSecs);
         }
 
         public void AdventureRecall(string guid)
         {
             var now = SysTime.UnixNow;
-            var dizi = Faction.DiziMap[guid];
+            var dizi = Faction.GetDizi(guid);
             var lastMile = CheckMile(dizi.Guid);
             if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return;
             dizi.QuitAdventure(now, lastMile);
@@ -49,7 +40,7 @@ namespace Server.Controllers
 
         public int CheckMile(string diziGuid)
         {
-            var dizi = Faction.DiziMap[diziGuid];
+            var dizi = Faction.GetDizi(diziGuid);
             var lastMile = dizi.Adventure.LastMile;
             var lastUpdate = dizi.Adventure.LastUpdate;
             var now = SysTime.UnixNow;
@@ -70,7 +61,7 @@ namespace Server.Controllers
         /// <param name="diziGuid"></param>
         public async void OnMileTrigger(long now, int fromMiles, int toMiles, string diziGuid)
         {
-            var dizi = Faction.DiziMap[diziGuid];
+            var dizi = Faction.GetDizi(diziGuid);
             if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return;
             var places = AdventureCfg.AdvMap.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
             if (places.Length > 0)
@@ -93,15 +84,15 @@ namespace Server.Controllers
         /// <returns></returns>
         public int[] GetMinorMiles(string diziGuid)
         {
-            var dizi = Faction.DiziMap[diziGuid];
+            var dizi = Faction.GetDizi(diziGuid);
             var miles = AdventureCfg.AdvMap.ListMinorMiles();
             return miles;
         }
 
         //获取故事信息
-        private async Task<DiziAdventureStory[]> ProcessStory(IAdvPlace[] places, long nowTicks, int updatedMiles, Dizi dizi)
+        private async Task<DiziAdvLog[]> ProcessStory(IAdvPlace[] places, long nowTicks, int updatedMiles, Dizi dizi)
         {
-            var stories = new List<DiziAdventureStory>();
+            var stories = new List<DiziAdvLog>();
             for (int i = 0; i < places.Length; i++)//为每一个故事地点获取一个故事
             {
                 var place = places[i];
@@ -148,7 +139,7 @@ namespace Server.Controllers
                 EventHandler = eventHandler;
             }
 
-            public async Task<DiziAdventureStory> Invoke(Dizi dizi, long nowTicks, int updatedMiles)
+            public async Task<DiziAdvLog> Invoke(Dizi dizi, long nowTicks, int updatedMiles)
             {
                 while (CurrentEvent != null && CurrentEvent.AdvType != AdvTypes.Quit)
                 {
@@ -162,7 +153,7 @@ namespace Server.Controllers
                     CurrentEvent = nextEvent;
                     _recursiveIndex++;
                 }
-                return new DiziAdventureStory(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles);
+                return new DiziAdvLog(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles);
             }
 
             private void OnNextEventTrigger(IAdvEvent nextEvent)
@@ -264,14 +255,14 @@ namespace Server.Controllers
         #endregion
     }
 
-    public record DiziAdventureStory
+    public record DiziAdvLog
     {
         public string[] Messages { get; set; }
         public string DiziGuid { get; set; }
         public long NowTicks { get; set; }
         public int LastMiles { get; set; }
 
-        public DiziAdventureStory(string[] messages, string diziGuid, long nowTicks, int lastMiles)
+        public DiziAdvLog(string[] messages, string diziGuid, long nowTicks, int lastMiles)
         {
             Messages = messages;
             DiziGuid = diziGuid;

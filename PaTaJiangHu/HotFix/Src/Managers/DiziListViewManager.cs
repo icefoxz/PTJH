@@ -52,7 +52,7 @@ internal class DiziListViewManager
 
         public void UpdateList(ObjectBag bag)
         {
-            var list = Game.World.Faction.DiziMap.Values.ToList();
+            var list = Game.World.Faction.DiziList.ToList();
             SetList(list);
         }
 

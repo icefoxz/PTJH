@@ -91,7 +91,7 @@ public class DiziAdvManager
         public void Set(ObjectBag bag)
         {
             var guid = bag.Get<string>(0);
-            var dizi = Game.World.Faction.DiziMap[guid];
+            var dizi = Game.World.Faction.GetDizi(guid);
             SelectedDizi = dizi;
             SetDizi(dizi);
         }

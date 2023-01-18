@@ -8,6 +8,7 @@ using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Configs.TestControllers;
 using Server.Controllers;
+using Test;
 using UnityEngine;
 using Utls;
 
@@ -77,7 +78,7 @@ namespace Server.Configs
         public void StartAutoAdventure() => Game.MessagingManager.Send(EventString.Test_AutoAdvDiziInit, string.Empty);
         public string InitAutoAdventure()
         {
-            Game.World.TestFaction();
+            Test_Faction.TestFaction();
             var faction = Game.World.Faction;
             var p = AutoAdventureCfg.Player;
             var dizi = new Dizi(guid: Guid.NewGuid().ToString(), name: p.Name,

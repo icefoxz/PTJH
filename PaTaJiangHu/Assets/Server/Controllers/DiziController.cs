@@ -1,16 +1,19 @@
 ﻿using System;
 using _GameClient.Models;
 using Server.Configs.Adventures;
+using Server.Configs.Characters;
 
 namespace Server.Controllers
 {
     public class DiziController : IGameController
     {
+        private LevelConfigSo LevelConfig => Game.Config.DiziCfg.LevelConfigSo;
+
         private Faction Faction => Game.World.Faction;
 
         public void SelectDizi(string guid)
         {
-            var selectedDizi = Faction.DiziMap[guid];
+            var selectedDizi = Faction.GetDizi(guid);
             Game.MessagingManager.Send(EventString.Faction_DiziSelected, selectedDizi.Guid);
             Game.MessagingManager.Send(EventString.Dizi_AdvManagement, selectedDizi.Guid);
         }
@@ -19,6 +22,31 @@ namespace Server.Controllers
         {
             Game.MessagingManager.Send(EventString.Dizi_ConditionManagement, guid);
             //var items = Game.MessagingManager.Send(EventString.Faction_ListDiziConditionItems,, Faction.Silver);
+        }
+
+        /// <summary>
+        /// 弟子增加经验值
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <param name="exp"></param>
+        public void DiziExpAdd(string guid, int exp)
+        {
+            var dizi = Faction.GetDizi(guid);
+            var max = dizi.Exp.Max;
+            var value = dizi.Exp.Value;
+            int balance;
+            var newValue = balance = value + exp;
+            var level = dizi.Level;
+            var maxLevel = LevelConfig.MaxLevel;
+            if (max <= newValue && //到达上限
+                maxLevel > level + 1) //小于弟子配置上限
+            {
+                level++;
+                balance = newValue - max;
+                //升级
+                dizi.SetLevel(level);
+            }
+            dizi.SetExp(balance);
         }
 
         /// <summary>
@@ -39,7 +67,7 @@ namespace Server.Controllers
         /// <param name="itemType">0 = weapon, 1 = armor</param>
         public void DiziEquip(string guid, int index, int itemType)
         {
-            var dizi = Faction.DiziMap[guid];
+            var dizi = Faction.GetDizi(guid);
             switch (itemType)
             {
                 case 0:
@@ -65,7 +93,7 @@ namespace Server.Controllers
         }
         public void DiziUnEquipItem(string guid, int itemType)
         {
-            var dizi = Faction.DiziMap[guid];
+            var dizi = Faction.GetDizi(guid);
             switch (itemType)
             {
                 case 0:
@@ -90,7 +118,7 @@ namespace Server.Controllers
 
         public void AddDiziCon(string guid, IAdjustment.Types type, int adjValue)
         {
-            var dizi = Faction.DiziMap[guid];
+            var dizi = Faction.GetDizi(guid);
             if (type == IAdjustment.Types.Stamina)
             {
                 var staminaController = Game.Controllers.Get<StaminaController>();
