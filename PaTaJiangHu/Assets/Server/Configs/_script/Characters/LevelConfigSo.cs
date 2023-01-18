@@ -5,29 +5,22 @@ using UnityEngine;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "LevelingConfig", menuName = "配置/升等配置")]
+    [CreateAssetMenu(fileName = "LevelingConfig", menuName = "配置/弟子/升等配置")]
     internal class LevelConfigSo : ScriptableObject
     {
         [SerializeField] private LevelingConfig[] 力量成长;
         [SerializeField] private LevelingConfig[] 敏捷成长;
         [SerializeField] private LevelingConfig[] 血成长;
         [SerializeField] private LevelingConfig[] 内成长;
-        private Props[] _props;
-        public Props[] GetProsArray => _props ??= new[]
+        private DiziProps[] _props;
+        public DiziProps[] GetProsArray => _props ??= new[]
         {
-            Props.Strength, 
-            Props.Agility, 
-            Props.Hp, 
-            Props.Mp
+            DiziProps.Strength, 
+            DiziProps.Agility, 
+            DiziProps.Hp, 
+            DiziProps.Mp
         };
-        public enum Props
-        {
-            [InspectorName("力量")] Strength,
-            [InspectorName("敏捷")] Agility,
-            [InspectorName("血")] Hp,
-            [InspectorName("内")] Mp
-        }
-
+        
         private LevelingConfig[] StrengthGrowingRate => 力量成长;
         private LevelingConfig[] AgilityGrowingRate => 敏捷成长;
         private LevelingConfig[] HpGrowingRate => 血成长;
@@ -36,16 +29,16 @@ namespace Server.Configs.Characters
         public int MaxLevel => new[]
             { StrengthGrowingRate.Length, AgilityGrowingRate.Length, HpGrowingRate.Length, MpGrowingRate.Length }.Min();
 
-        public int GetLeveledValue(Props prop, int baseValue, int level)
+        public int GetLeveledValue(DiziProps prop, int baseValue, int level)
         {
             if (level <= 0) throw new InvalidOperationException($"{prop}.等级不可以小于1!");
             if (level == 1) return baseValue;
             return prop switch
             {
-                Props.Strength => LevelingFormula(level, baseValue, StrengthGrowingRate),
-                Props.Agility => LevelingFormula(level, baseValue, AgilityGrowingRate),
-                Props.Hp => LevelingFormula(level, baseValue, HpGrowingRate),
-                Props.Mp => LevelingFormula(level, baseValue, MpGrowingRate),
+                DiziProps.Strength => LevelingFormula(level, baseValue, StrengthGrowingRate),
+                DiziProps.Agility => LevelingFormula(level, baseValue, AgilityGrowingRate),
+                DiziProps.Hp => LevelingFormula(level, baseValue, HpGrowingRate),
+                DiziProps.Mp => LevelingFormula(level, baseValue, MpGrowingRate),
                 _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
             };
         }

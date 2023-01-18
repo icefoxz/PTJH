@@ -19,12 +19,18 @@ namespace _GameClient.Models
         protected override string LogPrefix => Name;
         public string Guid { get; }
         public string Name { get; }
-        public int Strength => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Strength, Capable.Strength.Value, Level);
-        public int Agility => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Agility, Capable.Agility.Value, Level);
-        public int Hp => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Hp, Capable.Hp.Value, Level);
-        public int Mp => LevelCfg.GetLeveledValue(LevelConfigSo.Props.Mp, Capable.Mp.Value, Level);
-        public int Level { get; private set; }
 
+        public int Strength => GetLeveledValue(DiziProps.Strength) + 
+                               GetPropStateAddon(DiziProps.Strength) +
+                               GetWeaponDamage();
+        public int Agility => GetLeveledValue(DiziProps.Agility) + 
+                              GetPropStateAddon(DiziProps.Agility);
+        public int Hp => GetLeveledValue(DiziProps.Hp) + 
+                         GetPropStateAddon(DiziProps.Hp);
+        public int Mp => GetLeveledValue(DiziProps.Mp) + 
+                         GetPropStateAddon(DiziProps.Mp);
+
+        public int Level { get; private set; }
         public IConditionValue Exp => _exp;
 
         public int Power { get; }
@@ -35,14 +41,15 @@ namespace _GameClient.Models
         public IDodgeSkill DodgeSkill { get; set; }
         public IWeapon Weapon { get; private set; }
         public IArmor Armor { get; private set; }
+
         /// <summary>
         /// 武器战力
         /// </summary>
-        public int WeaponPower => Weapon?.Damage ?? 0;
+        public int WeaponPower => GetWeaponDamage();
         /// <summary>
         /// 防具战力
         /// </summary>
-        public int ArmorPower => Armor?.Def ?? 0;
+        public int ArmorPower => GetArmorDef();
 
         private ConValue _exp;
 
@@ -66,6 +73,7 @@ namespace _GameClient.Models
         public AutoAdventure Adventure { get; set; }
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
+        private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
 
         internal Dizi(string guid, string name, 
             GradeValue<int> strength, 
@@ -99,6 +107,45 @@ namespace _GameClient.Models
             _injury = new ConValue(100);
             _inner = new ConValue(100);
         }
+
+        /// <summary>
+        /// 计算状态后的数值
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns></returns>
+        public int GetPropStateAddon(DiziProps prop)
+        {
+            var leveledValue = GetLeveledValue(prop);
+            var value = PropState.GetStateAdjustmentValue(prop,
+                Food.ValueMaxRatio,
+                Emotion.ValueMaxRatio,
+                Injury.ValueMaxRatio,
+                Inner.ValueMaxRatio,
+                leveledValue);
+            return value;
+        }
+        /// <summary>
+        /// 升等后的数值
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public int GetLeveledValue(DiziProps prop)
+        {
+            var propValue = prop switch
+            {
+                DiziProps.Strength => Capable.Strength.Value,
+                DiziProps.Agility => Capable.Agility.Value,
+                DiziProps.Hp => Capable.Hp.Value,
+                DiziProps.Mp => Capable.Mp.Value,
+                _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
+            };
+            var leveledValue = LevelCfg.GetLeveledValue(prop, propValue, Level);
+            return leveledValue;
+        }
+
+        public int GetWeaponDamage() => Weapon?.Damage ?? 0;
+        public int GetArmorDef()=> Armor?.Def ?? 0;
 
         #region ITerm
 
@@ -253,14 +300,5 @@ namespace _GameClient.Models
             Log($"状态[{type}]设置: {con}");
             SendEvent(EventString.Dizi_ConditionUpdate, type, value);
         }
-        //internal void SetProps(int str, int agi, int hp, int mp)
-        //{
-        //    Hp = hp;
-        //    Mp = mp;
-        //    Strength = str;
-        //    Agility = agi;
-        //    Log($"属性更新: 力【{Strength}】,敏【{Agility}】,血【{Hp}】,内【{Mp}】");
-        //    SendEvent(EventString.Dizi_Props_Update, Strength, Agility, Hp, Mp);
-        //}
     }
 }

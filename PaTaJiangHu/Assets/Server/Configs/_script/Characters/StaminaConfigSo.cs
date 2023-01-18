@@ -4,8 +4,8 @@ using Utls;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "StaminaConvert", menuName = "配置/体力产出")]
-    public class Stamina : ScriptableObject
+    [CreateAssetMenu(fileName = "StaminaConvert", menuName = "配置/弟子/体力产出")]
+    public class StaminaConfigSo : ScriptableObject
     {
         [Header("1体力的产出时间")] [SerializeField] private int 分钟;
         [SerializeField] private int 小时;

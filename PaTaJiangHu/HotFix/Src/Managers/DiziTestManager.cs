@@ -476,7 +476,7 @@ public class DiziTestManager
             UpdateConText(con, fix, value, max, 1f * max / fix);
         }
 
-        private void UpdateConText(Cons con, int fix, int value, int max, float ratio)
+        private void UpdateConText(Cons con, int fix, int value, int max, double ratio)
         {
             var ratioText = (int)(ratio * 100);
             ConMap[con].UpdateText($"{con}({fix})", $"{value}/{max}({ratioText}%)");

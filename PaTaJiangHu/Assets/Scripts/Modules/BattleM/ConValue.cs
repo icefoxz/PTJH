@@ -8,9 +8,9 @@ namespace BattleM
         public int Max { get; private set; }
         public int Value { get; private set; }
         public int Fix { get; private set; }
-        public float MaxRatio => 1f * Max / Fix;
-        public float ValueFixRatio => 1f * Value / Fix;
-        public float ValueMaxRatio => 1f * Value / Max;
+        public double MaxRatio => 1d * Max / Fix;
+        public double ValueFixRatio => 1d * Value / Fix;
+        public double ValueMaxRatio => 1d * Value / Max;
         public bool IsExhausted => Value <= 0;
 
         public ConValue()

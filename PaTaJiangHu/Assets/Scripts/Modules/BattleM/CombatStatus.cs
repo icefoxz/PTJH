@@ -9,15 +9,15 @@ namespace BattleM
         int Max { get; }
         int Value { get; }
         int Fix { get; }
+        double MaxRatio { get; }
+        double ValueFixRatio { get; }
+        double ValueMaxRatio { get; }
     }
     /// <summary>
     /// 游戏状态值基本接口，包括执行方法
     /// </summary>
     public interface IGameCondition : IConditionValue
     {
-        float MaxRatio { get; }
-        float ValueFixRatio { get; }
-        float ValueMaxRatio { get; }
         bool IsExhausted { get; }
         void Add(int value);
         /// <summary>

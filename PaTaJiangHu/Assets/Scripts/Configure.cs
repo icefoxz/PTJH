@@ -5,6 +5,7 @@ using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utls;
 
 /// <summary>
@@ -35,10 +36,12 @@ internal class Configure : MonoBehaviour
     public Dizi DiziCfg => 弟子配置;
     [Serializable] internal class Dizi
     {
-        [SerializeField] private Stamina 弟子体力配置;
+        [SerializeField] private StaminaConfigSo 体力配置;
         [SerializeField] private LevelConfigSo 升级配置;
-        internal Stamina StaminaCfg => GetSo(弟子体力配置);
+        [SerializeField] private PropStateConfigSo 属性状态配置;
+        internal StaminaConfigSo StaminaCfg => GetSo(体力配置);
         internal LevelConfigSo LevelConfigSo => GetSo(升级配置);
+        internal PropStateConfigSo PropState => GetSo(属性状态配置);
     }
 
     //历练配置

@@ -8,7 +8,7 @@ namespace Server.Controllers
     public class StaminaController : IGameController
     {
         private Faction Faction => Game.World.Faction;
-        private Stamina StaminaGenerator => Game.Config.DiziCfg.StaminaCfg;
+        private StaminaConfigSo StaminaGenerator => Game.Config.DiziCfg.StaminaCfg;
         public int MaxStamina = 100;
 
         public void ConsumeStamina(string diziGuid,int stamina,bool autoAlign = false)

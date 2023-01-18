@@ -37,10 +37,10 @@ namespace Server.Controllers
         public void OnDiziLevel(int level)
         {
             var leveling = Config.LevelConfig;
-            var str = leveling.GetLeveledValue(LevelConfigSo.Props.Strength, TestDizi.Strength, level);
-            var agi = leveling.GetLeveledValue(LevelConfigSo.Props.Agility, TestDizi.Agility, level);
-            var hp = leveling.GetLeveledValue(LevelConfigSo.Props.Strength, TestDizi.MaxHp, level);
-            var mp = leveling.GetLeveledValue(LevelConfigSo.Props.Strength, TestDizi.MaxMp, level);
+            var str = leveling.GetLeveledValue(DiziProps.Strength, TestDizi.Strength, level);
+            var agi = leveling.GetLeveledValue(DiziProps.Agility, TestDizi.Agility, level);
+            var hp = leveling.GetLeveledValue(DiziProps.Strength, TestDizi.MaxHp, level);
+            var mp = leveling.GetLeveledValue(DiziProps.Strength, TestDizi.MaxMp, level);
             var dizi = TestDizi.Clone();
             dizi.SetHp(hp);
             dizi.SetMp(mp);
@@ -139,11 +139,11 @@ namespace Server.Controllers
         {
             [SerializeField] private LevelConfigSo 等级配置;
             [SerializeField] private GradeConfigSo 资质配置;
-            [SerializeField] private Stamina 体力产出配置;
+            [SerializeField] private StaminaConfigSo 体力产出配置;
 
             public LevelConfigSo LevelConfig => 等级配置;
             public GradeConfigSo GradeConfigSo => 资质配置;
-            public Stamina StaminaGenerator => 体力产出配置;
+            public StaminaConfigSo StaminaGenerator => 体力产出配置;
         }
     }
 }
