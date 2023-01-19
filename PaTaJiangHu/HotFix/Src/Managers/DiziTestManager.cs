@@ -26,7 +26,7 @@ public class DiziTestManager
     {
         Controller = TestCaller.Instance.InstanceDiziController();
         InitUi();
-        EventReg();
+        EventStaminaReg();
     }
 
     private void InitUi()
@@ -35,7 +35,7 @@ public class DiziTestManager
         {
             GenWindow = new DiziGenWindow(v, level => Controller.OnDiziLevel(level));
             GenWindow.SetButtons(Controller.OnGenerateDizi, () => GenWindow.Display(false));
-        });
+        },EventGenWindowReg);
         Game.UiBuilder.Build("test_diziStamina", (go, v) =>
         {
             StaCountWindow = new StaminaCountWindow(go,
@@ -60,22 +60,22 @@ public class DiziTestManager
             StaCountWindow.SetButton(() => Controller.OnSetStamina(
                 StaCountWindow.InputStamina,
                 StaCountWindow.InputMinutes));
-        });
-        //Game.UiBuilder.Build("test_medicineFunction", (go, v) =>
-        //{
-        //    //MedicineTest = new MedicineTestWindow(go.GetComponent<View>(), id => TestCaller.Instance.UseMedicine(id));
-        //    MedicineTest.Set(MedicineTestWindow.Cons.Hp, TestCaller.Instance.SetHpValue, TestCaller.Instance.SetHpMax, TestCaller.Instance.SetHpFix);
-        //    MedicineTest.Set(MedicineTestWindow.Cons.Mp, TestCaller.Instance.SetMpValue, TestCaller.Instance.SetMpMax, TestCaller.Instance.SetMpFix);
-        //});
+        },EventStaminaReg);
     }
 
-    private void EventReg()
+    private void EventGenWindowReg()
     {
         Game.MessagingManager.RegEvent(EventString.Test_DiziGenerate, bag => GenWindow.SetDizi(bag.Get<Dizi>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_DiziRecruit, bag =>
         {
             GenWindow.Display(true);
         });
+        Game.MessagingManager.RegEvent(EventString.Test_DiziLeveling,
+            bag => GenWindow.SetDiziGrow(bag.Get<Dizi>(0)));
+    }
+
+    private void EventStaminaReg()
+    {
         Game.MessagingManager.RegEvent(EventString.Test_StaminaWindow, bag =>
         {
             StaCountWindow.Display(true);
@@ -92,8 +92,6 @@ public class DiziTestManager
             bag => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Hp, bag.Get<ConValue>(0)));
         Game.MessagingManager.RegEvent(EventString.Test_UpdateMp,
             bag => MedicineTest.UpdateCon(MedicineTestWindow.Cons.Mp, bag.Get<ConValue>(0)));
-        Game.MessagingManager.RegEvent(EventString.Test_DiziLeveling,
-            bag => GenWindow.SetDiziGrow(bag.Get<Dizi>(0)));
     }
 
     private class TestStatus

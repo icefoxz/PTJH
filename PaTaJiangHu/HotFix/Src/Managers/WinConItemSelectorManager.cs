@@ -22,19 +22,13 @@ public class WinConItemSelectorManager
     public void Init()
     {
         DiziController = Game.Controllers.Get<DiziController>();
-        InitUi();
-        RegEvents();
-    }
-
-    private void InitUi()
-    {
         Game.UiBuilder.Build("view_winConItemSelector", v =>
         {
             WinConItemSelector = new View_winConItemSelector(v,
                 () => XDebug.Log("10硬币已派发！"),
                 () => XDebug.Log("物品已使用！"));
             Game.MainUi.SetWindow(v, resetPos: true);
-        });
+        },RegEvents);
     }
 
     private void RegEvents()

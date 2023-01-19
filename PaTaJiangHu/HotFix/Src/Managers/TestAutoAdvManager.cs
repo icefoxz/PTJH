@@ -36,7 +36,11 @@ internal class TestAutoAdvManager
                         AdvController.OnMileTrigger(SysTime.UnixNow, lastMile, mile, DiziGuid);
 
                     }, () => AdvController.AdventureRecall(DiziGuid));
-            });
+            },RegEvent);
+    }
+
+    private void RegEvent()
+    {
         Game.MessagingManager.RegEvent(EventString.Test_AutoAdvDiziInit, bag =>
         {
             DiziGuid = TestCaller.Instance.InitAutoAdventure();
@@ -54,7 +58,7 @@ internal class TestAutoAdvManager
         {
             var message = bag.Get<string>(1);
             var isStoryEnd = bag.Get<bool>(2);
-            AutoAdv.UpdateMessage(message,isStoryEnd);
+            AutoAdv.UpdateMessage(message, isStoryEnd);
         });
         //Game.MessagingManager.RegEvent(EventString.Test_AutoAdv_ListMajorMiles, bag =>
         //{

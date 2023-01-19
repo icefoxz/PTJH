@@ -19,8 +19,12 @@ public class DiziRecruitManager
     public void Init()
     {
         RecruitController = Game.Controllers.Get<RecruitController>();
-        InitUis();
-        RegEvents();
+        Game.UiBuilder.Build("view_diziRecruitPage", v =>
+        {
+            DiziRecruitPage = new View_diziRecruitPage(v, () => RecruitController.GenerateDizi(),
+                () => RecruitController.RecruitDizi(CurrentDiziIndex));
+            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
+        },RegEvents);
     }
 
     private void RegEvents()
@@ -28,17 +32,6 @@ public class DiziRecruitManager
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziGenerated, bag => DiziRecruitPage.SetDizi(bag));
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziInSlot,
             bag => CurrentDiziIndex = bag.Get<int[]>(0)[0]);
-    }
-
-
-    private void InitUis()
-    {
-        Game.UiBuilder.Build("view_diziRecruitPage", v =>
-        {
-            DiziRecruitPage = new View_diziRecruitPage(v, () => RecruitController.GenerateDizi(), 
-                ()=> RecruitController.RecruitDizi(CurrentDiziIndex));
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
-        });
     }
 
     private class View_diziRecruitPage : UiBase

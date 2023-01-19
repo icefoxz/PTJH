@@ -14,23 +14,15 @@ public class WinAdvConfirmManager
 
     public void Init()
     {
-        InitUi();
-        RegEvents();
+        Game.UiBuilder.Build("view_winAdvConfirm", v =>
+        {
+            WinAdvConfirm = new View_winAdvConfirm(v, () => XDebug.LogWarning("弟子历练! 目前历练功能未实现"));
+        }, RegEvents);
     }
-
 
     private void RegEvents()
     {
 
-    }
-
-    private void InitUi()
-    {
-        Game.UiBuilder.Build("view_winAdvConfirm", v =>
-        {
-            
-            WinAdvConfirm = new View_winAdvConfirm(v, () => XDebug.LogWarning("弟子历练! 目前历练功能未实现"));
-        });
     }
 
     private class View_winAdvConfirm : UiBase

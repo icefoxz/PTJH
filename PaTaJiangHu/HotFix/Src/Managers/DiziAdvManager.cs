@@ -24,7 +24,6 @@ public class DiziAdvManager
         DiziAdvController = Game.Controllers.Get<DiziAdvController>();
         MainUi = Game.MainUi;
         InitUi();
-        RegEvents();
     }
 
     private void RegEvents()
@@ -51,7 +50,7 @@ public class DiziAdvManager
                 () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
             );
             MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
-        });
+        },RegEvents);
     }
 
     private class View_diziAdv : UiBase

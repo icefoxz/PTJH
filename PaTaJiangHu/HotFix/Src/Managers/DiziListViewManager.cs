@@ -17,22 +17,16 @@ internal class DiziListViewManager
     private DiziController DiziInteraction { get; } = Game.Controllers.Get<DiziController>();
     public void Init()
     {
-        InitUi();
-        RegEvents();
+        Game.UiBuilder.Build("view_diziListView", v =>
+        {
+            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Btm, true);
+            DiziList = new DiziListView(v, key => DiziInteraction.SelectDizi(key));
+        }, RegEvents);
     }
 
     private void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList(bag));
-    }
-
-    private void InitUi()
-    {
-        Game.UiBuilder.Build("view_diziListView", v =>
-        {
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Btm, true);
-            DiziList = new DiziListView(v, key => DiziInteraction.SelectDizi(key));
-        });
     }
 
     private class DiziListView : UiBase

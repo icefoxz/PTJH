@@ -67,7 +67,7 @@ internal class UiManager
             rect.sizeDelta = Vector2.zero;
             rect.pivot = Vector2.zero;
             MainUi.ShowPanel();
-        });
+        },null);
     }
 
 }

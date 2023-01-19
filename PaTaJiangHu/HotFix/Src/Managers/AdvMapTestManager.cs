@@ -19,12 +19,17 @@ public class AdvMapTestManager
         Game.UiBuilder.Build("test_testMap", v =>
         {
             TestMap = new TestMapWindow(v, controller.LoadMap);
-        });
+        },RegEvent);
+    }
+
+    private void RegEvent()
+    {
         Game.MessagingManager.RegEvent(EventString.Test_AdvMapLoad, bag =>
         {
             TestMap.SetBag(bag.Get<string>(0));
         });
     }
+
     private class TestMapWindow : UiBase
     {
         private Text Text_title{ get; }

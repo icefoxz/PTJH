@@ -23,8 +23,12 @@ public class DiziInfoSectManager
     public void Init()
     {
         Controller = Game.Controllers.Get<DiziController>();
-        InitUi();
-        RegEvents();
+        Game.UiBuilder.Build("view_diziInfoSect", v =>
+        {
+            DiziInfo = new View_diziInfoSect(v, guid => Controller.ManageDiziCondition(guid));
+            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Top, true);
+        }, RegEvents);
+
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StaminaUpdate,
         //    arg => DiziInfo.UpdateStamina(JsonMapper.ToObject<int[]>(arg)));
         //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StateUpdate,
@@ -39,16 +43,6 @@ public class DiziInfoSectManager
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziInfo.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziInfo.Update());
-    }
-
-
-    private void InitUi()
-    {
-        Game.UiBuilder.Build("view_diziInfoSect", v =>
-        {
-            DiziInfo = new View_diziInfoSect(v, guid => Controller.ManageDiziCondition(guid));
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Top, true);
-        });
     }
 
     private class View_diziInfoSect : UiBase

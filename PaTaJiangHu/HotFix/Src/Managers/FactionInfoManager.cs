@@ -12,8 +12,11 @@ public class FactionInfoManager
 
     public void Init()
     {
-        InitUi();
-        RegEvents();
+        Game.UiBuilder.Build("view_factionInfoUi", v =>
+        {
+            FactionInfoUi = new View_factionInfoUi(v);
+            Game.MainUi.SetTop(v, true);
+        }, RegEvents);
     }
 
     private void RegEvents()
@@ -32,14 +35,6 @@ public class FactionInfoManager
             bag => FactionInfoUi.SetActionToken(bag.GetInt(0), bag.GetInt(1), bag.GetInt(2), bag.GetInt(3)));
     }
 
-    private void InitUi()
-    {
-        Game.UiBuilder.Build("view_factionInfoUi", v =>
-        {
-            FactionInfoUi = new View_factionInfoUi(v);
-            Game.MainUi.SetTop(v, true);
-        });
-    }
     private class View_factionInfoUi : UiBase
     {
         private Element Element_Silver { get; }

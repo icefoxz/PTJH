@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using _GameClient.Models;
 using BattleM;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
@@ -19,8 +18,13 @@ public class WinEquipmentManager
     public void Init()
     {
         DiziController = Game.Controllers.Get<DiziController>();
-        InitUis();
-        RegEvents();
+        Game.UiBuilder.Build("view_winEquipment", v =>
+        {
+            WinEquipment = new View_winEquipment(v,
+                (guid, index, itemType) => DiziController.DiziEquip(guid, index, itemType),
+                (guid, itemType) => DiziController.DiziUnEquipItem(guid, itemType));
+            Game.MainUi.SetWindow(v, resetPos: true);
+        }, RegEvents);
     }
 
     private void RegEvents()
@@ -35,18 +39,7 @@ public class WinEquipmentManager
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => WinEquipment.OnItemEquipped());
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => WinEquipment.OnItemUnequipped());
     }
-
-    private void InitUis()
-    {
-        Game.UiBuilder.Build("view_winEquipment", v =>
-        {
-            WinEquipment = new View_winEquipment(v,
-                (guid, index, itemType)=>DiziController.DiziEquip(guid,index,itemType),
-                (guid, itemType) => DiziController.DiziUnEquipItem(guid, itemType));
-            Game.MainUi.SetWindow(v, resetPos: true);
-        });
-    }
-
+    
     private class View_winEquipment : UiBase
     {
         private enum ItemTypes

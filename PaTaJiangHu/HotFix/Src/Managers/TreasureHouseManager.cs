@@ -13,22 +13,16 @@ public class TreasureHouseManager
     private View_treasureHouse TreasureHouse { get; set; }
     public void Init()
     {
-        InitUis();
-        RegEvents();
+        Game.UiBuilder.Build("view_treasureHouse", v =>
+        {
+            TreasureHouse = new View_treasureHouse(v);
+            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
+        }, RegEvents);
     }
 
     private void RegEvents()
     {
 
-    }
-
-    private void InitUis()
-    {
-        Game.UiBuilder.Build("view_treasureHouse", v =>
-        {
-            TreasureHouse = new View_treasureHouse(v);
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
-        });
     }
 
     private class View_treasureHouse : UiBase
