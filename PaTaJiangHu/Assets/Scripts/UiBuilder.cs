@@ -41,7 +41,7 @@ public class UiBuilder
     /// <param name="buildAction">生成函数<see cref="GameObject"/>和<see cref="IView"/>为传入物件</param>
     /// /// <param name="callbackAfterInit">当初始化完成后执行</param>
     /// <param name="rootCanvas"></param>
-    public void Build(string resName, Action<GameObject,IView> buildAction, Action callbackAfterInit, bool rootCanvas = true) =>
+    private void Build(string resName, Action<GameObject,IView> buildAction, Action callbackAfterInit, bool rootCanvas = true) =>
         Build(resName, rootCanvas ? Game.SceneCanvas.transform : null, go =>
         {
             if (go.GetComponent<View>() is not IView v)
@@ -54,7 +54,7 @@ public class UiBuilder
     /// <param name="resName">物体名字</param>
     /// <param name="buildAction">生成函数<see cref="GameObject"/>和<see cref="IView"/>为传入物件</param>
     /// <param name="rootCanvas"></param>
-    public async Task<T> Build<T>(string resName, Func<GameObject,IView,T> buildAction, bool rootCanvas = true) =>
+    private async Task<T> Build<T>(string resName, Func<GameObject,IView,T> buildAction, bool rootCanvas = true) =>
         await Build(resName, rootCanvas ? Game.SceneCanvas.transform : null, go =>
         {
             if (go.GetComponent<View>() is not IView v)
@@ -69,7 +69,7 @@ public class UiBuilder
     /// <param name="buildAction">生成函数<see cref="GameObject"/>和<see cref="IView"/>为传入物件</param>
     /// <param name="callbackAfterInit">当初始化完成后执行</param>
     /// <param name="parent"></param>
-    public void Build(string resName, Action<GameObject,IView> buildAction, Action callbackAfterInit , Transform parent) =>
+    private void Build(string resName, Action<GameObject,IView> buildAction, Action callbackAfterInit , Transform parent) =>
         Build(resName, parent, go =>
         {
             if (go.GetComponent<View>() is not IView v)
@@ -84,7 +84,7 @@ public class UiBuilder
     /// <param name="buildAction">生成函数<see cref="GameObject"/>为传入物件</param>
     /// <param name="callbackAfterInit">当初始化完成后执行</param>
     /// <param name="rootCanvas"></param>
-    public void Build(string resName, Action<GameObject> buildAction, Action callbackAfterInit,
+    private void Build(string resName, Action<GameObject> buildAction, Action callbackAfterInit,
         bool rootCanvas = true) =>
         Build(resName, rootCanvas ? Game.SceneCanvas.transform : null, buildAction, callbackAfterInit);
 
