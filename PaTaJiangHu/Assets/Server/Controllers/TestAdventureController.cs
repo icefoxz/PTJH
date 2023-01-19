@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BattleM;
@@ -220,7 +221,7 @@ namespace Server.Controllers
             public IArmor Armor { get; }
             public int Level { get; }
             public int Power { get; }
-            public IStacking<IGameItem>[] Items { get; }
+            public IEnumerable<IStacking<IGameItem>> Items { get; }
         }
 
         [Serializable] internal class AdvConfig

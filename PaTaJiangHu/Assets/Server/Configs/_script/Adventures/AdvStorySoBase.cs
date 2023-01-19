@@ -33,6 +33,7 @@ namespace Server.Configs.Adventures
         int InteractionResult { get; }
         ISimulationOutcome SimOutcome { get; }
         IAdjustment Adjustment { get; }
+        IRewardReceiver Receiver { get; }
     }
 
     public interface IAdjustment
@@ -77,10 +78,10 @@ namespace Server.Configs.Adventures
         event Action<string[]> OnLogsTrigger;
     }
 
-
     public interface IAdvStory
     {
         string Name { get; }
+        bool HaltOnExhausted { get; }
         IAdvEvent StartAdvEvent { get; }
         IAdvEvent[] AllAdvEvents { get; }
     }

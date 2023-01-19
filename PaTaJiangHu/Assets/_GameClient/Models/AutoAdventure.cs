@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Core;
+using Server.Configs.Adventures;
 using Server.Controllers;
 using UnityEngine;
 
@@ -10,7 +12,7 @@ namespace _GameClient.Models
     /// <summary>
     /// (自动)挂机历练模型
     /// </summary>
-    public class AutoAdventure
+    public class AutoAdventure : IRewardReceiver
     {
         public enum States
         {
@@ -46,15 +48,16 @@ namespace _GameClient.Models
         public int LastMile { get; private set; }
 
         private int MessageSecs { get; } //文本展示间隔(秒)
-        //private int AdventureCoId { get; set; } //历练CoroutineId
-        //private int MessageCoId { get; set; } //信息CoroutineId
         private int ServiceCoId { get; set; }
         private Dizi Dizi { get; }
-        private DiziBag Bag { get; }
-        public IStacking<IGameItem>[] BagItems => Bag.Items;
+
+        public IReadOnlyList<Reward> Items => _items;
+        private readonly List<Reward> _items = new List<Reward>();
+
         public Equipment Equipment { get; }
         private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
         private Queue<DiziAdvLog> Stories { get; set; } = new Queue<DiziAdvLog>();
+        public IEnumerable<IStacking<IGameItem>> GetItems() => Items.SelectMany(i => i.AllItems);
 
         public AutoAdventure(long startTime, int journeyReturnSec, int messageSecs, Dizi dizi)
         {
@@ -80,7 +83,12 @@ namespace _GameClient.Models
                         case Modes.Polling:
                         {
                             //每秒轮询是否触发故事
-                            AdvController.CheckMile(Dizi.Guid);
+                            AdvController.CheckMile(Dizi.Guid, (totalMile,isProgress) =>
+                            {
+                                LastMile = totalMile;
+                                if (!isProgress) 
+                                    AdvController.AdventureRecall(Dizi.Guid);
+                            });
                             yield return new WaitForSeconds(1);
                             break;
                         }
@@ -143,6 +151,55 @@ namespace _GameClient.Models
                 Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, $"{Dizi.Name}已回到山门!",
                     true);
                 Game.MessagingManager.Send(EventString.Dizi_Adv_End, Dizi.Guid);
+            }
+        }
+
+        void IRewardReceiver.SetReward(IGameReward reward)
+        {
+            foreach (var item in reward.AllItems) 
+                _items.Add(new Reward(item));
+            foreach (var package in reward.Packages)
+            {
+                _items.Add(new Reward(package));
+            }
+        }
+        public class Reward : IStacking<IGameItem>,IAdvPackage
+        {
+            public enum Types
+            {
+                Item,
+                Package
+            }
+            public IGameItem Item { get; }
+            public int Amount { get; }
+            public Types Type { get; }
+            public int Grade { get; }
+            public IStacking<IGameItem>[] AllItems { get; }
+
+            public Reward(IStacking<IGameItem> o)
+            {
+                Item = o.Item;
+                Amount = o.Amount;
+                Type = Types.Item;
+            }
+            public Reward(IAdvPackage p)
+            {
+                AllItems = p.AllItems;
+                Type = Types.Package;
+                Grade = p.Grade;
+            }
+            public Reward(IGameItem item, int amount)
+            {
+                Item = item;
+                Amount = amount;
+                Type = Types.Item;
+            }
+
+            public Reward(int grade, IStacking<IGameItem>[] allItems)
+            {
+                Type = Types.Package;
+                Grade = grade;
+                AllItems = allItems;
             }
         }
     }

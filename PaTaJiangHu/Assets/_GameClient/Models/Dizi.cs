@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BattleM;
 using Core;
 using Server.Configs.Adventures;
@@ -34,7 +35,7 @@ namespace _GameClient.Models
         public IConditionValue Exp => _exp;
 
         public int Power { get; }
-        public IStacking<IGameItem>[] Items => Adventure?.BagItems?? Array.Empty<IStacking<IGameItem>>();
+        public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
         public int Grade { get; private set; }
         public ICombatSkill CombatSkill { get; set; }
         public IForceSkill ForceSkill { get; set; }

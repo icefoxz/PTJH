@@ -23,6 +23,12 @@ namespace Server.Controllers
             dizi.StaminaUpdate(newZeroTicks);
         }
 
+        public void SetStaminaZero(string diziGuid,bool autoAlign = false)
+        {
+            var dizi = Faction.GetDizi(diziGuid);
+            ConsumeStamina(diziGuid, dizi.Stamina.Con.Value, autoAlign);
+        }
+
         public int GetDiziStamina(long zeroTicks, int max)
         {
             var stamina = StaminaGenerator.CountStamina(zeroTicks, max);

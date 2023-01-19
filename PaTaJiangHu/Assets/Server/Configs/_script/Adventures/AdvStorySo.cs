@@ -13,7 +13,9 @@ namespace Server.Configs.Adventures
     internal class AdvStorySo : AdvStorySoBase, IAdvStory
     {
         [MustBeAssigned] [ConditionalField(true, nameof(RefreshAllEvent))] [SerializeField] private AdvEventSoBase 事件;
+        [SerializeField]private bool 体力耗尽强退;
 
+        public bool HaltOnExhausted => 体力耗尽强退;
         public IAdvEvent StartAdvEvent => 事件;
         public IAdvEvent[] AllAdvEvents
         {

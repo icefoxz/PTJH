@@ -97,8 +97,8 @@ namespace Server.Configs.Items
             [SerializeField] private bool 是百分比;
 
             private bool Percentage => 是百分比;
-            public Treatments Treatment => 治疗;
             public int Value => 值;
+            public Treatments Treatment => 治疗;
 
             public int GetValue(int max)
             {

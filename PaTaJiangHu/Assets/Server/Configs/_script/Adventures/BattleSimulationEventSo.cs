@@ -25,7 +25,7 @@ namespace Server.Configs.Adventures
         public override void EventInvoke(IAdvEventArg arg)
         {
             var simOutcome = arg.SimOutcome;
-            var logs = GetResult(simOutcome,arg.DiziName,_npc.Name);
+            var logs = GetResult(simOutcome, arg.DiziName, _npc.Name);
             OnLogsTrigger?.Invoke(logs);
             var nextEvent = AllEvents[simOutcome.IsPlayerWin ? 0 : 1];
             OnNextEvent?.Invoke(nextEvent);

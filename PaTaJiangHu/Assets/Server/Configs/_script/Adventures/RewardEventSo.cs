@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BattleM;
 using Core;
 using Data;
 using MyBox;
@@ -12,12 +11,18 @@ namespace Server.Configs.Adventures
 {
     public interface IAdvPackage
     {
+        int Grade { get; }
         IStacking<IGameItem>[] AllItems { get; }
     }
     public interface IGameReward
     {
         IAdvPackage[] Packages { get; }
         IStacking<IGameItem>[] AllItems { get; }
+    }
+
+    public interface IRewardReceiver
+    {
+        void SetReward(IGameReward reward);
     }
 
     [CreateAssetMenu(fileName = "id_奖励件名", menuName = "事件/奖励事件")]
@@ -36,6 +41,7 @@ namespace Server.Configs.Adventures
         public override void EventInvoke(IAdvEventArg arg)
         {
             OnLogsTrigger?.Invoke(GenerateRewardMessages(arg.DiziName));
+            arg.Receiver.SetReward(Reward);
             OnNextEvent?.Invoke(Next);
         }
 
@@ -75,7 +81,7 @@ namespace Server.Configs.Adventures
             public IStacking<IGameItem>[] AllItems => Weapons.Concat(Armor)
                 .Concat(Medicines)
                 .Concat(Book)
-                .Concat(StoryProps)
+                .Concat(StoryProps)     
                 .Concat(FunctionProps)
                 .ToArray();
 
@@ -98,9 +104,9 @@ namespace Server.Configs.Adventures
                 string GetText(string title,int count) => count > 0 ? $"{title}x{count}" : string.Empty;
             }
 
-
             [ConditionalField(true,nameof(ChangeElementName))][SerializeField][ReadOnly]private string _name;
 
+            [SerializeField] private int 品级;
             [SerializeField] private WeaponItem[] 武器;
             [SerializeField] private ArmorItem[] 防具;
             [SerializeField] private MedicineItem[] 丹药;
@@ -110,6 +116,8 @@ namespace Server.Configs.Adventures
             public IStacking<IGameItem>[] Armor => 防具;
             public IStacking<IGameItem>[] Medicines => 丹药;
             public IStacking<IGameItem>[] Book => 秘籍;
+
+            public int Grade => 品级;
             public IStacking<IGameItem>[] AllItems => Weapons
                 .Concat(Armor)
                 .Concat(Medicines)
@@ -121,6 +129,7 @@ namespace Server.Configs.Adventures
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
             public override int Price => 武器?.Price ?? 0;
             public override string Name => 武器?.Name;
+            public override string About => 武器?.About;
             public override Kinds Kind => Kinds.Weapon;
             protected override ScriptableObject So => 武器;
             protected override bool IsSupportSo => true;
@@ -130,6 +139,7 @@ namespace Server.Configs.Adventures
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 防具;
             public override int Price => 防具?.Price ?? 0;
             public override string Name => 防具?.Name;
+            public override string About => 防具?.About;
             public override Kinds Kind => Kinds.Armor;
             protected override ScriptableObject So => 防具;
             protected override bool IsSupportSo => true;
@@ -139,6 +149,7 @@ namespace Server.Configs.Adventures
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private MedicineFieldSo 丹药;
             public override int Price => 丹药?.Price ?? 0;
             public override string Name => 丹药?.Name;
+            public override string About => 丹药?.About;
             public override Kinds Kind => Kinds.Medicine;
             protected override ScriptableObject So => 丹药;
             protected override bool IsSupportSo => true;
@@ -148,6 +159,7 @@ namespace Server.Configs.Adventures
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private BookSoBase 残卷;
             public override int Price => 残卷?.Price ?? 0;
             public override string Name => 残卷?.Name;
+            public override string About => 残卷?.About;
             public override Kinds Kind => Kinds.Book;
             protected override ScriptableObject So => 残卷; 
             protected override bool IsSupportSo => true;
@@ -156,6 +168,7 @@ namespace Server.Configs.Adventures
         {
             public override int Price { get; }
             public override string Name { get; }
+            public override string About { get; }
             public override Kinds Kind => Kinds.StoryProp;
             protected override ScriptableObject So { get; }
             protected override bool IsSupportSo => false;
@@ -164,6 +177,7 @@ namespace Server.Configs.Adventures
         {
             public override int Price { get; }
             public override string Name { get; }
+            public override string About { get; }
             public override Kinds Kind => Kinds.FunctionProp;
             protected override ScriptableObject So { get; }
             protected override bool IsSupportSo => false;
@@ -193,12 +207,11 @@ namespace Server.Configs.Adventures
             [ConditionalField(true, nameof(TryUseSo), true)] [SerializeField] private int _id;
             
             [SerializeField] private int 数量 = 1;
-            [SerializeField][TextArea] private string 说明;
             public abstract int Price { get; }
             public int Id => _id;
             public abstract string Name { get; }
 
-            public string About => 说明;
+            public abstract string About { get; }
 
             public IGameItem Item => this;
             public int Amount => 数量;

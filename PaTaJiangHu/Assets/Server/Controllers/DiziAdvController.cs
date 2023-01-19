@@ -33,12 +33,19 @@ namespace Server.Controllers
         {
             var now = SysTime.UnixNow;
             var dizi = Faction.GetDizi(guid);
-            var lastMile = CheckMile(dizi.Guid);
-            if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return;
-            dizi.AdventureRecall(now, lastMile);
+            CheckMile(dizi.Guid, (totalMile, isAdcContinue) =>
+            {
+                if (dizi.Adventure.State == AutoAdventure.States.Progress)
+                    dizi.AdventureRecall(now, totalMile);
+            });
         }
 
-        public int CheckMile(string diziGuid)
+        /// <summary>
+        /// 自动检查里数, 当里数故事执行完毕会在回调中返回故事距离和是否历练继续
+        /// </summary>
+        /// <param name="diziGuid"></param>
+        /// <param name="onCallbackAction">回调返回历练总里数,和是否历练继续, false = 冒险结束</param>
+        public async void CheckMile(string diziGuid, Action<int ,bool> onCallbackAction)
         {
             var dizi = Faction.GetDizi(diziGuid);
             var lastMile = dizi.Adventure.LastMile;
@@ -46,31 +53,41 @@ namespace Server.Controllers
             var now = SysTime.UnixNow;
             var miles = GetMiles(now, lastUpdate);
             //如果里数=0表示未去到任何地方,直接放回上个里数
-            if (miles == 0) return lastMile;
+            if (miles == 0)
+            {
+                onCallbackAction?.Invoke(lastMile, !dizi.Stamina.Con.IsExhausted);
+                return; //return lastMile;
+            }
             var totalMiles = lastMile + miles;
-            OnMileTrigger(now, lastMile, totalMiles, diziGuid);
-            return totalMiles;
+            var advContinue = await OnMileTrigger(now, lastMile, totalMiles, diziGuid);
+            onCallbackAction?.Invoke(totalMiles, advContinue);
         }
 
         /// <summary>
-        /// 根据当前走过的路段触发响应的故事点
+        /// 根据当前走过的路段触发响应的故事点, 返回故事是否继续
         /// </summary>
         /// <param name="now"></param>
         /// <param name="fromMiles"></param>
         /// <param name="toMiles"></param>
         /// <param name="diziGuid"></param>
-        public async void OnMileTrigger(long now, int fromMiles, int toMiles, string diziGuid)
+        public async Task<bool> OnMileTrigger(long now, int fromMiles, int toMiles, string diziGuid)
         {
             var dizi = Faction.GetDizi(diziGuid);
-            if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return;
+            if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return true;//返回故事继续
             var places = AdventureCfg.AdvMap.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
-            if (places.Length > 0)
+            if (places.Length <= 0) return true; //返回故事继续
+            for (int i = 0; i < places.Length; i++) //为每一个故事地点获取一个故事
             {
+                var place = places[i];
+                var (advLogs, forceExit) = await ProcessStory(place, now, toMiles, dizi);
                 //当获取到地点, 执行故事
-                var stories = await ProcessStory(places, now, toMiles, dizi);
-                foreach (var story in stories) 
+                foreach (var story in advLogs) 
                     dizi.AdventureStoryStart(story);
+
+                if (forceExit || dizi.Stamina.Con.IsExhausted) //当弟子体力=0
+                    return false; //返回故事结束
             }
+            return true;//返回故事继续
         }
         /// <summary>
         /// 获取所有的触发主要故事点的里数
@@ -90,19 +107,15 @@ namespace Server.Controllers
         }
 
         //获取故事信息
-        private async Task<DiziAdvLog[]> ProcessStory(IAdvPlace[] places, long nowTicks, int updatedMiles, Dizi dizi)
+        private async Task<(DiziAdvLog[],bool)> ProcessStory(IAdvPlace place, long nowTicks, int updatedMiles, Dizi dizi)
         {
-            var stories = new List<DiziAdvLog>();
-            for (int i = 0; i < places.Length; i++)//为每一个故事地点获取一个故事
-            {
-                var place = places[i];
-                var story = place.WeighPickStory();//根据权重随机故事
-                var eventHandler = new AdvEventHandler(BattleSimulation, ConditionProperty);//生成事件处理器
-                var storyHandler = new StoryHandler(story, eventHandler);//生成故事处理器
-                var handledStory = await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
-                stories.Add(handledStory);
-            }
-            return stories.ToArray();
+            var advLogs = new List<DiziAdvLog>();
+            var story = place.WeighPickStory(); //根据权重随机故事
+            var eventHandler = new AdvEventHandler(BattleSimulation, ConditionProperty, dizi.Adventure); //生成事件处理器
+            var storyHandler = new StoryHandler(story, eventHandler); //生成故事处理器
+            var (handledStory, forceExit) = await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
+            advLogs.Add(handledStory);
+            return (advLogs.ToArray(), forceExit);
         }
 
         //计算出间隔里数
@@ -139,12 +152,16 @@ namespace Server.Controllers
                 EventHandler = eventHandler;
             }
 
-            public async Task<DiziAdvLog> Invoke(Dizi dizi, long nowTicks, int updatedMiles)
+            public async Task<(DiziAdvLog, bool)> Invoke(Dizi dizi, long nowTicks, int updatedMiles)
             {
+                var diziExhausted = false;
                 while (CurrentEvent != null && CurrentEvent.AdvType != AdvTypes.Quit)
                 {
                     if (_recursiveIndex >= RecursiveLimit)
                         throw new StackOverflowException($"故事{Story.Name} 死循环!检查其中事件{CurrentEvent.name}");
+                    //如果强制退出事件
+                    diziExhausted = Story.HaltOnExhausted && dizi.Stamina.Con.IsExhausted;
+                    if (diziExhausted) break;
                     CurrentEvent.OnLogsTrigger += OnLogsTrigger;
                     CurrentEvent.OnNextEvent += OnNextEventTrigger;
                     OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
@@ -153,7 +170,7 @@ namespace Server.Controllers
                     CurrentEvent = nextEvent;
                     _recursiveIndex++;
                 }
-                return new DiziAdvLog(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles);
+                return (new DiziAdvLog(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles), diziExhausted);
             }
 
             private void OnNextEventTrigger(IAdvEvent nextEvent)
@@ -173,15 +190,17 @@ namespace Server.Controllers
         {
             private BattleSimulatorConfigSo Simulator { get; }
             private ConditionPropertySo Cfg { get; }
-            public AdvEventHandler(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg)
+            private IRewardReceiver Receiver { get; }
+            public AdvEventHandler(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg, IRewardReceiver receiver)
             {
                 Simulator = simulator;
                 Cfg = cfg;
+                Receiver = receiver;
             }
 
             public void Invoke(IAdvEvent advEvent, Dizi dizi)
             {
-                var arg = new AdvArg(dizi);
+                var arg = new AdvArg(dizi,Receiver);
                 switch (advEvent.AdvType)
                 {
                     case AdvTypes.Option:
@@ -204,6 +223,15 @@ namespace Server.Controllers
                             dizi.DodgeSkill.Grade, dizi.DodgeSkill.Level);
                         var npc = bs.GetNpc(Cfg);
                         var outcome = Simulator.CountSimulationOutcome(diziSim, npc);
+                        var staminaController = Game.Controllers.Get<StaminaController>();
+                        if(outcome.IsPlayerWin && dizi.Stamina.Con.Value >= outcome.Result)
+                        {
+                            staminaController.ConsumeStamina(dizi.Guid, -outcome.Result);
+                        }
+                        else//当弟子战斗失败,或是血量不够扣除
+                        {
+                            staminaController.SetStaminaZero(dizi.Guid, true);
+                        }
                         arg.SetSimulationOutcome(outcome);
                         break;
                     default:
@@ -220,10 +248,12 @@ namespace Server.Controllers
                 public int InteractionResult => 0;//历练不会有交互结果
                 public ISimulationOutcome SimOutcome { get; private set; }
                 public IAdjustment Adjustment => this;
+                public IRewardReceiver Receiver { get; }
 
-                public AdvArg(Dizi dizi)
+                public AdvArg(Dizi dizi, IRewardReceiver receiver)
                 {
                     Term = Dizi = dizi;
+                    Receiver = receiver;
                 }
 
                 public void SetSimulationOutcome(ISimulationOutcome simulationOutcome)

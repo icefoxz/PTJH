@@ -17,6 +17,9 @@ namespace Server.Configs.BattleSimulation
         float EnemyOffend { get; }
         float PlayerDefend { get; }
         float EnemyDefend { get; }
+        /// <summary>
+        /// 配置结果, -1为战斗失败, 正数为扣除的体力值
+        /// </summary>
         int Result { get; }
     }
     public interface ISimulationRound
@@ -62,7 +65,7 @@ namespace Server.Configs.BattleSimulation
 
                 if (playerHp <= 0)
                     return new Outcome(list.ToArray(), (int)enemyHp, enemyHp / enemy.Defend, false, player.Offend,
-                        enemy.Offend, player.Defend, enemy.Defend, 0);
+                        enemy.Offend, player.Defend, enemy.Defend);
 
                 if (recursive >= StackOverFlow)
                     throw new StackOverflowException();
@@ -122,7 +125,7 @@ namespace Server.Configs.BattleSimulation
             public float EnemyDefend { get; }
             public int Result { get; }
 
-            public Outcome(ISimulationRound[] rounds, int remainingHp, float remainingRatio, bool isPlayerWin, float playerOffend, float enemyOffend, float playerDefend, float enemyDefend, int result)
+            public Outcome(ISimulationRound[] rounds, int remainingHp, float remainingRatio, bool isPlayerWin, float playerOffend, float enemyOffend, float playerDefend, float enemyDefend, int result = -1)
             {
                 Rounds = rounds;
                 RemainingHp = remainingHp;

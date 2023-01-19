@@ -68,6 +68,7 @@ namespace Systems
             appdomain.DelegateManager.RegisterFunctionDelegate<IGrouping<int, ILTypeInstance>, ILTypeInstance>();
             appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, ILTypeInstance>();
             appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance[]>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<IView, ILTypeInstance>();
 
             appdomain.DelegateManager.RegisterFunctionDelegate<object>();
             appdomain.DelegateManager.RegisterFunctionDelegate<string>();

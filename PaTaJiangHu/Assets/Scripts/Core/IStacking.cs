@@ -22,11 +22,15 @@ namespace Core
         /// <summary>
         /// 包裹, 游戏物品的容器
         /// </summary>
-        Parcel,
+        Package,
         /// <summary>
         /// 故事道具
         /// </summary>
-        StoryProps
+        StoryProps,
+        /// <summary>
+        /// 历练道具
+        /// </summary>
+        AdvItems,
     }
 
     public interface IGameItem
