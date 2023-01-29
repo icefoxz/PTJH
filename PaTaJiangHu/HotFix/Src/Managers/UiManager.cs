@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HotFix_Project.Src.Managers;
+using UnityEngine;
 
 namespace HotFix_Project.Managers;
 
@@ -13,6 +14,7 @@ internal class UiManager
     private WinConItemSelectorManager WinConItemSelectorManager { get; set; } = new WinConItemSelectorManager();
     private WinAdvConfirmManager WinAdvConfirmManager { get; set; } = new WinAdvConfirmManager();
     private WinEquipmentManager WinEquipmentManager { get; set; } = new WinEquipmentManager();
+    private BtmPageBtnsManager BtmPageBtnsManager { get; set; } = new BtmPageBtnsManager();
     public UiManager(IMainUi mainUi)
     {
         MainUi = mainUi;
@@ -35,6 +37,7 @@ internal class UiManager
         DiziRecruitManager.Init();
         DiziListViewManager.Init();
         DiziAdvManager.Init();
+        BtmPageBtnsManager.Init();
         //窗口 windows
         WinConItemSelectorManager.Init();
         WinAdvConfirmManager.Init();
