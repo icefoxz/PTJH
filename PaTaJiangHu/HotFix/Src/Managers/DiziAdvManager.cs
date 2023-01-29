@@ -36,10 +36,13 @@ public class DiziAdvManager
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag =>
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_EventMessage, bag =>
         {
-            XDebug.Log(bag.Data.Length.ToString());
-            DiziAdv.Update();
+            var diziGuid = bag.Get<string>(0);
+            var message = bag.Get<string>(1);
+            var isStoryEnd = bag.Get<bool>(2);
+            DiziAdv.AdvMsgUpdate(diziGuid, message, isStoryEnd);
         });
     }
 
@@ -129,6 +132,13 @@ public class DiziAdvManager
             ElementMgr.SetConValue(Conditions.Inner, dizi.Inner.Value, dizi.Inner.Max);
         }
 
+        public void AdvMsgUpdate(string diziGuid, string message, bool isStoryEnd)
+        {
+            if (diziGuid == SelectedDizi.Guid)
+            {
+                AdvLayoutView.AdvMessageUpdate(message);
+            }
+        }
         private class Element_skill : UiBase
         {
             private Image Img_ico { get; }
@@ -273,6 +283,12 @@ public class DiziAdvManager
             {
                 Btn_advStart.gameObject.SetActive(mode == Modes.Prepare);
                 Btn_recall.gameObject.SetActive(mode == Modes.Adventure);
+            }
+
+            public void AdvMessageUpdate(string message)
+            {
+                var log = LogView.Instance(v => new LogPrefab(v));
+                log.LogMessage(message);
             }
 
             private class LogPrefab : UiBase
