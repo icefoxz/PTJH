@@ -34,9 +34,13 @@ public class DiziAdvManager
             MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
             DiziAdv.Display(true);
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update(bag.Get<string>(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update(bag.Get<string>(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update(bag.Get<string>(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag =>
+        {
+            XDebug.Log(bag.Data.Length.ToString());
+            DiziAdv.Update();
+        });
     }
 
     private void InitUi()
@@ -94,9 +98,9 @@ public class DiziAdvManager
             SelectedDizi = dizi;
             SetDizi(dizi);
         }
-        public void Update(string guid)
+        public void Update()
         {
-            if (SelectedDizi.Guid != guid) return;
+            if (SelectedDizi == null) return;
             SetDizi(SelectedDizi);
         }
 

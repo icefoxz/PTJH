@@ -72,18 +72,20 @@ namespace Server.Controllers
             {
                 case 0:
                 {
-                    if (dizi.Weapon != null) Faction.AddWeapon(dizi.Weapon);
+                    var diziWeapon = dizi.Weapon;
                     var weapon = Faction.Weapons[index];
                     dizi.Wield(weapon);
                     Faction.RemoveWeapon(weapon);
+                    if (diziWeapon != null) Faction.AddWeapon(diziWeapon);
                     break;
                 }
                 case 1:
                 {
-                    if (dizi.Armor!= null) Faction.AddArmor(dizi.Armor);
+                    var diziArmor = dizi.Armor;
                     var armor = Faction.Armors[index];
                     dizi.Wear(armor);
                     Faction.RemoveArmor(armor);
+                    if (diziArmor!= null) Faction.AddArmor(diziArmor);
                     break;
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
