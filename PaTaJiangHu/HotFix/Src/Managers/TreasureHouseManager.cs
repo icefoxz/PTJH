@@ -16,7 +16,7 @@ public class TreasureHouseManager
         Game.UiBuilder.Build("view_treasureHouse", v =>
         {
             TreasureHouse = new View_treasureHouse(v);
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
+            Game.MainUi.SetMid(v, true);
         }, RegEvents);
     }
 
@@ -64,18 +64,17 @@ public class TreasureHouseManager
 
         private class View_contentList : UiBase
         {
-            private enum TreasureTypes
-            {
-                Equipment,
-                Medicine
-            }
+            private enum TreasureTypes { Equipment, Medicine, Adventure, Reward }
             private ScrollRect Scroll_item { get; }
             private ListViewUi<Prefab_Item>  ItemView { get; }
             private Button Btn_equipment { get; }
             private Button Btn_medicine { get; }
+            private Button Btn_advItem { get; }
+            private Button Btn_reward { get; }
+
             private event Action<int> OnSelectedAction;
             
-            public View_contentList(IView v, Action<int> onSelectedAction) : base(v.GameObject, false)
+            public View_contentList(IView v, Action<int> onSelectedAction) : base(v.GameObject, true)
             {
                 OnSelectedAction = onSelectedAction;
                 Scroll_item = v.GetObject<ScrollRect>("scroll_item");
@@ -84,6 +83,10 @@ public class TreasureHouseManager
                 Btn_equipment.OnClickAdd(() => SortItems(TreasureTypes.Equipment));
                 Btn_medicine = v.GetObject<Button>("btn_medicine");
                 Btn_medicine.OnClickAdd(() => SortItems(TreasureTypes.Medicine));
+                Btn_advItem = v.GetObject<Button>("btn_advItem");
+                Btn_advItem.OnClickAdd(() => SortItems(TreasureTypes.Adventure));
+                Btn_reward = v.GetObject<Button>("btn_reward");
+                Btn_reward.OnClickAdd(() => SortItems(TreasureTypes.Reward));
             }
             private void ListItems((string title, string diziName)[]items)
             {
@@ -92,7 +95,8 @@ public class TreasureHouseManager
                 {
                     var item = items[i];
                     var index = i;
-                    ItemView.Instance(v => new Prefab_Item(v, ()=> OnItemSelected(index)));
+                    var ui = ItemView.Instance(v => new Prefab_Item(v));
+                    ui.SetText(item.diziName, item.title);
                 }
             }
             private void OnItemSelected(int index)
@@ -115,45 +119,64 @@ public class TreasureHouseManager
                 var items = new List<(string name, string diziName)>();
                 switch (type)
                 {
-                    case TreasureTypes.Equipment:
+                    case TreasureTypes.Equipment: //武器+防具=装备
                         for (var i = 0; i < faction.Weapons.Count; i++)
                         {
                             var item = faction.Weapons[i];
                             items.Add((item.Name, string.Empty));
                         }
+                        for (var i = 0; i < faction.Armors.Count; i++)
+                        {
+                            var item = faction.Armors[i];
+                            items.Add((item.Name, string.Empty));
+                        }
                         break;
-                    //case TreasureTypes.Medicine:
-                    //    for(var i = 0; i < faction.Medicine.Count; i++)
-                    //    {
-                    //        var item = faction.Medicine[i];
-                    //        items.Add((item.Name, i));
-                    //    }
-                    //    break;
+                    case TreasureTypes.Medicine: //暂时用防具数据
+                        for(var i = 0; i < faction.Armors.Count; i++)
+                        {
+                            var item = faction.Armors[i];
+                            items.Add((item.Name, string.Empty));
+                        }
+                        break;
+                    case TreasureTypes.Adventure: //暂时用防具数据
+                        for (var i = 0; i < faction.Armors.Count; i++)
+                        {
+                            var item = faction.Armors[i];
+                            items.Add((item.Name, string.Empty));
+                        }
+                        break;
+                    case TreasureTypes.Reward: //暂时用防具数据
+                        for (var i = 0; i < faction.Armors.Count; i++)
+                        {
+                            var item = faction.Armors[i];
+                            items.Add((item.Name, string.Empty));
+                        }
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);
                 }
-                ListItems(items.ToArray());
+                ListItems(items.ToArray());                
             }
             private class Prefab_Item : UiBase
             {
                 private Image Img_item { get; }
                 private Text Text_diziName { get; }
                 private Text Text_title { get; }
-                private Button Btn_Selected { get; }
-                private Image Img_selected { get; }
+                //private Button Btn_Selected { get; }
+                //private Image Img_selected { get; }
 
-                public Prefab_Item(IView v, Action onSelectedAction) : base(v.GameObject, true)
+                public Prefab_Item(IView v) : base(v.GameObject, true)
                 {
                     Img_item = v.GetObject<Image>("img_item");
                     Text_diziName = v.GetObject<Text>("text_diziName");
                     Text_title = v.GetObject<Text>("text_title");
-                    Btn_Selected = v.GetObject<Button>("btn_selected");
-                    Btn_Selected.OnClickAdd(onSelectedAction);
-                    Img_selected = v.GetObject<Image>("img_selected");
+                    //Btn_Selected = v.GetObject<Button>("btn_selected");
+                    //Btn_Selected.OnClickAdd(onSelectedAction);
+                    //Img_selected = v.GetObject<Image>("img_selected");
                 }
                 public void SetSelected(bool selected)
                 {
-                    Img_selected.gameObject.SetActive(selected);
+                    //Img_selected.gameObject.SetActive(selected);
                 }
                 public void SetIcon(Sprite img)
                 {
