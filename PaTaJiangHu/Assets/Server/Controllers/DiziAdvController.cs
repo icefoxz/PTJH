@@ -34,7 +34,7 @@ namespace Server.Controllers
         {
             var now = SysTime.UnixNow;
             var dizi = Faction.GetDizi(guid);
-            CheckMile(dizi.Guid, (totalMile, isAdvContinue) =>
+            CheckMile(dizi.Guid, (totalMile, isAdvEnd) =>
             {
                 if (dizi.Adventure.State == AutoAdventure.States.Progress)
                     dizi.AdventureRecall(now, totalMile);

@@ -98,6 +98,7 @@ public class Game : UnitySingleton<Game>
         Controllers.Reg(new StaminaController());
         Controllers.Reg(new DiziAdvController());
         Controllers.Reg(new RewardController());
+        Controllers.Reg(new DataController());
     }
 
     private static void TestFactionInventory()

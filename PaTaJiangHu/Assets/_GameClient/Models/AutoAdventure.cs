@@ -74,11 +74,11 @@ namespace _GameClient.Models
 
         private void StartService()
         {
-            ServiceCoId = Game.CoService.RunCo(UpdateEverySecond(), () => ServiceCoId = 0);
+            ServiceCoId = Game.CoService.RunCo(UpdateEverySecond(), () => ServiceCoId = 0, Dizi.Name + "历练.");
             IEnumerator UpdateEverySecond()
             {
                 yield return new WaitForEndOfFrame();
-                while (State == States.Progress)
+                while (State is not States.End)
                 {
                     switch (Mode)
                     {
@@ -141,7 +141,7 @@ namespace _GameClient.Models
         {
             UpdateTime(now,lastMile);
             State = States.Recall;
-            Game.CoService.RunCo(ReturnFromAdventure());
+            Game.CoService.RunCo(ReturnFromAdventure(), null, Dizi.Name + "回程中");
 
             IEnumerator ReturnFromAdventure()
             {

@@ -31,6 +31,9 @@ public class EventString
 
     public const string Test_AutoAdvDiziInit = "Test_AutoAdvDiziInit";
 
+    //页面
+    public const string Page_TreasureHouse = "Page_TreasureHouse";
+
     //奖励
     public const string Rewards_Propmt = "Rewards_Propmt";//多个奖励
     public const string Reward_Propmt = "Reward_Propmt";//单个奖励
