@@ -51,13 +51,15 @@ namespace _GameClient.Models
         private int ServiceCoId { get; set; }
         private Dizi Dizi { get; }
 
-        public IReadOnlyList<Reward> Items => _items;
-        private readonly List<Reward> _items = new List<Reward>();
+        private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
+        public IEnumerable<IStacking<IGameItem>> GetItems() => Rewards.SelectMany(i => i.AllItems);
 
         public Equipment Equipment { get; }
-        private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
+        public IReadOnlyList<IGameReward> Rewards => _rewards;
+        private readonly List<IGameReward> _rewards = new List<IGameReward>();
+        private List<string> _storyLog = new List<string>();
+        public IReadOnlyList<string> StoryLog => _storyLog;
         private Queue<DiziAdvLog> Stories { get; set; } = new Queue<DiziAdvLog>();
-        public IEnumerable<IStacking<IGameItem>> GetItems() => Items.SelectMany(i => i.AllItems);
 
         public AutoAdventure(long startTime, int journeyReturnSec, int messageSecs, Dizi dizi)
         {
@@ -83,10 +85,10 @@ namespace _GameClient.Models
                         case Modes.Polling:
                         {
                             //每秒轮询是否触发故事
-                            AdvController.CheckMile(Dizi.Guid, (totalMile,isProgress) =>
+                            AdvController.CheckMile(Dizi.Guid, (totalMile, isAdvEnd) =>
                             {
                                 LastMile = totalMile;
-                                if (!isProgress) 
+                                if (isAdvEnd)
                                     AdvController.AdventureRecall(Dizi.Guid);
                             });
                             yield return new WaitForSeconds(1);
@@ -104,6 +106,7 @@ namespace _GameClient.Models
                                 {
                                     var message = messages.Dequeue();
                                     var isStoryEnd = messages.Count == 0;
+                                    _storyLog.Add(message);
                                     Game.MessagingManager.SendParams(
                                         EventString.Dizi_Adv_EventMessage, Dizi.Guid,
                                         message, isStoryEnd);
@@ -154,56 +157,8 @@ namespace _GameClient.Models
             }
         }
 
-        void IRewardReceiver.SetReward(IGameReward reward)
-        {
-            foreach (var item in reward.AllItems) 
-                _items.Add(new Reward(item));
-            foreach (var package in reward.Packages)
-            {
-                _items.Add(new Reward(package));
-            }
-        }
-        public class Reward : IStacking<IGameItem>,IAdvPackage
-        {
-            public enum Types
-            {
-                Item,
-                Package
-            }
-            public IGameItem Item { get; }
-            public int Amount { get; }
-            public Types Type { get; }
-            public int Grade { get; }
-            public IStacking<IGameItem>[] AllItems { get; }
-
-            public Reward(IStacking<IGameItem> o)
-            {
-                Item = o.Item;
-                Amount = o.Amount;
-                Type = Types.Item;
-            }
-            public Reward(IAdvPackage p)
-            {
-                AllItems = p.AllItems;
-                Type = Types.Package;
-                Grade = p.Grade;
-            }
-            public Reward(IGameItem item, int amount)
-            {
-                Item = item;
-                Amount = amount;
-                Type = Types.Item;
-            }
-
-            public Reward(int grade, IStacking<IGameItem>[] allItems)
-            {
-                Type = Types.Package;
-                Grade = grade;
-                AllItems = allItems;
-            }
-        }
+        void IRewardReceiver.SetReward(IGameReward reward) => _rewards.Add(reward);
     }
-
 
     public class Equipment
     {

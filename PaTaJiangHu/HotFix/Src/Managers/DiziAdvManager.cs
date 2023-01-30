@@ -1,5 +1,6 @@
 ﻿using HotFix_Project.Views.Bases;
 using System;
+using System.Collections;
 using _GameClient.Models;
 using HotFix_Project.Serialization;
 using Server.Controllers;
@@ -26,6 +27,23 @@ public class DiziAdvManager
         InitUi();
     }
 
+    private void InitUi()
+    {
+        Game.UiBuilder.Build("view_diziAdv", v =>
+        {
+            DiziAdv = new View_diziAdv(v: v, 
+                onItemSelectAction: (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
+                onAdvStartAction: guid => DiziAdvController.AdventureStart(guid),
+                onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
+                onDiziFinalizeAction: guid=> DiziAdvController.AdventureFinalize(guid),
+                onDiziForgetAction: guid=> XDebug.LogWarning("弟子遗忘功能未完!"),
+                onDiziBuyBackAction: guid=> XDebug.LogWarning("弟子买回功能未完!"),
+                onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
+            );
+            MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
+        },RegEvents);
+    }
+
     private void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
@@ -44,20 +62,9 @@ public class DiziAdvManager
             var isStoryEnd = bag.Get<bool>(2);
             DiziAdv.AdvMsgUpdate(diziGuid, message, isStoryEnd);
         });
-    }
-
-    private void InitUi()
-    {
-        Game.UiBuilder.Build("view_diziAdv", v =>
-        {
-            DiziAdv = new View_diziAdv(v, 
-                (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
-                guid => DiziAdvController.AdventureStart(guid),
-                guid => DiziAdvController.AdventureRecall(guid),
-                () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
-            );
-            MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
-        },RegEvents);
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Recall, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_End, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => DiziAdv.Update());
     }
 
     private class View_diziAdv : UiBase
@@ -70,7 +77,14 @@ public class DiziAdvManager
         private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
-        public View_diziAdv(IView v, Action<string,int> onItemSelectAction, Action<string> onAdvStartAction,Action<string> onAdvRecallAction, Action onSwitchAction) : base(v.GameObject, false)
+        public View_diziAdv(IView v, 
+            Action<string,int> onItemSelectAction, 
+            Action<string> onAdvStartAction,
+            Action<string> onAdvRecallAction,
+            Action<string> onDiziFinalizeAction,
+            Action<string> onDiziForgetAction,
+            Action<string> onDiziBuyBackAction,
+            Action onSwitchAction) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
@@ -88,9 +102,13 @@ public class DiziAdvManager
                 new Element_item(v.GetObject<View>("element_itemArmor"),
                     () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 1))
             );
-            AdvLayoutView = new View_advLayout(v.GetObject<View>("view_advLayout"),
-                () => onAdvStartAction?.Invoke(SelectedDizi?.Guid),
-                () => onAdvRecallAction?.Invoke(SelectedDizi?.Guid));
+            AdvLayoutView = new View_advLayout(v: v.GetObject<View>("view_advLayout"),
+                onAdvStartAction: () => onAdvStartAction?.Invoke(SelectedDizi?.Guid),
+                onRecallAction: () => onAdvRecallAction?.Invoke(SelectedDizi?.Guid),
+                onDiziFinalizeAction: () => onDiziFinalizeAction?.Invoke(SelectedDizi?.Guid),
+                onDiziForgetAction: () => onDiziForgetAction?.Invoke(SelectedDizi?.Guid),
+                onDiziBuyBackAction: () => onDiziBuyBackAction?.Invoke(SelectedDizi?.Guid)
+            );
         }
 
         private Dizi SelectedDizi { get; set; }//cache
@@ -110,10 +128,7 @@ public class DiziAdvManager
         private void SetDizi(Dizi dizi)
         {
             SetDiziElements(dizi);
-            if (dizi.Adventure is {State:AutoAdventure.States.Progress})
-                AdvLayoutView.SetAdventure(dizi); //历练模式
-            else
-                AdvLayoutView.SetPrepareState(dizi); //准备模式
+            AdvLayoutView.SetAdventure(dizi); //历练模式
         }
 
         private void SetDiziElements(Dizi dizi)
@@ -222,21 +237,33 @@ public class DiziAdvManager
         {
             private enum Modes
             {
-                Prepare, Adventure
+                None = 0,
+                Prepare,
+                Adventure,
+                Returning,
+                Waiting,
+                Failed
             }
             private Button Btn_recall { get; }
             private Image Img_costIco { get; }
             private Text Text_cost { get; }
             private Button Btn_advStart { get; }
+            private Button Btn_advFinalize { get; }
+            private Button Btn_advDiziBuyback{ get; }
+            private Button Btn_advDiziForget { get; }
 
             private ListViewUi<LogPrefab> LogView { get; }
             private ListViewUi<Prefab_rewardItem> RewardItemView { get; }
             private Element_equip[] ItemSlots { get; }
 
-            public View_advLayout(IView v, Action onAdvStartAction, Action onRecallAction) : base(v.GameObject, true)
+            public View_advLayout(IView v, 
+                Action onAdvStartAction, 
+                Action onRecallAction,
+                Action onDiziFinalizeAction,
+                Action onDiziForgetAction,
+                Action onDiziBuyBackAction) : base(v.GameObject, true)
             {
-                var scroll_advLog = v.GetObject<ScrollRect>("scroll_advLog");
-                LogView = new ListViewUi<LogPrefab>(v.GetObject<View>("prefab_log"), scroll_advLog);
+                LogView = new ListViewUi<LogPrefab>(v,"prefab_log", "scroll_advLog");
                 RewardItemView = new ListViewUi<Prefab_rewardItem>(v, "prefab_rewardItem", "scroll_rewardItem");
                 Img_costIco = v.GetObject<Image>("img_costIco");
                 Text_cost = v.GetObject<Text>("text_cost");
@@ -246,59 +273,96 @@ public class DiziAdvManager
                 ItemSlots = new[] { slot0, slot1, slot2 };
                 Btn_recall = v.GetObject<Button>("btn_recall");
                 Btn_advStart = v.GetObject<Button>("btn_advStart");
-                Btn_recall.OnClickAdd(() => onRecallAction?.Invoke());
-                Btn_advStart.OnClickAdd(() => onAdvStartAction?.Invoke());
-            }
+                Btn_advFinalize = v.GetObject<Button>("btn_advFinalize");
+                Btn_advDiziForget = v.GetObject<Button>("btn_advDiziForget");
+                Btn_advDiziBuyback = v.GetObject<Button>("btn_advDiziBuyback");
+
+                Btn_recall.OnClickAdd(onRecallAction);
+                Btn_advStart.OnClickAdd(onAdvStartAction);
+                Btn_advFinalize.OnClickAdd(onDiziFinalizeAction);
+                Btn_advDiziForget.OnClickAdd(onDiziForgetAction);
+                Btn_advDiziBuyback.OnClickAdd(onDiziBuyBackAction);
+        }
             public void SetCost(Sprite icon, int cost)
             {
                 Img_costIco.sprite = icon;
                 Text_cost.text = cost.ToString();
             }
 
-            public void SetPrepareState(Dizi dizi)
-            {
-                foreach (var slot in ItemSlots) slot.SetTimer();
-                SetMode(Modes.Prepare);
-                SetRewardItems(dizi);
-            }
-
             public void SetAdventure(Dizi dizi)
             {
-                XDebug.LogWarning("弟子历练未设置!");
-                SetMode(Modes.Adventure);
-                SetRewardItems(dizi);
+                var mode = Modes.None;
+                if (dizi.Adventure == null)
+                    mode = Modes.Prepare;
+                else
+                {
+                    mode = dizi.Adventure.State switch
+                    {
+                        AutoAdventure.States.Progress => Modes.Adventure,
+                        AutoAdventure.States.Recall => Modes.Returning,
+                        AutoAdventure.States.End => Modes.Waiting,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    SetLogs(dizi);
+                }
+                SetModes(dizi, mode);
+
+                void SetLogs(Dizi d)
+                {
+                    LogView.ClearList(ui => ui.Destroy());
+                    foreach (var msg in d.Adventure.StoryLog)
+                        AdvMessageUpdate(msg);
+                    AlignLogPos();
+                }
+            }
+            //把Log翻到最底
+            private void AlignLogPos()
+            {
+                Game.CoService.RunCo(WaitHalfSec(() => LogView.SetVerticalScrollPosition(0)));
+                IEnumerator WaitHalfSec(Action callback)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                    callback?.Invoke();
+                }
             }
 
-            private void SetRewardItems(Dizi dizi)
+            private void SetModes(Dizi dizi, Modes mode)
             {
-                RewardItemView.ClearList(p => p.Destroy());
-                if (dizi.Adventure == null)
+                DisplayButton(Btn_advStart, mode == Modes.Prepare);
+                DisplayButton(Btn_recall, mode == Modes.Adventure);
+                DisplayButton(Btn_advFinalize, mode == Modes.Waiting);
+                DisplayButton(Btn_advDiziForget, mode == Modes.Failed);
+                DisplayButton(Btn_advDiziBuyback, mode == Modes.Failed);
+                foreach (var slot in ItemSlots) slot.SetTimer(); //Update adv equipments
+                UpdateDiziBag(dizi);
+
+                //private method
+                void DisplayButton(Button button, bool display) => button.gameObject.SetActive(display);
+
+                void UpdateDiziBag(Dizi d)
                 {
-                    for (var i = 0; i < dizi.Capable.Bag; i++) 
+                    RewardItemView.ClearList(p => p.Destroy());
+                    for (var i = 0; i < d.Capable.Bag; i++)
                         RewardItemView.Instance(v => new Prefab_rewardItem(v));
                 }
             }
 
-            private void SetMode(Modes mode)
-            {
-                Btn_advStart.gameObject.SetActive(mode == Modes.Prepare);
-                Btn_recall.gameObject.SetActive(mode == Modes.Adventure);
-            }
 
             public void AdvMessageUpdate(string message)
             {
                 var log = LogView.Instance(v => new LogPrefab(v));
                 log.LogMessage(message);
+                AlignLogPos();
             }
 
             private class LogPrefab : UiBase
             {
-                private Text Prefab_Log { get; }
-                public LogPrefab(IView v) :base(v.GameObject, false)
+                private Text Text_Log { get; }
+                public LogPrefab(IView v) :base(v.GameObject, true)
                 {
-                    Prefab_Log = v.GetObject<Text>("prefab_log");
+                    Text_Log = v.GetObject<Text>("text_log");
                 }
-                public void LogMessage(string message) => Prefab_Log.text = message;
+                public void LogMessage(string message) => Text_Log.text = message;
             }
 
             private class Element_equip : UiBase

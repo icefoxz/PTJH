@@ -8,7 +8,7 @@ using Utls;
 
 namespace Test
 {
-    internal class Test_Faction : MonoBehaviour
+    internal class Hack_Faction : MonoBehaviour
     {
         [SerializeField] private ItemToAdd<WeaponFieldSo>[] _weapons;
         [SerializeField] private ItemToAdd<ArmorFieldSo>[] _armors;
@@ -51,15 +51,15 @@ namespace Test
             public int Amount => 数量;
         }
     }
-    [CustomEditor(typeof(Test_Faction))]
-    internal class Test_FactionEditor : Editor
+    [CustomEditor(typeof(Hack_Faction))]
+    internal class Hack_FactionEditor : Editor
     {
         
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
             if (!Application.isPlaying) return;
-            var script = (Test_Faction)target;
+            var script = (Hack_Faction)target;
             if (GUILayout.Button("添加物品到门派中"))
             {
                 script.AddItemToFaction();

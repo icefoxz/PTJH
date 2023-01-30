@@ -3,8 +3,13 @@ using UnityEngine;
 
 namespace Server.Configs.Items
 {
+    public interface IAdvItem : IGameItem
+    {
+        int GetValue(int max);
+    }
+
     [CreateAssetMenu(fileName = "id_advItem", menuName = "物件/弟子/历练道具")]
-    internal class AdvItemFieldSo : AutoUnderscoreNamingObject, IGameItem
+    internal class AdvItemFieldSo : AutoUnderscoreNamingObject, IAdvItem
     {
         [SerializeField] private int 体力恢复;
         [SerializeField] private bool 是百分比;

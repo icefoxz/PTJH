@@ -591,7 +591,7 @@ namespace BattleM
 
         public override string ToString() => $"{Name}({Position}),力({Strength})敏({Agility}),血{Hp},内{Mp}";
 
-        private record Equipment : IEquip
+        private record Equipment 
         {
             public IWeapon Weapon { get; }
             public IWeapon Fling { get; }

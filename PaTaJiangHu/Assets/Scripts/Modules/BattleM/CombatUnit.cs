@@ -31,7 +31,7 @@ namespace BattleM
     public interface ICombatInfo
     {
         int CombatId { get; }
-        IEquipment Equipment { get; }
+        IEquip Equipment { get; }
         int Position { get; }
         int StandingPoint { get; }
         string Name { get; }
@@ -111,7 +111,7 @@ namespace BattleM
         public void SetStandingPoint(int standingPoint) => StandingPoint = standingPoint;
         public void SetStrategy(Strategies strategy) => Strategy = strategy;
         public void SetCombatId(int combatId) => CombatId = combatId;
-        public IEquipment Equipment { get; }
+        public IEquip Equipment { get; }
         /// <summary>
         /// 是否逃跑状态，如果死战会一直返回false
         /// </summary>

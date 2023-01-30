@@ -3,6 +3,7 @@ using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Utls;
 
@@ -22,7 +23,7 @@ namespace Server.Controllers
         private ConditionPropertySo ConditionProperty => Game.Config.AdvCfg.ConditionProperty;
 
         private Faction Faction => Game.World.Faction;
-
+        private RewardController RewardController => Game.Controllers.Get<RewardController>();
         public void AdventureStart(string guid)
         {
             var dizi = Faction.GetDizi(guid);
@@ -33,18 +34,29 @@ namespace Server.Controllers
         {
             var now = SysTime.UnixNow;
             var dizi = Faction.GetDizi(guid);
-            CheckMile(dizi.Guid, (totalMile, isAdcContinue) =>
+            CheckMile(dizi.Guid, (totalMile, isAdvContinue) =>
             {
                 if (dizi.Adventure.State == AutoAdventure.States.Progress)
                     dizi.AdventureRecall(now, totalMile);
             });
         }
 
+        public void AdventureFinalize(string guid)
+        {
+            var dizi = Faction.GetDizi(guid);
+            if (dizi.Adventure is not { State: AutoAdventure.States.End })
+            {
+                XDebug.Log($"操作异常!弟子状态 = {dizi.Adventure?.State}");
+            }
+            RewardController.SetRewards(dizi.Adventure.Rewards.ToArray());
+            dizi.AdventureFinalize();
+        }
+
         /// <summary>
         /// 自动检查里数, 当里数故事执行完毕会在回调中返回故事距离和是否历练继续
         /// </summary>
         /// <param name="diziGuid"></param>
-        /// <param name="onCallbackAction">回调返回历练总里数,和是否历练继续, false = 冒险结束</param>
+        /// <param name="onCallbackAction">回调返回历练总里数,和是否历练继续, true = 冒险结束</param>
         public async void CheckMile(string diziGuid, Action<int ,bool> onCallbackAction)
         {
             var dizi = Faction.GetDizi(diziGuid);
@@ -55,12 +67,12 @@ namespace Server.Controllers
             //如果里数=0表示未去到任何地方,直接放回上个里数
             if (miles == 0)
             {
-                onCallbackAction?.Invoke(lastMile, !dizi.Stamina.Con.IsExhausted);
+                onCallbackAction?.Invoke(lastMile, dizi.Stamina.Con.IsExhausted);
                 return; //return lastMile;
             }
             var totalMiles = lastMile + miles;
-            var advContinue = await OnMileTrigger(now, lastMile, totalMiles, diziGuid);
-            onCallbackAction?.Invoke(totalMiles, advContinue);
+            var isAdvEnd = await OnMileTrigger(now, lastMile, totalMiles, diziGuid);
+            onCallbackAction?.Invoke(totalMiles, isAdvEnd);
         }
 
         /// <summary>
@@ -85,9 +97,9 @@ namespace Server.Controllers
                     dizi.AdventureStoryStart(story);
 
                 if (forceExit || dizi.Stamina.Con.IsExhausted) //当弟子体力=0
-                    return false; //返回故事结束
+                    return true; //返回故事结束
             }
-            return true;//返回故事继续
+            return false;//返回故事继续
         }
         /// <summary>
         /// 获取所有的触发主要故事点的里数

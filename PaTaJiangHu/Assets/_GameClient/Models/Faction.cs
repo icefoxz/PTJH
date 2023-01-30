@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using BattleM;
 using Core;
+using Server.Configs.Adventures;
 using Server.Configs.Items;
+using Server.Controllers;
 using Utls;
 
 namespace _GameClient.Models
@@ -25,9 +27,11 @@ namespace _GameClient.Models
     public class Faction : ModelBase, IFaction
     {
         protected override string LogPrefix { get; } = "门派";
-
+        private List<IBook> _books = new List<IBook>();
         private List<IWeapon> _weapons= new List<IWeapon>();
         private List<IArmor> _armors = new List<IArmor>();
+        private List<IAdvPackage> _packages = new List<IAdvPackage>();
+        private List<IAdvItem> _advItems = new List<IAdvItem>();
         private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
@@ -40,6 +44,9 @@ namespace _GameClient.Models
         public IReadOnlyList<IWeapon> Weapons => _weapons;
         public IReadOnlyList<IArmor> Armors => _armors;
         public ICollection<Dizi> DiziList => DiziMap.Values;
+        public IReadOnlyList<IAdvPackage> Packages => _packages;
+        public IReadOnlyList<IBook> Books => _books;
+        public IReadOnlyList<IAdvItem> AdvItems => _advItems;
 
         public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
 
@@ -159,6 +166,82 @@ namespace _GameClient.Models
             if(DiziMap.TryGetValue(guid, out var dizi)) return dizi;
             LogWarning($"找不到弟子 = {guid}");
             return null;
+        }
+
+        /// <summary>
+        /// 给门派加物件
+        /// </summary>
+        /// <param name="gi"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public void AddGameItem(IStacking<IGameItem> gi)
+        {
+            var data = Game.Controllers.Get<DataController>();
+            switch (gi.Item.Type)
+            {
+                case ItemType.Medicine:
+                    AddMedicine(data.GetMedicine(gi.Item.Id),gi.Amount);
+                    break;
+                case ItemType.Equipment:
+                    var equipment = gi.Item as IEquipment;
+                    if (equipment == null) XDebug.Log($"物件{gi.Item.Id}.{gi.Item.Name} 未继承<IEquipment>");
+                    for (var i = 0; i < gi.Amount; i++)
+                    {
+                        switch (equipment.EquipKind)
+                        {
+                            case EquipKinds.Weapon:
+                                var weapon = data.GetWeapon(gi.Item.Id);
+                                AddWeapon(weapon);
+                                break;
+                            case EquipKinds.Armor:
+                                var armor = data.GetArmor(gi.Item.Id);
+                                AddArmor(armor);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    break;
+                case ItemType.Book:
+                    AddBook(data.GetBook(gi.Item.Id));
+                    break;
+                case ItemType.AdvItems:
+                    AddAdvItem(data.GetAdvItem(gi.Item.Id));
+                    break;
+                case ItemType.StoryProps:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        internal void AddAdvItem(IAdvItem item)
+        {
+            _advItems.Add(item);
+            Log($"添加历练道具: {item.Id}.{item.Name}");
+        }
+        internal void AddPackages(ICollection<IAdvPackage> packages)
+        {
+            _packages.AddRange(packages);
+            Log($"添加包裹x{packages.Count}");
+        }
+        internal void AddBook(IBook book)
+        {
+            _books.Add(book);
+            Log($"添加书籍: {book.Id}.{book.Name}");
+        }
+        internal void RemoveAdvItem(IAdvItem item)
+        {
+            _advItems.Remove(item);
+            Log($"移除历练道具: {item.Id}.{item.Name}");
+        }
+        internal void RemovePackages(IAdvPackage package)
+        {
+            _packages.Remove(package);
+            Log($"移除包裹: 品级【{package.Grade}】");
+        }
+        internal void RemoveBook(IBook book)
+        {
+            _books.Remove(book);
+            Log($"移除书籍: {book.Id}.{book.Name}");
         }
     }
 }

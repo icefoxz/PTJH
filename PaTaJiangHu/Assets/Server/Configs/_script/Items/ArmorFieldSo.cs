@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Server.Configs.Items
 {
     [CreateAssetMenu(fileName = "armorSo",menuName = "物件/弟子/防具")]
-    [Serializable] public class ArmorFieldSo : AutoUnderscoreNamingObject
+    [Serializable] public class ArmorFieldSo : AutoUnderscoreNamingObject,IGameItem
     {
         [SerializeField] private int 护甲;
         [SerializeField] private SkillGrades 品级;
@@ -16,6 +16,7 @@ namespace Server.Configs.Items
 
         public int Def => 护甲;
         public SkillGrades Grade => 品级;
+        public ItemType Type => ItemType.Equipment;
         public int Price => 价钱;
         public string About => 说明;
         public IArmor Instance() => new ArmorField(Id, Name, Def, Grade, Price, About);
@@ -27,6 +28,7 @@ namespace Server.Configs.Items
             public string About { get; }
             public ItemType Type => ItemType.Equipment;
             public int Def { get; }
+            public EquipKinds EquipKind => EquipKinds.Armor;
             public SkillGrades Grade { get; }
             public int Price { get; }
 

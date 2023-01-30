@@ -8,8 +8,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
-using HotFix_Project.Serialization.LitJson;
-using Server.Configs.Items;
 using Server.Controllers;
 
 namespace HotFix_Project.Managers;

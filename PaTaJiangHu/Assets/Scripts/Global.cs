@@ -31,6 +31,10 @@ public class EventString
 
     public const string Test_AutoAdvDiziInit = "Test_AutoAdvDiziInit";
 
+    //奖励
+    public const string Rewards_Propmt = "Rewards_Propmt";//多个奖励
+    public const string Reward_Propmt = "Reward_Propmt";//单个奖励
+
     //弟子dizi
     public const string Recruit_DiziGenerated = "Recruit_DiziGenerated";
     public const string Recruit_DiziInSlot = "Recruit_DiziInSlot";
@@ -45,8 +49,9 @@ public class EventString
     //弟子历练
     public const string Dizi_Adv_EventMessage = "Dizi_Adv_Message";//弟子历练单个事件信息
     public const string Dizi_Adv_Start = "Dizi_Adv_Start";//弟子历练开始
-    public const string Dizi_Adv_Recall = "Dizi_Adv_Recall";//弟子被叫回
+    public const string Dizi_Adv_Recall = "Dizi_Adv_Recall";//弟子回程
     public const string Dizi_Adv_End = "Dizi_Adv_End";//弟子历练结束
+    public const string Dizi_Adv_Finalize = "Dizi_Adv_Finalize";//弟子历练结算
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";//给门派加弟子

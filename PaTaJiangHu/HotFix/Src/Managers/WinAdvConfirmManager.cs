@@ -1,7 +1,6 @@
 ﻿using System;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
-using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
@@ -17,6 +16,7 @@ public class WinAdvConfirmManager
         Game.UiBuilder.Build("view_winAdvConfirm", v =>
         {
             WinAdvConfirm = new View_winAdvConfirm(v, () => XDebug.LogWarning("弟子历练! 目前历练功能未实现"));
+            Game.MainUi.SetWindow(v, false);
         }, RegEvents);
     }
 

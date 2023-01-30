@@ -25,17 +25,10 @@ namespace BattleM
         IArmor Armor { get; }
 
         Way.Armed Armed => Weapon?.Armed ?? Way.Armed.Unarmed;
-    }
-
-    public interface IEquipment : IEquip
-    {
-        void SetWeapon(IWeapon weapon);
-        void SetArmor(IArmor armor);
         void FlingConsume();
-        void RemoveWeapon(IWeapon weapon);
     }
 
-    public class Equipment : IEquipment
+    public class Equipment : IEquip
     {
         public IWeapon Weapon { get; private set; }
         public IWeapon Fling { get; private set; }
@@ -72,7 +65,7 @@ namespace BattleM
         }
     }
 
-    public interface IArmor: IGameItem
+    public interface IArmor: IEquipment
     {
         int Def { get; }
         SkillGrades Grade { get; }
@@ -84,6 +77,7 @@ namespace BattleM
         public string About { get; }
         public ItemType Type => ItemType.Equipment;
         public int Def { get; }
+        public EquipKinds EquipKind => EquipKinds.Armor;
         public SkillGrades Grade { get; }
         public int Price { get; }
         public int Id { get; }
@@ -109,7 +103,7 @@ namespace BattleM
         }
     }
 
-    public interface IWeapon : IGameItem
+    public interface IWeapon : IEquipment
     {
         Way.Armed Armed { get; }
         int Damage { get; }
@@ -132,6 +126,7 @@ namespace BattleM
         public ItemType Type => ItemType.Equipment;
         public int Price { get; }
         public Way.Armed Armed { get; }
+        public EquipKinds EquipKind => EquipKinds.Weapon;
         public int Damage { get; }
         public Injuries Injury { get; }
         public SkillGrades Grade { get; }

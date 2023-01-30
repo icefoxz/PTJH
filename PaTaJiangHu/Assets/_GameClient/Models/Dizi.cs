@@ -285,6 +285,12 @@ namespace _GameClient.Models
             Log($"停止历练, 里数: {lastMile}");
             SendEvent(EventString.Dizi_Adv_Recall, Guid);
         }
+        internal void AdventureFinalize()
+        {
+            Adventure = null;
+            Log("历练结束!");
+            SendEvent(EventString.Dizi_Adv_Finalize, Guid);
+        }
         internal void ConSet(IAdjustment.Types type, int value)
         {
             var con = type switch
