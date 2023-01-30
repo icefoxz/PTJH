@@ -36,9 +36,9 @@ public class DiziTestManager
             GenWindow = new DiziGenWindow(v, level => Controller.OnDiziLevel(level));
             GenWindow.SetButtons(Controller.OnGenerateDizi, () => GenWindow.Display(false));
         },EventGenWindowReg);
-        Game.UiBuilder.Build("test_diziStamina", (go, v) =>
+        Game.UiBuilder.Build("test_diziStamina", v =>
         {
-            StaCountWindow = new StaminaCountWindow(go,
+            StaCountWindow = new StaminaCountWindow(v.GameObject,
                 v.GetObject<InputField>("input_minutes"),
                 v.GetObject<InputField>("input_stamina"),
                 v.GetObject<Button>("btn_set"),

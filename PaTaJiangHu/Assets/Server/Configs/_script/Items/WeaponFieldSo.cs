@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Server.Configs.Items
 {
     [CreateAssetMenu(fileName = "weaponSo", menuName = "物件/弟子/武器")]
-    [Serializable] internal class WeaponFieldSo : AutoUnderscoreNamingObject, IGameItem
+    [Serializable] internal class WeaponFieldSo : AutoUnderscoreNamingObject, IEquipment
     {
         private bool GetItem()
         {
@@ -33,6 +33,7 @@ namespace Server.Configs.Items
         public int Damage => 力量加成;
         public Weapon.Injuries Injury => 伤害类型;
         public SkillGrades Grade => 品级;
+        public EquipKinds EquipKind => EquipKinds.Weapon;
         public int FlingTimes => 投掷次数;
         public IWeapon Instance() => new WeaponField(Id, Name, Armed, Damage, Injury, Grade, Price, About, FlingTimes);
         private class WeaponField : IWeapon
@@ -43,10 +44,11 @@ namespace Server.Configs.Items
             public ItemType Type => ItemType.Equipment;
             public int Price { get; }
             public Way.Armed Armed { get; }
+            public EquipKinds EquipKind => EquipKinds.Weapon;
             public int Damage { get; }
             public Weapon.Injuries Injury { get; }
             public SkillGrades Grade { get; }
-            public int FlingTimes { get;  }
+            public int FlingTimes { get; private set; }
 
             public WeaponField(int id, string name, Way.Armed armed, int damage, Weapon.Injuries injury, SkillGrades grade, int price, string about, int flingTimes)
             {
@@ -62,8 +64,9 @@ namespace Server.Configs.Items
             }
             public void AddFlingTime(int value)
             {
-                throw new NotImplementedException();
+                FlingTimes += value;
             }
         }
+
     }
 }

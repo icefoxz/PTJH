@@ -8,8 +8,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
-using HotFix_Project.Serialization.LitJson;
-using Server.Configs.Items;
 using Server.Controllers;
 
 namespace HotFix_Project.Managers;
@@ -120,8 +118,8 @@ public class WinConItemSelectorManager
             ElementMgr.SetConValue(Conditions.Food, dizi.Food.Value, dizi.Food.Max);
             ElementMgr.SetConValue(Conditions.State, dizi.Emotion.Value, dizi.Emotion.Max);
             ElementMgr.SetConValue(Conditions.Silver, dizi.Silver.Value, dizi.Silver.Max);
-            //ElementMgr.SetConValue(Conditions.Injury, dizi.Injury.Value, dizi.Injury.Max);
-            //ElementMgr.SetConValue(Conditions.Silver, dizi.Inner.Value, dizi.Inner.Max);
+            ElementMgr.SetConValue(Conditions.Injury, dizi.Injury.Value, dizi.Injury.Max);
+            ElementMgr.SetConValue(Conditions.Silver, dizi.Inner.Value, dizi.Inner.Max);
         }
 
         private class Prefab_Item : UiBase

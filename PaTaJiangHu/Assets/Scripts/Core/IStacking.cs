@@ -20,10 +20,6 @@ namespace Core
         /// </summary>
         Book,
         /// <summary>
-        /// 包裹, 游戏物品的容器
-        /// </summary>
-        Package,
-        /// <summary>
         /// 故事道具
         /// </summary>
         StoryProps,
@@ -33,13 +29,27 @@ namespace Core
         AdvItems,
     }
 
+    /// <summary>
+    /// 装备类型
+    /// </summary>
+    public enum EquipKinds
+    {
+        Weapon,
+        Armor
+    }
+
+    public interface IEquipment : IGameItem
+    {
+        EquipKinds EquipKind { get; }
+    }
+
     public interface IGameItem
     {
-        int Id { get; }
-        string Name { get; }
-        string About { get; }
-        ItemType Type { get; }
-        int Price { get; }
+        public int Id { get; }
+        public string Name { get; }
+        public string About { get; }
+        public ItemType Type { get; }
+        public int Price { get; }
     }
     /// <summary>
     /// 堆叠

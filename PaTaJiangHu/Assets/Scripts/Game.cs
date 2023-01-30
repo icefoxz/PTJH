@@ -85,7 +85,7 @@ public class Game : UnitySingleton<Game>
         IEnumerator StartAfterSec(float innerSec)
         {
             yield return new WaitForSeconds(innerSec);
-            Test_Faction.TestFaction();
+            Hack_Faction.TestFaction();
         }
     }
 
@@ -97,6 +97,8 @@ public class Game : UnitySingleton<Game>
         Controllers.Reg(new DiziController());
         Controllers.Reg(new StaminaController());
         Controllers.Reg(new DiziAdvController());
+        Controllers.Reg(new RewardController());
+        Controllers.Reg(new DataController());
     }
 
     private static void TestFactionInventory()

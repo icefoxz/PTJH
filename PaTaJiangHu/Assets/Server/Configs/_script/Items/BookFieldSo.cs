@@ -7,6 +7,11 @@ using UnityEngine;
 
 namespace Server.Configs.Items
 {
+    public interface IBook : IGameItem
+    {
+        int GetUpgradeRate(int currentLevel);
+    }
+
     [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "物件/弟子/秘籍")]
     internal class BookFieldSo : BookSoBase
     {
@@ -64,7 +69,8 @@ namespace Server.Configs.Items
             }
         }
     }
-    public abstract class BookSoBase : ScriptableObject, IGameItem
+
+    public abstract class BookSoBase : ScriptableObject, IBook
     {
         public abstract int Id { get; }
         public abstract string Name { get; }

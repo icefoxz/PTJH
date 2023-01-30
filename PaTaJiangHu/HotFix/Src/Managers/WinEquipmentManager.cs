@@ -36,8 +36,14 @@ public class WinEquipmentManager
             WinEquipment.Set(guid, itemType); //weapon or armor
             Game.MainUi.ShowWindow(WinEquipment.View);
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => WinEquipment.OnItemEquipped());
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => WinEquipment.OnItemUnequipped());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => 
+        {
+            WinEquipment.OnItemEquipped();
+        });
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag =>
+        {
+            WinEquipment.OnItemUnequipped();
+        });
     }
     
     private class View_winEquipment : UiBase
@@ -81,16 +87,18 @@ public class WinEquipmentManager
 
         public void OnItemEquipped()
         {
+            ListItems((ItemTypes)SelectedType);
             for (var index = 0; index < ItemView.List.Count; index++)
             {
                 var ui = ItemView.List[index];
-                ui.SetEquipped(SelectedItemIndex == index);
+                ui.SetEquipped(ui.ItemIndex == -1);
             }
         }
 
         public void OnItemUnequipped()
         {
-            foreach (var ui in ItemView.List) ui.SetEquipped(false);
+            ListItems((ItemTypes)SelectedType);
+            foreach (var ui in ItemView.List)  ui.SetEquipped(false);
         }
 
         private string SelectedDiziGuid { get; set; }
@@ -145,6 +153,9 @@ public class WinEquipmentManager
                 ui.SetEquipped(IsDiziEquipped && index == 0);
                 ui.SetName(item.name);
             }
+            SelectedItemIndex = -1;
+            OnSelectedItem(SelectedItemIndex);
+            Btn_unequip.interactable = SelectedItemIndex >= 0;
         }
 
         private void OnSelectedItem(int index)
@@ -152,9 +163,15 @@ public class WinEquipmentManager
             for (var i = 0; i < ItemView.List.Count; i++)
             {
                 var ui = ItemView.List[i];
-                ui.SetSelected(i == index);
-                SelectedItemIndex = ui.ItemIndex;
+                var isSelected = i == index;
+                ui.SetSelected(isSelected);
+                if (isSelected)
+                { 
+                    SelectedItemIndex = ui.ItemIndex;
+                }
             }
+            Btn_equip.interactable = SelectedItemIndex >= 0;
+            Btn_unequip.interactable = SelectedItemIndex < 0;
         }
 
         private class Prefab_Item : UiBase

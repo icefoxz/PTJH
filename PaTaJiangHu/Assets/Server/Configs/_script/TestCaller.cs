@@ -78,7 +78,7 @@ namespace Server.Configs
         public void StartAutoAdventure() => Game.MessagingManager.Send(EventString.Test_AutoAdvDiziInit, string.Empty);
         public string InitAutoAdventure()
         {
-            Test_Faction.TestFaction();
+            Hack_Faction.TestFaction();
             var faction = Game.World.Faction;
             var p = AutoAdventureCfg.Player;
             var dizi = new Dizi(guid: Guid.NewGuid().ToString(), name: p.Name,

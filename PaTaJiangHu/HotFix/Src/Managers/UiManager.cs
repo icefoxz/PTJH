@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HotFix_Project.Src.Managers;
+using UnityEngine;
 
 namespace HotFix_Project.Managers;
 
@@ -13,6 +14,9 @@ internal class UiManager
     private WinConItemSelectorManager WinConItemSelectorManager { get; set; } = new WinConItemSelectorManager();
     private WinAdvConfirmManager WinAdvConfirmManager { get; set; } = new WinAdvConfirmManager();
     private WinEquipmentManager WinEquipmentManager { get; set; } = new WinEquipmentManager();
+    private WinRewardManager WinRewardManager { get; set; } = new WinRewardManager();
+    private BtmPageBtnsManager BtmPageBtnsManager { get; set; } = new BtmPageBtnsManager();
+    private TreasureHouseManager TreasureHouseManager { get; set; } = new TreasureHouseManager();
     public UiManager(IMainUi mainUi)
     {
         MainUi = mainUi;
@@ -23,38 +27,37 @@ internal class UiManager
         InstanceTopUis();
         InstanceMidUis();
         InstanceBtmUis();
-        InitUis();
         Debug.Log($"{nameof(UiManager)} Init!");
     }
 
-    private void InitUis()
+    private void InitMainLayoutUis()
     {
         //板块 section
-        FactionInfo.Init();
         DiziInfoSectManager.Init();
         DiziRecruitManager.Init();
         DiziListViewManager.Init();
         DiziAdvManager.Init();
+        TreasureHouseManager.Init();
         //窗口 windows
         WinConItemSelectorManager.Init();
         WinAdvConfirmManager.Init();
         WinEquipmentManager.Init();
+        WinRewardManager.Init();
     }
-
 
     private void InstanceTopUis()
     {
-        
+        FactionInfo.Init();
     }
 
     private void InstanceBtmUis()
     {
-        
+        BtmPageBtnsManager.Init();
     }
 
     private void InstanceMidUis()
     {
-        
+        InitMainLayoutUis();
     }
 
 

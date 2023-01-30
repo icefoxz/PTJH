@@ -4,6 +4,7 @@ using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
+using Server.Configs.Items;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Utls;
@@ -55,6 +56,24 @@ internal class Configure : MonoBehaviour
         internal BattleSimulatorConfigSo BattleSimulation => GetSo(战斗模拟器);
         internal ConditionPropertySo ConditionProperty => GetSo(状态属性系数配置);
         internal AdventureConfigSo AdventureCfg => GetSo(历练配置);
+    }
+
+    //数据配置
+    [SerializeField] private DataCfg 游戏数据;
+    public DataCfg Data => 游戏数据;
+    [Serializable]public class DataCfg
+    {
+        [SerializeField] private WeaponFieldSo[] 武器;
+        [SerializeField] private ArmorFieldSo[] 防具;
+        [SerializeField] private MedicineFieldSo[] 药品;
+        [SerializeField] private BookFieldSo[] 书籍;
+        [SerializeField] private AdvItemFieldSo[] 历练道具;
+
+        public WeaponFieldSo[] Weapons => 武器;
+        public ArmorFieldSo[] Armors => 防具;
+        public MedicineFieldSo[] Medicines => 药品;
+        public BookFieldSo[] Books => 书籍;
+        public AdvItemFieldSo[] AdvItems => 历练道具;
     }
 
     private static T GetSo<T>(T so, [CallerMemberName]string method = null) where T : ScriptableObject

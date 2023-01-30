@@ -22,7 +22,7 @@ public interface IMainUi : ISingletonDependency
     void HideTop();
     void HideMid();
     void HideBtm();
-    void HideWindow();
+    void HideWindows();
     void HidePanel();
     void HideAllLayout();
     void ShowAllLayout();
@@ -93,7 +93,12 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     public void HideTop() => Display(false, TopUi);
     public void HideMid() => Display(false, MidUi);
     public void HideBtm() => Display(false, BtmUi);
-    public void HideWindow() => Display(false, Window);
+    public void HideWindows()
+    {
+        HideLayoutChildren(Window);
+        Display(false, Window);
+    }
+
     public void HidePanel() => Display(false, Panel);
     public void HideAllLayout() => Display(false, TopUi, MidUi, BtmUi);
     public void ShowAllLayout() => Display(true, TopUi, MidUi, BtmUi);
@@ -108,6 +113,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         ResetAllLayoutChildren();
         ShowAllLayout();
         HidePanel();
+        HideWindows();
     }
 
     private void ResetAllLayoutChildren()

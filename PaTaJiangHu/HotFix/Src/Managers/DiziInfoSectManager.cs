@@ -54,6 +54,10 @@ public class DiziInfoSectManager
             CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"),
                 () => onStaminaBtnClick(SelectedDizi?.Guid));
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
+            SetProp(View_diziProps.Props.Strength, 0, 0, 0);
+            SetProp(View_diziProps.Props.Agility, 0, 0, 0);
+            SetProp(View_diziProps.Props.Mp, 0, 0, 0);
+            SetProp(View_diziProps.Props.Hp, 0, 0, 0);
         }
 
         private Dizi SelectedDizi { get; set; }
@@ -81,9 +85,9 @@ public class DiziInfoSectManager
             UpdateDiziStamina();
 
             SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength, dizi.Weapon?.Damage ?? 0);
-            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility);
-            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp);
-            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp);
+            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility, 0);
+            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp, 0);
+            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp, 0);
             View.StopAllCo();
             View.StartCo(UpdateStaminaEverySecond());
         }
@@ -102,8 +106,8 @@ public class DiziInfoSectManager
             CharInfo.SetStamina(stamina, max, min, sec);
         }
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
-        private void SetProp(View_diziProps.Props prop, int grade, int value, int equip = 0, int condition = 0) =>
-            DiziProps.Set(prop, grade, value, equip, condition);
+        private void SetProp(View_diziProps.Props prop, int grade, int value, int skill, int equip = 0, int condition = 0) =>
+            DiziProps.Set(prop, grade, value, skill, equip, condition);
         private class View_charInfo : UiBase
         {
             private Image Img_charAvatar { get; }
@@ -248,8 +252,8 @@ public class DiziInfoSectManager
 
             public void SetIcon(Props prop, Sprite icon) => GetProp(prop).SetIcon(icon);
 
-            public void Set(Props prop, int grade, int value, int equip, int condition) =>
-                GetProp(prop).Set(grade, value, equip, condition);
+            public void Set(Props prop, int grade, int value, int skill, int equip, int condition) =>
+                GetProp(prop).Set(grade, value, skill, equip, condition);
 
             private Element_prop GetProp(Props prop) => prop switch
             {
@@ -267,7 +271,7 @@ public class DiziInfoSectManager
                 private Text Text_prop { get; }
                 private Text Text_equip { get; }
                 private Text Text_condition { get; }
-
+                private Text Text_skill { get; }
                 public Element_prop(IView v) : base(v.GameObject, true)
                 {
                     Img_ico = v.GetObject<Image>("img_ico");
@@ -275,15 +279,17 @@ public class DiziInfoSectManager
                     Text_prop = v.GetObject<Text>("text_prop");
                     Text_equip = v.GetObject<Text>("text_equip");
                     Text_condition = v.GetObject<Text>("text_condition");
+                    Text_skill = v.GetObject<Text>("text_skill");
                 }
 
                 public void SetIcon(Sprite icon) => Img_ico.sprite = icon;
-                public void Set(int grade, int value, int equip, int condition)
+                public void Set(int grade, int value, int equip, int condition, int skill)
                 {
                     Text_grade.text = GetGrade(grade);
                     Text_prop.text = SetText(value);
                     Text_equip.text = SetText(equip);
                     Text_condition.text = SetText(condition);
+                    Text_skill.text = SetText(skill);
 
                     string SetText(int v,string prefix = "") => v == 0 ? string.Empty : prefix + v;
                 }

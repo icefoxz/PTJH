@@ -43,14 +43,14 @@ namespace Test
             [SerializeField] private CombatFieldSo 武功;
             [SerializeField] private DodgeFieldSo 轻功;
             [SerializeField] private Equipment 装备;
-            private IEquipment equipCache;
+            private IEquip equipCache;
             public string Name => _name;
             public int Strength => 力量;
             public int Agility => 敏捷;
             public int Hp => 血;
             public int Mp => 内;
             public IForceSkill Force => 内功.GetMaxLevel();
-            public IEquipment Equipment => equipCache ??= new BattleM.Equipment(装备);
+            public IEquip Equipment => equipCache ??= new BattleM.Equipment(装备);
             public IDodgeSkill Dodge => 轻功.GetMaxLevel();
             private CombatFieldSo CombatSkill => 武功;
 
@@ -78,6 +78,7 @@ namespace Test
             public IWeapon Weapon => _weapon ??= 武器.Instance();
             public IWeapon Fling => _fling ??= IsWeaponFling ? 武器.Instance() : 暗器.Instance();
             public IArmor Armor => _armor ??= 防具.Instance();
+            public void FlingConsume() => throw new NotImplementedException();
         }
     }
 }
