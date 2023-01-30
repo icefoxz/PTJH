@@ -15,6 +15,7 @@ internal class UiManager
     private WinAdvConfirmManager WinAdvConfirmManager { get; set; } = new WinAdvConfirmManager();
     private WinEquipmentManager WinEquipmentManager { get; set; } = new WinEquipmentManager();
     private BtmPageBtnsManager BtmPageBtnsManager { get; set; } = new BtmPageBtnsManager();
+    private TreasureHouseManager TreasureHouseManager { get; set; } = new TreasureHouseManager();
     public UiManager(IMainUi mainUi)
     {
         MainUi = mainUi;
@@ -38,6 +39,7 @@ internal class UiManager
         DiziListViewManager.Init();
         DiziAdvManager.Init();
         BtmPageBtnsManager.Init();
+        TreasureHouseManager.Init();
         //窗口 windows
         WinConItemSelectorManager.Init();
         WinAdvConfirmManager.Init();
