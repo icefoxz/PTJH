@@ -291,6 +291,7 @@ public class DiziAdvManager
 
             public void SetAdventure(Dizi dizi)
             {
+                LogView.ClearList(ui => ui.Destroy());
                 var mode = Modes.None;
                 if (dizi.Adventure == null)
                     mode = Modes.Prepare;
@@ -309,7 +310,6 @@ public class DiziAdvManager
 
                 void SetLogs(Dizi d)
                 {
-                    LogView.ClearList(ui => ui.Destroy());
                     foreach (var msg in d.Adventure.StoryLog)
                         AdvMessageUpdate(msg);
                     AlignLogPos();

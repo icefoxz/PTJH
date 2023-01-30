@@ -29,7 +29,7 @@ public class TreasureHouseManager
     {
         private View_selectedItem SelectedItem { get; }
         private View_contentList ContentList { get; }
-        public View_treasureHouse(IView v) : base(v.GameObject, true)
+        public View_treasureHouse(IView v) : base(v.GameObject, false)
         {
             SelectedItem = new View_selectedItem(v.GetObject<View>("view_selectedItem"));
             ContentList = new View_contentList(v.GetObject<View>("view_contentList"), index => SelectedItem.SetItem(index));
