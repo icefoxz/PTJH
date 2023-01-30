@@ -98,7 +98,7 @@ public class WinEquipmentManager
         public void OnItemUnequipped()
         {
             ListItems((ItemTypes)SelectedType);
-            foreach (var ui in ItemView.List) ui.SetEquipped(false);
+            foreach (var ui in ItemView.List)  ui.SetEquipped(false);
         }
 
         private string SelectedDiziGuid { get; set; }
@@ -154,6 +154,8 @@ public class WinEquipmentManager
                 ui.SetName(item.name);
             }
             SelectedItemIndex = -1;
+            OnSelectedItem(SelectedItemIndex);
+            Btn_unequip.interactable = SelectedItemIndex >= 0;
         }
 
         private void OnSelectedItem(int index)
@@ -169,6 +171,7 @@ public class WinEquipmentManager
                 }
             }
             Btn_equip.interactable = SelectedItemIndex >= 0;
+            Btn_unequip.interactable = SelectedItemIndex < 0;
         }
 
         private class Prefab_Item : UiBase
