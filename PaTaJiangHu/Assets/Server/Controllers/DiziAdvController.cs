@@ -36,9 +36,17 @@ namespace Server.Controllers
             var dizi = Faction.GetDizi(guid);
             CheckMile(dizi.Guid, (totalMile, isAdvEnd) =>
             {
-                if (dizi.Adventure.State == AutoAdventure.States.Progress)
-                    dizi.AdventureRecall(now, totalMile);
+                if (dizi.Adventure.State == AutoAdventure.States.Progress) 
+                    DiziRecallStory(dizi, now, totalMile);
             });
+        }
+
+        private static void DiziRecallStory(Dizi dizi, long now, int totalMile)
+        {
+            var recallMsg = $"{dizi.Name}回程中...";
+            var recallLog = new DiziAdvLog(new[] { recallMsg }, dizi.Guid, now, totalMile);
+            dizi.AdventureStoryLogging(recallLog);
+            dizi.AdventureRecall(now, totalMile);
         }
 
         public void AdventureFinalize(string guid)
@@ -94,7 +102,7 @@ namespace Server.Controllers
                 var (advLogs, forceExit) = await ProcessStory(place, now, toMiles, dizi);
                 //当获取到地点, 执行故事
                 foreach (var story in advLogs) 
-                    dizi.AdventureStoryStart(story);
+                    dizi.AdventureStoryLogging(story);
 
                 if (forceExit || dizi.Stamina.Con.IsExhausted) //当弟子体力=0
                     return true; //返回故事结束

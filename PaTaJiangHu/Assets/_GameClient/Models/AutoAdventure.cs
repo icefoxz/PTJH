@@ -5,7 +5,9 @@ using System.Linq;
 using Core;
 using Server.Configs.Adventures;
 using Server.Controllers;
+using Systems.Coroutines;
 using UnityEngine;
+using Utls;
 
 namespace _GameClient.Models
 {
@@ -48,7 +50,7 @@ namespace _GameClient.Models
         public int LastMile { get; private set; }
 
         private int MessageSecs { get; } //文本展示间隔(秒)
-        private int ServiceCoId { get; set; }
+        private ICoroutineInstance ServiceCo { get; set; }
         private Dizi Dizi { get; }
 
         private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
@@ -72,14 +74,17 @@ namespace _GameClient.Models
             StartService();
         }
 
+        private string CoName => ServiceCo?.GetInstanceID() + "历练." + State + ".";
+        private void SetServiceName(string serviceName) => ServiceCo.name = CoName + serviceName;
         private void StartService()
         {
-            ServiceCoId = Game.CoService.RunCo(UpdateEverySecond(), () => ServiceCoId = 0, Dizi.Name + "历练.");
+            ServiceCo = Game.CoService.RunCo(UpdateEverySecond(), () => ServiceCo = null, Dizi.Name);
             IEnumerator UpdateEverySecond()
             {
                 yield return new WaitForEndOfFrame();
                 while (State is not States.End)
                 {
+                    SetServiceName(Mode.ToString());
                     switch (Mode)
                     {
                         case Modes.Polling:
@@ -98,6 +103,7 @@ namespace _GameClient.Models
                         {
                             //当进入故事模式
                             //循环播放直到播放队列空
+                            SetServiceName("Story");
                             while (Stories.Count > 0)
                             {
                                 var st = Stories.Dequeue();
@@ -139,20 +145,20 @@ namespace _GameClient.Models
 
         internal void Recall(long now,int lastMile)
         {
+            const string RecallText = "回程中";
             UpdateTime(now,lastMile);
             State = States.Recall;
-            Game.CoService.RunCo(ReturnFromAdventure(), null, Dizi.Name + "回程中");
+            SetServiceName(RecallText);
+            Game.CoService.RunCo(ReturnFromAdventure(), null, Dizi.Name).name = RecallText;
 
             IEnumerator ReturnFromAdventure()
             {
                 yield return new WaitUntil(() => Mode == Modes.Polling);
-                if (ServiceCoId != 0) Game.CoService.StopCo(ServiceCoId);
-                Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, $"{Dizi.Name}回程中...",
-                    false);
                 yield return new WaitForSeconds(JourneyReturnSec);
+                SetServiceName("已回到山门.");
+                RegStory(new DiziAdvLog(new[] { $"{Dizi.Name}已回到山门!" }, Dizi.Guid, SysTime.UnixNow, LastMile));
+                yield return new WaitForSeconds(1);
                 State = States.End;
-                Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage, Dizi.Guid, $"{Dizi.Name}已回到山门!",
-                    true);
                 Game.MessagingManager.Send(EventString.Dizi_Adv_End, Dizi.Guid);
             }
         }

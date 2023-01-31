@@ -273,7 +273,7 @@ namespace _GameClient.Models
             Log("开始历练.");
             SendEvent(EventString.Dizi_Adv_Start, Guid);
         }
-        internal void AdventureStoryStart(DiziAdvLog story)
+        internal void AdventureStoryLogging(DiziAdvLog story)
         {
             if (Adventure.State == AutoAdventure.States.End)
                 throw new NotImplementedException();

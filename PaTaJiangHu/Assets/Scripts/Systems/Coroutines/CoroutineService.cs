@@ -11,16 +11,15 @@ namespace Systems.Coroutines
 {
     public interface ICoroutineService : ISingletonDependency
     {
-        int RunCo(IEnumerator enumerator, Action onFinishCallback = null, string prefix = null,
+        ICoroutineInstance RunCo(IEnumerator enumerator, Action onFinishCallback = null, string parentName = null,
             [CallerMemberName] string method = null);
-
-        void StopCo(int index);
     }
 
     public class CoroutineService : DependencySingleton<ICoroutineService>, ICoroutineService
     {
         //private ObjectPool<CoroutineInstance> _pool;
         private readonly Dictionary<int, CoroutineInstance> _map = new Dictionary<int, CoroutineInstance>();
+        private readonly Dictionary<string,GameObject> _parent = new Dictionary<string, GameObject>();
         [SerializeField] private CoroutineInstance _prefab;
         private const string Co = ".Co";
         private const char Dot = '.';
@@ -45,25 +44,38 @@ namespace Systems.Coroutines
         //        actionOnDestroy: co => _map.Remove(co.GetInstanceID()));
         //}
 
-        public int RunCo(IEnumerator enumerator, Action onFinishCallback, string prefix,
+        public ICoroutineInstance RunCo(IEnumerator enumerator, Action onFinishCallback, string parentName = null,
             [CallerMemberName] string method = null)
         {
-            var co = Instantiate(_prefab); //_pool.Get();
+            var co = InstanceCo(parentName);
             var instanceId = co.GetInstanceID();
             _map.Add(instanceId, co);
-            co.name = instanceId + Dot + prefix + method;
-            co.StartCo(enumerator, () =>
-            {
-                StopCo(co.GetInstanceID());
-                onFinishCallback?.Invoke();
-            });
-            return instanceId;
+            co.name = instanceId + Dot + method;
+            co.StartCo(enumerator, () => onFinishCallback?.Invoke(), () => StopCo(co));
+            return co;
         }
 
-        public void StopCo(int index)
+        private CoroutineInstance InstanceCo(string parentName)
         {
-            var co = _map[index];
-            co.StopCo();
+            var parent = transform;
+            if (!string.IsNullOrWhiteSpace(parentName))
+            {
+                if (!_parent.ContainsKey(parentName))
+                {
+                    var go = new GameObject(parentName);
+                    go.transform.SetParent(transform);
+                    _parent.Add(parentName,go);
+                }
+
+                parent = _parent[parentName].transform;
+            }
+            var co = Instantiate(_prefab, parent); //_pool.Get();
+            return co;
+        }
+
+        private void StopCo(CoroutineInstance co)
+        {
+            _map.Remove(co.GetInstanceID());
             Destroy(co.gameObject);
             //_pool.Release(co);
         }

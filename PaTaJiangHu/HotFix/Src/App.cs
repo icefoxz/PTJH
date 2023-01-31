@@ -62,7 +62,7 @@ namespace HotFix_Project
             {
                 Debug.Log("StartWaitUntil");
                 yield return new WaitUntil(() => waitTill);
-                CoroutineService.Instance.StopCo(fiveSec);
+                fiveSec.StopCo();
                 Debug.Log("StopWaitUntil");
             }
         }

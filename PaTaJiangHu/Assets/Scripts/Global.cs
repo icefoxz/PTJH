@@ -33,6 +33,7 @@ public class EventString
 
     //页面
     public const string Page_TreasureHouse = "Page_TreasureHouse";
+    public const string Page_DiziRecruit = "Page_DiziRecruit";
 
     //奖励
     public const string Rewards_Propmt = "Rewards_Propmt";//多个奖励
@@ -64,4 +65,5 @@ public class EventString
     public const string Faction_SilverUpdate = "Faction_SilverUpdate";
     public const string Faction_YuanBaoUpdate = "Faction_YuanBaoUpdate";
     public const string Faction_Params_ActionLingUpdate = "Faction_ActionLingUpdate";
+
 }

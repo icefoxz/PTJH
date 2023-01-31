@@ -4,12 +4,21 @@ using UnityEngine.Events;
 
 namespace Systems.Coroutines
 {
-    internal class CoroutineInstance : MonoBehaviour
+    public interface ICoroutineInstance
     {
-        public Coroutine Coroutine { get; set; }
+        void StopCo();
+        int GetInstanceID();
+        string name { get; set; }
+    }
 
-        public void StartCo(IEnumerator enumerator, UnityAction callBackAction)
+    public class CoroutineInstance : MonoBehaviour, ICoroutineInstance
+    {
+        internal Coroutine Coroutine { get; set; }
+        private event UnityAction OnStopAction;
+
+        public void StartCo(IEnumerator enumerator, UnityAction callBackAction, UnityAction onStopAction)
         {
+            OnStopAction = onStopAction;
             Coroutine = StartCoroutine(CoroutineMethod(enumerator, callBackAction));
         }
 
@@ -17,7 +26,12 @@ namespace Systems.Coroutines
         {
             yield return co;
             callBackAction?.Invoke();
+            OnStopAction?.Invoke();
         }
-        public void StopCo() => StopCoroutine(Coroutine);
+        public void StopCo()
+        {
+            StopCoroutine(Coroutine);
+            OnStopAction?.Invoke();
+        }
     }
 }

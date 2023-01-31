@@ -72,5 +72,4 @@ internal class UiManager
             MainUi.ShowPanel();
         },null);
     }
-
 }

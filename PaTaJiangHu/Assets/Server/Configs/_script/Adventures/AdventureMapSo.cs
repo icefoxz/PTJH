@@ -118,6 +118,13 @@ namespace Server.Configs.Adventures
             [Serializable]
             private class MilePlace
             {
+                private bool RenameElement()
+                {
+                    _name = PlaceSo == null ? string.Empty : $"{Mile.x}~{Mile.y}: {PlaceSo.Name}";
+                    return true;
+                }
+
+                [ConditionalField(true, nameof(RenameElement))][SerializeField][ReadOnly] private string _name;
                 [SerializeField] private Vector2Int 里;
                 [SerializeField] private AdvPlaceSo 地点;
                 [SerializeField] private int 里数间隔;
