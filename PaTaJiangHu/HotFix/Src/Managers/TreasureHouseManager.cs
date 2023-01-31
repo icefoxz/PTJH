@@ -20,13 +20,18 @@ public class TreasureHouseManager
         Game.UiBuilder.Build("view_treasureHouse", v =>
         {
             TreasureHouse = new View_treasureHouse(v);
-            Game.MainUi.SetMid(v, true);
+            //Game.MainUi.SetMid(v, true);
+            TreasureHouse.Display(false);
         }, RegEvents);
     }
 
     private void RegEvents()
     {
-
+        Game.MessagingManager.RegEvent(EventString.Page_TreasureHouse, bag =>
+        {
+            //Game.MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
+            //TreasureHouse.Display(true);
+        });
     }
 
     private class View_treasureHouse : UiBase

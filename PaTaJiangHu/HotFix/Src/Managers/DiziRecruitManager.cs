@@ -32,6 +32,11 @@ public class DiziRecruitManager
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziGenerated, bag => DiziRecruitPage.SetDizi(bag));
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziInSlot,
             bag => CurrentDiziIndex = bag.Get<int[]>(0)[0]);
+        Game.MessagingManager.RegEvent(EventString.Page_DiziRecruit, bag =>
+        {
+            Game.MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
+            DiziRecruitPage.Display(true);
+        });
     }
 
     private class View_diziRecruitPage : UiBase

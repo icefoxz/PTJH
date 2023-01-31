@@ -33,6 +33,10 @@ public class EventString
 
     //页面
     public const string Page_TreasureHouse = "Page_TreasureHouse";
+    public const string Page_DiziList = "Page_DiziList";
+    public const string Page_Faction = "Page_Faction";
+    public const string Page_Adventure = "Page_Adventure";
+    public const string Page_DiziRecruit = "Page_DiziRecruit";
 
     //奖励
     public const string Rewards_Propmt = "Rewards_Propmt";//多个奖励
