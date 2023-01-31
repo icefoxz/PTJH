@@ -7,6 +7,7 @@ using Server.Configs.Adventures;
 using Server.Controllers;
 using Systems.Coroutines;
 using UnityEngine;
+using UnityEngine.Events;
 using Utls;
 
 namespace _GameClient.Models
@@ -75,6 +76,8 @@ namespace _GameClient.Models
         }
 
         private string CoName => ServiceCo?.GetInstanceID() + "历练." + State + ".";
+        public UnityEvent UpdateStoryService { get; } = new UnityEvent();
+
         private void SetServiceName(string serviceName) => ServiceCo.name = CoName + serviceName;
         private void StartService()
         {
@@ -96,6 +99,7 @@ namespace _GameClient.Models
                                 if (isAdvEnd)
                                     AdvController.AdventureRecall(Dizi.Guid);
                             });
+                            UpdateStoryService?.Invoke();
                             yield return new WaitForSeconds(1);
                             break;
                         }
@@ -116,6 +120,7 @@ namespace _GameClient.Models
                                     Game.MessagingManager.SendParams(
                                         EventString.Dizi_Adv_EventMessage, Dizi.Guid,
                                         message, isStoryEnd);
+                                    UpdateStoryService?.Invoke();
                                     yield return new WaitForSeconds(MessageSecs);
                                 }
                             }
@@ -143,10 +148,10 @@ namespace _GameClient.Models
             Stories.Enqueue(story);
         }
 
-        internal void Recall(long now,int lastMile)
+        internal void Recall(long now, int lastMile, Action recallAction)
         {
             const string RecallText = "回程中";
-            UpdateTime(now,lastMile);
+            UpdateTime(now, lastMile);
             State = States.Recall;
             SetServiceName(RecallText);
             Game.CoService.RunCo(ReturnFromAdventure(), null, Dizi.Name).name = RecallText;
@@ -158,6 +163,7 @@ namespace _GameClient.Models
                 SetServiceName("已回到山门.");
                 RegStory(new DiziAdvLog(new[] { $"{Dizi.Name}已回到山门!" }, Dizi.Guid, SysTime.UnixNow, LastMile));
                 yield return new WaitForSeconds(1);
+                recallAction?.Invoke();
                 State = States.End;
                 Game.MessagingManager.Send(EventString.Dizi_Adv_End, Dizi.Guid);
             }

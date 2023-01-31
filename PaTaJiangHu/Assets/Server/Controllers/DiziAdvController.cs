@@ -290,7 +290,7 @@ namespace Server.Controllers
                             IAdjustment.Types.Stamina => Dizi.Stamina.Con.Max,
                             IAdjustment.Types.Silver => Dizi.Silver.Max,
                             IAdjustment.Types.Food => Dizi.Food.Max,
-                            IAdjustment.Types.Condition => Dizi.Emotion.Max,
+                            IAdjustment.Types.Emotion => Dizi.Emotion.Max,
                             IAdjustment.Types.Injury => Dizi.Injury.Max,
                             IAdjustment.Types.Inner => Dizi.Inner.Max,
                             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)

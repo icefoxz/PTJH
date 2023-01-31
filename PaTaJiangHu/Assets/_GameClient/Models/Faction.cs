@@ -183,7 +183,7 @@ namespace _GameClient.Models
                     break;
                 case ItemType.Equipment:
                     var equipment = gi.Item as IEquipment;
-                    if (equipment == null) XDebug.Log($"物件{gi.Item.Id}.{gi.Item.Name} 未继承<IEquipment>");
+                    if (equipment == null) XDebug.LogError($"物件{gi.Item.Id}.{gi.Item.Name} 未继承<IEquipment>");
                     for (var i = 0; i < gi.Amount; i++)
                     {
                         switch (equipment.EquipKind)

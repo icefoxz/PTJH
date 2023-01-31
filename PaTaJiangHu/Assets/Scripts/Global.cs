@@ -42,17 +42,21 @@ public class EventString
     public const string Rewards_Propmt = "Rewards_Propmt";//多个奖励
     public const string Reward_Propmt = "Reward_Propmt";//单个奖励
 
-    //弟子dizi
+    //招募
     public const string Recruit_DiziGenerated = "Recruit_DiziGenerated";
     public const string Recruit_DiziInSlot = "Recruit_DiziInSlot";
+
+    //弟子dizi
     public const string Dizi_AdvManagement = "Dizi_AdvManagement";//历练管理项
-    public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";
-    public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";
+    public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";//弟子体力更新
+    public const string Dizi_Params_StateUpdate = "Dizi_Params_StateUpdate";//弟子状态更新
+    public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";//弟子状态管理(打开窗口吃药)
     public const string Dizi_ConditionUpdate = "Dizi_ConditionUpdate";//弟子状态更新
     public const string Dizi_EquipmentManagement = "Dizi_EquipmentManagement";//装备管理
     public const string Dizi_ItemEquipped = "Dizi_ItemEquipped";//装备物品
     public const string Dizi_ItemUnEquipped = "Dizi_ItemUnEquipped";//卸下物品
     public const string Dizi_Props_Update = "Dizi_Props_Update";
+
     //弟子历练
     public const string Dizi_Adv_EventMessage = "Dizi_Adv_Message";//弟子历练单个事件信息
     public const string Dizi_Adv_Start = "Dizi_Adv_Start";//弟子历练开始

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using BattleM;
 using Core;
@@ -8,6 +9,7 @@ using Server.Configs.Skills;
 using Server.Controllers;
 using UnityEditor;
 using UnityEditor.VersionControl;
+using UnityEngine;
 using Utls;
 
 namespace _GameClient.Models
@@ -51,6 +53,7 @@ namespace _GameClient.Models
         /// 防具战力
         /// </summary>
         public int ArmorPower => GetArmorDef();
+        public StateModel State { get; private set; } = new StateModel();
 
         private ConValue _exp;
 
@@ -107,6 +110,21 @@ namespace _GameClient.Models
             _silver = new ConValue(100);
             _injury = new ConValue(100);
             _inner = new ConValue(100);
+            StaminaService();
+        }
+
+        private void StaminaService()
+        {
+            Game.CoService.RunCo(StaminaPolling(), null, Name);
+
+            IEnumerator StaminaPolling()
+            {
+                while (true)
+                {
+                    yield return new WaitForSeconds(1);
+                    StaminaUpdate(Stamina.ZeroTicks);
+                }
+            }
         }
 
         /// <summary>
@@ -114,7 +132,7 @@ namespace _GameClient.Models
         /// </summary>
         /// <param name="prop"></param>
         /// <returns></returns>
-        public int GetPropStateAddon(DiziProps prop)
+        private int GetPropStateAddon(DiziProps prop)
         {
             var leveledValue = GetLeveledValue(prop);
             var value = PropState.GetStateAdjustmentValue(prop,
@@ -131,7 +149,7 @@ namespace _GameClient.Models
         /// <param name="prop"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int GetLeveledValue(DiziProps prop)
+        private int GetLeveledValue(DiziProps prop)
         {
             var propValue = prop switch
             {
@@ -145,8 +163,8 @@ namespace _GameClient.Models
             return leveledValue;
         }
 
-        public int GetWeaponDamage() => Weapon?.Damage ?? 0;
-        public int GetArmorDef()=> Armor?.Def ?? 0;
+        private int GetWeaponDamage() => Weapon?.Damage ?? 0;
+        private int GetArmorDef()=> Armor?.Def ?? 0;
 
         #region ITerm
 
@@ -157,7 +175,7 @@ namespace _GameClient.Models
         {
             _stamina.Update(ticks);
             Log($"体力更新 = {_stamina.Con}");
-            SendEvent(EventString.Dizi_Params_StaminaUpdate, Stamina.Con.Value, Stamina.Con.Max);
+            SendEvent(EventString.Dizi_Params_StaminaUpdate, Guid);
         }
 
         internal void LevelSet(int level)
@@ -173,40 +191,18 @@ namespace _GameClient.Models
             Log($"经验设置 = {_exp}");
         }
 
-        private class StateModel
+        public class StateModel
         {
-            public enum States
-            {
-                Idle,
-                Adventure
-            }
-
-            public string ShortTitle { get; private set; }
+            public string ShortTitle { get; private set; } = "闲";
             public string Description { get; private set; }
             public long LastUpdate { get; private set; }
-            public States Current { get; private set; }
 
-            public void Set(States state)
+            public void Set(string shortTitle, string description, long lastUpdate)
             {
-                Current = state;
-                LastUpdate = SysTime.UnixNow;
-                ShortTitle = GetShort(state);
-                Description = GetDescription(state);
+                ShortTitle = shortTitle;
+                Description = description;
+                LastUpdate = lastUpdate;
             }
-
-            private string GetDescription(States state) => state switch
-            {
-                States.Idle => "发呆中...",
-                States.Adventure => "历练中...",
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
-            };
-
-            private string GetShort(States state) => state switch
-            {
-                States.Idle => "闲",
-                States.Adventure => "历",
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
-            };
         }
 
         //弟子技能栏
@@ -270,9 +266,18 @@ namespace _GameClient.Models
         internal void AdventureStart(long startTime,int returnSecs,int messageSecs)
         {
             Adventure = new AutoAdventure(startTime, returnSecs, messageSecs, this);
+            Adventure.UpdateStoryService.AddListener(()=>SetStateShort("历", "历练中...", startTime));
             Log("开始历练.");
             SendEvent(EventString.Dizi_Adv_Start, Guid);
         }
+
+        // 设定弟子状态短文本
+        private void SetStateShort(string title,string description,long time)
+        {
+            State.Set(title, description, time);
+            SendEvent(EventString.Dizi_Params_StateUpdate, title);
+        }
+
         internal void AdventureStoryLogging(DiziAdvLog story)
         {
             if (Adventure.State == AutoAdventure.States.End)
@@ -281,13 +286,16 @@ namespace _GameClient.Models
         }
         internal void AdventureRecall(long now,int lastMile)
         {
-            Adventure.Recall(now, lastMile);
+            SetStateShort("回", "回程中...", now);
+            Adventure.UpdateStoryService.RemoveAllListeners();
+            Adventure.Recall(now, lastMile, () => SetStateShort("待", "宗门外等待", 0));
             Log($"停止历练, 里数: {lastMile}");
             SendEvent(EventString.Dizi_Adv_Recall, Guid);
         }
         internal void AdventureFinalize()
         {
             Adventure = null;
+            SetStateShort("闲", "闲置中...", 0);
             Log("历练结束!");
             SendEvent(EventString.Dizi_Adv_Finalize, Guid);
         }
@@ -298,7 +306,7 @@ namespace _GameClient.Models
                 IAdjustment.Types.Stamina => throw new NotImplementedException("体力状态不允许这里设!请用StaminaController"),
                 IAdjustment.Types.Silver => _silver,
                 IAdjustment.Types.Food => _food,
-                IAdjustment.Types.Condition => _emotion,
+                IAdjustment.Types.Emotion => _emotion,
                 IAdjustment.Types.Injury => _injury,
                 IAdjustment.Types.Inner => _inner,
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
