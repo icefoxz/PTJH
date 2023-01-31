@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using _GameClient.Models;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
 namespace HotFix_Project.Managers;
@@ -88,15 +92,15 @@ public class TreasureHouseManager
                 Btn_reward = v.GetObject<Button>("btn_reward");
                 Btn_reward.OnClickAdd(() => SortItems(TreasureTypes.Reward));
             }
-            private void ListItems((string title, string diziName)[]items)
+            private void ListItems((string title, string diziName, int amount)[]items)
             {
                 ItemView.ClearList(item => item.Destroy());
                 for (int i = 0; i < items.Length; i++)
                 {
                     var item = items[i];
                     var index = i;
-                    var ui = ItemView.Instance(v => new Prefab_Item(v));
-                    ui.SetText(item.diziName, item.title);
+                    var ui = ItemView.Instance(v => new Prefab_Item(v, () => OnItemSelected(index)));
+                    ui.Set(item.diziName, item.title, item.amount);
                 }
             }
             private void OnItemSelected(int index)
@@ -116,40 +120,48 @@ public class TreasureHouseManager
             private void SortItems(TreasureTypes type)
             {
                 var faction = Game.World.Faction;
-                var items = new List<(string name, string diziName)>();
+                var items = new List<(string name, string diziName, int amount)>();
                 switch (type)
                 {
                     case TreasureTypes.Equipment: //武器+防具=装备
+                        foreach (var dizi in faction.DiziList)
+                        {
+                            if (dizi.Weapon != null)
+                                items.Add((dizi.Weapon.Name, dizi.Name, 1));
+                            if (dizi.Armor != null)
+                                items.Add((dizi.Armor.Name, dizi.Name, 1));
+                        }
                         for (var i = 0; i < faction.Weapons.Count; i++)
                         {
                             var item = faction.Weapons[i];
-                            items.Add((item.Name, string.Empty));
+                            items.Add((item.Name, string.Empty,  1));
                         }
                         for (var i = 0; i < faction.Armors.Count; i++)
                         {
                             var item = faction.Armors[i];
-                            items.Add((item.Name, string.Empty));
+                            items.Add((item.Name, string.Empty, 1));
                         }
                         break;
-                    case TreasureTypes.Medicine: //暂时用防具数据
-                        for(var i = 0; i < faction.Armors.Count; i++)
+                    case TreasureTypes.Medicine: //药膳
+                        var medicine = faction.GetAllMedicines();
+                        for(var i = 0; i < medicine.Length; i++)
                         {
-                            var item = faction.Armors[i];
-                            items.Add((item.Name, string.Empty));
+                            var item = medicine[i];
+                            items.Add((item.med.Name, string.Empty, 1));
                         }
                         break;
                     case TreasureTypes.Adventure: //暂时用防具数据
-                        for (var i = 0; i < faction.Armors.Count; i++)
+                        for (var i = 0; i < faction.AdvItems.Count; i++)
                         {
-                            var item = faction.Armors[i];
-                            items.Add((item.Name, string.Empty));
+                            var item = faction.AdvItems;
+                            items.Add(("", string.Empty, 1));
                         }
                         break;
                     case TreasureTypes.Reward: //暂时用防具数据
-                        for (var i = 0; i < faction.Armors.Count; i++)
+                        for (var i = 0; i < faction.Packages.Count; i++)
                         {
-                            var item = faction.Armors[i];
-                            items.Add((item.Name, string.Empty));
+                            var item = faction.Packages;
+                            items.Add(("package", string.Empty, 1));
                         }
                         break;
                     default:
@@ -162,32 +174,39 @@ public class TreasureHouseManager
                 private Image Img_item { get; }
                 private Text Text_diziName { get; }
                 private Text Text_title { get; }
-                //private Button Btn_Selected { get; }
-                //private Image Img_selected { get; }
+                private Button Btn_item { get; }
+                private Image Img_selected { get; }
+                private Text Text_amount { get; }
 
-                public Prefab_Item(IView v) : base(v.GameObject, true)
+                public Prefab_Item(IView v, Action onClickAction) : base(v.GameObject, true)
                 {
                     Img_item = v.GetObject<Image>("img_item");
                     Text_diziName = v.GetObject<Text>("text_diziName");
                     Text_title = v.GetObject<Text>("text_title");
-                    //Btn_Selected = v.GetObject<Button>("btn_selected");
-                    //Btn_Selected.OnClickAdd(onSelectedAction);
-                    //Img_selected = v.GetObject<Image>("img_selected");
+                    Btn_item = v.GetObject<Button>("btn_item");
+                    Btn_item.OnClickAdd(onClickAction);
+                    Img_selected = v.GetObject<Image>("img_selected");
+                    Text_amount = v.GetObject<Text>("text_amount");
+                    SetSelected(false);
                 }
                 public void SetSelected(bool selected)
                 {
-                    //Img_selected.gameObject.SetActive(selected);
+                    Img_selected.gameObject.SetActive(selected);
                 }
                 public void SetIcon(Sprite img)
                 {
                     Img_item.sprite = img;
                 }
-                public void SetText(string name, string title)
+                public void Set(string name, string title, int amount)
                 {
                     Text_diziName.text = name;
+                    Text_diziName.gameObject.SetActive(!string.IsNullOrWhiteSpace(name));
+                    Text_amount.text = amount.ToString();
+                    Text_amount.gameObject.SetActive(amount > 1);
                     Text_title.text = title;
                 }
             }
         }
+
     }
 }
