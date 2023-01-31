@@ -65,6 +65,11 @@ public class DiziAdvManager
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Recall, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_End, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag =>
+        {
+            MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
+            DiziAdv.Display(true);
+        });
     }
 
     private class View_diziAdv : UiBase
