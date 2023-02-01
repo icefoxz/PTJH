@@ -93,6 +93,8 @@ public class DiziInfoSectManager
             var c = dizi.Capable;
             CharInfo.SetName(dizi.Name);
             CharInfo.SetLevel(dizi.Level);
+            CharInfo.SetPower(dizi.Power);
+            CharInfo.SetExp(dizi.Exp.Value, dizi.Exp.Max);
             CharInfo.SetState(dizi.State.ShortTitle, dizi.State.Description, dizi.State.LastUpdate);
             UpdateDiziStamina(dizi.Guid);
 
@@ -133,7 +135,7 @@ public class DiziInfoSectManager
             {
                 Text_charExpValue.text = value.ToString();
                 Text_charExpMax.text = max.ToString();
-                Scrbar_exp.value = 1f * value / max;
+                Scrbar_exp.size = 1f * value / max;
             }
             public void SetPower(int power) => StatusList.SetPower(power);
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using HotFix_Project.Views.Bases;
 using _GameClient.Models;
@@ -7,7 +6,6 @@ using HotFix_Project.Serialization;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 using Server.Controllers;
 
@@ -163,6 +161,7 @@ public class WinConItemSelectorManager
                 Img_selected = v.GetObject<Image>("img_selected");
                 Button = v.GameObject.GetComponent<Button>();
                 Button.OnClickAdd(onClickAction);
+                SetSelected(false);
             }
             public void SetImage(Sprite img)=> Img_item.sprite = img;
             public void Set(string name, int num)

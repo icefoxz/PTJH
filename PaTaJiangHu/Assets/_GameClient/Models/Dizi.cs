@@ -5,6 +5,7 @@ using BattleM;
 using Core;
 using Server.Configs.Adventures;
 using Server.Configs.Characters;
+using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Controllers;
 using UnityEditor;
@@ -64,9 +65,12 @@ namespace _GameClient.Models
         private ConValue _silver;
         private ConValue _injury;
         private ConValue _inner;
+        private AdvItemModel[] _advItems = new AdvItemModel[3];
 
         public Skills Skill { get; set; }
         public Capable Capable { get; private set; }
+
+        public AdvItemModel[] AdvItems => _advItems;
 
         public IConditionValue Food => _food;
         public IConditionValue Emotion => _emotion;
@@ -105,6 +109,8 @@ namespace _GameClient.Models
             var dSlot = new IDodgeSkill[dodgeSlot];
             dSlot[0] = dodgeSkill;
             Skill = new Skills(cSlot, fSlot, dSlot);
+            var maxExp = LevelCfg.GetMaxExp(level);
+            _exp = new ConValue(maxExp, maxExp, 0);
             _food = new ConValue(100);
             _emotion = new ConValue(100);
             _silver = new ConValue(100);
@@ -253,12 +259,12 @@ namespace _GameClient.Models
             }
         }
 
-        internal void Wield(IWeapon weapon)
+        internal void SetWeapon(IWeapon weapon)
         {
             Log(weapon == null ? $"卸下{Weapon.Name}" : $"装备{weapon.Name}!");
             Weapon = weapon;
         }
-        internal void Wear(IArmor armor)
+        internal void SetArmor(IArmor armor)
         {
             Log(armor == null ? $"卸下{Armor.Name}" : $"装备{armor.Name}!");
             Armor = armor;
@@ -304,6 +310,7 @@ namespace _GameClient.Models
             var con = type switch
             {
                 IAdjustment.Types.Stamina => throw new NotImplementedException("体力状态不允许这里设!请用StaminaController"),
+                IAdjustment.Types.Exp => throw new NotImplementedException("经验不允许!请用DiziController"),
                 IAdjustment.Types.Silver => _silver,
                 IAdjustment.Types.Food => _food,
                 IAdjustment.Types.Emotion => _emotion,
@@ -314,6 +321,48 @@ namespace _GameClient.Models
             con.Add(value);
             Log($"状态[{type}]设置: {con}");
             SendEvent(EventString.Dizi_ConditionUpdate, type, value);
+        }
+
+        internal void SetAdvItem(int slot, IGameItem item)
+        {
+            _advItems[slot] = new AdvItemModel(item);
+            Game.MessagingManager.Send(EventString.Dizi_Adv_EventMessage, Guid);
+            Log("装备" + $"历练道具[{slot}]:" + item?.Name);
+        }        
+        internal void RemoveAdvItem(int slot)
+        {
+            var item = _advItems[slot];
+            _advItems[slot] = null;
+            Game.MessagingManager.Send(EventString.Dizi_Adv_EventMessage, Guid);
+            Log("移除" + $"历练道具[{slot}]:" + item?.Item?.Name);
+        }
+    }
+
+    /// <summary>
+    /// 历练道具模型
+    /// </summary>
+    public class AdvItemModel : ModelBase
+    {
+        public enum Kinds
+        {
+            Medicine,
+            StoryProp,
+            Horse
+        }
+        protected override string LogPrefix => "历练道具";
+        public IGameItem Item { get; private set; }
+        public Kinds Kind { get; private set; }
+
+        internal AdvItemModel(IGameItem item)
+        {
+            Kind = item.Type switch
+            {
+                ItemType.Medicine => Kinds.Medicine,
+                ItemType.StoryProps => Kinds.StoryProp,
+                ItemType.AdvItems => Kinds.Horse,
+                _ => throw new ArgumentOutOfRangeException($"物品{item.Type}不支持! ")
+            };
+            Item = item;
         }
     }
 }

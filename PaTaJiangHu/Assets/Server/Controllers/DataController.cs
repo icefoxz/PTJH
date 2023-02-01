@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BattleM;
 using Core;
@@ -25,9 +26,11 @@ namespace Server.Controllers
         public IAdvItem GetAdvItem(int id) => GetFromData(id, Data.AdvItems);
         private T GetFromData<T>(int id, ICollection<T> list) where T : IGameItem
         {
+            if (id == 0)
+                throw new NotImplementedException($"物件{typeof(T).Name},Id = {id}, 请确保id > 0");
             var items = list.Where(o => o.Id == id).ToArray();
             if (!items.Any())
-                XDebug.Log($"找不到物件<{nameof(T)}>.id = {id}");
+                XDebug.Log($"找不到物件<{typeof(T).Name}>.id = {id}");
             if (items.Length > 1)
             {
                 foreach (var item in items) 

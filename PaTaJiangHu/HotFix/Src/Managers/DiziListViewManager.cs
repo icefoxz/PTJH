@@ -6,7 +6,6 @@ using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers;
@@ -27,7 +26,7 @@ internal class DiziListViewManager
     private void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList());
-        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziList.UpdateList());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziList.UpdateDiziState());
     }
 
     private class DiziListView : UiBase
@@ -46,12 +45,18 @@ internal class DiziListViewManager
             TopRight.Set(0, MaxDizi);
         }
 
-
         public void UpdateList()
         {
             var list = Game.World.Faction.DiziList.ToList();
             SetList(list);
             TopRight.Set(list.Count, MaxDizi);
+        }
+
+        public void UpdateDiziState()//更新弟子状态
+        {
+            var faction = Game.World.Faction;
+            foreach (var ui in DiziList.List) 
+                ui.SetStateTitle(faction.GetDizi(ui.DiziGuid).State.ShortTitle);
         }
 
         private void ClearList() => DiziList.ClearList(ui => ui.Destroy());
@@ -61,10 +66,10 @@ internal class DiziListViewManager
             ClearList();
             for (var i = 0; i < arg.Count; i++)
             {
-                var info = arg[i];
-                var ui = DiziList.Instance(v => new DiziPrefab(v));
-                ui.Init(info.Name, () => OnDiziSelectedAction?.Invoke(info.Guid));
-                ui.SetStateTitle(info.State.ShortTitle);
+                var dizi = arg[i];
+                var ui = DiziList.Instance(v => new DiziPrefab(v, dizi.Guid));
+                ui.Init(dizi.Name, () => OnDiziSelectedAction?.Invoke(dizi.Guid));
+                ui.SetStateTitle(dizi.State.ShortTitle);
             }
         }
 
@@ -74,8 +79,11 @@ internal class DiziListViewManager
             private Text Text_diziName { get; }
             private Text Text_stateTitle { get; }
 
-            public DiziPrefab(IView v) : base(v.GameObject, true)
+            public string DiziGuid { get; }
+
+            public DiziPrefab(IView v, string diziGuid) : base(v.GameObject, true)
             {
+                DiziGuid = diziGuid;
                 Btn_dizi = v.GetObject<Button>("btn_dizi");
                 Text_diziName = v.GetObject<Text>("text_diziName");
                 Text_stateTitle = v.GetObject<Text>("text_stateTitle");

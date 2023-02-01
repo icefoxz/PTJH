@@ -46,6 +46,7 @@ namespace Server.Configs.Adventures
             Emotion = 3,
             Injury = 4,
             Inner = 5,
+            Exp = 6,
         }
 
         void Set(Types type, int value, bool percentage);

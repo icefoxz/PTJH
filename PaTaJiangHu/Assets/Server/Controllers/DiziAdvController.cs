@@ -24,6 +24,20 @@ namespace Server.Controllers
 
         private Faction Faction => Game.World.Faction;
         private RewardController RewardController => Game.Controllers.Get<RewardController>();
+
+        /// <summary>
+        /// 设定弟子历练装备
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <param name="index"></param>
+        /// <param name="slot"></param>
+        public void SetDiziAdvItem(string guid,int index,int slot)
+        {
+            var dizi = Faction.GetDizi(guid);
+            var items = Faction.GetAllSupportedAdvItems();
+            var item = items[index];
+            dizi.SetAdvItem(slot, item);
+        }
         public void AdventureStart(string guid)
         {
             var dizi = Faction.GetDizi(guid);
@@ -293,6 +307,7 @@ namespace Server.Controllers
                             IAdjustment.Types.Emotion => Dizi.Emotion.Max,
                             IAdjustment.Types.Injury => Dizi.Injury.Max,
                             IAdjustment.Types.Inner => Dizi.Inner.Max,
+                            IAdjustment.Types.Exp => Dizi.Exp.Max,
                             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
                         };
                         adjValue = value.PercentInt(conMax);

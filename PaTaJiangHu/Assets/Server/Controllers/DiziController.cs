@@ -3,7 +3,6 @@ using _GameClient.Models;
 using Server.Configs.Adventures;
 using Server.Configs.Characters;
 using Server.Configs.Items;
-using Unity.VisualScripting;
 using Utls;
 
 namespace Server.Controllers
@@ -34,8 +33,9 @@ namespace Server.Controllers
         /// <param name="exp"></param>
         public void DiziExpAdd(string guid, int exp)
         {
+            if (exp == 0) return;
             var dizi = Faction.GetDizi(guid);
-            var max = dizi.Exp.Max;
+            var max = LevelConfig.GetMaxExp(dizi.Level);
             var value = dizi.Exp.Value;
             int balance;
             var newValue = balance = value + exp;
@@ -48,8 +48,9 @@ namespace Server.Controllers
                 balance = newValue - max;
                 //升级
                 dizi.LevelSet(level);
+                max = LevelConfig.GetMaxExp(level);
             }
-            dizi.ExpSet(balance);
+            dizi.ExpSet(balance, max);
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace Server.Controllers
                 {
                     var diziWeapon = dizi.Weapon;
                     var weapon = Faction.Weapons[index];
-                    dizi.Wield(weapon);
+                    dizi.SetWeapon(weapon);
                     Faction.RemoveWeapon(weapon);
                     if (diziWeapon != null) Faction.AddWeapon(diziWeapon);
                     break;
@@ -86,7 +87,7 @@ namespace Server.Controllers
                 {
                     var diziArmor = dizi.Armor;
                     var armor = Faction.Armors[index];
-                    dizi.Wear(armor);
+                    dizi.SetArmor(armor);
                     Faction.RemoveArmor(armor);
                     if (diziArmor!= null) Faction.AddArmor(diziArmor);
                     break;
@@ -104,14 +105,14 @@ namespace Server.Controllers
                 case 0:
                 {
                     var weapon = dizi.Weapon;
-                    dizi.Wield(null);
+                    dizi.SetWeapon(null);
                     Faction.AddWeapon(weapon);
                     break;
                 }
                 case 1:
                 {
                     var armor = dizi.Armor;
-                    dizi.Wear(null);
+                    dizi.SetArmor(null);
                     Faction.RemoveArmor(armor);
                     break;
                 }
@@ -124,14 +125,22 @@ namespace Server.Controllers
         public void AddDiziCon(string guid, IAdjustment.Types type, int adjValue)
         {
             var dizi = Faction.GetDizi(guid);
-            if (type == IAdjustment.Types.Stamina)
+            switch (type)
             {
-                var staminaController = Game.Controllers.Get<StaminaController>();
-                staminaController.ConsumeStamina(guid, adjValue, true);
-            }
-            else
-            {
-                dizi.ConSet(type, adjValue);
+                case IAdjustment.Types.Stamina:
+                {
+                    var staminaController = Game.Controllers.Get<StaminaController>();
+                    staminaController.ConsumeStamina(guid, adjValue, true);
+                    break;
+                }
+                case IAdjustment.Types.Exp:
+                {
+                    DiziExpAdd(guid, adjValue);//弟子经验值交给经验方法添加
+                    break;
+                }
+                default:
+                    dizi.ConSet(type, adjValue);
+                    break;
             }
         }
 

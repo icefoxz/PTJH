@@ -169,7 +169,10 @@ namespace _GameClient.Models
             }
         }
 
-        void IRewardReceiver.SetReward(IGameReward reward) => _rewards.Add(reward);
+        void IRewardReceiver.SetReward(IGameReward reward)
+        {
+            _rewards.Add(reward);
+        }
     }
 
     public class Equipment

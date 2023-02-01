@@ -51,7 +51,9 @@ public class WinEquipmentManager
         private enum ItemTypes
         {
             Weapon,
-            Armor
+            Armor,
+            Medicine,
+            Horse,
         }
         private Button Btn_x { get; }
         private ScrollRect Scroll_items { get; }
@@ -98,7 +100,7 @@ public class WinEquipmentManager
         public void OnItemUnequipped()
         {
             ListItems((ItemTypes)SelectedType);
-            foreach (var ui in ItemView.List)  ui.SetEquipped(false);
+            foreach (var ui in ItemView.List) ui.SetEquipped(false);
         }
 
         private string SelectedDiziGuid { get; set; }
@@ -217,24 +219,6 @@ public class WinEquipmentManager
             public void SetEquipped(bool isEquipped)
             {
                 Img_equipped.gameObject.SetActive(isEquipped);
-            }
-        }
-        
-        public class ItemDto
-        {
-            public string ItemName { get; set; }
-            public ItemDto()
-            {
-
-            }
-            public ItemDto(IWeapon weapon)
-            {
-                ItemName = weapon.Name;
-            }
-
-            public ItemDto(IArmor armor)
-            {
-                ItemName = armor.Name;
             }
         }
     }

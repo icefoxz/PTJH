@@ -42,13 +42,14 @@ namespace Server.Configs.Adventures
         {
             OnLogsTrigger?.Invoke(GenerateRewardMessages(arg.DiziName));
             arg.Receiver.SetReward(Reward);
+            arg.Adjustment.Set(IAdjustment.Types.Exp, Exp, false);
             OnNextEvent?.Invoke(Next);
         }
 
         private string[] GenerateRewardMessages(string diziName)
         {
             var messages = new List<string>(GameReward.AllItemFields.Select(m => GenerateLogFromItem(m, diziName)));
-            messages.Insert(0, $"{diziName}获得经验【{Exp}】");
+            if (Exp > 0) messages.Insert(0, $"{diziName}获得经验【{Exp}】");
             return messages.ToArray();
         }
         private string GenerateLogFromItem(GameItem item, string diziName) => $"{diziName}获得【{item.Name}】x{item.Amount}。";
@@ -126,61 +127,50 @@ namespace Server.Configs.Adventures
         [Serializable] private class WeaponItem : GameItem, IEquipment
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
-            public override int Price => 武器?.Price ?? 0;
-            public override string Name => 武器?.Name;
-            public override string About => 武器?.About;
+            
             public override Kinds Kind => Kinds.Weapon;
             protected override ScriptableObject So => 武器;
+            protected override IGameItem Gi => 武器;
             protected override bool IsSupportSo => true;
             public EquipKinds EquipKind => EquipKinds.Weapon;
         }
         [Serializable] private class ArmorItem : GameItem, IEquipment
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 防具;
-            public override int Price => 防具?.Price ?? 0;
-            public override string Name => 防具?.Name;
-            public override string About => 防具?.About;
             public override Kinds Kind => Kinds.Armor;
             protected override ScriptableObject So => 防具;
+            protected override IGameItem Gi => 防具;
             protected override bool IsSupportSo => true;
             public EquipKinds EquipKind => EquipKinds.Armor;
         }
         [Serializable] private class MedicineItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private MedicineFieldSo 丹药;
-            public override int Price => 丹药?.Price ?? 0;
-            public override string Name => 丹药?.Name;
-            public override string About => 丹药?.About;
             public override Kinds Kind => Kinds.Medicine;
             protected override ScriptableObject So => 丹药;
+            protected override IGameItem Gi => 丹药;
             protected override bool IsSupportSo => true;
         }
         [Serializable] private class BookItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private BookSoBase 残卷;
-            public override int Price => 残卷?.Price ?? 0;
-            public override string Name => 残卷?.Name;
-            public override string About => 残卷?.About;
             public override Kinds Kind => Kinds.Book;
-            protected override ScriptableObject So => 残卷; 
+            protected override ScriptableObject So => 残卷;
+            protected override IGameItem Gi => 残卷;
             protected override bool IsSupportSo => true;
         }
         [Serializable] private class StoryPropItem : GameItem
         {
-            public override int Price { get; }
-            public override string Name { get; }
-            public override string About { get; }
             public override Kinds Kind => Kinds.StoryProp;
             protected override ScriptableObject So { get; }
+            protected override IGameItem Gi { get; }
             protected override bool IsSupportSo => false;
         }
         [Serializable] private class FunctionPropItem : GameItem
         {
-            public override int Price { get; }
-            public override string Name { get; }
-            public override string About { get; }
             public override Kinds Kind => Kinds.FunctionProp;
             protected override ScriptableObject So { get; }
+            protected override IGameItem Gi { get; }
             protected override bool IsSupportSo => false;
         }
 
@@ -208,11 +198,10 @@ namespace Server.Configs.Adventures
             [ConditionalField(true, nameof(TryUseSo), true)] [SerializeField] private int _id;
             
             [SerializeField] private int 数量 = 1;
-            public abstract int Price { get; }
-            public int Id => _id;
-            public abstract string Name { get; }
-
-            public abstract string About { get; }
+            public int Price => Gi.Price;
+            public int Id => UseSo() ? Gi?.Id ?? 0 : _id;
+            public string Name => Gi.Name;
+            public string About => Gi.About;
 
             public IGameItem Item => this;
             public int Amount => 数量;
@@ -228,6 +217,7 @@ namespace Server.Configs.Adventures
             };
             public abstract Kinds Kind { get; }
             protected abstract ScriptableObject So { get; }
+            protected abstract IGameItem Gi { get; }
             private bool UseSo() => 引用;
             protected abstract bool IsSupportSo { get; }
 

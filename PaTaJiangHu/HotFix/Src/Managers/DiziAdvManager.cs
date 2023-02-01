@@ -32,12 +32,14 @@ public class DiziAdvManager
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
             DiziAdv = new View_diziAdv(v: v,
-                onItemSelectAction: (guid, itemType) =>DiziController.ManageDiziEquipment(guid, itemType),
+                onItemSelectAction: (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
                 onAdvStartAction: guid => DiziAdvController.AdventureStart(guid),
                 onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
                 onDiziFinalizeAction: guid => DiziAdvController.AdventureFinalize(guid),
                 onDiziForgetAction: guid => XDebug.LogWarning("弟子遗忘功能未完!"),
                 onDiziBuyBackAction: guid => XDebug.LogWarning("弟子买回功能未完!"),
+                onEquipSlotAction: (guid, slot) =>
+                    Game.MessagingManager.SendParams(EventString.Dizi_Adv_SlotManagement, guid, slot),
                 onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
             );
             MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
@@ -89,6 +91,7 @@ public class DiziAdvManager
             Action<string> onDiziFinalizeAction,
             Action<string> onDiziForgetAction,
             Action<string> onDiziBuyBackAction,
+            Action<string,int> onEquipSlotAction,
             Action onSwitchAction) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
@@ -112,7 +115,8 @@ public class DiziAdvManager
                 onRecallAction: () => onAdvRecallAction?.Invoke(SelectedDizi?.Guid),
                 onDiziFinalizeAction: () => onDiziFinalizeAction?.Invoke(SelectedDizi?.Guid),
                 onDiziForgetAction: () => onDiziForgetAction?.Invoke(SelectedDizi?.Guid),
-                onDiziBuyBackAction: () => onDiziBuyBackAction?.Invoke(SelectedDizi?.Guid)
+                onDiziBuyBackAction: () => onDiziBuyBackAction?.Invoke(SelectedDizi?.Guid),
+                onEquipSlotAction: index => onEquipSlotAction?.Invoke(SelectedDizi?.Guid, index)
             );
         }
 
@@ -266,15 +270,16 @@ public class DiziAdvManager
                 Action onRecallAction,
                 Action onDiziFinalizeAction,
                 Action onDiziForgetAction,
-                Action onDiziBuyBackAction) : base(v.GameObject, true)
+                Action onDiziBuyBackAction,
+                Action<int> onEquipSlotAction) : base(v.GameObject, true)
             {
                 LogView = new ListViewUi<LogPrefab>(v,"prefab_log", "scroll_advLog");
                 RewardItemView = new ListViewUi<Prefab_rewardItem>(v, "prefab_rewardItem", "scroll_rewardItem");
                 Img_costIco = v.GetObject<Image>("img_costIco");
                 Text_cost = v.GetObject<Text>("text_cost");
-                var slot0 = new Element_equip(v.GetObject<View>("element_equipSlot0"));
-                var slot1 = new Element_equip(v.GetObject<View>("element_equipSlot1"));
-                var slot2 = new Element_equip(v.GetObject<View>("element_equipSlot2"));
+                var slot0 = new Element_equip(v.GetObject<View>("element_equipSlot0"),()=>onEquipSlotAction(0));
+                var slot1 = new Element_equip(v.GetObject<View>("element_equipSlot1"),()=>onEquipSlotAction(1));
+                var slot2 = new Element_equip(v.GetObject<View>("element_equipSlot2"),()=>onEquipSlotAction(2));
                 ItemSlots = new[] { slot0, slot1, slot2 };
                 Btn_recall = v.GetObject<Button>("btn_recall");
                 Btn_advStart = v.GetObject<Button>("btn_advStart");
@@ -379,8 +384,9 @@ public class DiziAdvManager
                 private Text Text_timerSec { get; }
                 private GameObject Go_timer { get; }
                 private GameObject Go_slidingArea { get; }
+                private Button Btn_item { get; }
                 
-                public Element_equip(IView v) : base(v.GameObject, true)
+                public Element_equip(IView v,Action onClickAction) : base(v.GameObject, true)
                 {
                     Scrbar_item = v.GetObject<Scrollbar>("scrbar_item");
                     Img_ico = v.GetObject<Image>("img_ico");
@@ -388,6 +394,8 @@ public class DiziAdvManager
                     Text_timerSec = v.GetObject<Text>("text_timerSec");
                     Go_timer = v.GetObject("go_timer");
                     Go_slidingArea = v.GetObject("go_slidingArea");
+                    Btn_item = v.GetObject<Button>("btn_item");
+                    Btn_item.OnClickAdd(onClickAction);
                     SetMode(Modes.Empty);
                 }
 

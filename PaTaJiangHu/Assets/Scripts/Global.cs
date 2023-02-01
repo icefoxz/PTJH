@@ -63,6 +63,8 @@ public class EventString
     public const string Dizi_Adv_Recall = "Dizi_Adv_Recall";//弟子回程
     public const string Dizi_Adv_End = "Dizi_Adv_End";//弟子历练结束
     public const string Dizi_Adv_Finalize = "Dizi_Adv_Finalize";//弟子历练结算
+    public const string Dizi_Adv_SlotManagement = "Dizi_Adv_SlotManagement";//弟子历练道具管理
+    public const string Dizi_Adv_SlotUpdate = "Dizi_Adv_SlotUpdate";//弟子历练道具更新
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";//给门派加弟子

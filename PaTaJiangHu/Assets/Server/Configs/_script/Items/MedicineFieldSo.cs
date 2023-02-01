@@ -53,6 +53,15 @@ namespace Server.Configs.Items
         [SerializeField] private TreatmentMap[] 药效;
         [SerializeField][TextArea] private string 说明;
 
+        protected override string Suffix => Kind switch
+        {
+            MedicineKinds.StaminaDrug => "@体力",
+            MedicineKinds.Food => "@食物",
+            MedicineKinds.EmoDrug => "@精神",
+            MedicineKinds.InjuryDrug => "@外伤",
+            MedicineKinds.InnerDrug => "@内伤",
+            _ => throw new ArgumentOutOfRangeException()
+        };
         public ITreatment[] Treatments => 药效;
         public MedicineKinds Kind => 类型;
         public int Grade => (int)品级;

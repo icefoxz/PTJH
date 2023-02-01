@@ -31,7 +31,7 @@ namespace _GameClient.Models
         private List<IWeapon> _weapons= new List<IWeapon>();
         private List<IArmor> _armors = new List<IArmor>();
         private List<IAdvPackage> _packages = new List<IAdvPackage>();
-        private List<IAdvItem> _advItems = new List<IAdvItem>();
+        private List<IGameItem> _advItems = new List<IGameItem>();
         private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
@@ -46,7 +46,10 @@ namespace _GameClient.Models
         public ICollection<Dizi> DiziList => DiziMap.Values;
         public IReadOnlyList<IAdvPackage> Packages => _packages;
         public IReadOnlyList<IBook> Books => _books;
-        public IReadOnlyList<IAdvItem> AdvItems => _advItems;
+        public IReadOnlyList<IGameItem> AdvItems => _advItems;
+        public IGameItem[] GetAllSupportedAdvItems() => Medicines
+            .Where(m => m.Key.Kind == MedicineKinds.StaminaDrug)
+            .Select(m => m.Key).Concat(AdvItems).ToArray();
 
         public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
 
@@ -213,7 +216,7 @@ namespace _GameClient.Models
             }
         }
 
-        internal void AddAdvItem(IAdvItem item)
+        internal void AddAdvItem(IGameItem item)
         {
             _advItems.Add(item);
             Log($"添加历练道具: {item.Id}.{item.Name}");
@@ -228,7 +231,7 @@ namespace _GameClient.Models
             _books.Add(book);
             Log($"添加书籍: {book.Id}.{book.Name}");
         }
-        internal void RemoveAdvItem(IAdvItem item)
+        internal void RemoveAdvItem(IGameItem item)
         {
             _advItems.Remove(item);
             Log($"移除历练道具: {item.Id}.{item.Name}");
