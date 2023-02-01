@@ -111,7 +111,6 @@ namespace Server.Configs.Adventures
             [SerializeField] private ArmorItem[] 防具;
             [SerializeField] private MedicineItem[] 丹药;
             [SerializeField] private BookItem[] 秘籍;
-
             public IStacking<IGameItem>[] Weapons => 武器;
             public IStacking<IGameItem>[] Armor => 防具;
             public IStacking<IGameItem>[] Medicines => 丹药;
@@ -124,7 +123,7 @@ namespace Server.Configs.Adventures
                 .Concat(Book)
                 .ToArray();
         }
-        [Serializable] private class WeaponItem : GameItem
+        [Serializable] private class WeaponItem : GameItem, IEquipment
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
             public override int Price => 武器?.Price ?? 0;
@@ -133,8 +132,9 @@ namespace Server.Configs.Adventures
             public override Kinds Kind => Kinds.Weapon;
             protected override ScriptableObject So => 武器;
             protected override bool IsSupportSo => true;
+            public EquipKinds EquipKind => EquipKinds.Weapon;
         }
-        [Serializable] private class ArmorItem : GameItem
+        [Serializable] private class ArmorItem : GameItem, IEquipment
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 防具;
             public override int Price => 防具?.Price ?? 0;
@@ -143,6 +143,7 @@ namespace Server.Configs.Adventures
             public override Kinds Kind => Kinds.Armor;
             protected override ScriptableObject So => 防具;
             protected override bool IsSupportSo => true;
+            public EquipKinds EquipKind => EquipKinds.Armor;
         }
         [Serializable] private class MedicineItem : GameItem
         {
