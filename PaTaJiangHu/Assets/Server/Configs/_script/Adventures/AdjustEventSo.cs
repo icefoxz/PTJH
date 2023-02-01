@@ -104,7 +104,7 @@ namespace Server.Configs.Adventures
                 {
                     Kinds.Silver => IAdjustment.Types.Silver,
                     Kinds.Food => IAdjustment.Types.Food,
-                    Kinds.Condition => IAdjustment.Types.Condition,
+                    Kinds.Condition => IAdjustment.Types.Emotion,
                     Kinds.Injury => IAdjustment.Types.Injury,
                     Kinds.Inner => IAdjustment.Types.Inner,
                     _ => throw new ArgumentOutOfRangeException()

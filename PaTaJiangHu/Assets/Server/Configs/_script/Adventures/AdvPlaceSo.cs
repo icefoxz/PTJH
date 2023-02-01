@@ -35,13 +35,11 @@ namespace Server.Configs.Adventures
         {
             get
             {
-                if (故事.Length == 0) 
+                if (故事.Length == 0)
                     throw new NotImplementedException($"{nameof(AdvPlaceSo)}.故事数 = 0!");
-                
-                if (故事.Any(s=>s==null))
-                {
-                    throw new NotImplementedException($"{nameof(AdvPlaceSo)}.故事 = null!");
-                }
+
+                if (故事.Any(s => s.Story == null))
+                    throw new NotImplementedException($"{nameof(AdvPlaceSo)}{name}.故事 = null!");
                 return 故事;
             }
         }

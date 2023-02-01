@@ -2,6 +2,9 @@
 using _GameClient.Models;
 using Server.Configs.Adventures;
 using Server.Configs.Characters;
+using Server.Configs.Items;
+using Unity.VisualScripting;
+using Utls;
 
 namespace Server.Controllers
 {
@@ -130,6 +133,34 @@ namespace Server.Controllers
             {
                 dizi.ConSet(type, adjValue);
             }
+        }
+
+        public void UseMedicine(string guid, int index)
+        {
+            var (med,_) = Faction.GetAllMedicines()[index];
+            Faction.RemoveMedicine(med, 1);
+            var dizi = Faction.GetDizi(guid);
+            foreach (var treatment in med.Treatments)
+            {
+                var (kind, max) = treatment.Treatment switch
+                {
+                    Treatments.Stamina => (IAdjustment.Types.Stamina, dizi.Stamina.Con.Max),
+                    Treatments.Food => (IAdjustment.Types.Food, dizi.Food.Max),
+                    Treatments.Emotion => (IAdjustment.Types.Emotion, dizi.Emotion.Max),
+                    Treatments.Injury => (IAdjustment.Types.Injury, dizi.Injury.Max),
+                    Treatments.Inner => (IAdjustment.Types.Inner, dizi.Inner.Max),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                AddDiziCon(guid, kind, treatment.GetValue(max));
+            }
+        }
+
+        public void UseSilver(string guid, int amount)
+        {
+            if(Faction.Silver <amount) 
+                XDebug.LogError($"门派银两({Faction.Silver})小于消费银两({amount})!");
+            Faction.AddSilver(-amount);
+            AddDiziCon(guid, IAdjustment.Types.Silver, amount);
         }
     }
 }

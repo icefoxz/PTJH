@@ -26,7 +26,8 @@ internal class DiziListViewManager
 
     private void RegEvents()
     {
-        Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList(bag));
+        Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziList.UpdateList());
     }
 
     private class DiziListView : UiBase
@@ -46,7 +47,7 @@ internal class DiziListViewManager
         }
 
 
-        public void UpdateList(ObjectBag bag)
+        public void UpdateList()
         {
             var list = Game.World.Faction.DiziList.ToList();
             SetList(list);
@@ -63,6 +64,7 @@ internal class DiziListViewManager
                 var info = arg[i];
                 var ui = DiziList.Instance(v => new DiziPrefab(v));
                 ui.Init(info.Name, () => OnDiziSelectedAction?.Invoke(info.Guid));
+                ui.SetStateTitle(info.State.ShortTitle);
             }
         }
 
@@ -70,11 +72,13 @@ internal class DiziListViewManager
         {
             private Button Btn_dizi { get; }
             private Text Text_diziName { get; }
+            private Text Text_stateTitle { get; }
 
             public DiziPrefab(IView v) : base(v.GameObject, true)
             {
                 Btn_dizi = v.GetObject<Button>("btn_dizi");
                 Text_diziName = v.GetObject<Text>("text_diziName");
+                Text_stateTitle = v.GetObject<Text>("text_stateTitle");
             }
 
             public void Init(string name, Action onClickAction)
@@ -83,6 +87,8 @@ internal class DiziListViewManager
                 Btn_dizi.OnClickAdd(onClickAction);
                 Display(true);
             }
+
+            public void SetStateTitle(string stateText)=> Text_stateTitle.text = stateText;
         }
 
         private class TopRightView : UiBase
@@ -98,8 +104,8 @@ internal class DiziListViewManager
 
             public void Set(int value, int max)
             {
-                Text_value.text = value.ToString();
-                Text_max.text = max.ToString();
+                Text_value.text = value.ToString("00");
+                Text_max.text = max.ToString("00");
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using HotFix_Project.Views.Bases;
 using _GameClient.Models;
 using HotFix_Project.Serialization;
@@ -23,8 +24,8 @@ public class WinConItemSelectorManager
         Game.UiBuilder.Build("view_winConItemSelector", v =>
         {
             WinConItemSelector = new View_winConItemSelector(v,
-                () => XDebug.Log("10硬币已派发！"),
-                () => XDebug.Log("物品已使用！"));
+                guid => DiziController.UseSilver(guid, 10),
+                (guid, index) => DiziController.UseMedicine(guid, index));
             Game.MainUi.SetWindow(v, resetPos: true);
         },RegEvents);
     }
@@ -37,6 +38,10 @@ public class WinConItemSelectorManager
                 Game.MainUi.ShowWindow(WinConItemSelector.View);
                 WinConItemSelector.Set(bag.Get<string>(0));
             });
+        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
+            bag => WinConItemSelector.StaminaUpdate(bag.Get<string>(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate,
+            bag => WinConItemSelector.DiziUpdate(bag.Get<string>(0)));
     }
 
     private class View_winConItemSelector : UiBase
@@ -48,12 +53,13 @@ public class WinConItemSelectorManager
         private View_Btns BtnsView { get; }
         private ListViewUi<Prefab_Item> ItemListView { get; }
         private ElementManager ElementMgr { get; }
-        public View_winConItemSelector(IView v, Action onSilverApply, Action onUse) : base(v.GameObject, false)
+        public View_winConItemSelector(IView v, Action<string> onSilverApply, Action<string,int> onUse) : base(v.GameObject, false)
         {
             Btn_x = v.GetObject<Button>("btn_x");
             Scroll_items = v.GetObject<ScrollRect>("scroll_items");
             StaminaView = new View_Stamina(v.GetObject<View>("view_stamina"));
-            BtnsView = new View_Btns(v.GetObject<View>("view_btns"), onSilverApply, onUse);
+            BtnsView = new View_Btns(v.GetObject<View>("view_btns"), () => onSilverApply(SelectedDizi.Guid),
+                () => onUse(SelectedDizi.Guid, SelectedItemIndex));
             ItemListView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), Scroll_items);
             Btn_x.OnClickAdd(() => { Display(false); });
             ElementMgr = new ElementManager(
@@ -66,60 +72,77 @@ public class WinConItemSelectorManager
         }
 
         private Dizi SelectedDizi { get; set; }
+        private int SelectedItemIndex { get; set; }
 
-        public void UpdateItems((string name,int amount)[] items)
+        private void FactionItemsUpdate()
         {
             ItemListView.ClearList(v => v.Destroy());
-            foreach (var (name, amount) in items)
+            var faction = Game.World.Faction;
+            var items = new List<(string name, int amount, int index)>();
+            var tuples = faction.GetAllMedicines();
+            for (var index = 0; index < tuples.Length; index++)
+            {
+                var (med, amount) = tuples[index];
+                items.Add((med.Name, amount, index));
+            }
+
+            foreach (var (name, amount, index) in items)
             {
                 ItemListView.Instance(v =>
                 {
-                    var ui = new Prefab_Item(v);
+                    var ui = new Prefab_Item(v,index, () => SetSelectedItem(index));
                     ui.Set(name, amount);
                     return ui;
                 });
             }
+            SelectedItemIndex = -1;
+            UpdateBtnsView();
+        }
+
+        private void SetSelectedItem(int index)
+        {
+            SelectedItemIndex = index;
+            foreach (var ui in ItemListView.List) 
+                ui.SetSelected(index == ui.Index);
+            UpdateBtnsView();
+        }
+
+        private void UpdateBtnsView()
+        {
+            BtnsView.SetSilverInteractable(SelectedDizi.Silver.ValueMaxRatio < 1);
+            BtnsView.SetUseInteractable(SelectedItemIndex >= 0);
         }
 
         public void Set(string guid)
         {
             Display(true);
-            //var dizi = bag.Get<DiziDto>(0);
             SelectedDizi = Game.World.Faction.GetDizi(guid);
-            UpdateDiziStamina();
-            View.StopAllCo();
-            View.StartCo(SetTimeEverySec());
-
-            IEnumerator SetTimeEverySec()
-            {
-                while (true)
-                {
-                    yield return new WaitForSeconds(1);
-                    UpdateDiziStamina();
-                }
-            }
+            DiziUpdate(guid);
         }
-        private void UpdateDiziStamina()
+
+        public void DiziUpdate(string guid)
         {
+            if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
+            DiziElementsUpdate(SelectedDizi);
+            StaminaUpdate(guid);
+            FactionItemsUpdate();
+        }
+
+        public void StaminaUpdate(string guid)
+        {
+            if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
             var (stamina, max, min, sec) = SelectedDizi.Stamina.GetStaminaValue();
             StaminaView.Set(stamina, max);
             StaminaView.SetTime(min, sec);
         }
-        public void Update()
-        {
-            SetDizi(SelectedDizi);
-        }
-        private void SetDizi(Dizi dizi)
-        {
-            SetDiziElements(dizi);
-        }
-        private void SetDiziElements(Dizi dizi)
+
+        private void DiziElementsUpdate(Dizi dizi)
         {
             ElementMgr.SetConValue(Conditions.Food, dizi.Food.Value, dizi.Food.Max);
             ElementMgr.SetConValue(Conditions.State, dizi.Emotion.Value, dizi.Emotion.Max);
             ElementMgr.SetConValue(Conditions.Silver, dizi.Silver.Value, dizi.Silver.Max);
             ElementMgr.SetConValue(Conditions.Injury, dizi.Injury.Value, dizi.Injury.Max);
-            ElementMgr.SetConValue(Conditions.Silver, dizi.Inner.Value, dizi.Inner.Max);
+            ElementMgr.SetConValue(Conditions.Inner, dizi.Inner.Value, dizi.Inner.Max);
         }
 
         private class Prefab_Item : UiBase
@@ -127,12 +150,19 @@ public class WinConItemSelectorManager
             private Image Img_item { get; }
             private Text Text_amount { get; }
             private Text Text_name { get; }
+            private Image Img_selected{ get; }
+            private Button Button { get; }
+            public int Index { get; private set; }
 
-            public Prefab_Item(IView v) : base(v.GameObject, true)
+            public Prefab_Item(IView v, int index, Action onClickAction) : base(v.GameObject, true)
             {
+                Index = index;
                 Img_item = v.GetObject<Image>("img_item");
                 Text_amount = v.GetObject<Text>("text_amount");
                 Text_name = v.GetObject<Text>("text_name");
+                Img_selected = v.GetObject<Image>("img_selected");
+                Button = v.GameObject.GetComponent<Button>();
+                Button.OnClickAdd(onClickAction);
             }
             public void SetImage(Sprite img)=> Img_item.sprite = img;
             public void Set(string name, int num)
@@ -140,6 +170,8 @@ public class WinConItemSelectorManager
                 Text_name.text = name;
                 Text_amount.text = num.ToString();
             }
+
+            public void SetSelected(bool selected) => Img_selected.gameObject.SetActive(selected);
         }
 
         private class View_Stamina : UiBase
@@ -196,6 +228,9 @@ public class WinConItemSelectorManager
                 Btn_use.OnClickAdd(onUse);
                 Text_silver = v.GetObject<Text>("text_silver");
             }
+
+            public void SetUseInteractable(bool enable) => Btn_use.interactable = enable;
+            public void SetSilverInteractable(bool enable) => Btn_silver.interactable = enable;
             public void SetText(int cost) => Text_silver.text = cost.ToString();
         }
 

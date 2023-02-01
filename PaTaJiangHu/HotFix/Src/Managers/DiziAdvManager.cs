@@ -31,17 +31,17 @@ public class DiziAdvManager
     {
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
-            DiziAdv = new View_diziAdv(v: v, 
-                onItemSelectAction: (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
+            DiziAdv = new View_diziAdv(v: v,
+                onItemSelectAction: (guid, itemType) =>DiziController.ManageDiziEquipment(guid, itemType),
                 onAdvStartAction: guid => DiziAdvController.AdventureStart(guid),
                 onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
-                onDiziFinalizeAction: guid=> DiziAdvController.AdventureFinalize(guid),
-                onDiziForgetAction: guid=> XDebug.LogWarning("弟子遗忘功能未完!"),
-                onDiziBuyBackAction: guid=> XDebug.LogWarning("弟子买回功能未完!"),
+                onDiziFinalizeAction: guid => DiziAdvController.AdventureFinalize(guid),
+                onDiziForgetAction: guid => XDebug.LogWarning("弟子遗忘功能未完!"),
+                onDiziBuyBackAction: guid => XDebug.LogWarning("弟子买回功能未完!"),
                 onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
             );
             MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
-        },RegEvents);
+        }, RegEvents);
     }
 
     private void RegEvents()

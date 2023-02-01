@@ -43,6 +43,9 @@ public class DiziInfoSectManager
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziInfo.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziInfo.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziInfo.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
+            bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
     }
 
     private class View_diziInfoSect : UiBase
@@ -77,34 +80,28 @@ public class DiziInfoSectManager
             XDebug.Log($"弟子【{SelectedDizi.Name}】更新了!");
         }
 
+        public void UpdateDiziStamina(string diziGuid)
+        {
+            if (SelectedDizi == null || SelectedDizi.Guid != diziGuid)
+                return;
+            var (stamina, max, min, sec) = SelectedDizi.Stamina.GetStaminaValue();
+            CharInfo.SetStamina(stamina, max, min, sec);
+        }
+
         private void SetDizi(Dizi dizi)
         {
             var c = dizi.Capable;
             CharInfo.SetName(dizi.Name);
             CharInfo.SetLevel(dizi.Level);
-            UpdateDiziStamina();
+            CharInfo.SetState(dizi.State.ShortTitle, dizi.State.Description, dizi.State.LastUpdate);
+            UpdateDiziStamina(dizi.Guid);
 
             SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength, dizi.Weapon?.Damage ?? 0);
             SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility, 0);
             SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp, 0);
             SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp, 0);
-            View.StopAllCo();
-            View.StartCo(UpdateStaminaEverySecond());
         }
 
-        IEnumerator UpdateStaminaEverySecond()
-        {
-            while (true)
-            {
-                yield return new WaitForSeconds(1);
-                UpdateDiziStamina();
-            }
-        }
-        void UpdateDiziStamina()
-        {
-            var (stamina, max, min, sec) = SelectedDizi.Stamina.GetStaminaValue();
-            CharInfo.SetStamina(stamina, max, min, sec);
-        }
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
         private void SetProp(View_diziProps.Props prop, int grade, int value, int skill, int equip = 0, int condition = 0) =>
             DiziProps.Set(prop, grade, value, skill, equip, condition);
@@ -143,8 +140,18 @@ public class DiziInfoSectManager
             public void SetStamina(int staValue, int staMax, int min, int sec) =>
                 StatusList.SetStamina(staValue, staMax, min, sec);
 
-            public void SetState(string shortTitle, string description, int min, int sec) =>
+            public void SetState(string shortTitle, string description, long time)
+            {
+                var min = 0;
+                var sec = 0;
+                if (time != 0)
+                {
+                    var timeInterval = TimeSpan.FromMilliseconds(Math.Abs(time - SysTime.UnixNow));
+                    min = timeInterval.Minutes;
+                    sec = timeInterval.Seconds;
+                }
                 StatusList.SetState(shortTitle, description, min, sec);
+            }
 
             private class View_statusList : UiBase
             {
@@ -188,8 +195,8 @@ public class DiziInfoSectManager
                     }
                     public void SetStamina(int value, int max)
                     {
-                        Text_staminaValue.text = value.ToString();
-                        Text_staminaMax.text = max.ToString();
+                        Text_staminaValue.text = value.ToString("00");
+                        Text_staminaMax.text = max.ToString("00");
                     }
                     public void SetTime(int min, int sec) => TimeView.SetTime(min, sec);
                 }
@@ -227,8 +234,8 @@ public class DiziInfoSectManager
                     {
                         var full = min <= 0 && sec <= 0;
                         Go_timeView.SetActive(!full);
-                        Text_value.text = min.ToString();
-                        Text_max.text = sec.ToString();
+                        Text_value.text = min.ToString("00");
+                        Text_max.text = sec.ToString("00");
                     }
 
                     public void Hide() => Display(false);

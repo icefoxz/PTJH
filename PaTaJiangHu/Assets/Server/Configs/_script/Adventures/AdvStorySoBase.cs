@@ -43,7 +43,7 @@ namespace Server.Configs.Adventures
             Stamina = 0,
             Silver = 1,
             Food = 2,
-            Condition = 3,
+            Emotion = 3,
             Injury = 4,
             Inner = 5,
         }
