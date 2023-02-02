@@ -118,11 +118,11 @@ namespace _GameClient.Models
             Skill = new Skills(cSlot, fSlot, dSlot);
             var maxExp = LevelCfg.GetMaxExp(level);
             _exp = new ConValue(maxExp, maxExp, 0);
-            _food = new ConValue(PropState.FoodDefault.Max, PropState.FoodDefault.Max, PropState.FoodDefault.Min);
-            _emotion = new ConValue(PropState.EmotionDefault.Max, PropState.EmotionDefault.Max, PropState.EmotionDefault.Min);
-            _silver = new ConValue(PropState.SilverDefault.Max, PropState.SilverDefault.Max, PropState.SilverDefault.Min);
-            _injury = new ConValue(PropState.InjuryDefault.Max, PropState.InjuryDefault.Max, PropState.InjuryDefault.Min);
-            _inner = new ConValue(PropState.InnerDefault.Max, PropState.InnerDefault.Max, PropState.InnerDefault.Min);
+            _food = new ConValue(PropState.FoodDefault.Max, PropState.FoodDefault.Min);
+            _emotion = new ConValue(PropState.EmotionDefault.Max, PropState.EmotionDefault.Min);
+            _silver = new ConValue(PropState.SilverDefault.Max, PropState.SilverDefault.Min);
+            _injury = new ConValue(PropState.InjuryDefault.Max, PropState.InjuryDefault.Min);
+            _inner = new ConValue(PropState.InnerDefault.Max, PropState.InnerDefault.Min);
             StaminaService();
         }
 
