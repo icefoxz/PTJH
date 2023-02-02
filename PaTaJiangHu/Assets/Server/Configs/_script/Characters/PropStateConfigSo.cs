@@ -9,6 +9,11 @@ namespace Server.Configs.Characters
     [CreateAssetMenu(fileName = "propStateConfig", menuName = "配置/弟子/属性状态配置")]
     internal class PropStateConfigSo : ScriptableObject
     {
+        [SerializeField] private MinMaxInt 银两初始设定;
+        [SerializeField] private MinMaxInt 食物初始设定;
+        [SerializeField] private MinMaxInt 精神初始设定;
+        [SerializeField] private MinMaxInt 外伤初始设定;
+        [SerializeField] private MinMaxInt 内伤初始设定;
         [SerializeField] private PropCfg 力量;
         [SerializeField] private PropCfg 敏捷;
         [SerializeField] private PropCfg 血量;
@@ -18,6 +23,12 @@ namespace Server.Configs.Characters
         private PropCfg AgilityCfgs => 敏捷;
         private PropCfg HpCfgs => 血量;
         private PropCfg MpCfgs => 内力;
+
+        public MinMaxInt FoodDefault => 食物初始设定;
+        public MinMaxInt EmotionDefault => 精神初始设定;
+        public MinMaxInt SilverDefault => 银两初始设定;
+        public MinMaxInt InjuryDefault => 外伤初始设定;
+        public MinMaxInt InnerDefault => 内伤初始设定;
 
         public int GetStateAdjustmentValue(DiziProps prop, double foodRatio, double emoRatio, double injuryRatio,
             double innerRatio, int value) =>

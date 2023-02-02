@@ -8,6 +8,7 @@ using Core;
 using MyBox;
 using Server.Configs.Adventures;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace Server.Controllers
 {
@@ -223,8 +224,14 @@ namespace Server.Controllers
             public IDodgeSkill DodgeSkill { get; }
             public IWeapon Weapon { get; }
             public IArmor Armor { get; }
+            public Gender Gender { get; }
             public int Level { get; }
             public int Power { get; }
+            public int Strength { get; }
+            public int Agility { get; }
+            public int Hp { get; }
+            public int Mp { get; }
+            public int Grade { get; }
             public IEnumerable<IStacking<IGameItem>> Items { get; }
         }
 
