@@ -1,4 +1,5 @@
 ﻿using System;
+using Core;
 using MyBox;
 using Server.Controllers;
 using UnityEngine;
@@ -81,18 +82,40 @@ namespace Server.Configs.BattleSimulation
             SkillGrades forceGrade, int forceLevel,
             SkillGrades dodgeGrade, int dodgeLevel)
         {
+            var (str, agi, wea, arm, foc, dod, comOff, comDef) = GetCoefficients(strength, agility, weapon, armor,
+                combatGrade, combatLevel, forceGrade, forceLevel, dodgeGrade, dodgeLevel);
+            var off = new OffendPower(str, wea, comOff);
+            var def = new DefendPower(str, agi, foc, dod, arm, comDef);
+            return new SimCombat(charName, (int)Math.Round(off.Power), (int)Math.Round(def.Power),
+                str, agi, wea, arm, comOff + comDef, foc, dod);
+        }
+
+        private (float str,float agi, float wea, float arm, float foc, float dod, float comOff, float comDef ) 
+            GetCoefficients(int strength, int agility, int weapon, int armor, SkillGrades combatGrade,
+            int combatLevel, SkillGrades forceGrade, int forceLevel, SkillGrades dodgeGrade, int dodgeLevel)
+        {
             var str = GetCoefficient(strength, Coefficients.Strength);
             var arm = GetCoefficient(armor, Coefficients.Armor);
             var agi = GetCoefficient(agility, Coefficients.Agility);
             var wea = GetCoefficient(weapon, Coefficients.Weapon);
-            var comOff = GetOffendCoefficient(Skills.Combat, combatLevel, combatGrade);
-            var comDef = GetOffendCoefficient(Skills.Combat, combatLevel, combatGrade);
-            var foc = GetCoefficient(Skills.Force, forceLevel, forceGrade);
-            var dod = GetCoefficient(Skills.Dodge, dodgeLevel, dodgeGrade);
-            var off = (str * 0.5f) + wea + comOff;
-            var def = (str * 0.5f) + arm + agi + foc + dod + comDef;
-            return new SimCombat(charName, (int)Math.Round(off), (int)Math.Round(def),
-                str, agi, wea, arm, comOff + comDef, foc, dod);
+            var comOff = combatLevel == 0 ? 0 : GetOffendCoefficient(Skills.Combat, combatLevel, combatGrade);
+            var comDef = combatLevel == 0 ? 0 : GetOffendCoefficient(Skills.Combat, combatLevel, combatGrade);
+            var foc = forceLevel == 0 ? 0 : GetCoefficient(Skills.Force, forceLevel, forceGrade);
+            var dod = dodgeLevel == 0 ? 0 : GetCoefficient(Skills.Dodge, dodgeLevel, dodgeGrade);
+            return (str,agi, wea, arm, foc, dod, comOff, comDef);
+        }
+
+        public int GetPower(int strength, int agility,
+            int weapon, int armor,
+            SkillGrades combatGrade, int combatLevel,
+            SkillGrades forceGrade, int forceLevel,
+            SkillGrades dodgeGrade, int dodgeLevel)
+        {
+            var (str, agi, wea, arm, foc, dod, comOff, comDef) = GetCoefficients(strength, agility, weapon, armor,
+                combatGrade, combatLevel, forceGrade, forceLevel,
+                dodgeGrade, dodgeLevel);
+            return (int)(new OffendPower(str, wea, comOff).Power +
+                    new DefendPower(str, agi, foc, dod, arm, comDef).Power);
         }
 
         private float GetCoefficient(int value, Coefficients coe)
@@ -121,7 +144,7 @@ namespace Server.Configs.BattleSimulation
         private float CountRate(int value, float max, float ratio)
         {
             if (value <= 0) return 0;
-            return value / max * ratio;
+            return value / max * ratio * 10;
         }
 
         private float GetOffendCoefficient(Skills skill, int level, SkillGrades grade)

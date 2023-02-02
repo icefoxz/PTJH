@@ -17,11 +17,20 @@ namespace BattleM
         {
             
         }
-        public ConValue(int fix, int max = -1, int value = -1)
+        public ConValue(int fix, int max, int value)
         {
             Max = max < 0 ? fix : max;
             Value = value < 0 ? Max : value;
             Fix = fix;
+        }
+
+        public ConValue(int max) : this(max, max, max)
+        {
+
+        }
+
+        public ConValue(int max, int value) : this(max, max, value)
+        {
         }
 
         public void Add(int value)

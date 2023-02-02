@@ -82,6 +82,7 @@ namespace Server.Configs
             var faction = Game.World.Faction;
             var p = AutoAdventureCfg.Player;
             var dizi = new Dizi(guid: Guid.NewGuid().ToString(), name: p.Name,
+                p.Gender,
                 strength: new GradeValue<int>(p.Strength, 0),
                 agility: new GradeValue<int>(p.Agility, 0),
                 hp: new GradeValue<int>(p.Hp, 0),

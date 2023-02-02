@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using BattleM;
 using Core;
 using Server.Configs.Adventures;
+using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Items;
 using Server.Configs.Skills;
@@ -11,6 +12,7 @@ using Server.Controllers;
 using UnityEditor;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.Analytics;
 using Utls;
 
 namespace _GameClient.Models
@@ -23,7 +25,7 @@ namespace _GameClient.Models
         protected override string LogPrefix => Name;
         public string Guid { get; }
         public string Name { get; }
-
+        public Gender Gender { get; }
         public int Strength => GetLeveledValue(DiziProps.Strength) + 
                                GetPropStateAddon(DiziProps.Strength) +
                                GetWeaponDamage();
@@ -37,12 +39,15 @@ namespace _GameClient.Models
         public int Level { get; private set; }
         public IConditionValue Exp => _exp;
 
-        public int Power { get; }
+        public int Power => ConProCfg.GetPower(Strength, Agility, WeaponPower, ArmorPower,
+            CombatSkill?.Grade ?? 0, CombatSkill?.Level ?? 0,
+            ForceSkill?.Grade ?? 0, ForceSkill?.Level ?? 0,
+            DodgeSkill?.Grade ?? 0, DodgeSkill?.Level ?? 0);
         public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
-        public int Grade { get; private set; }
-        public ICombatSkill CombatSkill { get; set; }
-        public IForceSkill ForceSkill { get; set; }
-        public IDodgeSkill DodgeSkill { get; set; }
+        public int Grade { get; }
+        public ICombatSkill CombatSkill { get; private set; }
+        public IForceSkill ForceSkill { get; private set; }
+        public IDodgeSkill DodgeSkill { get; private set; }
         public IWeapon Weapon { get; private set; }
         public IArmor Armor { get; private set; }
 
@@ -82,8 +87,9 @@ namespace _GameClient.Models
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
-
-        internal Dizi(string guid, string name, 
+        private ConditionPropertySo ConProCfg => Game.Config.AdvCfg.ConditionProperty;
+        internal Dizi(string guid, string name,
+            Gender gender,
             GradeValue<int> strength, 
             GradeValue<int> agility,
             GradeValue<int> hp, 
@@ -95,6 +101,7 @@ namespace _GameClient.Models
         {
             Guid = guid;
             Name = name;
+            Gender = gender;
             Level = level;
             Grade = grade;
             Capable = new Capable(grade, dodgeSlot, combatSlot, bag, strength, agility, hp, mp);
@@ -111,11 +118,11 @@ namespace _GameClient.Models
             Skill = new Skills(cSlot, fSlot, dSlot);
             var maxExp = LevelCfg.GetMaxExp(level);
             _exp = new ConValue(maxExp, maxExp, 0);
-            _food = new ConValue(100);
-            _emotion = new ConValue(100);
-            _silver = new ConValue(100);
-            _injury = new ConValue(100);
-            _inner = new ConValue(100);
+            _food = new ConValue(PropState.FoodDefault.Max, PropState.FoodDefault.Min);
+            _emotion = new ConValue(PropState.EmotionDefault.Max, PropState.EmotionDefault.Min);
+            _silver = new ConValue(PropState.SilverDefault.Max, PropState.SilverDefault.Min);
+            _injury = new ConValue(PropState.InjuryDefault.Max, PropState.InjuryDefault.Min);
+            _inner = new ConValue(PropState.InnerDefault.Max, PropState.InnerDefault.Min);
             StaminaService();
         }
 

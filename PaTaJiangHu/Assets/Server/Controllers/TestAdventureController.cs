@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using _GameClient.Models;
 using BattleM;
 using Core;
 using MyBox;
 using Server.Configs.Adventures;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace Server.Controllers
 {
@@ -217,10 +219,19 @@ namespace Server.Controllers
             public IConditionValue Emotion { get; }
             public IConditionValue Injury { get; }
             public IConditionValue Inner { get; }
+            public ICombatSkill CombatSkill { get; }
+            public IForceSkill ForceSkill { get; }
+            public IDodgeSkill DodgeSkill { get; }
             public IWeapon Weapon { get; }
             public IArmor Armor { get; }
+            public Gender Gender { get; }
             public int Level { get; }
             public int Power { get; }
+            public int Strength { get; }
+            public int Agility { get; }
+            public int Hp { get; }
+            public int Mp { get; }
+            public int Grade { get; }
             public IEnumerable<IStacking<IGameItem>> Items { get; }
         }
 

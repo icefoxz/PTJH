@@ -216,4 +216,8 @@ namespace Server.Configs.Adventures
         }
     }
 
+    [Serializable] internal class PropertyClauseField
+    {
+
+    }
 }

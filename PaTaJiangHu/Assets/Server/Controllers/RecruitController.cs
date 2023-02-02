@@ -34,7 +34,7 @@ namespace Server.Controllers
             }
             Faction.AddYuanBao(-yuanBaoCost);
 
-            var name = NameGen.GenName();
+            var (name, gender) = NameGen.GenNameWithGender();
             var allGrades = Enum.GetValues(typeof(GradeConfigSo.Grades)).Cast<int>().ToArray();
             var randomGrade = Sys.Random.Next(allGrades.Length);
             var (strength, agility, hp, mp, stamina, bag) = GradeConfig.GenerateFromGrade(randomGrade);
@@ -43,7 +43,7 @@ namespace Server.Controllers
             var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
             var diziIndex = TempDiziList.Count;
             var guid = Guid.NewGuid().ToString();
-            var dizi = new Dizi(guid, name.Text, strength, agility, hp, mp, 1, randomGrade, stamina,
+            var dizi = new Dizi(guid, name.Text, gender, strength, agility, hp, mp, 1, randomGrade, stamina,
                 bag, 1, 1, 1, combatSkill.GetFromLevel(1), forceSkill.GetFromLevel(1), dodgeSkill.GetFromLevel(1));
             
             TempDiziList.Add(dizi);

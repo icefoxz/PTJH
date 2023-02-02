@@ -31,6 +31,12 @@ namespace NameM
         }
 
         public static Name GenName() => GenName((Gender)Sys.Random.Next(2));
+        public static (Name name,Gender gender) GenNameWithGender()
+        {
+            var gender = (Gender)Sys.Random.Next(2);
+            return (GenName(), gender);
+        }
+
         public static Name GenName(Gender gender,int word = -1) =>
             gender switch
             {

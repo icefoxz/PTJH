@@ -33,7 +33,7 @@ namespace Server.Configs.BattleSimulation
     {
         [SerializeField] private ValueMapping[] _maps;
         private ValueMapping[] Maps => _maps;
-        private const int StackOverFlow = 9999;
+        private const int LimitedRound = 99;
 
         /// <summary>
         /// 模拟回合制
@@ -44,10 +44,10 @@ namespace Server.Configs.BattleSimulation
         public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
         {
             var playerHp = player.Defend;
-            var playerAtt = player.Offend;
             var enemyHp = enemy.Defend;
-            var enemyAtt = enemy.Offend;
-            var recursive = 0;
+            var playerAtt = player.Offend <= 0 ? 1 : player.Offend;//攻击最小数为1
+            var enemyAtt = enemy.Offend <= 0 ? 1 : enemy.Offend;
+            var recursiveRound = 0;
             var balance = 0;
             var list = new List<ISimulationRound>();
             while (true)
@@ -66,10 +66,22 @@ namespace Server.Configs.BattleSimulation
                 if (playerHp <= 0)
                     return new Outcome(list.ToArray(), (int)enemyHp, enemyHp / enemy.Defend, false, player.Offend,
                         enemy.Offend, player.Defend, enemy.Defend);
-
-                if (recursive >= StackOverFlow)
-                    throw new StackOverflowException();
-                recursive++;
+#if UNITY_EDITOR
+                if (recursiveRound >= LimitedRound)
+                    throw new StackOverflowException($"战斗回合数超过 = {LimitedRound}");
+#else
+                if (recursiveRound >= 10)
+                {
+                    XDebug.LogWarning(
+                        $"战斗回合超过 10 次!playerHp = {playerHp}, enemyHp = {enemyHp} \nPlayer: {player}\nenemy{enemy}");
+                    var isPlayerWin = playerHp >= enemyHp;
+                    var remainingHp = isPlayerWin ? (int)playerHp : (int)enemyHp;
+                    var remainingRatio = isPlayerWin ? playerHp / player.Defend : enemyHp / enemy.Defend;
+                    return new Outcome(list.ToArray(), remainingHp, remainingRatio, isPlayerWin, player.Offend,
+                        enemy.Offend, player.Defend, enemy.Defend);
+                }
+#endif
+                recursiveRound++;
             }
             throw new NotImplementedException();
         }
