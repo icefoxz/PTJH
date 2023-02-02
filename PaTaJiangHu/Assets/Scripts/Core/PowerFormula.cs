@@ -8,7 +8,7 @@
         public float Force { get; }
         public float Dodge { get; }
         public float Combat { get; }
-        public float Power() => (Strength * 0.5f) + Agility + Armor + Force + Dodge + Combat;
+        public float Power => (Strength * 0.5f) + Agility + Armor + Force + Dodge + Combat;
 
         public DefendPower(float strength, float agility, float force, float dodge, float armor, float combat)
         {
@@ -25,7 +25,7 @@
         public float Strength { get; }
         public float Weapon { get; }
         public float Combat { get; }
-        public float Power() => (Strength * 0.5f) + Weapon + Combat;
+        public float Power => (Strength * 0.5f) + Weapon + Combat;
         public OffendPower(float strength, float weapon, float combat)
         {
             Strength = strength;

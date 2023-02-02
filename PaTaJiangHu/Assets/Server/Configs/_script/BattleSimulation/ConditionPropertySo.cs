@@ -86,7 +86,7 @@ namespace Server.Configs.BattleSimulation
                 combatGrade, combatLevel, forceGrade, forceLevel, dodgeGrade, dodgeLevel);
             var off = new OffendPower(str, wea, comOff);
             var def = new DefendPower(str, agi, foc, dod, arm, comDef);
-            return new SimCombat(charName, (int)Math.Round(off.Power()), (int)Math.Round(def.Power()),
+            return new SimCombat(charName, (int)Math.Round(off.Power), (int)Math.Round(def.Power),
                 str, agi, wea, arm, comOff + comDef, foc, dod);
         }
 
@@ -114,8 +114,8 @@ namespace Server.Configs.BattleSimulation
             var (str, agi, wea, arm, foc, dod, comOff, comDef) = GetCoefficients(strength, agility, weapon, armor,
                 combatGrade, combatLevel, forceGrade, forceLevel,
                 dodgeGrade, dodgeLevel);
-            return (int)(new OffendPower(str, wea, comOff).Power() +
-                    new DefendPower(str, agi, foc, dod, arm, comDef).Power());
+            return (int)(new OffendPower(str, wea, comOff).Power +
+                    new DefendPower(str, agi, foc, dod, arm, comDef).Power);
         }
 
         private float GetCoefficient(int value, Coefficients coe)
@@ -144,7 +144,7 @@ namespace Server.Configs.BattleSimulation
         private float CountRate(int value, float max, float ratio)
         {
             if (value <= 0) return 0;
-            return value / max * ratio;
+            return value / max * ratio * 10;
         }
 
         private float GetOffendCoefficient(Skills skill, int level, SkillGrades grade)
