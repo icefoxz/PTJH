@@ -276,9 +276,9 @@ namespace _GameClient.Models
             Log(armor == null ? $"卸下{Armor.Name}" : $"装备{armor.Name}!");
             Armor = armor;
         }
-        internal void AdventureStart(long startTime,int returnSecs,int messageSecs)
+        internal void AdventureStart(IAutoAdvMap map,long startTime,int messageSecs)
         {
-            Adventure = new AutoAdventure(startTime, returnSecs, messageSecs, this);
+            Adventure = new AutoAdventure(map, startTime, messageSecs, this);
             Adventure.UpdateStoryService.AddListener(()=>SetStateShort("历", "历练中...", startTime));
             Log("开始历练.");
             SendEvent(EventString.Dizi_Adv_Start, Guid);

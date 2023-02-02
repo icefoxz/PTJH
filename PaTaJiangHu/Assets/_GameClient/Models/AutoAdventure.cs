@@ -28,10 +28,11 @@ namespace _GameClient.Models
             Polling,
             Story
         }
+
         /// <summary>
         /// 回程秒数
         /// </summary>
-        public int JourneyReturnSec { get; }
+        public int JourneyReturnSec => Map.JourneyReturnSec;
         /// <summary>
         /// 当前状态
         /// </summary>
@@ -53,7 +54,7 @@ namespace _GameClient.Models
         private int MessageSecs { get; } //文本展示间隔(秒)
         private ICoroutineInstance ServiceCo { get; set; }
         private Dizi Dizi { get; }
-
+        public IAutoAdvMap Map { get; }
         private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
         public IEnumerable<IStacking<IGameItem>> GetItems() => Rewards.SelectMany(i => i.AllItems);
 
@@ -64,10 +65,10 @@ namespace _GameClient.Models
         public IReadOnlyList<string> StoryLog => _storyLog;
         private Queue<DiziAdvLog> Stories { get; set; } = new Queue<DiziAdvLog>();
 
-        public AutoAdventure(long startTime, int journeyReturnSec, int messageSecs, Dizi dizi)
+        public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi)
         {
+            Map = map;
             MessageSecs = messageSecs;
-            JourneyReturnSec = journeyReturnSec;
             StartTime = startTime;
             LastUpdate = startTime;
             Dizi = dizi;
@@ -93,7 +94,7 @@ namespace _GameClient.Models
                         case Modes.Polling:
                         {
                             //每秒轮询是否触发故事
-                            AdvController.CheckMile(Dizi.Guid, (totalMile, isAdvEnd) =>
+                            AdvController.CheckMile(Map.Id, Dizi.Guid, (totalMile, isAdvEnd) =>
                             {
                                 LastMile = totalMile;
                                 if (isAdvEnd)

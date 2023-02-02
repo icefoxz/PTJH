@@ -8,8 +8,18 @@ using Utls;
 
 namespace Server.Configs.Adventures
 {
+    public interface IAutoAdvMap
+    {
+        int JourneyReturnSec { get; }
+        int ActionLingCost { get; }
+        Sprite Image { get; }
+        string About { get; }
+        string Name { get; }
+        int Id { get; }
+    }
+
     [CreateAssetMenu(fileName = "id_历练地图名", menuName = "历练/历练地图")]
-    internal class AdventureMapSo : AutoHashNamingObject
+    internal class AdventureMapSo : AutoHashNamingObject, IAutoAdvMap
     {
         private bool GetItem()
         {
@@ -18,16 +28,24 @@ namespace Server.Configs.Adventures
         }
         [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdventureMapSo So;
 
+        [SerializeField] private int 执行令消耗;
         [SerializeField] private MajorPlaceConfig 固定里数触发配置;
         [SerializeField] private MinorPlaceConfig 小故事;
         //[SerializeField] private MinorPlaceConfig 随机触发配置;
         [SerializeField] private int 回程秒数 = 10;
+        [SerializeField] private Sprite 图片;
+        [SerializeField] [TextArea]private string 说明;
+
 
         public int JourneyReturnSec => 回程秒数;
         //private MinorPlaceConfig MinorPlace => 随机触发配置;
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;
 
         private MinorPlaceConfig MinorPlace => 小故事;
+
+        public int ActionLingCost => 执行令消耗;
+        public Sprite Image => 图片;
+        public string About => 说明;
 
         //public int MinorMile => MinorPlace.Mile;
         public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => fromMiles != toMiles
