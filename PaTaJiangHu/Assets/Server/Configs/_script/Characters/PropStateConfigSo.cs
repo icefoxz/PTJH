@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MyBox;
+using Server.Configs.SoUtls;
 using UnityEngine;
 using Utls;
 
@@ -9,26 +10,44 @@ namespace Server.Configs.Characters
     [CreateAssetMenu(fileName = "propStateConfig", menuName = "配置/弟子/属性状态配置")]
     internal class PropStateConfigSo : ScriptableObject
     {
-        [SerializeField] private MinMaxInt 银两初始设定;
-        [SerializeField] private MinMaxInt 食物初始设定;
-        [SerializeField] private MinMaxInt 精神初始设定;
-        [SerializeField] private MinMaxInt 外伤初始设定;
-        [SerializeField] private MinMaxInt 内伤初始设定;
+        [SerializeField] private ConfigField 状态属性设定;
         [SerializeField] private PropCfg 力量;
         [SerializeField] private PropCfg 敏捷;
         [SerializeField] private PropCfg 血量;
         [SerializeField] private PropCfg 内力;
 
+        public ConfigField Config => 状态属性设定;
         private PropCfg StrengthCfgs => 力量;
         private PropCfg AgilityCfgs => 敏捷;
         private PropCfg HpCfgs => 血量;
         private PropCfg MpCfgs => 内力;
 
-        public MinMaxInt FoodDefault => 食物初始设定;
-        public MinMaxInt EmotionDefault => 精神初始设定;
-        public MinMaxInt SilverDefault => 银两初始设定;
-        public MinMaxInt InjuryDefault => 外伤初始设定;
-        public MinMaxInt InnerDefault => 内伤初始设定;
+        [Serializable]
+        internal class ConfigField
+        {
+            [SerializeField] private MinMaxInt 银两初始设定;
+            [SerializeField] private MinMaxInt 食物初始设定;
+            [SerializeField] private MinMaxInt 精神初始设定;
+            [SerializeField] private MinMaxInt 外伤初始设定;
+            [SerializeField] private MinMaxInt 内伤初始设定;
+            [SerializeField] private ValueMapping<Color>[] 状态颜色;
+            [SerializeField] private ValueMapping<string>[] 银两描述;
+            [SerializeField] private ValueMapping<string>[] 食物描述;
+            [SerializeField] private ValueMapping<string>[] 精神描述;
+            [SerializeField] private ValueMapping<string>[] 外伤描述;
+            [SerializeField] private ValueMapping<string>[] 内伤描述;
+            public MinMaxInt SilverDefault => 银两初始设定;
+            public MinMaxInt FoodDefault => 食物初始设定;
+            public MinMaxInt EmotionDefault => 精神初始设定;
+            public MinMaxInt InjuryDefault => 外伤初始设定;
+            public MinMaxInt InnerDefault => 内伤初始设定;
+            public ValueMapping<Color>[] StateColor => 状态颜色;
+            public ValueMapping<string>[] SilverMap => 银两描述;
+            public ValueMapping<string>[] FoodMap => 食物描述;
+            public ValueMapping<string>[] EmotionMap => 精神描述;
+            public ValueMapping<string>[] InjuryMap => 外伤描述;
+            public ValueMapping<string>[] InnerMap => 内伤描述;
+        }
 
         public int GetStateAdjustmentValue(DiziProps prop, double foodRatio, double emoRatio, double injuryRatio,
             double innerRatio, int value) =>

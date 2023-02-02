@@ -87,6 +87,7 @@ namespace _GameClient.Models
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
+        private PropStateConfigSo.ConfigField PropStateCfg => Game.Config.DiziCfg.PropState.Config;
         private ConditionPropertySo ConProCfg => Game.Config.AdvCfg.ConditionProperty;
         internal Dizi(string guid, string name,
             Gender gender,
@@ -118,11 +119,11 @@ namespace _GameClient.Models
             Skill = new Skills(cSlot, fSlot, dSlot);
             var maxExp = LevelCfg.GetMaxExp(level);
             _exp = new ConValue(maxExp, maxExp, 0);
-            _food = new ConValue(PropState.FoodDefault.Max, PropState.FoodDefault.Min);
-            _emotion = new ConValue(PropState.EmotionDefault.Max, PropState.EmotionDefault.Min);
-            _silver = new ConValue(PropState.SilverDefault.Max, PropState.SilverDefault.Min);
-            _injury = new ConValue(PropState.InjuryDefault.Max, PropState.InjuryDefault.Min);
-            _inner = new ConValue(PropState.InnerDefault.Max, PropState.InnerDefault.Min);
+            _food = new ConValue(PropStateCfg.FoodDefault.Max, PropStateCfg.FoodDefault.Min);
+            _emotion = new ConValue(PropStateCfg.EmotionDefault.Max, PropStateCfg.EmotionDefault.Min);
+            _silver = new ConValue(PropStateCfg.SilverDefault.Max, PropStateCfg.SilverDefault.Min);
+            _injury = new ConValue(PropStateCfg.InjuryDefault.Max, PropStateCfg.InjuryDefault.Min);
+            _inner = new ConValue(PropStateCfg.InnerDefault.Max, PropStateCfg.InnerDefault.Min);
             StaminaService();
         }
 
