@@ -12,6 +12,7 @@ using Server.Controllers;
 using UnityEditor;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.Analytics;
 using Utls;
 
 namespace _GameClient.Models
@@ -24,7 +25,7 @@ namespace _GameClient.Models
         protected override string LogPrefix => Name;
         public string Guid { get; }
         public string Name { get; }
-
+        public Gender Gender { get; }
         public int Strength => GetLeveledValue(DiziProps.Strength) + 
                                GetPropStateAddon(DiziProps.Strength) +
                                GetWeaponDamage();
@@ -87,7 +88,8 @@ namespace _GameClient.Models
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
         private ConditionPropertySo ConProCfg => Game.Config.AdvCfg.ConditionProperty;
-        internal Dizi(string guid, string name, 
+        internal Dizi(string guid, string name,
+            Gender gender,
             GradeValue<int> strength, 
             GradeValue<int> agility,
             GradeValue<int> hp, 
@@ -99,6 +101,7 @@ namespace _GameClient.Models
         {
             Guid = guid;
             Name = name;
+            Gender = gender;
             Level = level;
             Grade = grade;
             Capable = new Capable(grade, dodgeSlot, combatSlot, bag, strength, agility, hp, mp);

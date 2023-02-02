@@ -4,6 +4,7 @@ using System.Linq;
 using BattleM;
 using Core;
 using UnityEngine;
+using UnityEngine.Analytics;
 using Utls;
 
 namespace Server.Configs.Adventures
@@ -27,10 +28,52 @@ namespace Server.Configs.Adventures
         IConditionValue Emotion { get; }
         IConditionValue Injury { get; }
         IConditionValue Inner { get; }
+        /// <summary>
+        /// 当前武功
+        /// </summary>
+        ICombatSkill CombatSkill { get; }
+        /// <summary>
+        /// 当前内功
+        /// </summary>
+        IForceSkill ForceSkill { get; }
+        /// <summary>
+        /// 当前轻功
+        /// </summary>
+        IDodgeSkill DodgeSkill { get; }
+        /// <summary>
+        /// 当前武器
+        /// </summary>
         IWeapon Weapon { get; }
+        /// <summary>
+        /// 当前防具
+        /// </summary>
         IArmor Armor { get; }
+        Gender Gender { get; }
         int Level { get; }
+        /// <summary>
+        /// 战力
+        /// </summary>
         int Power { get; }
+        /// <summary>
+        /// 当前力量
+        /// </summary>
+        int Strength { get; }
+        /// <summary>
+        /// 当前敏捷
+        /// </summary>
+        int Agility { get; }
+        /// <summary>
+        /// 当前血量
+        /// </summary>
+        int Hp { get; }
+        /// <summary>
+        /// 当前内力
+        /// </summary>
+        int Mp { get; }
+        /// <summary>
+        /// 品阶
+        /// </summary>
+        int Grade { get; }
         IEnumerable<IStacking<IGameItem>> Items { get; }
     }
 

@@ -5,12 +5,14 @@ using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Items;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace Server.Configs.Adventures
 {
     [CreateAssetMenu(fileName = "id_战斗Npc", menuName = "历练/战斗Npc")]
     internal class CombatNpcSo : AutoDashNamingObject
     {
+        [SerializeField] private Gender 性别;
         [SerializeField] private int 力;
         [SerializeField] private int 敏;
         [SerializeField] private int _hp;
@@ -21,6 +23,7 @@ namespace Server.Configs.Adventures
         [SerializeField] private WeaponFieldSo 武器;
         [SerializeField] private ArmorFieldSo 防具;
 
+        internal Gender Gender => 性别;
         internal int Strength => 力;
         internal int Agility => 敏;
         internal int Hp => _hp;

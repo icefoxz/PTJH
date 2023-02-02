@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using _GameClient.Models;
 using BattleM;
 using Core;
 using MyBox;
@@ -217,6 +218,9 @@ namespace Server.Controllers
             public IConditionValue Emotion { get; }
             public IConditionValue Injury { get; }
             public IConditionValue Inner { get; }
+            public ICombatSkill CombatSkill { get; }
+            public IForceSkill ForceSkill { get; }
+            public IDodgeSkill DodgeSkill { get; }
             public IWeapon Weapon { get; }
             public IArmor Armor { get; }
             public int Level { get; }
