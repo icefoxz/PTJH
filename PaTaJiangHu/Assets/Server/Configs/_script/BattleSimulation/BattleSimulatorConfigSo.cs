@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MyBox;
+using Server.Configs.SoUtls;
 using UnityEngine;
 using Utls;
 
@@ -31,8 +31,8 @@ namespace Server.Configs.BattleSimulation
     [CreateAssetMenu(fileName = "模拟战斗配置", menuName = "配置/简易战斗/模拟战斗配置")]
     internal class BattleSimulatorConfigSo : ScriptableObject
     {
-        [SerializeField] private ValueMapping[] _maps;
-        private ValueMapping[] Maps => _maps;
+        [SerializeField] private ValueMapping<int>[] _maps;
+        private ValueMapping<int>[] Maps => _maps;
         private const int LimitedRound = 99;
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace Server.Configs.BattleSimulation
                 {
                     //balance = (int)(1f * playerHp / player.Defend);
                     var remainingHp = (int)playerHp;
-                    return new Outcome(list.ToArray(),remainingHp , playerHp / player.Defend, true, player.Offend,
-                        enemy.Offend, player.Defend, enemy.Defend,GetValueFromRemaining(remainingHp));
+                    return new Outcome(list.ToArray(), remainingHp, playerHp / player.Defend, true, player.Offend,
+                        enemy.Offend, player.Defend, enemy.Defend, GetValueFromRemaining(remainingHp));
                 }
 
                 if (playerHp <= 0)
@@ -87,31 +87,15 @@ namespace Server.Configs.BattleSimulation
         }
         private int GetValueFromRemaining(int hp)
         {
+            if (hp <= 0)
+            {
+                XDebug.LogWarning($"弟子Hp异常 = {hp}!");
+                hp = 0;
+            }
             var m = Maps.Where(m => m.IsInCondition(hp))
                 .RandomPick();
             return m.Value;
         }
-
-        [Serializable] private class ValueMapping
-        {
-            private bool AutoName()
-            {
-                _name = $"{From}%~{To}%:{Value}";
-                return true;
-            }
-
-            [ConditionalField(true, nameof(AutoName))][ReadOnly][SerializeField] private string _name;
-            [SerializeField] private int 从;
-            [SerializeField] private int 至;
-            [SerializeField] private int 值;
-
-            private int From => 从;
-            private int To => 至;
-            public int Value => 值;
-
-            public bool IsInCondition(int value) => value >= From && value <= To;
-        }
-
 
         public record Round : ISimulationRound
         {
