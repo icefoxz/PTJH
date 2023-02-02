@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using BattleM;
 using Core;
 using Server.Configs.Adventures;
+using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Items;
 using Server.Configs.Skills;
@@ -37,12 +38,15 @@ namespace _GameClient.Models
         public int Level { get; private set; }
         public IConditionValue Exp => _exp;
 
-        public int Power { get; }
+        public int Power => ConProCfg.GetPower(Strength, Agility, WeaponPower, ArmorPower,
+            CombatSkill?.Grade ?? 0, CombatSkill?.Level ?? 0,
+            ForceSkill?.Grade ?? 0, ForceSkill?.Level ?? 0,
+            DodgeSkill?.Grade ?? 0, DodgeSkill?.Level ?? 0);
         public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
-        public int Grade { get; private set; }
-        public ICombatSkill CombatSkill { get; set; }
-        public IForceSkill ForceSkill { get; set; }
-        public IDodgeSkill DodgeSkill { get; set; }
+        public int Grade { get; }
+        public ICombatSkill CombatSkill { get; private set; }
+        public IForceSkill ForceSkill { get; private set; }
+        public IDodgeSkill DodgeSkill { get; private set; }
         public IWeapon Weapon { get; private set; }
         public IArmor Armor { get; private set; }
 
@@ -82,7 +86,7 @@ namespace _GameClient.Models
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
-
+        private ConditionPropertySo ConProCfg => Game.Config.AdvCfg.ConditionProperty;
         internal Dizi(string guid, string name, 
             GradeValue<int> strength, 
             GradeValue<int> agility,
