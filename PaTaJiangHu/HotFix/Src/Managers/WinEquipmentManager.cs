@@ -15,13 +15,20 @@ public class WinEquipmentManager
 {
     private View_winEquipment WinEquipment { get; set; }
     private DiziController DiziController { get; set; }
+    private DiziAdvController DiziAdvController { get; set; }
     public void Init()
     {
         DiziController = Game.Controllers.Get<DiziController>();
         Game.UiBuilder.Build("view_winEquipment", v =>
         {
             WinEquipment = new View_winEquipment(v,
-                (guid, index, itemType) => DiziController.DiziEquip(guid, index, itemType),
+                (guid, index, itemType) => 
+                {
+                    if(itemType == 2)
+                        DiziAdvController.SetDiziAdvItem(guid, index, itemType);
+                    else
+                        DiziController.DiziEquip(guid, index, itemType);
+                },
                 (guid, itemType) => DiziController.DiziUnEquipItem(guid, itemType));
             Game.MainUi.SetWindow(v, resetPos: true);
         }, RegEvents);
@@ -39,10 +46,17 @@ public class WinEquipmentManager
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => 
         {
             WinEquipment.OnItemEquipped();
+            Game.MainUi.HideWindows();
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag =>
         {
             WinEquipment.OnItemUnequipped();
+        });
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotManagement, bag =>
+        {
+            var guid = bag.Get<string>(0);
+            WinEquipment.Set(guid, 2); //advitems
+            Game.MainUi.ShowWindow(WinEquipment.View);
         });
     }
     
@@ -52,17 +66,22 @@ public class WinEquipmentManager
         {
             Weapon,
             Armor,
-            Medicine,
-            Horse,
+            AdvItems
         }
         private Button Btn_x { get; }
         private ScrollRect Scroll_items { get; }
         private Button Btn_unequip { get; }
         private Button Btn_equip { get; }
-
+        private Text Text_drop { get; }
+        private Text Text_use { get; }
+        private Text Text_unequip { get; }
+        private Text Text_equip { get; }
         private ListViewUi<Prefab_Item> ItemView { get; }
 
-        public View_winEquipment(IView v, Action<string,int,int> onEquip, Action<string,int> onUnequip) : base(v.GameObject, false)
+        public View_winEquipment(IView v, 
+            Action<string,int,int> onEquip,
+            Action<string,int> onUnequip)
+            : base(v.GameObject, false)
         {
             Btn_x = v.GetObject<Button>("btn_x");
             Btn_x.OnClickAdd(() =>
@@ -85,6 +104,10 @@ public class WinEquipmentManager
                 onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType);
                 ListItems((ItemTypes)SelectedType);
             });//装备按键
+            Text_drop = v.GetObject<Text>("text_drop");
+            Text_use = v.GetObject<Text>("text_use");
+            Text_unequip = v.GetObject<Text>("text_unequip");
+            Text_equip = v.GetObject<Text>("text_euip");
         }
 
         public void OnItemEquipped()
@@ -103,6 +126,7 @@ public class WinEquipmentManager
             foreach (var ui in ItemView.List) ui.SetEquipped(false);
         }
 
+
         private string SelectedDiziGuid { get; set; }
         private int SelectedItemIndex { get; set; }
         private int SelectedType { get; set; }
@@ -116,6 +140,13 @@ public class WinEquipmentManager
             ListItems(item);
         }
 
+        public void SetEquipmentText(bool isEquipment)
+        {
+            Text_equip.gameObject.SetActive(isEquipment);
+            Text_unequip.gameObject.SetActive(isEquipment);
+            Text_drop.gameObject.SetActive(!isEquipment);
+            Text_use.gameObject.SetActive(!isEquipment);
+        }
 
         private void ListItems(ItemTypes type)
         {
@@ -132,6 +163,7 @@ public class WinEquipmentManager
                     {
                         var item = faction.Weapons[i];
                         items.Add((item.Name, i));
+                        SetEquipmentText(true);
                     }
                     break;
                 case ItemTypes.Armor:
@@ -141,6 +173,16 @@ public class WinEquipmentManager
                     {
                         var item = faction.Armors[i];
                         items.Add((item.Name, i));
+                        SetEquipmentText(true);
+                    }
+                    break;
+                case ItemTypes.AdvItems:
+                    var advitems = faction.GetAllSupportedAdvItems();
+                    for (var i = 0; i < advitems.Length; i++)
+                    {
+                        var item = advitems[i];
+                        items.Add((item.Name, i));
+                        SetEquipmentText(false);
                     }
                     break;
                 default:
