@@ -126,7 +126,7 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// 根据当前走过的路段触发响应的故事点, 返回故事是否继续
+        /// 根据当前走过的路段触发响应的故事点, 返回故事是否结束
         /// </summary>
         /// <param name="mapId"></param>
         /// <param name="now"></param>
@@ -139,16 +139,17 @@ namespace Server.Controllers
             if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return true;//返回故事继续
             var places = GetMap(mapId).PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
             if (places.Length <= 0) return true; //返回故事继续
-            for (int i = 0; i < places.Length; i++) //为每一个故事地点获取一个故事
+            for (var i = 0; i < places.Length; i++) //为每一个故事地点获取一个故事
             {
                 var place = places[i];
-                var (advLogs, forceExit) = await ProcessStory(place, now, toMiles, dizi);
+                var story = await ProcessStory(place, now, toMiles, dizi);
                 //当获取到地点, 执行故事
-                foreach (var story in advLogs) 
-                    dizi.AdventureStoryLogging(story);
-
-                if (forceExit || dizi.Stamina.Con.IsExhausted) //当弟子体力=0
-                    return true; //返回故事结束
+                dizi.AdventureStoryLogging(story.AdvLog);
+                if (story.IsAdvFailed || dizi.Stamina.Con.IsExhausted) //当历练失败
+                {
+                    //执行历练失败的处罚
+                }
+                if (story.IsForceQuit) return true;//结束故事
             }
             return false;//返回故事继续
         }
@@ -169,15 +170,13 @@ namespace Server.Controllers
         }
 
         //获取故事信息
-        private async Task<(DiziAdvLog[],bool)> ProcessStory(IAdvPlace place, long nowTicks, int updatedMiles, Dizi dizi)
+        private async Task<StoryHandler> ProcessStory(IAdvPlace place, long nowTicks, int updatedMiles, Dizi dizi)
         {
-            var advLogs = new List<DiziAdvLog>();
             var story = place.WeighPickStory(); //根据权重随机故事
-            var eventHandler = new AdvEventHandler(BattleSimulation, ConditionProperty, dizi.Adventure); //生成事件处理器
+            var eventHandler = new AdvEventMiddleware(BattleSimulation, ConditionProperty, dizi.Adventure); //生成事件处理器
             var storyHandler = new StoryHandler(story, eventHandler); //生成故事处理器
-            var (handledStory, forceExit) = await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
-            advLogs.Add(handledStory);
-            return (advLogs.ToArray(), forceExit);
+            await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
+            return storyHandler;
         }
 
         //计算出间隔里数
@@ -204,36 +203,52 @@ namespace Server.Controllers
 
             private IAdvStory Story { get; }
             private IAdvEvent CurrentEvent { get; set; }
-            private AdvEventHandler EventHandler { get; }
+            private AdvEventMiddleware EventMiddleware { get; }
             private TaskCompletionSource<IAdvEvent> OnNextEventTask { get; set; }
+            public bool IsAdvFailed { get; private set; }//是否历练强制失败
+            public bool IsForceQuit { get; private set; }//强制历练结束
+            public DiziAdvLog AdvLog { get; private set; }//故事信息
 
-            public StoryHandler(IAdvStory story, AdvEventHandler eventHandler)
+            public StoryHandler(IAdvStory story, AdvEventMiddleware eventMiddleware)
             {
                 Story = story;
                 CurrentEvent = Story.StartAdvEvent;
-                EventHandler = eventHandler;
+                EventMiddleware = eventMiddleware;
             }
 
-            public async Task<(DiziAdvLog, bool)> Invoke(Dizi dizi, long nowTicks, int updatedMiles)
+            public async Task Invoke(Dizi dizi, long nowTicks, int updatedMiles)
             {
                 var diziExhausted = false;
-                while (CurrentEvent != null && CurrentEvent.AdvType != AdvTypes.Quit)
+                while (CurrentEvent != null)
                 {
                     if (_recursiveIndex >= RecursiveLimit)
                         throw new StackOverflowException($"故事{Story.Name} 死循环!检查其中事件{CurrentEvent.name}");
                     //如果强制退出事件
                     diziExhausted = Story.HaltOnExhausted && dizi.Stamina.Con.IsExhausted;
-                    if (diziExhausted) break;
+                    if (diziExhausted)
+                    {
+                        IsAdvFailed = true;
+                        IsForceQuit = true;
+                        break;
+                    }
+                    if (CurrentEvent is AdvQuitEventSo q)
+                    {
+                        IsAdvFailed = q.IsAdvFailed;
+                        IsForceQuit = q.IsForceQuit;
+                        break;
+                    }
                     CurrentEvent.OnLogsTrigger += OnLogsTrigger;
                     CurrentEvent.OnNextEvent += OnNextEventTrigger;
                     OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
-                    EventHandler.Invoke(CurrentEvent, dizi);
+                    EventMiddleware.Invoke(CurrentEvent, dizi);
                     var nextEvent = await OnNextEventTask.Task;
                     CurrentEvent = nextEvent;
                     _recursiveIndex++;
                 }
-                return (new DiziAdvLog(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles), diziExhausted);
+
+                AdvLog = new DiziAdvLog(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles);
             }
+
 
             private void OnNextEventTrigger(IAdvEvent nextEvent)
             {
@@ -247,13 +262,13 @@ namespace Server.Controllers
                 Messages.AddRange(logs);
             }
         }
-        // 历练事件处理器
-        private class AdvEventHandler
+        // 历练事件处理器中间件
+        private class AdvEventMiddleware
         {
             private BattleSimulatorConfigSo Simulator { get; }
             private ConditionPropertySo Cfg { get; }
             private IRewardReceiver Receiver { get; }
-            public AdvEventHandler(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg, IRewardReceiver receiver)
+            public AdvEventMiddleware(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg, IRewardReceiver receiver)
             {
                 Simulator = simulator;
                 Cfg = cfg;
@@ -268,7 +283,6 @@ namespace Server.Controllers
                     case AdvTypes.Option:
                     case AdvTypes.Battle:
                         throw new NotSupportedException($"历练不支持事件={advEvent.AdvType}!");
-                    case AdvTypes.Quit:
                     case AdvTypes.Story:
                     case AdvTypes.Dialog:
                     case AdvTypes.Pool:
@@ -296,6 +310,7 @@ namespace Server.Controllers
                         }
                         arg.SetSimulationOutcome(outcome);
                         break;
+                    case AdvTypes.Quit://结束事件由故事处理器处理
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

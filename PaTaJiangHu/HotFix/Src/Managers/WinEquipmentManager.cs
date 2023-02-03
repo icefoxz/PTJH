@@ -197,7 +197,7 @@ public class WinEquipmentManager
                     for (var i = 0; i < advitems.Length; i++)
                     {
                         var item = advitems[i];
-                        items.Add((item.Name, i));
+                        items.Add((item.Item.Name, i));
                         SetEquipmentText(false);
                     }
                     break;
