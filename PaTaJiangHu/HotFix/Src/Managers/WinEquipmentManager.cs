@@ -7,6 +7,7 @@ using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
 namespace HotFix_Project.Managers;
@@ -23,14 +24,22 @@ public class WinEquipmentManager
         Game.UiBuilder.Build("view_winEquipment", v =>
         {
             WinEquipment = new View_winEquipment(v,
-                (guid, index, itemType) => 
+                (guid, index, itemType) =>
                 {
-                    if(itemType == 2)
+                    if (itemType == 2)
                         DiziAdvController.SetDiziAdvItem(guid, index);
                     else
                         DiziController.DiziEquip(guid, index, itemType);
                 },
-                (guid, itemType) => DiziController.DiziUnEquipItem(guid, itemType));
+                (guid, index, itemType) => 
+                {
+                    if (itemType == 2)
+                        XDebug.LogWarning($"卸下弟子历炼道具(未完成)，slot{index}");
+                    else
+                        DiziController.DiziUnEquipItem(guid, itemType);
+
+                    
+                });
             Game.MainUi.SetWindow(v, resetPos: true);
         }, RegEvents);
     }
@@ -46,18 +55,23 @@ public class WinEquipmentManager
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => 
         {
-            WinEquipment.OnItemEquipped();
+            WinEquipment.UpdateItemList();
             Game.MainUi.HideWindows();
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag =>
         {
-            WinEquipment.OnItemUnequipped();
+            WinEquipment.UpdateItemList();
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotManagement, bag =>
         {
             var guid = bag.Get<string>(0);
             WinEquipment.Set(guid, 2); //advitems
             Game.MainUi.ShowWindow(WinEquipment.View);
+        });
+        Game.MessagingManager.RegEvent(EventString.Faction_AdvItemsUpdate, bag =>
+        {
+            WinEquipment.UpdateItemList();
+            Game.MainUi.HideWindows();
         });
     }
     
@@ -81,7 +95,7 @@ public class WinEquipmentManager
 
         public View_winEquipment(IView v, 
             Action<string,int,int> onEquip,
-            Action<string,int> onUnequip)
+            Action<string,int,int> onUnequip)
             : base(v.GameObject, false)
         {
             Btn_x = v.GetObject<Button>("btn_x");
@@ -95,7 +109,7 @@ public class WinEquipmentManager
             Btn_unequip.OnClickAdd(() =>
             {
                 if (!IsDiziEquipped) return;
-                onUnequip?.Invoke(SelectedDiziGuid, SelectedType);
+                onUnequip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType);
                 ListItems((ItemTypes)SelectedType);
             });
             Btn_equip = v.GetObject<Button>("btn_equip");
@@ -111,20 +125,15 @@ public class WinEquipmentManager
             Text_equip = v.GetObject<Text>("text_euip");
         }
 
-        public void OnItemEquipped()
+        public void UpdateItemList()
         {
-            ListItems((ItemTypes)SelectedType);
-            for (var index = 0; index < ItemView.List.Count; index++)
+            var type = (ItemTypes)SelectedType;
+            ListItems(type);
+            for (int i = 0; i < ItemView.List.Count; i++)
             {
-                var ui = ItemView.List[index];
+                var ui = ItemView.List[i];
                 ui.SetEquipped(ui.ItemIndex == -1);
             }
-        }
-
-        public void OnItemUnequipped()
-        {
-            ListItems((ItemTypes)SelectedType);
-            foreach (var ui in ItemView.List) ui.SetEquipped(false);
         }
 
 
@@ -179,6 +188,12 @@ public class WinEquipmentManager
                     break;
                 case ItemTypes.AdvItems:
                     var advitems = faction.GetAllSupportedAdvItems();
+                    for(var i = 0; i < advitems.Length; i++)
+                    {
+                        IsDiziEquipped = selectedDizi.AdvItems[i] != null;
+                        if (IsDiziEquipped) items.Add((selectedDizi.AdvItems[i].Item.Name, -1));
+                        //Debug.Log(selectedDizi.AdvItems[0].Item.Name);
+                    }
                     for (var i = 0; i < advitems.Length; i++)
                     {
                         var item = advitems[i];
