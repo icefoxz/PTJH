@@ -174,6 +174,7 @@ public class DiziAdvManager
             {
                 ElementMgr.SetConValue(co, con.Value, con.Max);
                 ElementMgr.SetConTitle(co, title);
+                ElementMgr.SetColor(co, color);
             }
         }
 
@@ -246,12 +247,17 @@ public class DiziAdvManager
             private Text Text_value { get; }
             private Text Text_max { get; }
             private Text Text_title { get; }
+            private Image BgImg { get; }
+            private Image HandleImg { get; }
+
             public Element_con(IView v) : base(v.GameObject, true)
             {
                 Scrbar_condition = v.GetObject<Scrollbar>("scrbar_condition");
                 Text_value = v.GetObject<Text>("text_value");
                 Text_max = v.GetObject<Text>("text_max");
                 Text_title = v.GetObject<Text>("text_title");
+                BgImg = Scrbar_condition.GetComponent<Image>();
+                HandleImg = Scrbar_condition.image;
             }
             public void SetTitle(string title)
             {
@@ -262,6 +268,11 @@ public class DiziAdvManager
                 Text_value.text = value.ToString();
                 Text_max.text = max.ToString();
                 Scrbar_condition.size = 1f * value / max;
+            }
+            public void SetColor(Color color)
+            {
+                HandleImg.color = color;
+                BgImg.color = new Color(color.r - 0.7f, color.g - 0.7f, color.b - 0.7f);
             }
         }
         private class View_advLayout : UiBase
@@ -625,6 +636,8 @@ public class DiziAdvManager
                 var conUi = GetConditionUi(con);
                 conUi.SetTitle(title);
             }
+
+            public void SetColor(Conditions con, Color color) => GetConditionUi(con).SetColor(color);
 
             private Element_con GetConditionUi(Conditions con) =>
                 con switch
