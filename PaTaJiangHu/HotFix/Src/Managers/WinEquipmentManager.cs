@@ -162,27 +162,27 @@ public class WinEquipmentManager
         {
             var faction = Game.World.Faction;
             var selectedDizi = Game.World.Faction.GetDizi(SelectedDiziGuid);
-            var items = new List<(string name,int factionIndex)>();
+            var items = new List<(string name,int factionIndex, int amount)>();
             IsDiziEquipped = false;
             switch (type)
             {
                 case ItemTypes.Weapon:
                     IsDiziEquipped = selectedDizi.Weapon != null;
-                    if (IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, -1));
+                    if (IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, -1, 1));
                     for (var i = 0; i < faction.Weapons.Count; i++)
                     {
                         var item = faction.Weapons[i];
-                        items.Add((item.Name, i));
+                        items.Add((item.Name, i, 1));
                         SetEquipmentText(true);
                     }
                     break;
                 case ItemTypes.Armor:
                     IsDiziEquipped = selectedDizi.Armor != null;
-                    if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, -1));
+                    if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, -1, 1));
                     for (var i = 0; i < faction.Armors.Count; i++)
                     {
                         var item = faction.Armors[i];
-                        items.Add((item.Name, i));
+                        items.Add((item.Name, i, 1));
                         SetEquipmentText(true);
                     }
                     break;
@@ -191,13 +191,13 @@ public class WinEquipmentManager
                     for(var i = 0; i < advitems.Length; i++)
                     {
                         IsDiziEquipped = selectedDizi.AdvItems[i] != null;
-                        if (IsDiziEquipped) items.Add((selectedDizi.AdvItems[i].Item.Name, -1));
-                        //Debug.Log(selectedDizi.AdvItems[0].Item.Name);
+                        if (IsDiziEquipped) items.Add((selectedDizi.AdvItems[i].Item.Name, -1, 1));
                     }
                     for (var i = 0; i < advitems.Length; i++)
                     {
-                        var item = advitems[i];
-                        items.Add((item.Item.Name, i));
+                        var item = advitems[i].Item.Name;
+                        var itemAmount = advitems[i].Amount;
+                        items.Add((item, i, itemAmount));
                         SetEquipmentText(false);
                     }
                     break;
@@ -211,7 +211,7 @@ public class WinEquipmentManager
                 var index = i;
                 var ui = ItemView.Instance(v => new Prefab_Item(v, () => OnSelectedItem(index), item.factionIndex));
                 ui.SetEquipped(IsDiziEquipped && index == 0);
-                ui.SetName(item.name);
+                ui.SetText(item.name, item.amount);
             }
             SelectedItemIndex = -1;
             OnSelectedItem(SelectedItemIndex);
@@ -240,6 +240,7 @@ public class WinEquipmentManager
             private Image Img_item { get; }
             private Image Img_equipped { get; }
             private Text Text_name { get; }
+            private Text Text_amount { get; }
             private Button SelectBtn { get; }
             public int ItemIndex { get; }
 
@@ -251,6 +252,7 @@ public class WinEquipmentManager
                 Img_item = v.GetObject<Image>("img_item");
                 Img_equipped = v.GetObject<Image>("img_equipped");
                 Text_name = v.GetObject<Text>("text_name");
+                Text_amount = v.GetObject<Text>("text_amount");
                 SelectBtn = v.GameObject.GetComponent<Button>();
                 SelectBtn.OnClickAdd(onclickAction);
                 SetDefault();
@@ -269,9 +271,11 @@ public class WinEquipmentManager
                 Img_item.sprite = item;
                 Img_equipped.sprite = equipped;
             }
-            public void SetName(string name)
+            public void SetText(string name, int amount)
             {
                 Text_name.text = name;
+                Text_amount.text = amount.ToString();
+                Text_amount.gameObject.SetActive(amount > 1);
             }
 
             public void SetEquipped(bool isEquipped)
