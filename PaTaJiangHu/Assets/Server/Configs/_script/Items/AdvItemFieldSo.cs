@@ -19,7 +19,7 @@ namespace Server.Configs.Items
         private bool Percentage => 是百分比;
         public int Value => 体力恢复;
         public string About => 说明;
-        public ItemType Type => ItemType.AdvItems;
+        public ItemType Type => ItemType.AdvProps;
         public int Price => 价钱;
 
         public int GetValue(int max)

@@ -15,6 +15,7 @@ namespace _GameClient.Models
         int Silver { get; }
         int YuanBao { get; }
         int ActionLing { get; }
+        int ActionLingMax { get; }
         IReadOnlyList<IWeapon> Weapons { get; }
         IReadOnlyList<IArmor> Armors { get; }
         ICollection<Dizi> DiziList { get; }
@@ -31,11 +32,13 @@ namespace _GameClient.Models
         private List<IWeapon> _weapons= new List<IWeapon>();
         private List<IArmor> _armors = new List<IArmor>();
         private List<IAdvPackage> _packages = new List<IAdvPackage>();
-        private List<IGameItem> _advItems = new List<IGameItem>();
+        private List<IGameItem> _advProps = new List<IGameItem>();
         private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
+
         public int ActionLing { get; private set; }
+        public int ActionLingMax { get; }
         public int MaxDizi { get; private set; } = 10;
         /// <summary>
         /// key = dizi.Guid, value = dizi
@@ -46,19 +49,22 @@ namespace _GameClient.Models
         public ICollection<Dizi> DiziList => DiziMap.Values;
         public IReadOnlyList<IAdvPackage> Packages => _packages;
         public IReadOnlyList<IBook> Books => _books;
-        public IReadOnlyList<IGameItem> AdvItems => _advItems;
-        public IGameItem[] GetAllSupportedAdvItems() => Medicines
+        public IReadOnlyList<IGameItem> AdvProps => _advProps;
+
+        public IStacking<IGameItem>[] GetAllSupportedAdvItems() => Medicines
             .Where(m => m.Key.Kind == MedicineKinds.StaminaDrug)
-            .Select(m => m.Key).Concat(AdvItems).ToArray();
+            .Select(m => new Stacking<IGameItem>(m.Key, m.Value))
+            .Concat(AdvProps.Select(p => new Stacking<IGameItem>(p, 1))).ToArray();
 
         public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
 
-        internal Faction(int silver, int yuanBao, int actionLing, List<Dizi> diziMap)
+        internal Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap)
         {
             DiziMap = diziMap.ToDictionary(d => d.Guid.ToString(), d => d);
             Silver = silver;
             YuanBao = yuanBao;
             ActionLing = actionLing;
+            ActionLingMax = actionLingMax;
         }
 
         internal void AddDizi(Dizi dizi)
@@ -95,33 +101,9 @@ namespace _GameClient.Models
         {
             var last = ActionLing;
             ActionLing += ling;
+            ActionLing = Math.Clamp(ActionLing, 0, ActionLingMax);
             Log($"行动令【{last}】增加了{ling},总:【{ActionLing}】");
             SendEvent(EventString.Faction_Params_ActionLingUpdate, ActionLing, 100, 0, 0);
-        }
-
-        public class Dto
-        {
-            public int Silver { get; set; }
-            public int YuanBao { get; set; }
-            public int ActionLing { get; set; }
-            public int ActionLingMax { get; set; }
-
-            public Dto() { }
-
-            public Dto(Faction f)
-            {
-                Silver = f.Silver;
-                YuanBao = f.YuanBao;
-                ActionLing = f.ActionLing;
-                ActionLingMax = 100;
-            }
-            public Dto(int silver, int yuanBao, int actionLing, int actionLingMax)
-            {
-                Silver = silver;
-                YuanBao = yuanBao;
-                ActionLing = actionLing;
-                ActionLingMax = actionLingMax;
-            }
         }
 
         internal void AddWeapon(IWeapon weapon)
@@ -176,7 +158,7 @@ namespace _GameClient.Models
         /// </summary>
         /// <param name="gi"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void AddGameItem(IStacking<IGameItem> gi)
+        internal void AddGameItem(IStacking<IGameItem> gi)
         {
             var data = Game.Controllers.Get<DataController>();
             switch (gi.Item.Type)
@@ -207,8 +189,54 @@ namespace _GameClient.Models
                 case ItemType.Book:
                     AddBook(data.GetBook(gi.Item.Id));
                     break;
-                case ItemType.AdvItems:
-                    AddAdvItem(data.GetAdvItem(gi.Item.Id));
+                case ItemType.AdvProps:
+                    AddAdvItem(data.GetAdvProp(gi.Item.Id));
+                    break;
+                case ItemType.StoryProps:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        /// <summary>
+        /// 给门派加物件
+        /// </summary>
+        /// <param name="gi"></param>
+        /// <param name="amount"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        internal void RemoveGameItem(IGameItem gi, int amount)
+        {
+            var data = Game.Controllers.Get<DataController>();
+            switch (gi.Type)
+            {
+                case ItemType.Medicine:
+                    RemoveMedicine(data.GetMedicine(gi.Id), amount);
+                    break;
+                case ItemType.Equipment:
+                    var equipment = gi as IEquipment;
+                    if (equipment == null) XDebug.LogError($"物件{gi.Id}.{gi.Name} 未继承<IEquipment>");
+                    for (var i = 0; i < amount; i++)
+                    {
+                        switch (equipment.EquipKind)
+                        {
+                            case EquipKinds.Weapon:
+                                var weapon = data.GetWeapon(gi.Id);
+                                RemoveWeapon(weapon);
+                                break;
+                            case EquipKinds.Armor:
+                                var armor = data.GetArmor(gi.Id);
+                                RemoveArmor(armor);
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    break;
+                case ItemType.Book:
+                    RemoveBook(data.GetBook(gi.Id));
+                    break;
+                case ItemType.AdvProps:
+                    RemoveAdvItem(data.GetAdvProp(gi.Id));
                     break;
                 case ItemType.StoryProps:
                 default:
@@ -218,7 +246,7 @@ namespace _GameClient.Models
 
         internal void AddAdvItem(IGameItem item)
         {
-            _advItems.Add(item);
+            _advProps.Add(item);
             SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"添加历练道具: {item.Id}.{item.Name}");
         }
@@ -236,7 +264,7 @@ namespace _GameClient.Models
         }
         internal void RemoveAdvItem(IGameItem item)
         {
-            _advItems.Remove(item);
+            RemoveGameItem(item, 1);//移除道具将直接执行gameItem移除
             SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"移除历练道具: {item.Id}.{item.Name}");
         }

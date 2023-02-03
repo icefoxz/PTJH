@@ -46,12 +46,12 @@ namespace Server.Controllers
         public void SetDiziAdvItem(string guid,int slot)
         {
             var dizi = Faction.GetDizi(guid);
-            var items = Faction.GetAllSupportedAdvItems();
-            var item = items[slot];
-            Faction.RemoveAdvItem(item);
+            var stackings = Faction.GetAllSupportedAdvItems();
+            var stack = stackings[slot];
+            Faction.RemoveAdvItem(stack.Item);
             var replaceItem = dizi.AdvItems[slot];
             if (replaceItem != null) Faction.AddAdvItem(replaceItem.Item);
-            dizi.SetAdvItem(slot, item);
+            dizi.SetAdvItem(slot, stack.Item);
         }
         //历练开始s
         public void AdventureStart(string guid,int mapId)

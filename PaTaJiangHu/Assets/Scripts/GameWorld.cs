@@ -18,6 +18,6 @@ public class GameWorld
     public void SetFaction(Faction faction)
     {
         _faction = faction;
-        Game.MessagingManager.Send(eventName: EventString.Faction_Init, obj: new Faction.Dto(f: _faction));
+        Game.MessagingManager.Send(eventName: EventString.Faction_Init, string.Empty);
     }
 }

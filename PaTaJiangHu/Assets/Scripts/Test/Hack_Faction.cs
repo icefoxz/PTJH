@@ -1,6 +1,7 @@
 ﻿using System;
 using _GameClient.Models;
 using System.Collections.Generic;
+using MyBox;
 using Server.Configs.Items;
 using UnityEditor;
 using UnityEngine;
@@ -21,14 +22,15 @@ namespace Test
         public static void TestFaction()
         {
             XDebug.Log("TestFaction Init!");
-            Game.World.SetFaction(new Faction(silver: 10000, yuanBao: 500, actionLing: 1, diziMap: new List<Dizi>()));
+            Game.World.SetFaction(new Faction(silver: 10000, yuanBao: 500, actionLing: 1, actionLingMax: 100,
+                diziMap: new List<Dizi>()));
         }
         public void AddItemToFaction()
         {
             var faction = Game.World.Faction;
             AddItem(Weapons, i => faction.AddWeapon(i.Instance()));
             AddItem(Armors, i => faction.AddArmor(i.Instance()));
-            AddItem(Medicines, i => faction.AddMedicine(i, 1));
+            Medicines.ForEach(i => faction.AddMedicine(i.Item, i.Amount));
         }
 
         private void AddItem<T>(ItemToAdd<T>[] items, Action<T> addAction) where T : ScriptableObject

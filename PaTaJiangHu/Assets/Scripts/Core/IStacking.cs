@@ -26,7 +26,7 @@ namespace Core
         /// <summary>
         /// 历练道具
         /// </summary>
-        AdvItems,
+        AdvProps,
     }
 
     /// <summary>

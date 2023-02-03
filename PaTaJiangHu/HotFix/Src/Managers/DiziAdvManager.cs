@@ -130,7 +130,7 @@ public class DiziAdvManager
             var guid = bag.Get<string>(0);
             var dizi = Game.World.Faction.GetDizi(guid);
             SelectedDizi = dizi;
-            SetDizi(dizi);
+            Update();
         }
         public void Update()
         {
@@ -143,7 +143,6 @@ public class DiziAdvManager
             if (SelectedDizi.Guid == diziGuid) 
                 AdvLayoutView.UpdateSlot(SelectedDizi);
         }
-
         private void SetDizi(Dizi dizi)
         {
             SetDiziElements(dizi);

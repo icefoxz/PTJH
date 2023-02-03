@@ -24,7 +24,7 @@ public class FactionInfoManager
         Game.MessagingManager.RegEvent(EventString.Faction_Init,
             bag =>
             {
-                FactionInfoUi.SetFaction(bag.Get<Faction.Dto>(0));
+                FactionInfoUi.SetFaction();
                 FactionInfoUi.Display(true);
             });
         Game.MessagingManager.RegEvent(EventString.Faction_SilverUpdate,
@@ -47,11 +47,12 @@ public class FactionInfoManager
             Element_Yuanbao = new Element(v.GetObject<View>("element_yuanbao"));
             ActionToken = new View_actionToken(v.GetObject<View>("view_actionToken"));
         }
-        public void SetFaction(Faction.Dto f)
+        public void SetFaction()
         {
+            var f = Game.World.Faction;
             Element_Silver.SetText(f.Silver.ToString());
             Element_Yuanbao.SetText(f.YuanBao.ToString());
-            ActionToken.SetToken(f.ActionLing, f.ActionLingMax);
+            ActionToken.SetToken(f.ActionLing, f.ActionLing);
         }
 
         public void SetSilver(int silver) => Element_Silver.SetText(silver.ToString());

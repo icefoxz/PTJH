@@ -367,7 +367,7 @@ namespace _GameClient.Models
             {
                 ItemType.Medicine => Kinds.Medicine,
                 ItemType.StoryProps => Kinds.StoryProp,
-                ItemType.AdvItems => Kinds.Horse,
+                ItemType.AdvProps => Kinds.Horse,
                 _ => throw new ArgumentOutOfRangeException($"物品{item.Type}不支持! ")
             };
             Item = item;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using _GameClient.Models;
 using BattleM;
 using UnityEngine;
-using UnityEngine.Events;
 
 // 门派数据So
 internal class FactionDataSo : ScriptableObject, IFaction
@@ -18,6 +17,7 @@ internal class FactionDataSo : ScriptableObject, IFaction
     public int Silver => 银两;
     public int YuanBao => 元宝;
     public int ActionLing => 行动令;
+    public int ActionLingMax { get; } = 100;
     private Dictionary<string, Dizi> DiziMap => 弟子;
     public IReadOnlyList<IWeapon> Weapons => 武器;
     public IReadOnlyList<IArmor> Armors => 防具;

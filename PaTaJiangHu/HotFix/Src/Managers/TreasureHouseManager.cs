@@ -155,14 +155,14 @@ public class TreasureHouseManager
                             items.Add((item.med.Name, string.Empty, 1));
                         }
                         break;
-                    case TreasureTypes.Adventure: //暂时用防具数据
-                        for (var i = 0; i < faction.AdvItems.Count; i++)
+                    case TreasureTypes.Adventure: 
+                        for (var i = 0; i < faction.AdvProps.Count; i++)
                         {
-                            var item = faction.AdvItems;
+                            var item = faction.AdvProps;
                             items.Add(("", string.Empty, 1));
                         }
                         break;
-                    case TreasureTypes.Reward: //暂时用防具数据
+                    case TreasureTypes.Reward: 
                         for (var i = 0; i < faction.Packages.Count; i++)
                         {
                             var item = faction.Packages;
