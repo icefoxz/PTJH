@@ -26,14 +26,14 @@ internal class TestAutoAdvManager
         Game.UiBuilder.Build("test_autoAdv",
             v =>
             {
-                AutoAdv = new Test_AutoAdv(v, () => AdvController.AdventureStart(DiziGuid),
-                    mile =>
+                AutoAdv = new Test_AutoAdv(v, () => AdvController.AdventureStart(DiziGuid,0),
+                    mile=>
                     {
                         var dizi = Game.World.Faction.GetDizi(DiziGuid);
                         var lastMile = dizi.Adventure is { State: AutoAdventure.States.Progress }
                             ? dizi.Adventure.LastMile
                             : 0;
-                        AdvController.OnMileTrigger(SysTime.UnixNow, lastMile, mile, DiziGuid);
+                        AdvController.OnMileTrigger(0,SysTime.UnixNow, lastMile, mile, DiziGuid);
 
                     }, () => AdvController.AdventureRecall(DiziGuid));
             },RegEvent);
@@ -50,8 +50,8 @@ internal class TestAutoAdvManager
         {
             AutoAdv.Display(true);
             AutoAdv.ClearMessages();
-            var major = AdvController.GetMajorMiles();
-            var minor = AdvController.GetMinorMiles(DiziGuid);
+            var major = AdvController.GetMajorMiles(0);
+            var minor = AdvController.GetMinorMiles(0);
             AutoAdv.UpdateMiles(major.Concat(minor).Distinct().ToArray());
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_EventMessage, bag =>

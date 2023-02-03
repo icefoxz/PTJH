@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using _GameClient.Models;
 using HotFix_Project.Serialization;
+using Server.Configs.Adventures;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
@@ -31,9 +32,9 @@ public class DiziAdvManager
     {
         Game.UiBuilder.Build("view_diziAdv", v =>
         {
-            DiziAdv = new View_diziAdv(v: v,
+            DiziAdv = new View_diziAdv(v: v, DiziAdvController,
                 onItemSelectAction: (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
-                onAdvStartAction: guid => DiziAdvController.AdventureStart(guid),
+                onAdvStartAction: (guid, index) => DiziAdvController.AdventureStart(guid, index),
                 onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
                 onDiziFinalizeAction: guid => DiziAdvController.AdventureFinalize(guid),
                 onDiziForgetAction: guid => XDebug.LogWarning("弟子遗忘功能未完!"),
@@ -84,9 +85,9 @@ public class DiziAdvManager
         private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
-        public View_diziAdv(IView v, 
+        public View_diziAdv(IView v, DiziAdvController controller,
             Action<string,int> onItemSelectAction, 
-            Action<string> onAdvStartAction,
+            Action<string, int> onAdvStartAction,
             Action<string> onAdvRecallAction,
             Action<string> onDiziFinalizeAction,
             Action<string> onDiziForgetAction,
@@ -111,7 +112,8 @@ public class DiziAdvManager
                     () => onItemSelectAction?.Invoke(SelectedDizi?.Guid, 1))
             );
             AdvLayoutView = new View_advLayout(v: v.GetObject<View>("view_advLayout"),
-                onAdvStartAction: () => onAdvStartAction?.Invoke(SelectedDizi?.Guid),
+                controller,
+                onAdvStartAction: index => onAdvStartAction?.Invoke(SelectedDizi?.Guid, index),
                 onRecallAction: () => onAdvRecallAction?.Invoke(SelectedDizi?.Guid),
                 onDiziFinalizeAction: () => onDiziFinalizeAction?.Invoke(SelectedDizi?.Guid),
                 onDiziForgetAction: () => onDiziForgetAction?.Invoke(SelectedDizi?.Guid),
@@ -248,6 +250,7 @@ public class DiziAdvManager
             {
                 None = 0,
                 Prepare,
+                SelectMap,
                 Adventure,
                 Returning,
                 Waiting,
@@ -260,39 +263,49 @@ public class DiziAdvManager
             private Button Btn_advFinalize { get; }
             private Button Btn_advDiziBuyback{ get; }
             private Button Btn_advDiziForget { get; }
+            private View_AdvMapSelector View_advMapSelector { get; }
 
             private ListViewUi<LogPrefab> LogView { get; }
             private ListViewUi<Prefab_rewardItem> RewardItemView { get; }
             private Element_equip[] ItemSlots { get; }
 
-            public View_advLayout(IView v, 
-                Action onAdvStartAction, 
+            public View_advLayout(IView v,
+                DiziAdvController controller,
+                Action<int> onAdvStartAction,
                 Action onRecallAction,
                 Action onDiziFinalizeAction,
                 Action onDiziForgetAction,
                 Action onDiziBuyBackAction,
                 Action<int> onEquipSlotAction) : base(v.GameObject, true)
             {
-                LogView = new ListViewUi<LogPrefab>(v,"prefab_log", "scroll_advLog");
+                LogView = new ListViewUi<LogPrefab>(v, "prefab_log", "scroll_advLog");
                 RewardItemView = new ListViewUi<Prefab_rewardItem>(v, "prefab_rewardItem", "scroll_rewardItem");
                 Img_costIco = v.GetObject<Image>("img_costIco");
                 Text_cost = v.GetObject<Text>("text_cost");
-                var slot0 = new Element_equip(v.GetObject<View>("element_equipSlot0"),()=>onEquipSlotAction(0));
-                var slot1 = new Element_equip(v.GetObject<View>("element_equipSlot1"),()=>onEquipSlotAction(1));
-                var slot2 = new Element_equip(v.GetObject<View>("element_equipSlot2"),()=>onEquipSlotAction(2));
+                var slot0 = new Element_equip(v.GetObject<View>("element_equipSlot0"), () => onEquipSlotAction(0));
+                var slot1 = new Element_equip(v.GetObject<View>("element_equipSlot1"), () => onEquipSlotAction(1));
+                var slot2 = new Element_equip(v.GetObject<View>("element_equipSlot2"), () => onEquipSlotAction(2));
                 ItemSlots = new[] { slot0, slot1, slot2 };
                 Btn_recall = v.GetObject<Button>("btn_recall");
                 Btn_advStart = v.GetObject<Button>("btn_advStart");
                 Btn_advFinalize = v.GetObject<Button>("btn_advFinalize");
                 Btn_advDiziForget = v.GetObject<Button>("btn_advDiziForget");
                 Btn_advDiziBuyback = v.GetObject<Button>("btn_advDiziBuyback");
-
+                View_advMapSelector =
+                    new View_AdvMapSelector(v.GetObject<View>("view_advMapSelector"), 
+                        onAdvStartAction,
+                        ()=>SetModes(Modes.Prepare));
                 Btn_recall.OnClickAdd(onRecallAction);
-                Btn_advStart.OnClickAdd(onAdvStartAction);
+                Btn_advStart.OnClickAdd(() =>
+                {
+                    View_advMapSelector.ListMaps(controller.AutoAdvMaps());
+                    SetModes(Modes.SelectMap);
+                });
                 Btn_advFinalize.OnClickAdd(onDiziFinalizeAction);
                 Btn_advDiziForget.OnClickAdd(onDiziForgetAction);
                 Btn_advDiziBuyback.OnClickAdd(onDiziBuyBackAction);
-        }
+            }
+
             public void SetCost(Sprite icon, int cost)
             {
                 Img_costIco.sprite = icon;
@@ -316,7 +329,8 @@ public class DiziAdvManager
                     };
                     SetLogs(dizi);
                 }
-                SetModes(dizi, mode);
+                SetModes(mode);
+                UpdateDiziBag(dizi);
 
                 void SetLogs(Dizi d)
                 {
@@ -336,27 +350,26 @@ public class DiziAdvManager
                 }
             }
 
-            private void SetModes(Dizi dizi, Modes mode)
+            private void SetModes(Modes mode)
             {
                 DisplayButton(Btn_advStart, mode == Modes.Prepare);
                 DisplayButton(Btn_recall, mode == Modes.Adventure);
                 DisplayButton(Btn_advFinalize, mode == Modes.Waiting);
                 DisplayButton(Btn_advDiziForget, mode == Modes.Failed);
                 DisplayButton(Btn_advDiziBuyback, mode == Modes.Failed);
+                View_advMapSelector.Display(mode == Modes.SelectMap);
                 foreach (var slot in ItemSlots) slot.SetTimer(); //Update adv equipments
-                UpdateDiziBag(dizi);
 
                 //private method
                 void DisplayButton(Button button, bool display) => button.gameObject.SetActive(display);
-
-                void UpdateDiziBag(Dizi d)
-                {
-                    RewardItemView.ClearList(p => p.Destroy());
-                    for (var i = 0; i < d.Capable.Bag; i++)
-                        RewardItemView.Instance(v => new Prefab_rewardItem(v));
-                }
             }
 
+            private void UpdateDiziBag(Dizi d)
+            {
+                RewardItemView.ClearList(p => p.Destroy());
+                for (var i = 0; i < d.Capable.Bag; i++)
+                    RewardItemView.Instance(v => new Prefab_rewardItem(v));
+            }
 
             public void AdvMessageUpdate(string message)
             {
@@ -451,6 +464,77 @@ public class DiziAdvManager
                 }
             }
 
+            private class View_AdvMapSelector : UiBase
+            {
+                private ListViewUi<Prefab_map> MapView { get; }
+                private Button Btn_advConfirm { get; }
+                private Button Btn_cancel { get; }
+                public View_AdvMapSelector(IView v,Action<int> onMapConfirm,Action onCancel) : base(v, false)
+                {
+                    Btn_advConfirm = v.GetObject<Button>("btn_advConfirm");
+                    Btn_cancel = v.GetObject<Button>("btn_cancel");
+                    Btn_cancel.OnClickAdd(onCancel);
+                    MapView = new ListViewUi<Prefab_map>(v, "prefab_map", "scroll_selector");
+                    Btn_advConfirm.OnClickAdd(() => onMapConfirm?.Invoke(SelectedMap.Id));
+                }
+
+                public void ListMaps(IAutoAdvMap[] maps)
+                {
+                    MapView.ClearList(ui=>ui.Destroy());
+                    for (var i = 0; i < maps.Length; i++)
+                    {
+                        var map = maps[i];
+                        var index = i;
+                        var ui = MapView.Instance(v => new Prefab_map(v, map, () => SetSelected(index)));
+                        ui.Set(map.Name, map.About, map.ActionLingCost);
+                        ui.SetImage(map.Image);
+                    }
+                }
+                private IAutoAdvMap SelectedMap { get; set; }
+                private void SetSelected(int index)
+                {
+                    for (var i = 0; i < MapView.List.Count; i++)
+                    {
+                        var ui = MapView.List[i];
+                        var selected = i == index;
+                        ui.SetSelected(selected);
+                        if(selected) SelectedMap = ui.Map;
+                    }
+                    Btn_advConfirm.interactable = Game.World.Faction.ActionLing >= SelectedMap?.ActionLingCost;
+                }
+
+                private class Prefab_map : UiBase
+                {
+                    private Image Img_selected { get; }
+                    private Image Img_map { get; }
+                    private Text Text_title { get; }
+                    private Text Text_about { get; }
+                    private Text Text_staminaValue { get; }
+                    private Button Btn_map { get; }
+                    public IAutoAdvMap Map { get; }
+
+                    public Prefab_map(IView v, IAutoAdvMap map, Action onclickAction) : base(v, true)
+                    {
+                        Map = map;
+                        Img_selected = v.GetObject<Image>("img_selected");
+                        Img_map = v.GetObject<Image>("img_map");
+                        Text_title = v.GetObject<Text>("text_title");
+                        Text_about = v.GetObject<Text>("text_about");
+                        Text_staminaValue = v.GetObject<Text>("text_staminaValue");
+                        Btn_map = v.GetObject<Button>("btn_map");
+                        Btn_map.OnClickAdd(onclickAction);
+                    }
+
+                    public void SetImage(Sprite image)=> Img_map.sprite = image;
+                    public void Set(string title, string about, int staminaCost)
+                    {
+                        Text_title.text = title;
+                        Text_about.text = about;
+                        Text_staminaValue.text = staminaCost.ToString();
+                    }
+                    public void SetSelected(bool selected) => Img_selected.gameObject.SetActive(selected);
+                }
+            }
         }
 
         private class ElementManager
