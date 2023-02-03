@@ -219,31 +219,37 @@ namespace _GameClient.Models
         internal void AddAdvItem(IGameItem item)
         {
             _advItems.Add(item);
+            SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"添加历练道具: {item.Id}.{item.Name}");
         }
         internal void AddPackages(ICollection<IAdvPackage> packages)
         {
             _packages.AddRange(packages);
+            SendEvent(EventString.Faction_AdvPackageUpdate, string.Empty);
             Log($"添加包裹x{packages.Count}");
         }
         internal void AddBook(IBook book)
         {
             _books.Add(book);
             Log($"添加书籍: {book.Id}.{book.Name}");
+            SendEvent(EventString.Faction_BookUpdate, string.Empty);
         }
         internal void RemoveAdvItem(IGameItem item)
         {
             _advItems.Remove(item);
+            SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"移除历练道具: {item.Id}.{item.Name}");
         }
         internal void RemovePackages(IAdvPackage package)
         {
             _packages.Remove(package);
+            SendEvent(EventString.Faction_AdvPackageUpdate, string.Empty);
             Log($"移除包裹: 品级【{package.Grade}】");
         }
         internal void RemoveBook(IBook book)
         {
             _books.Remove(book);
+            SendEvent(EventString.Faction_BookUpdate, string.Empty);
             Log($"移除书籍: {book.Id}.{book.Name}");
         }
     }

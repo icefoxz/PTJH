@@ -71,8 +71,10 @@ public class EventString
     public const string Faction_Init = "Faction_Init";//实例门派
     public const string Faction_DiziListUpdate = "Faction_DiziListUpdate";//门派弟子列表更新
     public const string Faction_DiziSelected = "Faction_DiziSelected";
-    public const string Faction_SilverUpdate = "Faction_SilverUpdate";
-    public const string Faction_YuanBaoUpdate = "Faction_YuanBaoUpdate";
-    public const string Faction_Params_ActionLingUpdate = "Faction_ActionLingUpdate";
-
+    public const string Faction_SilverUpdate = "Faction_SilverUpdate";//门派银两更新
+    public const string Faction_YuanBaoUpdate = "Faction_YuanBaoUpdate";//门派元宝更新
+    public const string Faction_Params_ActionLingUpdate = "Faction_ActionLingUpdate";//门派行动令更新
+    public const string Faction_AdvItemsUpdate = "Faction_AdvItemsUpdate";//门派历练道具更新
+    public const string Faction_AdvPackageUpdate = "Faction_AdvPackageUpdate";//门派包裹更新
+    public const string Faction_BookUpdate = "Faction_BookUpdate";//门派书籍更新
 }

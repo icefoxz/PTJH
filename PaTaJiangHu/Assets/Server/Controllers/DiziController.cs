@@ -1,8 +1,10 @@
 ﻿using System;
 using _GameClient.Models;
 using Server.Configs.Adventures;
+using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Items;
+using UnityEngine;
 using Utls;
 
 namespace Server.Controllers
@@ -10,8 +12,14 @@ namespace Server.Controllers
     public class DiziController : IGameController
     {
         private LevelConfigSo LevelConfig => Game.Config.DiziCfg.LevelConfigSo;
-
+        private PropStateConfigSo PropStateCfg => Game.Config.DiziCfg.PropState;
         private Faction Faction => Game.World.Faction;
+
+        public (string title, Color color) GetSilverCfg(double ratio) => PropStateCfg.GetSilverCfg(ratio);
+        public (string title, Color color) GetFoodCfg(double ratio) => PropStateCfg.GetFoodCfg(ratio);
+        public (string title, Color color) GetEmotionCfg(double ratio) => PropStateCfg.GetEmotionCfg(ratio);
+        public (string title, Color color) GetInjuryCfg(double ratio) => PropStateCfg.GetInjuryCfg(ratio);
+        public (string title, Color color) GetInnerCfg(double ratio) => PropStateCfg.GetInnerCfg(ratio);
 
         public void SelectDizi(string guid)
         {

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using _GameClient.Models;
+using BattleM;
 using HotFix_Project.Serialization;
 using Server.Configs.Adventures;
 using Server.Controllers;
@@ -73,6 +74,7 @@ public class DiziAdvManager
             MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
             DiziAdv.Display(true);
         });
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotUpdate, bag => DiziAdv.SlotUpdate(bag.Get<string>(0)));
     }
 
     private class View_diziAdv : UiBase
@@ -135,6 +137,11 @@ public class DiziAdvManager
             if (SelectedDizi == null) return;
             SetDizi(SelectedDizi);
         }
+        public void SlotUpdate(string diziGuid)
+        {
+            if (SelectedDizi.Guid == diziGuid) 
+                AdvLayoutView.UpdateSlot(SelectedDizi);
+        }
 
         private void SetDizi(Dizi dizi)
         {
@@ -144,6 +151,7 @@ public class DiziAdvManager
 
         private void SetDiziElements(Dizi dizi)
         {
+            var controller = Game.Controllers.Get<DiziController>();
             ElementMgr.SetSkill(Skills.Combat, dizi.CombatSkill.Name, dizi.CombatSkill.Level);
             ElementMgr.SetSkill(Skills.Force, dizi.ForceSkill.Name, dizi.ForceSkill.Level);
             ElementMgr.SetSkill(Skills.Dodge, dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
@@ -151,12 +159,24 @@ public class DiziAdvManager
             else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name);
             if (dizi.Armor == null) ElementMgr.ClearItem(Items.Armor);
             else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name);
-            ElementMgr.SetConValue(Conditions.Food, dizi.Food.Value, dizi.Food.Max);
-            ElementMgr.SetConValue(Conditions.State, dizi.Emotion.Value, dizi.Emotion.Max);
-            ElementMgr.SetConValue(Conditions.Silver, dizi.Silver.Value, dizi.Silver.Max);
-            ElementMgr.SetConValue(Conditions.Injury, dizi.Injury.Value, dizi.Injury.Max);
-            ElementMgr.SetConValue(Conditions.Inner, dizi.Inner.Value, dizi.Inner.Max);
+            var (foodText, fColor) = controller.GetFoodCfg(dizi.Food.ValueMaxRatio);
+            var (emoText, eColor) = controller.GetEmotionCfg(dizi.Emotion.ValueMaxRatio);
+            var (silverText, sColor) = controller.GetSilverCfg(dizi.Silver.ValueMaxRatio);
+            var (injuryText, jColor) = controller.GetInjuryCfg(dizi.Injury.ValueMaxRatio);
+            var (innerText, nColor) = controller.GetInnerCfg(dizi.Inner.ValueMaxRatio);
+            SetElement(Conditions.Food, dizi.Food, foodText, fColor);
+            SetElement(Conditions.State, dizi.Emotion, emoText, eColor);
+            SetElement(Conditions.Silver, dizi.Silver, silverText, sColor);
+            SetElement(Conditions.Injury, dizi.Injury, injuryText, jColor);
+            SetElement(Conditions.Inner, dizi.Inner, innerText, nColor);
+
+            void SetElement(Conditions co, IConditionValue con, string title, Color color)
+            {
+                ElementMgr.SetConValue(co, con.Value, con.Max);
+                ElementMgr.SetConTitle(co, title);
+            }
         }
+
 
         public void AdvMsgUpdate(string diziGuid, string message, bool isStoryEnd)
         {
@@ -264,7 +284,7 @@ public class DiziAdvManager
             private Button Btn_advDiziBuyback{ get; }
             private Button Btn_advDiziForget { get; }
             private View_AdvMapSelector View_advMapSelector { get; }
-
+            private ScrollRect Scroll_advLog { get; }
             private ListViewUi<LogPrefab> LogView { get; }
             private ListViewUi<Prefab_rewardItem> RewardItemView { get; }
             private Element_equip[] ItemSlots { get; }
@@ -278,7 +298,8 @@ public class DiziAdvManager
                 Action onDiziBuyBackAction,
                 Action<int> onEquipSlotAction) : base(v.GameObject, true)
             {
-                LogView = new ListViewUi<LogPrefab>(v, "prefab_log", "scroll_advLog");
+                Scroll_advLog = v.GetObject<ScrollRect>("scroll_advLog");
+                LogView = new ListViewUi<LogPrefab>(v.GetObject<View>("prefab_log"), Scroll_advLog);
                 RewardItemView = new ListViewUi<Prefab_rewardItem>(v, "prefab_rewardItem", "scroll_rewardItem");
                 Img_costIco = v.GetObject<Image>("img_costIco");
                 Text_cost = v.GetObject<Text>("text_cost");
@@ -339,13 +360,29 @@ public class DiziAdvManager
                     AlignLogPos();
                 }
             }
+
+            public void UpdateSlot(Dizi dizi)
+            {
+                for (var i = 0; i < ItemSlots.Length; i++)
+                {
+                    var ui = ItemSlots[i];
+                    var slot = dizi.AdvItems[i];
+                    if (slot == null)
+                        ui.ClearItem(); //没有物件
+                    else
+                    {
+                        ui.SetItem(slot.Item?.Name);
+                    }
+                }
+            }
+
             //把Log翻到最底
             private void AlignLogPos()
             {
                 Game.CoService.RunCo(WaitHalfSec(() => LogView.SetVerticalScrollPosition(0)));
                 IEnumerator WaitHalfSec(Action callback)
                 {
-                    yield return new WaitForSeconds(0.1f);
+                    yield return new WaitForSeconds(0.2f);
                     callback?.Invoke();
                 }
             }
@@ -358,6 +395,11 @@ public class DiziAdvManager
                 DisplayButton(Btn_advDiziForget, mode == Modes.Failed);
                 DisplayButton(Btn_advDiziBuyback, mode == Modes.Failed);
                 View_advMapSelector.Display(mode == Modes.SelectMap);
+                Scroll_advLog.gameObject.SetActive(
+                    mode is Modes.Adventure 
+                        or Modes.Waiting 
+                        or Modes.Returning 
+                        or Modes.Failed);
                 foreach (var slot in ItemSlots) slot.SetTimer(); //Update adv equipments
 
                 //private method
@@ -395,6 +437,7 @@ public class DiziAdvManager
                 private Image Img_ico { get; }
                 private Text Text_timerMin { get; }
                 private Text Text_timerSec { get; }
+                private Text Text_title { get; }
                 private GameObject Go_timer { get; }
                 private GameObject Go_slidingArea { get; }
                 private Button Btn_item { get; }
@@ -405,6 +448,7 @@ public class DiziAdvManager
                     Img_ico = v.GetObject<Image>("img_ico");
                     Text_timerMin = v.GetObject<Text>("text_timerMin");
                     Text_timerSec = v.GetObject<Text>("text_timerSec");
+                    Text_title = v.GetObject<Text>("text_title");
                     Go_timer = v.GetObject("go_timer");
                     Go_slidingArea = v.GetObject("go_slidingArea");
                     Btn_item = v.GetObject<Button>("btn_item");
@@ -417,11 +461,14 @@ public class DiziAdvManager
                     Go_slidingArea.SetActive(mode == Modes.InUse);
                     Go_timer.SetActive(mode == Modes.InUse);
                     Img_ico.gameObject.SetActive(mode != Modes.Empty);
+                    Text_title.gameObject.SetActive(mode != Modes.Empty);
                 }
                 public void ClearItem() => SetMode(Modes.Empty);
-                public void SetIcon(Sprite icon)
+
+                public void SetItem(string title, Sprite image = null)
                 {
-                    Img_ico.sprite = icon;
+                    Text_title.text = title;
+                    //Img_ico.sprite = image;
                     SetMode(Modes.Content);
                 }
 
@@ -480,6 +527,7 @@ public class DiziAdvManager
 
                 public void ListMaps(IAutoAdvMap[] maps)
                 {
+                    Btn_advConfirm.interactable = false;
                     MapView.ClearList(ui=>ui.Destroy());
                     for (var i = 0; i < maps.Length; i++)
                     {

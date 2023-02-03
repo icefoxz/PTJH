@@ -19,13 +19,14 @@ public class WinEquipmentManager
     public void Init()
     {
         DiziController = Game.Controllers.Get<DiziController>();
+        DiziAdvController = Game.Controllers.Get<DiziAdvController>();
         Game.UiBuilder.Build("view_winEquipment", v =>
         {
             WinEquipment = new View_winEquipment(v,
                 (guid, index, itemType) => 
                 {
                     if(itemType == 2)
-                        DiziAdvController.SetDiziAdvItem(guid, index, itemType);
+                        DiziAdvController.SetDiziAdvItem(guid, index);
                     else
                         DiziController.DiziEquip(guid, index, itemType);
                 },

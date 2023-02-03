@@ -22,6 +22,19 @@ namespace Server.Configs.Characters
         private PropCfg HpCfgs => 血量;
         private PropCfg MpCfgs => 内力;
 
+        public (string title, Color color) GetFoodCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.FoodMap);
+        public (string title, Color color) GetSilverCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.SilverMap);
+        public (string title, Color color) GetEmotionCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.EmotionMap);
+        public (string title, Color color) GetInjuryCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.InjuryMap);
+        public (string title, Color color) GetInnerCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.InnerMap);
+
+        private (string title,Color color) GetPropMapping(int rate,ValueMapping<string>[] titleMap)
+        {
+            var map = titleMap.FirstOrDefault(m => m.IsInCondition(rate));
+            var color = Config.StateColor.FirstOrDefault(c => c.IsInCondition(rate));
+            return (map?.Value, color?.Value ?? Color.white);
+        }
+
         [Serializable]
         internal class ConfigField
         {
