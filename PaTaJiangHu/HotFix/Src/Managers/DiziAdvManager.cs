@@ -136,6 +136,7 @@ public class DiziAdvManager
         {
             if (SelectedDizi == null) return;
             SetDizi(SelectedDizi);
+            SlotUpdate(SelectedDizi?.Guid);
         }
         public void SlotUpdate(string diziGuid)
         {
