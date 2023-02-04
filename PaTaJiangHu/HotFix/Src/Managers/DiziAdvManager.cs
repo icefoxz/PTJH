@@ -74,6 +74,7 @@ public class DiziAdvManager
             MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
             DiziAdv.Display(true);
         });
+        Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotUpdate, bag => DiziAdv.SlotUpdate(bag.Get<string>(0)));
     }
 
@@ -146,7 +147,7 @@ public class DiziAdvManager
         private void SetDizi(Dizi dizi)
         {
             SetDiziElements(dizi);
-            AdvLayoutView.SetAdventure(dizi); //历练模式
+            AdvLayoutView.Set(dizi); //历练模式
         }
 
         private void SetDiziElements(Dizi dizi)
@@ -178,12 +179,11 @@ public class DiziAdvManager
             }
         }
 
-
         public void AdvMsgUpdate(string diziGuid, string message, bool isStoryEnd)
         {
             if (diziGuid == SelectedDizi.Guid)
             {
-                AdvLayoutView.AdvMessageUpdate(message);
+                AdvLayoutView.AdvMessageUpdate(message, SelectedDizi);
             }
         }
         private class Element_skill : UiBase
@@ -344,7 +344,7 @@ public class DiziAdvManager
                 Text_cost.text = cost.ToString();
             }
 
-            public void SetAdventure(Dizi dizi)
+            public void Set(Dizi dizi)
             {
                 LogView.ClearList(ui => ui.Destroy());
                 var mode = Modes.None;
@@ -367,7 +367,7 @@ public class DiziAdvManager
                 void SetLogs(Dizi d)
                 {
                     foreach (var msg in d.Adventure.StoryLog)
-                        AdvMessageUpdate(msg);
+                        AdvMessageUpdate(msg, d);
                     AlignLogPos();
                 }
             }
@@ -421,13 +421,22 @@ public class DiziAdvManager
             {
                 RewardItemView.ClearList(p => p.Destroy());
                 for (var i = 0; i < d.Capable.Bag; i++)
-                    RewardItemView.Instance(v => new Prefab_rewardItem(v));
+                {
+
+                    var item = d.Adventure?.Rewards.Count > i ? d.Adventure.Rewards[i] : null;
+                    var ui = RewardItemView.Instance(v => new Prefab_rewardItem(v));
+                    if (item != null)
+                        ui.SetIco(null);
+                    else
+                        ui.SetEmpty();
+                }
             }
 
-            public void AdvMessageUpdate(string message)
+            public void AdvMessageUpdate(string message, Dizi d)
             {
                 var log = LogView.Instance(v => new LogPrefab(v));
                 log.LogMessage(message);
+                UpdateDiziBag(d);
                 AlignLogPos();
             }
 
@@ -510,7 +519,7 @@ public class DiziAdvManager
 
                 public void SetIco(Sprite ico)
                 {
-                    Img_ico.sprite = ico;
+                    //Img_ico.sprite = ico;
                     Set(Modes.Item);
                 }
                 public void SetEmpty() => Set(Modes.Empty);

@@ -337,12 +337,13 @@ namespace _GameClient.Models
             Game.MessagingManager.Send(EventString.Dizi_Adv_SlotUpdate, Guid);
             Log("装备" + $"历练道具[{slot}]:" + item?.Name);
         }        
-        internal void RemoveAdvItem(int slot)
+        internal IGameItem RemoveAdvItem(int slot)
         {
             var item = _advItems[slot];
             _advItems[slot] = null;
             Game.MessagingManager.Send(EventString.Dizi_Adv_SlotUpdate, Guid);
             Log("移除" + $"历练道具[{slot}]:" + item?.Item?.Name);
+            return item.Item;
         }
     }
 

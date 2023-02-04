@@ -246,7 +246,7 @@ namespace _GameClient.Models
 
         internal void AddAdvItem(IGameItem item)
         {
-            _advProps.Add(item);
+            AddGameItem(new Stacking<IGameItem>(item, 1));
             SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"添加历练道具: {item.Id}.{item.Name}");
         }

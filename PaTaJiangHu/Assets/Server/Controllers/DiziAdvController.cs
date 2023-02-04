@@ -42,16 +42,24 @@ namespace Server.Controllers
         /// 设定弟子历练装备
         /// </summary>
         /// <param name="guid"></param>
+        /// <param name="itemIndex"></param>
         /// <param name="slot"></param>
-        public void SetDiziAdvItem(string guid,int slot)
+        public void SetDiziAdvItem(string guid,int itemIndex,int slot)
         {
             var dizi = Faction.GetDizi(guid);
             var stackings = Faction.GetAllSupportedAdvItems();
-            var stack = stackings[slot];
+            var stack = stackings[itemIndex];
             Faction.RemoveAdvItem(stack.Item);
             var replaceItem = dizi.AdvItems[slot];
             if (replaceItem != null) Faction.AddAdvItem(replaceItem.Item);
             dizi.SetAdvItem(slot, stack.Item);
+        }
+
+        public void RemoveDiziAdvItem(string guid, int itemIndex, int slot)
+        {
+            var dizi = Faction.GetDizi(guid);
+            var item = dizi.RemoveAdvItem(slot);
+            Faction.AddAdvItem(item);
         }
         //历练开始s
         public void AdventureStart(string guid,int mapId)

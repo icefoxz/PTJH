@@ -24,21 +24,19 @@ public class WinEquipmentManager
         Game.UiBuilder.Build("view_winEquipment", v =>
         {
             WinEquipment = new View_winEquipment(v,
-                (guid, index, itemType) =>
+                (guid, index, itemType, slot) =>
                 {
                     if (itemType == 2)
-                        DiziAdvController.SetDiziAdvItem(guid, index);
+                        DiziAdvController.SetDiziAdvItem(guid, index, slot);
                     else
                         DiziController.DiziEquip(guid, index, itemType);
                 },
-                (guid, index, itemType) => 
+                (guid, index, itemType, slot) =>
                 {
                     if (itemType == 2)
-                        XDebug.LogWarning($"卸下弟子历炼道具(未完成)，slot{index}");
+                        DiziAdvController.RemoveDiziAdvItem(guid, index, slot);
                     else
                         DiziController.DiziUnEquipItem(guid, itemType);
-
-                    
                 });
             Game.MainUi.SetWindow(v, resetPos: true);
         }, RegEvents);
@@ -50,7 +48,7 @@ public class WinEquipmentManager
         {
             var guid = bag.Get<string>(0);
             var itemType = bag.GetInt(1);
-            WinEquipment.Set(guid, itemType); //weapon or armor
+            WinEquipment.Set(guid, itemType, 0); //weapon or armor
             Game.MainUi.ShowWindow(WinEquipment.View);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => 
@@ -65,7 +63,8 @@ public class WinEquipmentManager
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotManagement, bag =>
         {
             var guid = bag.Get<string>(0);
-            WinEquipment.Set(guid, 2); //advitems
+            var slot = bag.GetInt(1);
+            WinEquipment.Set(guid, 2, slot); //advitems
             Game.MainUi.ShowWindow(WinEquipment.View);
         });
         Game.MessagingManager.RegEvent(EventString.Faction_AdvItemsUpdate, bag =>
@@ -94,8 +93,8 @@ public class WinEquipmentManager
         private ListViewUi<Prefab_Item> ItemView { get; }
 
         public View_winEquipment(IView v, 
-            Action<string,int,int> onEquip,
-            Action<string,int,int> onUnequip)
+            Action<string,int,int,int> onEquip,
+            Action<string,int,int,int> onUnequip)
             : base(v.GameObject, false)
         {
             Btn_x = v.GetObject<Button>("btn_x");
@@ -109,14 +108,14 @@ public class WinEquipmentManager
             Btn_unequip.OnClickAdd(() =>
             {
                 if (!IsDiziEquipped) return;
-                onUnequip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType);
+                onUnequip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
                 ListItems((ItemTypes)SelectedType);
             });
             Btn_equip = v.GetObject<Button>("btn_equip");
             Btn_equip.OnClickAdd(() =>
             {
                 if (SelectedItemIndex < 0) return;
-                onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType);
+                onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
                 ListItems((ItemTypes)SelectedType);
             });//装备按键
             Text_drop = v.GetObject<Text>("text_drop");
@@ -124,6 +123,7 @@ public class WinEquipmentManager
             Text_unequip = v.GetObject<Text>("text_unequip");
             Text_equip = v.GetObject<Text>("text_euip");
         }
+
 
         public void UpdateItemList()
         {
@@ -136,16 +136,17 @@ public class WinEquipmentManager
             }
         }
 
-
         private string SelectedDiziGuid { get; set; }
         private int SelectedItemIndex { get; set; }
         private int SelectedType { get; set; }
+        private int SelectedSlot { get; set; }
         private bool IsDiziEquipped { get; set; }
 
-        public void Set(string guid, int itemType)
+        public void Set(string guid, int itemType, int slot)
         {
             SelectedDiziGuid = guid;
             SelectedType = itemType;
+            SelectedSlot = slot;
             var item = (ItemTypes)itemType;
             ListItems(item);
         }
@@ -188,11 +189,8 @@ public class WinEquipmentManager
                     break;
                 case ItemTypes.AdvItems:
                     var advitems = faction.GetAllSupportedAdvItems();
-                    for(var i = 0; i < advitems.Length; i++)
-                    {
-                        IsDiziEquipped = selectedDizi.AdvItems[i] != null;
-                        if (IsDiziEquipped) items.Add((selectedDizi.AdvItems[i].Item.Name, -1, 1));
-                    }
+                    IsDiziEquipped = selectedDizi.AdvItems[SelectedSlot] != null;
+                    if (IsDiziEquipped) items.Add((selectedDizi.AdvItems[SelectedSlot].Item.Name, -1, 1));
                     for (var i = 0; i < advitems.Length; i++)
                     {
                         var item = advitems[i].Item.Name;

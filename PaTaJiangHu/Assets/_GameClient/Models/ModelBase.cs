@@ -13,8 +13,8 @@ namespace _GameClient.Models
         protected abstract string LogPrefix { get; }
 
         protected void Log(string message) => XDebug.Log($"{LogPrefix}: {message}");
-        protected void LogError(string message) => XDebug.Log($"{LogPrefix}: {message}");
-        protected void LogWarning(string message) => XDebug.LogError($"{LogPrefix}: {message}");
+        protected void LogError(string message) => XDebug.LogError($"{LogPrefix}: {message}");
+        protected void LogWarning(string message) => XDebug.LogWarning($"{LogPrefix}: {message}");
         protected void SendEvent(string eventString, params object[] args) =>
             Game.MessagingManager.SendParams(eventString, args);
     }

@@ -44,7 +44,7 @@ namespace Server.Controllers
     /// 叠加游戏物件类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Stacking<T> : IStacking<T> where T : IGameItem
+    public record Stacking<T> : IStacking<T> where T : IGameItem
     {
         public T Item { get; }
         public int Amount { get; }
