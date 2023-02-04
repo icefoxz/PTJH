@@ -1,25 +1,23 @@
 ﻿using HotFix_Project.Views.Bases;
-using _GameClient.Models;
-using HotFix_Project.Serialization;
 using UnityEngine.UI;
 using Views;
 
 namespace HotFix_Project.Managers;
 
-public class FactionInfoManager
+internal class FactionInfoManager : UiManagerBase
 {
     private View_factionInfoUi FactionInfoUi { get; set; }
 
-    public void Init()
+    protected override UiManager.Sections Section => UiManager.Sections.Top;
+    protected override string ViewName => "view_factionInfoUi";
+    protected override bool IsFixPixel => true;
+
+    protected override void Build(IView view)
     {
-        Game.UiBuilder.Build("view_factionInfoUi", v =>
-        {
-            FactionInfoUi = new View_factionInfoUi(v);
-            Game.MainUi.SetTop(v, true);
-        }, RegEvents);
+        FactionInfoUi = new View_factionInfoUi(view);
     }
 
-    private void RegEvents()
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Faction_Init,
             bag =>
@@ -34,6 +32,10 @@ public class FactionInfoManager
         Game.MessagingManager.RegEvent(EventString.Faction_Params_ActionLingUpdate,
             bag => FactionInfoUi.SetActionToken(bag.GetInt(0), bag.GetInt(1), bag.GetInt(2), bag.GetInt(3)));
     }
+
+    public override void Show() => FactionInfoUi.Display(true);
+
+    public override void Hide() => FactionInfoUi.Display(false);
 
     private class View_factionInfoUi : UiBase
     {
@@ -109,5 +111,8 @@ public class FactionInfoManager
         }
 
     }
-    
+
+    public FactionInfoManager(UiManager uiManager) : base(uiManager)
+    {
+    }
 }

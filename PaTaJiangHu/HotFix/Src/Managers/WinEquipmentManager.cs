@@ -1,48 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
-using BattleM;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers;
 
-public class WinEquipmentManager
+internal class WinEquipmentManager : UiManagerBase
 {
     private View_winEquipment WinEquipment { get; set; }
     private DiziController DiziController { get; set; }
     private DiziAdvController DiziAdvController { get; set; }
-    public void Init()
+
+    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override string ViewName => "view_winEquipment";
+    protected override bool IsFixPixel => true;
+
+    public WinEquipmentManager(UiManager uiManager) : base(uiManager)
     {
         DiziController = Game.Controllers.Get<DiziController>();
         DiziAdvController = Game.Controllers.Get<DiziAdvController>();
-        Game.UiBuilder.Build("view_winEquipment", v =>
-        {
-            WinEquipment = new View_winEquipment(v,
-                (guid, index, itemType, slot) =>
-                {
-                    if (itemType == 2)
-                        DiziAdvController.SetDiziAdvItem(guid, index, slot);
-                    else
-                        DiziController.DiziEquip(guid, index, itemType);
-                },
-                (guid, index, itemType, slot) =>
-                {
-                    if (itemType == 2)
-                        DiziAdvController.RemoveDiziAdvItem(guid, index, slot);
-                    else
-                        DiziController.DiziUnEquipItem(guid, itemType);
-                });
-            Game.MainUi.SetWindow(v, resetPos: true);
-        }, RegEvents);
     }
 
-    private void RegEvents()
+    protected override void Build(IView view)
+    {
+        WinEquipment = new View_winEquipment(view,
+            (guid, index, itemType, slot) =>
+            {
+                if (itemType == 2)
+                    DiziAdvController.SetDiziAdvItem(guid, index, slot);
+                else
+                    DiziController.DiziEquip(guid, index, itemType);
+            },
+            (guid, index, itemType, slot) =>
+            {
+                if (itemType == 2)
+                    DiziAdvController.RemoveDiziAdvItem(guid, index, slot);
+                else
+                    DiziController.DiziUnEquipItem(guid, itemType);
+            });
+    }
+
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentManagement, bag =>
         {
@@ -73,7 +76,11 @@ public class WinEquipmentManager
             Game.MainUi.HideWindows();
         });
     }
-    
+
+    public override void Show() => WinEquipment.Display(true);
+
+    public override void Hide() => WinEquipment.Display(false);
+
     private class View_winEquipment : UiBase
     {
         private enum ItemTypes

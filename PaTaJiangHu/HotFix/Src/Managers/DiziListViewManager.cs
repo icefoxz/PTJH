@@ -10,24 +10,33 @@ using Views;
 
 namespace HotFix_Project.Managers;
 
-internal class DiziListViewManager 
+internal class DiziListViewManager : MainPageBase
 {
     private DiziListView DiziList { get; set; }
     private DiziController DiziInteraction { get; } = Game.Controllers.Get<DiziController>();
-    public void Init()
+
+    public DiziListViewManager(UiManager uiManager) : base(uiManager)
     {
-        Game.UiBuilder.Build("view_diziListView", v =>
-        {
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Btm, true);
-            DiziList = new DiziListView(v, key => DiziInteraction.SelectDizi(key));
-        }, RegEvents);
     }
 
-    private void RegEvents()
+    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
+    protected override string ViewName => "view_diziListView";
+    protected override bool IsFixPixel => true;
+
+    protected override void Build(IView view)
+    {
+        DiziList = new DiziListView(view, key => DiziInteraction.SelectDizi(key));
+    }
+
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList());
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziList.UpdateDiziState());
     }
+
+    public override void Show() => DiziList.Display(true);
+
+    public override void Hide() => DiziList.Display(false);
 
     private class DiziListView : UiBase
     {

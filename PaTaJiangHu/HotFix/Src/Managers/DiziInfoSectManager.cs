@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
@@ -15,27 +14,25 @@ namespace HotFix_Project.Managers;
 /// <summary>
 /// 弟子信息板块Ui控制器
 /// </summary>
-public class DiziInfoSectManager
+internal class DiziInfoSectManager : MainPageBase
 {
     private View_diziInfoSect DiziInfo { get; set; }
     private DiziController Controller { get; set; }
+    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
+    protected override string ViewName => "view_diziInfoSect";
+    protected override bool IsFixPixel => true;
 
-    public void Init()
+    public DiziInfoSectManager(UiManager uiManager) : base(uiManager)
     {
         Controller = Game.Controllers.Get<DiziController>();
-        Game.UiBuilder.Build("view_diziInfoSect", v =>
-        {
-            DiziInfo = new View_diziInfoSect(v, guid => Controller.ManageDiziCondition(guid));
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Top, true);
-        }, RegEvents);
-
-        //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StaminaUpdate,
-        //    arg => DiziInfo.UpdateStamina(JsonMapper.ToObject<int[]>(arg)));
-        //Game.MessagingManager.RegEvent(EventString.Model_DiziInfo_StateUpdate,
-        //    arg => DiziInfo.UpdateState(JsonMapper.ToObject<string[]>(arg)));
+    }
+    
+    protected override void Build(IView view)
+    {
+        DiziInfo = new View_diziInfoSect(view, guid => Controller.ManageDiziCondition(guid));
     }
 
-    private void RegEvents()
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
         {
@@ -47,6 +44,10 @@ public class DiziInfoSectManager
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
             bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
     }
+
+    public override void Show() => DiziInfo.Display(true);
+
+    public override void Hide() => DiziInfo.Display(false);
 
     private class View_diziInfoSect : UiBase
     {

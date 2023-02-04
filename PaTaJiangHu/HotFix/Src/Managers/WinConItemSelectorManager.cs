@@ -11,24 +11,28 @@ using Server.Controllers;
 
 namespace HotFix_Project.Managers;
 
-public class WinConItemSelectorManager
+internal class WinConItemSelectorManager : UiManagerBase
 {
     private View_winConItemSelector WinConItemSelector { get; set; }
     private DiziController DiziController { get; set; }
 
-    public void Init()
+    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override string ViewName => "view_winConItemSelector";
+    protected override bool IsFixPixel => true;
+
+    public WinConItemSelectorManager(UiManager uiManager) : base(uiManager)
     {
         DiziController = Game.Controllers.Get<DiziController>();
-        Game.UiBuilder.Build("view_winConItemSelector", v =>
-        {
-            WinConItemSelector = new View_winConItemSelector(v,
-                guid => DiziController.UseSilver(guid, 10),
-                (guid, index) => DiziController.UseMedicine(guid, index));
-            Game.MainUi.SetWindow(v, resetPos: true);
-        },RegEvents);
     }
 
-    private void RegEvents()
+    protected override void Build(IView view)
+    {
+        WinConItemSelector = new View_winConItemSelector(view,
+            guid => DiziController.UseSilver(guid, 10),
+            (guid, index) => DiziController.UseMedicine(guid, index));
+    }
+
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Dizi_ConditionManagement,
             bag =>
@@ -41,6 +45,10 @@ public class WinConItemSelectorManager
         Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate,
             bag => WinConItemSelector.DiziUpdate(bag.Get<string>(0)));
     }
+
+    public override void Show() => WinConItemSelector.Display(true);
+
+    public override void Hide() => WinConItemSelector.Display(false);
 
     private class View_winConItemSelector : UiBase
     {

@@ -1,45 +1,42 @@
-﻿using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers;
+namespace HotFix_Project.Managers;
 
-public class BtmPageBtnsManager
+internal class BtmPageBtnsManager : UiManagerBase
 {
     private View_btmPageBtns BtmPageBtns { get; set; }
 
-    public void Init()
+    protected override UiManager.Sections Section => UiManager.Sections.Bottom;
+    protected override string ViewName => "view_btmPageBtns";
+    protected override bool IsFixPixel => true;
+
+    public BtmPageBtnsManager(UiManager uiManager) : base(uiManager)
     {
-        InitUi();
     }
 
-    private void InitUi()
+    protected override void Build(IView view)
     {
-        Game.UiBuilder.Build("view_btmPageBtns", v =>
-        {
-            BtmPageBtns = new View_btmPageBtns(v,
-                onTreasureHouse: () => Game.MessagingManager.Send(EventString.Page_TreasureHouse, null),
-                onDizi: () => Game.MessagingManager.Send(EventString.Page_DiziList, null),
-                onFaction: () => Game.MessagingManager.Send(EventString.Page_Faction, null),
-                onAdventure: () => Game.MessagingManager.Send(EventString.Page_Adventure, null),
-                onDiziRecreuitment: () => Game.MessagingManager.Send(EventString.Page_DiziRecruit, null)
-                );
-              
-            Game.MainUi.SetBtm(v, true);
-        }, RegEvents);
+        BtmPageBtns = new View_btmPageBtns(view,
+            onTreasureHouse: () => Game.MessagingManager.Send(EventString.Page_TreasureHouse, null),
+            onDizi: () => Game.MessagingManager.Send(EventString.Page_DiziList, null),
+            onFaction: () => Game.MessagingManager.Send(EventString.Page_Faction, null),
+            onAdventure: () => Game.MessagingManager.Send(EventString.Page_Adventure, null),
+            onDiziRecreuitment: () => Game.MessagingManager.Send(EventString.Page_DiziRecruit, null)
+        );
     }
 
-    private void RegEvents()
+    protected override void RegEvents()
     {
         BtmPageBtns.Display(true);
     }
+
+    public override void Show() => BtmPageBtns.Display(true);
+
+    public override void Hide() => BtmPageBtns.Display(false);
 
     private class View_btmPageBtns : UiBase
     {

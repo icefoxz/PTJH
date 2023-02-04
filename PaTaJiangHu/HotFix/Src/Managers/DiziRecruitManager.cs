@@ -10,24 +10,28 @@ using Views;
 
 namespace HotFix_Project.Managers;
 
-public class DiziRecruitManager
+internal class DiziRecruitManager : MainPageBase
 {
     private View_diziRecruitPage DiziRecruitPage { get; set; }
     private RecruitController RecruitController { get; set; }
     private int CurrentDiziIndex { get; set; }
+    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
 
-    public void Init()
+    public DiziRecruitManager(UiManager uiManager) : base(uiManager)
     {
         RecruitController = Game.Controllers.Get<RecruitController>();
-        Game.UiBuilder.Build("view_diziRecruitPage", v =>
-        {
-            DiziRecruitPage = new View_diziRecruitPage(v, () => RecruitController.GenerateDizi(),
-                () => RecruitController.RecruitDizi(CurrentDiziIndex));
-            Game.MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
-        },RegEvents);
+    }
+    
+    protected override string ViewName => "view_diziRecruitPage";
+    protected override bool IsFixPixel => true;
+
+    protected override void Build(IView view)
+    {
+        DiziRecruitPage = new View_diziRecruitPage(view, () => RecruitController.GenerateDizi(),
+            () => RecruitController.RecruitDizi(CurrentDiziIndex));
     }
 
-    private void RegEvents()
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziGenerated, bag => DiziRecruitPage.SetDizi(bag));
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziInSlot,
@@ -38,6 +42,10 @@ public class DiziRecruitManager
             DiziRecruitPage.Display(true);
         });
     }
+
+    public override void Show() => DiziRecruitPage.Display(true);
+
+    public override void Hide() => DiziRecruitPage.Display(false);
 
     private class View_diziRecruitPage : UiBase
     {

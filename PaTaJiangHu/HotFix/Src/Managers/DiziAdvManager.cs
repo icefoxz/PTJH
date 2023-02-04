@@ -14,47 +14,45 @@ using Views;
 
 namespace HotFix_Project.Managers;
 
-public class DiziAdvManager
+internal class DiziAdvManager : MainPageBase
 {
     private View_diziAdv DiziAdv { get; set; }
-    private MainUi MainUi { get; set; }
+
     private DiziController DiziController { get; set; }
     private DiziAdvController DiziAdvController { get; set; }
-    
-    public void Init()
+
+    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
+    protected override string ViewName => "view_diziAdv";
+    protected override bool IsFixPixel => true;
+
+    public DiziAdvManager(UiManager uiManager) : base(uiManager)
     {
         DiziController = Game.Controllers.Get<DiziController>();
         DiziAdvController = Game.Controllers.Get<DiziAdvController>();
-        MainUi = Game.MainUi;
-        InitUi();
     }
 
-    private void InitUi()
+    protected override void Build(IView view)
     {
-        Game.UiBuilder.Build("view_diziAdv", v =>
-        {
-            DiziAdv = new View_diziAdv(v: v, DiziAdvController,
-                onItemSelectAction: (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
-                onAdvStartAction: (guid, index) => DiziAdvController.AdventureStart(guid, index),
-                onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
-                onDiziFinalizeAction: guid => DiziAdvController.AdventureFinalize(guid),
-                onDiziForgetAction: guid => XDebug.LogWarning("弟子遗忘功能未完!"),
-                onDiziBuyBackAction: guid => XDebug.LogWarning("弟子买回功能未完!"),
-                onEquipSlotAction: (guid, slot) =>
-                    Game.MessagingManager.SendParams(EventString.Dizi_Adv_SlotManagement, guid, slot),
-                onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
-            );
-            MainUi.MainPage.Set(v, MainPageLayout.Sections.Mid, true);
-        }, RegEvents);
+        DiziAdv = new View_diziAdv(v: view, DiziAdvController,
+            onItemSelectAction: (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
+            onAdvStartAction: (guid, index) => DiziAdvController.AdventureStart(guid, index),
+            onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
+            onDiziFinalizeAction: guid => DiziAdvController.AdventureFinalize(guid),
+            onDiziForgetAction: guid => XDebug.LogWarning("弟子遗忘功能未完!"),
+            onDiziBuyBackAction: guid => XDebug.LogWarning("弟子买回功能未完!"),
+            onEquipSlotAction: (guid, slot) =>
+                Game.MessagingManager.SendParams(EventString.Dizi_Adv_SlotManagement, guid, slot),
+            onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
+        );
     }
 
-    private void RegEvents()
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
         {
             DiziAdv.Set(bag);
-            MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            DiziAdv.Display(true);
+            //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
+            UiManager.Show(this);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update());
@@ -71,12 +69,16 @@ public class DiziAdvManager
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag =>
         {
-            MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            DiziAdv.Display(true);
+            //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
+            UiManager.Show(this);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotUpdate, bag => DiziAdv.SlotUpdate(bag.Get<string>(0)));
     }
+
+    public override void Show() => DiziAdv.Display(true);
+
+    public override void Hide() => DiziAdv.Display(false);
 
     private class View_diziAdv : UiBase
     {

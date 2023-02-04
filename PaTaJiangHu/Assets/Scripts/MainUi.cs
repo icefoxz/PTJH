@@ -145,6 +145,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         StartCoroutine(Set());
         IEnumerator Set()
         {
+            var defaultActive = view.GameObject.activeSelf;
             view.GameObject.SetActive(false);
             _uiMap[tran] = view;
             view.GameObject.transform.SetParent(tran);
@@ -160,6 +161,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
 
             yield return new WaitForEndOfFrame();
             view.GameObject.SetActive(true);
+            view.GameObject.SetActive(defaultActive);
         }
     }
 }

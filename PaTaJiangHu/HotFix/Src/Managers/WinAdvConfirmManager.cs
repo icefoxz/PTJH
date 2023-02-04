@@ -7,23 +7,31 @@ using Views;
 
 namespace HotFix_Project.Managers;
 
-public class WinAdvConfirmManager
+internal class WinAdvConfirmManager : UiManagerBase
 {
     private View_winAdvConfirm WinAdvConfirm { get; set; }
 
-    public void Init()
+    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override string ViewName => "view_winAdvConfirm";
+    protected override bool IsFixPixel => false;
+
+    public WinAdvConfirmManager(UiManager uiManager) : base(uiManager)
     {
-        Game.UiBuilder.Build("view_winAdvConfirm", v =>
-        {
-            WinAdvConfirm = new View_winAdvConfirm(v, () => XDebug.LogWarning("弟子历练! 目前历练功能未实现"));
-            Game.MainUi.SetWindow(v, false);
-        }, RegEvents);
     }
 
-    private void RegEvents()
+    protected override void Build(IView view)
+    {
+        WinAdvConfirm = new View_winAdvConfirm(view, () => XDebug.LogWarning("弟子历练! 目前历练功能未实现"));
+    }
+
+    protected override void RegEvents()
     {
 
     }
+
+    public override void Show() => WinAdvConfirm.Display(true);
+
+    public override void Hide() => WinAdvConfirm.Display(false);
 
     private class View_winAdvConfirm : UiBase
     {

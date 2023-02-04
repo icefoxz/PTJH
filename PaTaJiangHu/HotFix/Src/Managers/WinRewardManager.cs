@@ -1,25 +1,30 @@
 ﻿using System;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
+using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
 namespace HotFix_Project.Managers;
 
-public class WinRewardManager
+internal class WinRewardManager : UiManagerBase
 {
     private View_winReward WinReward { get; set; }
 
-    public void Init()
+    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override string ViewName => "view_winReward";
+    protected override bool IsFixPixel => false;
+
+    public WinRewardManager(UiManager uiManager) : base(uiManager)
     {
-        Game.UiBuilder.Build("view_winReward", v =>
-        {
-            WinReward = new View_winReward(v, () => Game.MainUi.HideWindows());
-            Game.MainUi.SetWindow(v, false);
-        }, RegEvent);
     }
 
-    private void RegEvent()
+    protected override void Build(IView view)
+    {
+        WinReward = new View_winReward(view, () => Game.MainUi.HideWindows());
+    }
+
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Rewards_Propmt, bag =>
         {
@@ -27,6 +32,10 @@ public class WinRewardManager
             Game.MainUi.ShowWindow(WinReward.View);
         });
     }
+
+    public override void Show() => WinReward.Display(true);
+
+    public override void Hide() => WinReward.Display(false);
 
 
     private class View_winReward : UiBase

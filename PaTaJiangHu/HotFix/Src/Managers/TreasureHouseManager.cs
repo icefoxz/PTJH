@@ -1,38 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using _GameClient.Models;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers;
 
-public class TreasureHouseManager
+internal class TreasureHouseManager : UiManagerBase
 {
     private View_treasureHouse TreasureHouse { get; set; }
-    public void Init()
+
+    protected override UiManager.Sections Section { get; } = UiManager.Sections.Page;
+    protected override string ViewName { get; } = "view_treasureHouse";
+    protected override bool IsFixPixel { get; } = true;
+
+    public TreasureHouseManager(UiManager uiManager) : base(uiManager)
     {
-        Game.UiBuilder.Build("view_treasureHouse", v =>
-        {
-            TreasureHouse = new View_treasureHouse(v);
-            //Game.MainUi.SetMid(v, true);
-            TreasureHouse.Display(false);
-        }, RegEvents);
+    }
+    protected override void Build(IView view)
+    {
+        TreasureHouse = new View_treasureHouse(view);
     }
 
-    private void RegEvents()
+    protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Page_TreasureHouse, bag =>
         {
-            //Game.MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            //TreasureHouse.Display(true);
+            UiManager.Show(this);
         });
     }
+
+    public override void Show() => TreasureHouse.Display(true);
+
+    public override void Hide() => TreasureHouse.Display(false);
 
     private class View_treasureHouse : UiBase
     {

@@ -3,7 +3,7 @@ using UnityEngine;
 using Utls;
 using Views;
 
-public class MainPageLayout : MonoBehaviour
+public class MainPageLayout : View
 {
     public enum Sections
     {
