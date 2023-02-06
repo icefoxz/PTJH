@@ -9,7 +9,7 @@ namespace Test
 
         public void TestResourcesLoad()
         {
-            Game.Res.Initialize(() => Debug.Log($"{nameof(TestResourcesLoad)}!"));
+            Game.Res.Initialize(() => Debug.Log($"{nameof(TestResourcesLoad)}!"), null);
         }
 
         //public void HotFixPack()

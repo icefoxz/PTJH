@@ -23,7 +23,7 @@ internal class DiziRecruitManager : MainPageBase
     }
     
     protected override string ViewName => "view_diziRecruitPage";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     protected override void Build(IView view)
     {
@@ -39,7 +39,7 @@ internal class DiziRecruitManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Page_DiziRecruit, bag =>
         {
             Game.MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            DiziRecruitPage.Display(true);
+            UiManager.Show(this);
         });
     }
 

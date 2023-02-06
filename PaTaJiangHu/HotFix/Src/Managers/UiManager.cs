@@ -9,6 +9,7 @@ namespace HotFix_Project.Managers;
 
 internal class UiManager
 {
+    private MainPageManager MainPageMgr { get; } = new MainPageManager();
 
     public enum Sections
     {
@@ -21,16 +22,16 @@ internal class UiManager
     }
 
     private List<UiManagerBase> MainPageUis { get; } = new List<UiManagerBase>();
-    private List<UiManagerBase> MainMidUis { get; } = new List<UiManagerBase>();
+
     //页面映像管理
     private List<UiMapper> UiMappers { get; }
 
     private IMainUi MainUi { get; }
     private FactionInfoManager FactionInfo { get; set; }
-    private DiziInfoSectManager DiziInfoSectManager { get; set; }
-    private DiziRecruitManager DiziRecruitManager { get; set; }
-    private DiziListViewManager DiziListViewManager { get; set; }
-    private DiziAdvManager DiziAdvManager { get; set; }
+    private DiziInfoSectManager DiziInfoSectManager { get; set; }//mainPage
+    private DiziRecruitManager DiziRecruitManager { get; set; }//mainPage
+    private DiziListViewManager DiziListViewManager { get; set; }//mainPage
+    private DiziAdvManager DiziAdvManager { get; set; }//mainPage
     private WinConItemSelectorManager WinConItemSelectorManager { get; set; }
     private WinAdvConfirmManager WinAdvConfirmManager { get; set; }
     private WinEquipmentManager WinEquipmentManager { get; set; }
@@ -112,13 +113,11 @@ internal class UiManager
     public void SetToMainPage(UiManagerBase manager, IView view, MainPageLayout.Sections section, bool isFixPixel)
     {
         MainPageUis.Add(manager);
-        if (section == MainPageLayout.Sections.Mid)
-            MainMidUis.Add(manager);
+        MainPageMgr.Reg(section, manager);
         RegPage(Sections.MainPage, manager);
         var mainPage = Game.MainUi.MainPage;
         mainPage.Set(view, section, isFixPixel);
     }
-
 
     public void Show(UiManagerBase manager)
     {
@@ -141,26 +140,17 @@ internal class UiManager
             case Sections.Window:
             case Sections.Page:
                 CloseAllUi(map, map.Section);
-                CloseMainPage();
+                MainUi.HideMainPage();
+                map.Manager.Show();
                 break;
             case Sections.MainPage:
                 CloseAllUi(map, Sections.Page);
-                if(MainMidUis.Contains(map.Manager))//如果是中间板块
-                    foreach (var ui in MainMidUis)//关闭其它中间板块,仅留下当前显示板块
-                    {
-                        if(ui == map.Manager)
-                            ui.Show();
-                        else ui.Hide();
-                    }
-
+                MainUi.ShowMainPage();
+                MainPageMgr.Show(map);
                 break; //MainPage
             default:
                 throw new ArgumentOutOfRangeException();
         }
-
-        map.Manager.Show();
-
-        void CloseMainPage() => MainPageUis.ForEach(p => p.Hide());
     }
 
 
@@ -184,6 +174,33 @@ internal class UiManager
             Section = section;
             Key = key;
             Manager = manager;
+        }
+    }
+
+    private class MainPageManager
+    {
+        private Dictionary<MainPageLayout.Sections, List<UiManagerBase>> Data { get; } =
+            new Dictionary<MainPageLayout.Sections, List<UiManagerBase>>();
+        private Dictionary<UiManagerBase, MainPageLayout.Sections> Nav { get; } =
+            new Dictionary<UiManagerBase, MainPageLayout.Sections>();
+
+        public void Show(UiMapper map)
+        {
+            foreach (var manager in Data[Nav[map.Manager]])
+            {
+                if(manager == map.Manager) continue;
+                manager.Hide();
+            }
+            map.Manager.Show();
+        }
+
+        public void Reg(MainPageLayout.Sections section, UiManagerBase manager)
+        {
+            if (!Data.ContainsKey(section))
+                Data.Add(section, new List<UiManagerBase>());
+            if (!Nav.ContainsKey(manager))
+                Nav.Add(manager, section);
+            Data[section].Add(manager);
         }
     }
 }

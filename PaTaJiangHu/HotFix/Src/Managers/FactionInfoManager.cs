@@ -10,7 +10,7 @@ internal class FactionInfoManager : UiManagerBase
 
     protected override UiManager.Sections Section => UiManager.Sections.Top;
     protected override string ViewName => "view_factionInfoUi";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     protected override void Build(IView view)
     {

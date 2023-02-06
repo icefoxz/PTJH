@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Views;
 using Server.Controllers;
+using BattleM;
 
 namespace HotFix_Project.Managers;
 
@@ -18,7 +19,7 @@ internal class WinConItemSelectorManager : UiManagerBase
 
     protected override UiManager.Sections Section => UiManager.Sections.Window;
     protected override string ViewName => "view_winConItemSelector";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     public WinConItemSelectorManager(UiManager uiManager) : base(uiManager)
     {
@@ -28,8 +29,16 @@ internal class WinConItemSelectorManager : UiManagerBase
     protected override void Build(IView view)
     {
         WinConItemSelector = new View_winConItemSelector(view,
-            guid => DiziController.UseSilver(guid, 10),
-            (guid, index) => DiziController.UseMedicine(guid, index));
+            guid =>
+            {
+                DiziController.UseSilver(guid, 10);
+                Game.MessagingManager.Send(EventString.Dizi_ConditionUpdate, guid); //Test direct update in this window
+            },
+            (guid, index) =>
+            {
+                DiziController.UseMedicine(guid, index);
+                Game.MessagingManager.SendParams(EventString.Dizi_ConditionUpdate, guid, index); //Test direct update in this window
+            });
     }
 
     protected override void RegEvents()
@@ -62,6 +71,10 @@ internal class WinConItemSelectorManager : UiManagerBase
         public View_winConItemSelector(IView v, Action<string> onSilverApply, Action<string,int> onUse) : base(v.GameObject, false)
         {
             Btn_x = v.GetObject<Button>("btn_x");
+            Btn_x.OnClickAdd(() =>
+            {
+                Display(false);
+            });
             Scroll_items = v.GetObject<ScrollRect>("scroll_items");
             StaminaView = new View_Stamina(v.GetObject<View>("view_stamina"));
             BtnsView = new View_Btns(v.GetObject<View>("view_btns"), () => onSilverApply(SelectedDizi.Guid),
@@ -144,11 +157,24 @@ internal class WinConItemSelectorManager : UiManagerBase
 
         private void DiziElementsUpdate(Dizi dizi)
         {
-            ElementMgr.SetConValue(Conditions.Food, dizi.Food.Value, dizi.Food.Max);
-            ElementMgr.SetConValue(Conditions.State, dizi.Emotion.Value, dizi.Emotion.Max);
-            ElementMgr.SetConValue(Conditions.Silver, dizi.Silver.Value, dizi.Silver.Max);
-            ElementMgr.SetConValue(Conditions.Injury, dizi.Injury.Value, dizi.Injury.Max);
-            ElementMgr.SetConValue(Conditions.Inner, dizi.Inner.Value, dizi.Inner.Max);
+            var controller = Game.Controllers.Get<DiziController>();
+            var (foodText, fColor) = controller.GetFoodCfg(dizi.Food.ValueMaxRatio);
+            var (emoText, eColor) = controller.GetEmotionCfg(dizi.Emotion.ValueMaxRatio);
+            var (silverText, sColor) = controller.GetSilverCfg(dizi.Silver.ValueMaxRatio);
+            var (injuryText, jColor) = controller.GetInjuryCfg(dizi.Injury.ValueMaxRatio);
+            var (innerText, nColor) = controller.GetInnerCfg(dizi.Inner.ValueMaxRatio);
+            SetElement(Conditions.Food, dizi.Food, foodText, fColor);
+            SetElement(Conditions.State, dizi.Emotion, emoText, eColor);
+            SetElement(Conditions.Silver, dizi.Silver, silverText, sColor);
+            SetElement(Conditions.Injury, dizi.Injury, injuryText, jColor);
+            SetElement(Conditions.Inner, dizi.Inner, innerText, nColor);
+
+            void SetElement(Conditions co, IConditionValue con, string title, Color color)
+            {
+                ElementMgr.SetConValue(co, con.Value, con.Max);
+                ElementMgr.SetConTitle(co, title);
+                ElementMgr.SetColor(co, color);
+            }
         }
 
         private class Prefab_Item : UiBase
@@ -277,6 +303,8 @@ internal class WinConItemSelectorManager : UiManagerBase
                 var conUi = GetConditionUi(con);
                 conUi.SetTitle(title);
             }
+
+            internal void SetColor(Conditions con, Color color) => GetConditionUi(con).SetColor(color);
         }
 
         private class Element_con : UiBase
@@ -285,12 +313,17 @@ internal class WinConItemSelectorManager : UiManagerBase
             private Text Text_value { get; }
             private Text Text_max { get; }
             private Text Text_title { get; }
+            private Image HandleImg { get; }
+            private Image BgImg { get; }
+
             public Element_con(IView v) : base(v.GameObject, true)
             {
                 Scrbar_condition = v.GetObject<Scrollbar>("scrbar_condition");
                 Text_value = v.GetObject<Text>("text_value");
                 Text_max = v.GetObject<Text>("text_max");
                 Text_title = v.GetObject<Text>("text_title");
+                BgImg = Scrbar_condition.GetComponent<Image>();
+                HandleImg = Scrbar_condition.image;
             }
             public void SetTitle(string title)
             {
@@ -302,7 +335,12 @@ internal class WinConItemSelectorManager : UiManagerBase
                 Text_max.text = max.ToString();
                 Scrbar_condition.size = 1f * value / max;
             }
-            
+
+            public void SetColor(Color color)
+            {
+                HandleImg.color = color;
+                BgImg.color = new Color(color.r - 0.7f, color.g - 0.7f, color.b - 0.7f);
+            }
         }
     }
 }

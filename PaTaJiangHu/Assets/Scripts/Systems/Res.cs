@@ -15,9 +15,10 @@ namespace Systems
     public interface IRes : ISingletonDependency
     {
         Task<T> LoadAsync<T>(string key);
+
         void Instantiate(string key, Transform parent, UnityAction<GameObject> callBackAction);
         Task<GameObject> InstantiateAsync(string key, Transform parent = null);
-        void Initialize(UnityAction onCompleteAction);
+        void Initialize(UnityAction onCompleteAction, UnityAction<float> onProgressAction);
         AsyncOperationHandle<T> LoadAssetAsyncHandler<T>(string key);
         AsyncOperationHandle<GameObject> InstantiateAsyncHandler(string key);
     }
@@ -42,15 +43,18 @@ namespace Systems
             return obj;
         }
 
-        public void Initialize(UnityAction onCompleteAction)
+        public void Initialize(UnityAction onCompleteAction, UnityAction<float> onProgressAction)
         {
             var handle = Addressables.InitializeAsync();
             StartCoroutine(AutoReleaseHandleCoroutine());
 
             IEnumerator AutoReleaseHandleCoroutine()
             {
+                onProgressAction?.Invoke(handle.PercentComplete);
                 if (!handle.IsDone)
+                {
                     yield return handle;
+                }
                 onCompleteAction();
             }
         }

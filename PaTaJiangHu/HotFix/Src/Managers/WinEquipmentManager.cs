@@ -18,7 +18,7 @@ internal class WinEquipmentManager : UiManagerBase
 
     protected override UiManager.Sections Section => UiManager.Sections.Window;
     protected override string ViewName => "view_winEquipment";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     public WinEquipmentManager(UiManager uiManager) : base(uiManager)
     {

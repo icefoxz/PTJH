@@ -13,7 +13,7 @@ internal class WinAdvConfirmManager : UiManagerBase
 
     protected override UiManager.Sections Section => UiManager.Sections.Window;
     protected override string ViewName => "view_winAdvConfirm";
-    protected override bool IsFixPixel => false;
+    protected override bool IsDynamicPixel => false;
 
     public WinAdvConfirmManager(UiManager uiManager) : base(uiManager)
     {

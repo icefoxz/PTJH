@@ -46,11 +46,13 @@ namespace Server.Configs.Items
 
         protected bool ChangeName()
         {
+#if UNITY_EDITOR
             var path = AssetDatabase.GetAssetPath(this);
             var newName = string.Join(Separator, id, Prefix + _name + Suffix);
             var err = AssetDatabase.RenameAsset(path, newName);
 
             if (!string.IsNullOrWhiteSpace(err)) Debug.LogError(err);
+#endif
             return true;
         }
 

@@ -20,7 +20,7 @@ internal class DiziInfoSectManager : MainPageBase
     private DiziController Controller { get; set; }
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
     protected override string ViewName => "view_diziInfoSect";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     public DiziInfoSectManager(UiManager uiManager) : base(uiManager)
     {
@@ -43,6 +43,7 @@ internal class DiziInfoSectManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziInfo.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
             bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
+        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => UiManager.Show(this));
     }
 
     public override void Show() => DiziInfo.Display(true);

@@ -21,7 +21,7 @@ internal class DiziListViewManager : MainPageBase
 
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
     protected override string ViewName => "view_diziListView";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     protected override void Build(IView view)
     {
@@ -32,6 +32,7 @@ internal class DiziListViewManager : MainPageBase
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList());
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziList.UpdateDiziState());
+        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => UiManager.Show(this));
     }
 
     public override void Show() => DiziList.Display(true);
