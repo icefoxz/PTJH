@@ -43,6 +43,7 @@ internal class DiziInfoSectManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziInfo.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
             bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
+        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => UiManager.Show(this));
     }
 
     public override void Show() => DiziInfo.Display(true);
