@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Linq;
 using MyBox;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Server.Configs.Adventures
 {
@@ -32,6 +35,7 @@ namespace Server.Configs.Adventures
         protected override IAdvEvent BeginEvent => StartAdvEvent;
     }
 
+#if UNITY_EDITOR
     [CustomEditor(typeof(AdvStorySo))]
     internal class AdvStorySoBaseEditor : Editor
     {
@@ -45,5 +49,5 @@ namespace Server.Configs.Adventures
             }
         }
     }
-
+#endif
 }

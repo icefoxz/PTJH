@@ -23,7 +23,7 @@ internal class DiziAdvManager : MainPageBase
 
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
     protected override string ViewName => "view_diziAdv";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     public DiziAdvManager(UiManager uiManager) : base(uiManager)
     {

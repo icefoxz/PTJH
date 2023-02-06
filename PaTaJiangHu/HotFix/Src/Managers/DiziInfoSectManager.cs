@@ -20,7 +20,7 @@ internal class DiziInfoSectManager : MainPageBase
     private DiziController Controller { get; set; }
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
     protected override string ViewName => "view_diziInfoSect";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     public DiziInfoSectManager(UiManager uiManager) : base(uiManager)
     {

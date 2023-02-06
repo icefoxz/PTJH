@@ -14,7 +14,7 @@ internal abstract class MainPageBase : UiManagerBase
     {
     }
 
-    protected override void RegUiManager() => UiManager.SetToMainPage(this, View, MainPageSection, IsFixPixel);
+    protected override void RegUiManager() => UiManager.SetToMainPage(this, View, MainPageSection, IsDynamicPixel);
 }
 
 /// <summary>
@@ -29,7 +29,7 @@ internal abstract class UiManagerBase
     /// <summary>
     /// 如果Ui是指定例:w 1080 h 1200, 设成true, 如果是根据硬件动态像素 = false
     /// </summary>
-    protected abstract bool IsFixPixel { get; }
+    protected abstract bool IsDynamicPixel { get; }
     protected IView View { get; private set; }
 
     protected UiManagerBase(UiManager uiManager)
@@ -49,7 +49,7 @@ internal abstract class UiManagerBase
     /// <summary>
     /// 不去需要特别重写,仅仅是因为MainPage是特别处理才需要重新注册UiManager
     /// </summary>
-    protected virtual void RegUiManager() => UiManager.SetToMainUi(this, View, Section, IsFixPixel);
+    protected virtual void RegUiManager() => UiManager.SetToMainUi(this, View, Section, IsDynamicPixel);
 
     protected abstract void Build(IView view);
     protected abstract void RegEvents();

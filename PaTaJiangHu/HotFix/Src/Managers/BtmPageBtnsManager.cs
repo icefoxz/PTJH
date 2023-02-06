@@ -12,7 +12,7 @@ internal class BtmPageBtnsManager : UiManagerBase
 
     protected override UiManager.Sections Section => UiManager.Sections.Bottom;
     protected override string ViewName => "view_btmPageBtns";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     public BtmPageBtnsManager(UiManager uiManager) : base(uiManager)
     {

@@ -18,7 +18,7 @@ internal class WinConItemSelectorManager : UiManagerBase
 
     protected override UiManager.Sections Section => UiManager.Sections.Window;
     protected override string ViewName => "view_winConItemSelector";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     public WinConItemSelectorManager(UiManager uiManager) : base(uiManager)
     {

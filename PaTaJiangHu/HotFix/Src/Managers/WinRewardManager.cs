@@ -13,7 +13,7 @@ internal class WinRewardManager : UiManagerBase
 
     protected override UiManager.Sections Section => UiManager.Sections.Window;
     protected override string ViewName => "view_winReward";
-    protected override bool IsFixPixel => false;
+    protected override bool IsDynamicPixel => false;
 
     public WinRewardManager(UiManager uiManager) : base(uiManager)
     {

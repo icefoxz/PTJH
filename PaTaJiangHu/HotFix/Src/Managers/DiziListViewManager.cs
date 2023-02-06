@@ -21,7 +21,7 @@ internal class DiziListViewManager : MainPageBase
 
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
     protected override string ViewName => "view_diziListView";
-    protected override bool IsFixPixel => true;
+    protected override bool IsDynamicPixel => true;
 
     protected override void Build(IView view)
     {

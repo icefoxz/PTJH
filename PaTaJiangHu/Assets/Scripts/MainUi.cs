@@ -24,6 +24,8 @@ public interface IMainUi : ISingletonDependency
     void HideBtm();
     void HideWindows();
     void HidePanel();
+    void HideMainPage();
+    void ShowMainPage(); 
     void HideAllLayout();
     void ShowAllLayout();
     void HideAll();
@@ -100,6 +102,10 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     }
 
     public void HidePanel() => Display(false, Panel);
+
+    public void HideMainPage() => Display(false, _mainPage);
+    public void ShowMainPage() => Display(true, _mainPage);
+
     public void HideAllLayout() => Display(false, TopUi, MidUi, BtmUi);
     public void ShowAllLayout() => Display(true, TopUi, MidUi, BtmUi);
     public void HideAll() => Display(false, TopUi, MidUi, BtmUi, Panel, Window);

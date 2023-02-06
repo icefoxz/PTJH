@@ -4,9 +4,11 @@ using System.Linq;
 using MyBox;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Items;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Server.Configs.Adventures
 {
@@ -142,6 +144,7 @@ namespace Server.Configs.Adventures
 
         public void RenameAllEvents()
         {
+#if UNITY_EDITOR
             foreach (var e in _allEvents)
             {
                 var path = AssetDatabase.GetAssetPath(e);
@@ -149,6 +152,7 @@ namespace Server.Configs.Adventures
                 var err = AssetDatabase.RenameAsset(path, newName);
                 if (!string.IsNullOrWhiteSpace(err)) Debug.LogError(err);
             }
+#endif
         }
 
         private const char Dash = '_';

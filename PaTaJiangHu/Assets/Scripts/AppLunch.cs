@@ -30,6 +30,7 @@ public class AppLunch : UnitySingleton<AppLunch>
     [SerializeField] private MainUi _mainUi;
     [SerializeField] private Canvas _sceneCanvas;
     [SerializeField] private ConfigureSo _configureSo;
+    [SerializeField] private Preloader _preloader;
 
     //*************初始化Unity项目底层框架：*****************
     private IEnumerator CheckHotFix()
@@ -53,18 +54,27 @@ public class AppLunch : UnitySingleton<AppLunch>
     {
         Res = gameObject.AddComponent<Res>();
         var isResourceInit = false;
-        Res.Initialize(() => isResourceInit = true);
+        Res.Initialize(() => { isResourceInit = true; }, ResourcesProgress);
         yield return new WaitUntil(() => isResourceInit);
         yield return CheckHotFix();
-#if DEBUG
+#if UNITY_EDITOR
         yield return ILRuntimeMgr.StartIlRuntimeServiceWithPdb(Debug.unityLogger);
         IlRuntimeManager.StartDebug();
+        if (AutoStart) StartGame();
 #else
         var handle = Res.LoadAssetAsyncHandler<TextAsset>("Game");
         yield return handle;
         yield return ILRuntimeMgr.StartIlRuntimeService(handle.Result.bytes, Debug.unityLogger);
+        StartGame();
 #endif
-        if(AutoStart) StartGame();
+        _preloader?.SetFinish();
+
+        void ResourcesProgress(float progress)
+        {
+            var percentage = (int)(progress * 100);
+            _preloader?.SetProgress(progress);
+            XDebug.Log($"Resources loading ...... {percentage}%");
+        }
     }
 
 #if UNITY_EDITOR

@@ -12,9 +12,9 @@ internal class TreasureHouseManager : UiManagerBase
 {
     private View_treasureHouse TreasureHouse { get; set; }
 
-    protected override UiManager.Sections Section { get; } = UiManager.Sections.Page;
-    protected override string ViewName { get; } = "view_treasureHouse";
-    protected override bool IsFixPixel { get; } = true;
+    protected override UiManager.Sections Section => UiManager.Sections.Page;
+    protected override string ViewName => "view_treasureHouse";
+    protected override bool IsDynamicPixel => true;
 
     public TreasureHouseManager(UiManager uiManager) : base(uiManager)
     {

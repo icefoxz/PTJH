@@ -53,6 +53,7 @@ namespace Test
             public int Amount => 数量;
         }
     }
+#if UNITY_EDITOR
     [CustomEditor(typeof(Hack_Faction))]
     internal class Hack_FactionEditor : Editor
     {
@@ -68,4 +69,5 @@ namespace Test
             }
         }
     }
+#endif
 }
