@@ -59,12 +59,22 @@ internal class DiziInfoSectManager : MainPageBase
             CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"),
                 () => onStaminaBtnClick(SelectedDizi?.Guid));
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
-            SetProp(View_diziProps.Props.Strength, 0, 0, 0);
-            SetProp(View_diziProps.Props.Agility, 0, 0, 0);
-            SetProp(View_diziProps.Props.Mp, 0, 0, 0);
-            SetProp(View_diziProps.Props.Hp, 0, 0, 0);
+            SetInitValue();
         }
 
+        public void SetInitValue()
+        {
+            CharInfo.SetName(string.Empty);
+            CharInfo.SetExp(0, 0);
+            CharInfo.SetStamina(0, 0, 0, 0);
+            CharInfo.SetPower(0);
+            CharInfo.SetLevel(0);
+            CharInfo.SetState(string.Empty, string.Empty, 0);
+            SetProp(View_diziProps.Props.Strength, 0, 0, 0);
+            SetProp(View_diziProps.Props.Agility, 0, 0, 0);
+            SetProp(View_diziProps.Props.Hp, 0, 0, 0);
+            SetProp(View_diziProps.Props.Mp, 0, 0, 0);
+        }
         private Dizi SelectedDizi { get; set; }
 
         public void SetDizi(string guid)
