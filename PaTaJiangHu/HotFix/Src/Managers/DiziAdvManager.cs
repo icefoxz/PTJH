@@ -42,7 +42,8 @@ internal class DiziAdvManager : MainPageBase
             onDiziBuyBackAction: guid => XDebug.LogWarning("弟子买回功能未完!"),
             onEquipSlotAction: (guid, slot) =>
                 Game.MessagingManager.SendParams(EventString.Dizi_Adv_SlotManagement, guid, slot),
-            onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
+            onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!"),
+            onLayoutClick: guid => DiziController.ManageDiziCondition(guid)
         );
     }
 
@@ -87,6 +88,7 @@ internal class DiziAdvManager : MainPageBase
         public enum Items { Weapon,Armor }
 
         private Button Btn_Switch { get; }
+        private Button Btn_winConItem { get; } //新添加： Prompt 弟子道具银子使用窗口
         private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
@@ -98,10 +100,14 @@ internal class DiziAdvManager : MainPageBase
             Action<string> onDiziForgetAction,
             Action<string> onDiziBuyBackAction,
             Action<string,int> onEquipSlotAction,
-            Action onSwitchAction) : base(v.GameObject, false)
+            Action<string> onLayoutClick,
+            Action onSwitchAction
+            ) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
+            //Btn_winConItem = v.GetObject<Button>("btn_switch");                               //新添加
+            //Btn_winConItem.OnClickAdd( () => {onLayoutClick?.Invoke(SelectedDizi?.Guid);});   //新添加
             ElementMgr = new ElementManager(
                 new Element_con(v.GetObject<View>("element_conFood")),
                 new Element_con(v.GetObject<View>("element_conState")),
