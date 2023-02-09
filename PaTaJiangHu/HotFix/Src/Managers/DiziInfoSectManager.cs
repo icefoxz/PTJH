@@ -110,7 +110,7 @@ internal class DiziInfoSectManager : MainPageBase
             CharInfo.SetState(dizi.State.ShortTitle, dizi.State.Description, dizi.State.LastUpdate);
             UpdateDiziStamina(dizi.Guid);
 
-            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength, dizi.Weapon?.Damage ?? 0);
+            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Strength),dizi.Weapon?.Damage ?? 0);
             SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility, 0);
             SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp, 0);
             SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp, 0);

@@ -21,6 +21,15 @@ internal class Configure : MonoBehaviour
 
 [Serializable] internal class Config
 {
+    //全局配置
+    [SerializeField] private GlobalCfg 全局配置;
+    public GlobalCfg Global => 全局配置;
+    [Serializable] public class GlobalCfg
+    {
+        [SerializeField] private GradeColorSo 品阶颜色;
+        public GradeColorSo GradeColor => 品阶颜色;
+    }
+
     //招募配置
     [SerializeField] private Recruit 招募配置;
     public Recruit RecruitCfg => 招募配置;
