@@ -12,6 +12,7 @@ namespace Views
     public interface IView
     {
         IReadOnlyDictionary<string, GameObject> GetMap();
+        RectTransform RectTransform { get; }
         GameObject GameObject { get; }
         GameObject[] GetObjects();
         GameObject GetObject(string objName);
@@ -30,7 +31,9 @@ namespace Views
     public class View : MonoBehaviour, IView
     {
         [SerializeField] private GameObject[] _components;
+        private RectTransform _rectTransform;
         public event Action OnDisableEvent;
+        public RectTransform RectTransform => _rectTransform ??= _rectTransform = GetComponent<RectTransform>();
 
         public View GetView() => this;
         public IReadOnlyDictionary<string, GameObject> GetMap() => _components.ToDictionary(c => c.name, c => c);

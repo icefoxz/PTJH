@@ -1,6 +1,7 @@
 using System;
 using Core;
 using MyBox;
+using Server.Configs.Characters;
 using Server.Controllers;
 using UnityEngine;
 
@@ -65,7 +66,6 @@ namespace Server.Configs.Items
         public ITreatment[] Treatments => 药效;
         public MedicineKinds Kind => 类型;
         public int Grade => (int)品级;
-
         public string About => 说明;
 
         public ItemType Type => ItemType.Medicine;
