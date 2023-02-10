@@ -8,6 +8,7 @@ using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;
+using Server.Configs.Characters;
 
 namespace HotFix_Project.Managers;
 
@@ -110,10 +111,10 @@ internal class DiziInfoSectManager : MainPageBase
             CharInfo.SetState(dizi.State.ShortTitle, dizi.State.Description, dizi.State.LastUpdate);
             UpdateDiziStamina(dizi.Guid);
 
-            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Strength),dizi.Weapon?.Damage ?? 0);
-            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility, 0);
-            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp, 0);
-            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp, 0);
+            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Strength), 0, dizi.WeaponPower, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Strength));
+            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Agility), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Agility));
+            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Hp), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Hp));
+            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Mp), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Mp));
         }
 
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
@@ -304,7 +305,7 @@ internal class DiziInfoSectManager : MainPageBase
                 }
 
                 public void SetIcon(Sprite icon) => Img_ico.sprite = icon;
-                public void Set(int grade, int value, int equip, int condition, int skill)
+                public void Set(int grade, int value, int skill, int equip, int condition)
                 {
                     Text_grade.text = GetGrade(grade);
                     Text_prop.text = SetText(value);
