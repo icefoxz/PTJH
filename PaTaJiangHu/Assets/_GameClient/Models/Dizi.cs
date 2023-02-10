@@ -142,7 +142,7 @@ namespace _GameClient.Models
         /// </summary>
         /// <param name="prop"></param>
         /// <returns></returns>
-        private int GetPropStateAddon(DiziProps prop)
+        public int GetPropStateAddon(DiziProps prop)
         {
             var leveledValue = GetLeveledValue(prop);
             var value = PropState.GetStateAdjustmentValue(prop,
