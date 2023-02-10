@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Server.Configs.Characters;
 using Server.Controllers;
 using Systems;
 using Systems.Coroutines;
@@ -66,6 +67,7 @@ public class Game : UnitySingleton<Game>
         InitControllers();
     }
 
+    public static Color GetColorFromGrade(int grade) => Config.Global.GradeColor.GetColor((GradeConfigSo.Grades)grade);
     /// <summary>
     /// 完全初始化后，游戏开始的入口
     /// </summary>

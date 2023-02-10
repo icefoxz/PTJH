@@ -159,7 +159,7 @@ namespace _GameClient.Models
         /// <param name="prop"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        private int GetLeveledValue(DiziProps prop)
+        public int GetLeveledValue(DiziProps prop)
         {
             var propValue = prop switch
             {
