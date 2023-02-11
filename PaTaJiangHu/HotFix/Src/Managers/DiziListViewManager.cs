@@ -78,7 +78,7 @@ internal class DiziListViewManager : MainPageBase
             {
                 var dizi = arg[i];
                 var ui = DiziList.Instance(v => new DiziPrefab(v, dizi.Guid));
-                ui.Init(dizi.Name, () => OnDiziSelectedAction?.Invoke(dizi.Guid));
+                ui.Init(dizi.Name, () => OnDiziSelectedAction?.Invoke(dizi.Guid), dizi.Grade);
                 ui.SetStateTitle(dizi.State.ShortTitle);
             }
         }
@@ -99,9 +99,10 @@ internal class DiziListViewManager : MainPageBase
                 Text_stateTitle = v.GetObject<Text>("text_stateTitle");
             }
 
-            public void Init(string name, Action onClickAction)
+            public void Init(string name, Action onClickAction, int grade)
             {
                 Text_diziName.text = name;
+                Text_diziName.color = Game.GetColorFromGrade(grade);
                 Btn_dizi.OnClickAdd(onClickAction);
                 Display(true);
             }

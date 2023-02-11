@@ -60,6 +60,13 @@ internal class TreasureHouseManager : UiManagerBase
             switch (ContentList.TreasureType)
             {
                 case View_contentList.TreasureTypes.Equipment:
+                    foreach (var dizi in faction.DiziList)
+                    {
+                        if (dizi.Weapon != null)
+                            items.Add((dizi.Weapon.Name, dizi.Weapon.About, -1));
+                        if (dizi.Armor != null)
+                            items.Add((dizi.Armor.Name, dizi.Armor.About, -1));
+                    }
                     for (var i = 0; i < faction.Weapons.Count; i++)
                     {
                         var weapon = faction.Weapons[i];
@@ -154,7 +161,7 @@ internal class TreasureHouseManager : UiManagerBase
                 TreasureType = type;
                 SortItems(type);
             }
-            private void ListItems((string title, string diziName, int amount, int factionIndex)[]items)
+            private void ListItems((string title, string diziName, int diziGrade, int amount, int factionIndex, int itemGrade)[]items)
             {
                 ItemView.ClearList(item => item.Destroy());
                 for (int i = 0; i < items.Length; i++)
@@ -162,9 +169,10 @@ internal class TreasureHouseManager : UiManagerBase
                     var item = items[i];
                     var index = i;
                     var ui = ItemView.Instance(v => new Prefab_Item(v, () => OnItemSelected(index)));
-                    ui.Set(item.diziName, item.title, item.amount);
+                    ui.Set(item.diziName, item.diziGrade, item.title, item.amount, item.itemGrade);
                 }
             }
+            
             public void OnItemSelected(int index)
             {
                 for (int i = 0; i < ItemView.List.Count; i++)
@@ -182,33 +190,34 @@ internal class TreasureHouseManager : UiManagerBase
             private void SortItems(TreasureTypes type)
             {
                 TreasureType = type;
-                List<(string name, string diziName, int amount, int factionIndex)> items = GetItems(type);
+                List<(string name, string diziName, int diziGrade, int amount, int factionIndex, int itemGrade)> items = GetItems(type);
                 ListItems(items.ToArray());
             }
 
-            private static List<(string name, string diziName, int amount, int factionIndex)> GetItems(TreasureTypes type)
+            private static List<(string name, string diziName, int diziGrade, int amount, int factionIndex, int itemGrade)> GetItems(TreasureTypes type)
             {
+
                 var faction = Game.World.Faction;
-                var items = new List<(string name, string diziName, int amount, int factionIndex)>();
+                var items = new List<(string name, string diziName, int diziGrade, int amount, int factionIndex, int itemGrade)>();
                 switch (type)
                 {
                     case TreasureTypes.Equipment: //武器+防具=装备
                         foreach (var dizi in faction.DiziList)
                         {
                             if (dizi.Weapon != null)
-                                items.Add((dizi.Weapon.Name, dizi.Name, 1, -1));
+                                items.Add((dizi.Weapon.Name, dizi.Name, dizi.Grade, 1, -1, (int) dizi.Weapon.Grade));
                             if (dizi.Armor != null)
-                                items.Add((dizi.Armor.Name, dizi.Name, 1, -1));
+                                items.Add((dizi.Armor.Name, dizi.Name, dizi.Grade, 1, -1, (int)dizi.Armor.Grade));
                         }
                         for (var i = 0; i < faction.Weapons.Count; i++)
                         {
                             var item = faction.Weapons[i];
-                            items.Add((item.Name, string.Empty, 1, i));
+                            items.Add((item.Name, string.Empty, 0, 1, i, (int) item.Grade));
                         }
                         for (var i = 0; i < faction.Armors.Count; i++)
                         {
                             var item = faction.Armors[i];
-                            items.Add((item.Name, string.Empty, 1, i));
+                            items.Add((item.Name, string.Empty, 0, 1, i, (int)item.Grade));
                         }
                         break;
                     case TreasureTypes.Medicine: //药膳
@@ -216,21 +225,22 @@ internal class TreasureHouseManager : UiManagerBase
                         for (var i = 0; i < medicine.Length; i++)
                         {
                             var item = medicine[i];
-                            items.Add((item.med.Name, string.Empty, 1, i));
+                            items.Add((item.med.Name, string.Empty, 0, item.amount, i, item.med.Grade));
                         }
                         break;
                     case TreasureTypes.Adventure:
-                        for (var i = 0; i < faction.AdvProps.Count; i++)
+                        var advProps = faction.GetAllSupportedAdvItems();
+                        for (var i = 0; i < advProps.Length; i++)
                         {
-                            var item = faction.AdvProps;
-                            items.Add(("", string.Empty, 1, i));
+                            var item = advProps[i];
+                            items.Add((item.Item.Name, string.Empty, 0, 1, i, 0));
                         }
                         break;
                     case TreasureTypes.Reward:
                         for (var i = 0; i < faction.Packages.Count; i++)
                         {
                             var item = faction.Packages;
-                            items.Add(("package", string.Empty, 1, i));
+                            items.Add(("package", string.Empty, 0, 1, i, 0));
                         }
                         break;
                     default:
@@ -239,6 +249,7 @@ internal class TreasureHouseManager : UiManagerBase
 
                 return items;
             }
+
 
             private class Prefab_Item : UiBase
             {
@@ -268,14 +279,17 @@ internal class TreasureHouseManager : UiManagerBase
                 {
                     Img_item.sprite = img;
                 }
-                public void Set(string name, string title, int amount)
+                public void Set(string name, int diziGrade, string title, int amount, int itemGrade)
                 {
                     Text_diziName.text = name;
+                    Text_diziName.color = Game.GetColorFromGrade(diziGrade);
                     Text_diziName.gameObject.SetActive(!string.IsNullOrWhiteSpace(name));
                     Text_amount.text = amount.ToString();
                     Text_amount.gameObject.SetActive(amount > 1);
                     Text_title.text = title;
+                    Text_title.color = Game.GetColorFromGrade(itemGrade);
                 }
+                
             }
         }
 
