@@ -1,4 +1,4 @@
-﻿using HotFix_Project.Views.Bases;
+using HotFix_Project.Views.Bases;
 using System;
 using System.Collections;
 using _GameClient.Models;
@@ -146,6 +146,29 @@ internal class DiziAdvManager : MainPageBase
             if (SelectedDizi == null) return;
             SetDizi(SelectedDizi);
             SlotUpdate(SelectedDizi?.Guid);
+            var dizi = SelectedDizi;
+            ElementMgr.SetInteraction(dizi.Adventure == null);
+            AdvLayoutView.SetInteraction(dizi.Adventure == null);
+            if (dizi.Adventure != null)
+            {
+                switch (dizi.Adventure.State)
+                {
+                    case AutoAdventure.States.Progress:
+                        XDebug.LogWarning(dizi.Name + "正在历练中");
+                        break;
+                    case AutoAdventure.States.Recall:
+                        XDebug.LogWarning(dizi.Name + "正在回门派中");
+                        break;
+                    case AutoAdventure.States.End:
+                        XDebug.LogWarning(dizi.Name + "回到门派等进入");
+                        break;
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            else
+            {
+                //闲置状态
+            }
         }
         public void SlotUpdate(string diziGuid)
         {
@@ -248,6 +271,11 @@ internal class DiziAdvManager : MainPageBase
                 Text_title.text = title;
                 Text_title.color = Game.GetColorFromGrade(grade);
                 Text_title.gameObject.SetActive(true);
+            }
+
+            public void SetInteraction(bool isInteractable)
+            {
+                ElementButton.interactable = isInteractable;
             }
         }
         private class Element_con : UiBase
@@ -449,6 +477,12 @@ internal class DiziAdvManager : MainPageBase
                 AlignLogPos();
             }
 
+            public void SetInteraction(bool isInteractable)
+            {
+                for(var i = 0; i < ItemSlots.Length; i++)
+                    ItemSlots[i].SetInteraction(isInteractable);
+            }
+
             private class LogPrefab : UiBase
             {
                 private Text Text_Log { get; }
@@ -507,6 +541,11 @@ internal class DiziAdvManager : MainPageBase
                     if (!isDefault) SetMode(Modes.InUse);
                     Text_timerMin.text = isDefault ? string.Empty : min.ToString();
                     Text_timerSec.text = isDefault ? string.Empty : sec.ToString();
+                }
+
+                public void SetInteraction(bool isInteractable)
+                {
+                    Btn_item.interactable = isInteractable;
                 }
             }
 
@@ -640,6 +679,11 @@ internal class DiziAdvManager : MainPageBase
                 Dodge = dodge;
                 Weapon = weapon;
                 Armor = armor;
+            }
+            public void SetInteraction(bool isInteractable)
+            {
+                Weapon.SetInteraction(isInteractable);
+                Armor.SetInteraction(isInteractable);
             }
 
             #region element_con
