@@ -65,7 +65,7 @@ internal class DiziInfoSectManager : MainPageBase
 
         public void SetInitValue()
         {
-            CharInfo.SetName(string.Empty);
+            CharInfo.SetName(string.Empty, 0);
             CharInfo.SetExp(0, 0);
             CharInfo.SetStamina(0, 0, 0, 0);
             CharInfo.SetPower(0);
@@ -104,7 +104,7 @@ internal class DiziInfoSectManager : MainPageBase
         private void SetDizi(Dizi dizi)
         {
             var c = dizi.Capable;
-            CharInfo.SetName(dizi.Name);
+            CharInfo.SetName(dizi.Name, dizi.Grade);
             CharInfo.SetLevel(dizi.Level);
             CharInfo.SetPower(dizi.Power);
             CharInfo.SetExp(dizi.Exp.Value, dizi.Exp.Max);
@@ -142,7 +142,11 @@ internal class DiziInfoSectManager : MainPageBase
             }
 
             public void SetAvatar(Sprite avatar) => Img_charAvatar.sprite = avatar;
-            public void SetName(string name) => Text_charName.text = name;
+            public void SetName(string name, int grade) 
+            {
+                Text_charName.text = name;
+                Text_charName.color = Game.GetColorFromGrade(grade);
+            }
             public void SetLevel(int level) => Text_charLevel.text = $"{level}级";
             public void SetExp(int value, int max)
             {

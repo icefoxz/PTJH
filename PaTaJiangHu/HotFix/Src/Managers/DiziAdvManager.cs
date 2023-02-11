@@ -165,9 +165,9 @@ internal class DiziAdvManager : MainPageBase
             ElementMgr.SetSkill(Skills.Force, dizi.ForceSkill.Name, dizi.ForceSkill.Level);
             ElementMgr.SetSkill(Skills.Dodge, dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
             if (dizi.Weapon == null) ElementMgr.ClearItem(Items.Weapon);
-            else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name, dizi.Weapon.Grade.ToString());
+            else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name, (int) dizi.Weapon.Grade);
             if (dizi.Armor == null) ElementMgr.ClearItem(Items.Armor);
-            else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name, dizi.Armor.Grade.ToString());
+            else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name, (int) dizi.Armor.Grade);
             var (foodText, fColor) = controller.GetFoodCfg(dizi.Food.ValueMaxRatio);
             var (emoText, eColor) = controller.GetEmotionCfg(dizi.Emotion.ValueMaxRatio);
             var (silverText, sColor) = controller.GetSilverCfg(dizi.Silver.ValueMaxRatio);
@@ -670,18 +670,6 @@ internal class DiziAdvManager : MainPageBase
 
             #endregion
 
-            private static int GetGrade(string grade) => grade switch
-            {
-                "F" => 0,
-                "E" => 1,
-                "D" => 2,
-                "C" => 3,
-                "B" => 4,
-                "A" => 5,
-                "S" => 6,
-                _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
-            };
-
             #region element_skill
 
             public void SetSkill(Skills skill, string skillName, int level)
@@ -707,7 +695,7 @@ internal class DiziAdvManager : MainPageBase
             #region element_item
 
             public void ClearItem(Items item) => ClearItem(GetItemUi(item));
-            public void SetItem(Items item, string weaponName, string grade) => SetItem(GetItemUi(item), weaponName, GetGrade(grade.ToString()));
+            public void SetItem(Items item, string weaponName, int grade) => SetItem(GetItemUi(item), weaponName, grade);
 
             private Element_item GetItemUi(Items item) => item switch
             {
