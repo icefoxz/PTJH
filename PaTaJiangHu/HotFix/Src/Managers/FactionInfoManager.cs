@@ -15,6 +15,7 @@ internal class FactionInfoManager : UiManagerBase
     protected override void Build(IView view)
     {
         FactionInfoUi = new View_factionInfoUi(view);
+        FactionInfoUi.SetFaction();
     }
 
     protected override void RegEvents()
@@ -48,7 +49,6 @@ internal class FactionInfoManager : UiManagerBase
             Element_Silver = new Element(v.GetObject<View>("element_silver"));
             Element_Yuanbao = new Element(v.GetObject<View>("element_yuanbao"));
             ActionToken = new View_actionToken(v.GetObject<View>("view_actionToken"));
-            SetFaction();
         }
         public void SetFaction()
         {
