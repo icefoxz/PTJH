@@ -1,4 +1,4 @@
-﻿using HotFix_Project.Views.Bases;
+using HotFix_Project.Views.Bases;
 using System;
 using System.Collections;
 using _GameClient.Models;
@@ -42,7 +42,8 @@ internal class DiziAdvManager : MainPageBase
             onDiziBuyBackAction: guid => XDebug.LogWarning("弟子买回功能未完!"),
             onEquipSlotAction: (guid, slot) =>
                 Game.MessagingManager.SendParams(EventString.Dizi_Adv_SlotManagement, guid, slot),
-            onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!")
+            onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!"),
+            onLayoutClick: guid => DiziController.ManageDiziCondition(guid)
         );
     }
 
@@ -87,6 +88,7 @@ internal class DiziAdvManager : MainPageBase
         public enum Items { Weapon,Armor }
 
         private Button Btn_Switch { get; }
+        private Button Btn_winConItem { get; } //新添加： Prompt 弟子道具银子使用窗口
         private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
@@ -98,10 +100,14 @@ internal class DiziAdvManager : MainPageBase
             Action<string> onDiziForgetAction,
             Action<string> onDiziBuyBackAction,
             Action<string,int> onEquipSlotAction,
-            Action onSwitchAction) : base(v.GameObject, false)
+            Action<string> onLayoutClick,
+            Action onSwitchAction
+            ) : base(v.GameObject, false)
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
+            //Btn_winConItem = v.GetObject<Button>("btn_switch");                               //新添加
+            //Btn_winConItem.OnClickAdd( () => {onLayoutClick?.Invoke(SelectedDizi?.Guid);});   //新添加
             ElementMgr = new ElementManager(
                 new Element_con(v.GetObject<View>("element_conFood")),
                 new Element_con(v.GetObject<View>("element_conState")),
@@ -140,6 +146,29 @@ internal class DiziAdvManager : MainPageBase
             if (SelectedDizi == null) return;
             SetDizi(SelectedDizi);
             SlotUpdate(SelectedDizi?.Guid);
+            var dizi = SelectedDizi;
+            ElementMgr.SetInteraction(dizi.Adventure == null);
+            AdvLayoutView.SetInteraction(dizi.Adventure == null);
+            if (dizi.Adventure != null)
+            {
+                switch (dizi.Adventure.State)
+                {
+                    case AutoAdventure.States.Progress:
+                        XDebug.LogWarning(dizi.Name + "正在历练中");
+                        break;
+                    case AutoAdventure.States.Recall:
+                        XDebug.LogWarning(dizi.Name + "正在回门派中");
+                        break;
+                    case AutoAdventure.States.End:
+                        XDebug.LogWarning(dizi.Name + "回到门派等进入");
+                        break;
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            else
+            {
+                //闲置状态
+            }
         }
         public void SlotUpdate(string diziGuid)
         {
@@ -159,9 +188,9 @@ internal class DiziAdvManager : MainPageBase
             ElementMgr.SetSkill(Skills.Force, dizi.ForceSkill.Name, dizi.ForceSkill.Level);
             ElementMgr.SetSkill(Skills.Dodge, dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
             if (dizi.Weapon == null) ElementMgr.ClearItem(Items.Weapon);
-            else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name);
+            else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name, (int) dizi.Weapon.Grade);
             if (dizi.Armor == null) ElementMgr.ClearItem(Items.Armor);
-            else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name);
+            else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name, (int) dizi.Armor.Grade);
             var (foodText, fColor) = controller.GetFoodCfg(dizi.Food.ValueMaxRatio);
             var (emoText, eColor) = controller.GetEmotionCfg(dizi.Emotion.ValueMaxRatio);
             var (silverText, sColor) = controller.GetSilverCfg(dizi.Silver.ValueMaxRatio);
@@ -237,10 +266,16 @@ internal class DiziAdvManager : MainPageBase
                 Text_title.gameObject.SetActive(!empty);
             }
 
-            public void SetTitle(string title)
+            public void SetTitle(string title, int grade)
             {
                 Text_title.text = title;
+                Text_title.color = Game.GetColorFromGrade(grade);
                 Text_title.gameObject.SetActive(true);
+            }
+
+            public void SetInteraction(bool isInteractable)
+            {
+                ElementButton.interactable = isInteractable;
             }
         }
         private class Element_con : UiBase
@@ -442,6 +477,12 @@ internal class DiziAdvManager : MainPageBase
                 AlignLogPos();
             }
 
+            public void SetInteraction(bool isInteractable)
+            {
+                for(var i = 0; i < ItemSlots.Length; i++)
+                    ItemSlots[i].SetInteraction(isInteractable);
+            }
+
             private class LogPrefab : UiBase
             {
                 private Text Text_Log { get; }
@@ -500,6 +541,11 @@ internal class DiziAdvManager : MainPageBase
                     if (!isDefault) SetMode(Modes.InUse);
                     Text_timerMin.text = isDefault ? string.Empty : min.ToString();
                     Text_timerSec.text = isDefault ? string.Empty : sec.ToString();
+                }
+
+                public void SetInteraction(bool isInteractable)
+                {
+                    Btn_item.interactable = isInteractable;
                 }
             }
 
@@ -634,6 +680,11 @@ internal class DiziAdvManager : MainPageBase
                 Weapon = weapon;
                 Armor = armor;
             }
+            public void SetInteraction(bool isInteractable)
+            {
+                Weapon.SetInteraction(isInteractable);
+                Armor.SetInteraction(isInteractable);
+            }
 
             #region element_con
 
@@ -688,7 +739,7 @@ internal class DiziAdvManager : MainPageBase
             #region element_item
 
             public void ClearItem(Items item) => ClearItem(GetItemUi(item));
-            public void SetItem(Items item, string weaponName) => SetItem(GetItemUi(item), weaponName);
+            public void SetItem(Items item, string weaponName, int grade) => SetItem(GetItemUi(item), weaponName, grade);
 
             private Element_item GetItemUi(Items item) => item switch
             {
@@ -697,11 +748,12 @@ internal class DiziAdvManager : MainPageBase
                 _ => throw new ArgumentOutOfRangeException(nameof(item), item, null)
             };
 
-            private void SetItem(Element_item item, string title)
+            private void SetItem(Element_item item, string title, int grade)
             {
-                item.SetTitle(title);
+                item.SetTitle(title, grade);
                 item.SetEmpty(false);
             }
+
 
             private void ClearItem(Element_item item) => item.SetEmpty(true);
 

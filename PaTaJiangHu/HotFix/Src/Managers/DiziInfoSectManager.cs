@@ -8,6 +8,7 @@ using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;
+using Server.Configs.Characters;
 
 namespace HotFix_Project.Managers;
 
@@ -59,12 +60,22 @@ internal class DiziInfoSectManager : MainPageBase
             CharInfo = new View_charInfo(v.GetObject<View>("view_charInfo"),
                 () => onStaminaBtnClick(SelectedDizi?.Guid));
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
-            SetProp(View_diziProps.Props.Strength, 0, 0, 0);
-            SetProp(View_diziProps.Props.Agility, 0, 0, 0);
-            SetProp(View_diziProps.Props.Mp, 0, 0, 0);
-            SetProp(View_diziProps.Props.Hp, 0, 0, 0);
+            SetInitValue();
         }
 
+        public void SetInitValue()
+        {
+            CharInfo.SetName(string.Empty, 0);
+            CharInfo.SetExp(0, 0);
+            CharInfo.SetStamina(0, 0, 0, 0);
+            CharInfo.SetPower(0);
+            CharInfo.SetLevel(0);
+            CharInfo.SetState(string.Empty, string.Empty, 0);
+            SetProp(View_diziProps.Props.Strength, 0, 0, 0);
+            SetProp(View_diziProps.Props.Agility, 0, 0, 0);
+            SetProp(View_diziProps.Props.Hp, 0, 0, 0);
+            SetProp(View_diziProps.Props.Mp, 0, 0, 0);
+        }
         private Dizi SelectedDizi { get; set; }
 
         public void SetDizi(string guid)
@@ -93,17 +104,17 @@ internal class DiziInfoSectManager : MainPageBase
         private void SetDizi(Dizi dizi)
         {
             var c = dizi.Capable;
-            CharInfo.SetName(dizi.Name);
+            CharInfo.SetName(dizi.Name, dizi.Grade);
             CharInfo.SetLevel(dizi.Level);
             CharInfo.SetPower(dizi.Power);
             CharInfo.SetExp(dizi.Exp.Value, dizi.Exp.Max);
             CharInfo.SetState(dizi.State.ShortTitle, dizi.State.Description, dizi.State.LastUpdate);
             UpdateDiziStamina(dizi.Guid);
 
-            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.Strength, dizi.Weapon?.Damage ?? 0);
-            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.Agility, 0);
-            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.Hp, 0);
-            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.Mp, 0);
+            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Strength), 0, dizi.WeaponPower, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Strength));
+            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Agility), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Agility));
+            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Hp), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Hp));
+            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Mp), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Mp));
         }
 
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);
@@ -131,7 +142,11 @@ internal class DiziInfoSectManager : MainPageBase
             }
 
             public void SetAvatar(Sprite avatar) => Img_charAvatar.sprite = avatar;
-            public void SetName(string name) => Text_charName.text = name;
+            public void SetName(string name, int grade) 
+            {
+                Text_charName.text = name;
+                Text_charName.color = Game.GetColorFromGrade(grade);
+            }
             public void SetLevel(int level) => Text_charLevel.text = $"{level}级";
             public void SetExp(int value, int max)
             {
@@ -294,7 +309,7 @@ internal class DiziInfoSectManager : MainPageBase
                 }
 
                 public void SetIcon(Sprite icon) => Img_ico.sprite = icon;
-                public void Set(int grade, int value, int equip, int condition, int skill)
+                public void Set(int grade, int value, int skill, int equip, int condition)
                 {
                     Text_grade.text = GetGrade(grade);
                     Text_prop.text = SetText(value);

@@ -170,39 +170,39 @@ internal class WinEquipmentManager : UiManagerBase
         {
             var faction = Game.World.Faction;
             var selectedDizi = Game.World.Faction.GetDizi(SelectedDiziGuid);
-            var items = new List<(string name,int factionIndex, int amount)>();
+            var items = new List<(string name,int factionIndex, int amount, int grade)>();
             IsDiziEquipped = false;
             switch (type)
             {
                 case ItemTypes.Weapon:
                     IsDiziEquipped = selectedDizi.Weapon != null;
-                    if (IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, -1, 1));
+                    if (IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, -1, 1, (int) selectedDizi.Weapon.Grade));
                     for (var i = 0; i < faction.Weapons.Count; i++)
                     {
                         var item = faction.Weapons[i];
-                        items.Add((item.Name, i, 1));
+                        items.Add((item.Name, i, 1, (int)item.Grade));
                         SetEquipmentText(true);
                     }
                     break;
                 case ItemTypes.Armor:
                     IsDiziEquipped = selectedDizi.Armor != null;
-                    if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, -1, 1));
+                    if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, -1, 1, (int)selectedDizi.Armor.Grade));
                     for (var i = 0; i < faction.Armors.Count; i++)
                     {
                         var item = faction.Armors[i];
-                        items.Add((item.Name, i, 1));
+                        items.Add((item.Name, i, 1, (int)item.Grade));
                         SetEquipmentText(true);
                     }
                     break;
                 case ItemTypes.AdvItems:
                     var advitems = faction.GetAllSupportedAdvItems();
                     IsDiziEquipped = selectedDizi.AdvItems[SelectedSlot] != null;
-                    if (IsDiziEquipped) items.Add((selectedDizi.AdvItems[SelectedSlot].Item.Name, -1, 1));
+                    if (IsDiziEquipped) items.Add((selectedDizi.AdvItems[SelectedSlot].Item.Name, -1, 1, 0));
                     for (var i = 0; i < advitems.Length; i++)
                     {
                         var item = advitems[i].Item.Name;
                         var itemAmount = advitems[i].Amount;
-                        items.Add((item, i, itemAmount));
+                        items.Add((item, i, itemAmount, 0));
                         SetEquipmentText(false);
                     }
                     break;
@@ -216,7 +216,7 @@ internal class WinEquipmentManager : UiManagerBase
                 var index = i;
                 var ui = ItemView.Instance(v => new Prefab_Item(v, () => OnSelectedItem(index), item.factionIndex));
                 ui.SetEquipped(IsDiziEquipped && index == 0);
-                ui.SetText(item.name, item.amount);
+                ui.SetText(item.name, item.amount, item.grade);
             }
             SelectedItemIndex = -1;
             OnSelectedItem(SelectedItemIndex);
@@ -276,9 +276,10 @@ internal class WinEquipmentManager : UiManagerBase
                 Img_item.sprite = item;
                 Img_equipped.sprite = equipped;
             }
-            public void SetText(string name, int amount)
+            public void SetText(string name, int amount, int grade)
             {
                 Text_name.text = name;
+                Text_name.color = Game.GetColorFromGrade(grade);
                 Text_amount.text = amount.ToString();
                 Text_amount.gameObject.SetActive(amount > 1);
             }
