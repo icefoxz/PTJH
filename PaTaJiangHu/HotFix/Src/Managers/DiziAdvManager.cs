@@ -1,6 +1,8 @@
 using HotFix_Project.Views.Bases;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using _GameClient.Models;
 using BattleM;
 using HotFix_Project.Serialization;
@@ -63,7 +65,7 @@ internal class DiziAdvManager : MainPageBase
             var diziGuid = bag.Get<string>(0);
             var message = bag.Get<string>(1);
             var isStoryEnd = bag.Get<bool>(2);
-            DiziAdv.AdvMsgUpdate(diziGuid, message, isStoryEnd);
+            DiziAdv.AdvMsgUpdate(diziGuid);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Recall, bag => DiziAdv.Update());
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_End, bag => DiziAdv.Update());
@@ -210,12 +212,9 @@ internal class DiziAdvManager : MainPageBase
             }
         }
 
-        public void AdvMsgUpdate(string diziGuid, string message, bool isStoryEnd)
+        public void AdvMsgUpdate(string diziGuid)
         {
-            if (diziGuid == SelectedDizi.Guid)
-            {
-                AdvLayoutView.AdvMessageUpdate(message, SelectedDizi);
-            }
+            if (diziGuid == SelectedDizi.Guid) AdvLayoutView.SetAdvMessages(SelectedDizi);
         }
         private class Element_skill : UiBase
         {
@@ -332,8 +331,8 @@ internal class DiziAdvManager : MainPageBase
             private Button Btn_advDiziBuyback{ get; }
             private Button Btn_advDiziForget { get; }
             private View_AdvMapSelector View_advMapSelector { get; }
-            private ScrollRect Scroll_advLog { get; }
-            private ListViewUi<LogPrefab> LogView { get; }
+            private ScrollContentAligner Scroll_advLog { get; }
+            //private ListViewUi<LogPrefab> LogView { get; }
             private ListViewUi<Prefab_rewardItem> RewardItemView { get; }
             private Element_equip[] ItemSlots { get; }
 
@@ -346,8 +345,11 @@ internal class DiziAdvManager : MainPageBase
                 Action onDiziBuyBackAction,
                 Action<int> onEquipSlotAction) : base(v.GameObject, true)
             {
-                Scroll_advLog = v.GetObject<ScrollRect>("scroll_advLog");
-                LogView = new ListViewUi<LogPrefab>(v.GetObject<View>("prefab_log"), Scroll_advLog);
+                Scroll_advLog = v.GetObject<ScrollContentAligner>("scroll_advLog");
+                Scroll_advLog.OnResetElement += OnAdvMsgReset;
+                Scroll_advLog.OnSetElement += OnLogSet;
+                Scroll_advLog.Init();
+                //LogView = new ListViewUi<LogPrefab>(v.GetObject<View>("prefab_log"), Scroll_advLog.ScrollRect);
                 RewardItemView = new ListViewUi<Prefab_rewardItem>(v, "prefab_rewardItem", "scroll_rewardItem");
                 Img_costIco = v.GetObject<Image>("img_costIco");
                 Text_cost = v.GetObject<Text>("text_cost");
@@ -375,6 +377,13 @@ internal class DiziAdvManager : MainPageBase
                 Btn_advDiziBuyback.OnClickAdd(onDiziBuyBackAction);
             }
 
+            private void OnAdvMsgReset(IView v)
+            {
+                v.GameObject.SetActive(false);
+            }
+
+            private Dizi SelectedDizi { get; set; }
+
             public void SetCost(Sprite icon, int cost)
             {
                 Img_costIco.sprite = icon;
@@ -383,7 +392,8 @@ internal class DiziAdvManager : MainPageBase
 
             public void Set(Dizi dizi)
             {
-                LogView.ClearList(ui => ui.Destroy());
+                SelectedDizi = dizi;
+                //LogView.ClearList(ui => ui.Destroy());
                 var mode = Modes.None;
                 if (dizi.Adventure == null)
                     mode = Modes.Prepare;
@@ -403,14 +413,30 @@ internal class DiziAdvManager : MainPageBase
 
                 void SetLogs(Dizi d)
                 {
-                    foreach (var msg in d.Adventure.StoryLog)
-                        AdvMessageUpdate(msg, d);
-                    AlignLogPos();
+                    SetAdvMessages(d);
+                    UpdateDiziBag(d);
                 }
+            }
+
+            public void SetAdvMessages(Dizi d)
+            {
+                if (SelectedDizi.Guid != d.Guid) return;
+                Scroll_advLog.SetList(SelectedDizi.Adventure.StoryLog.Count);
+            }
+
+            private IView OnLogSet(int index, View view)
+            {
+                var log = new LogPrefab(view);
+                var storyLog = SelectedDizi.Adventure.StoryLog;
+                var message = storyLog[storyLog.Count - index - 1];
+                log.Display(true);
+                log.LogMessage(message);
+                return view;
             }
 
             public void UpdateSlot(Dizi dizi)
             {
+                if (SelectedDizi.Guid != dizi.Guid) return;
                 for (var i = 0; i < ItemSlots.Length; i++)
                 {
                     var ui = ItemSlots[i];
@@ -421,17 +447,6 @@ internal class DiziAdvManager : MainPageBase
                     {
                         ui.SetItem(slot.Item?.Name);
                     }
-                }
-            }
-
-            //把Log翻到最底
-            private void AlignLogPos()
-            {
-                Game.CoService.RunCo(WaitHalfSec(() => LogView.SetVerticalScrollPosition(0)));
-                IEnumerator WaitHalfSec(Action callback)
-                {
-                    yield return new WaitForSeconds(0.2f);
-                    callback?.Invoke();
                 }
             }
 
@@ -456,6 +471,7 @@ internal class DiziAdvManager : MainPageBase
 
             private void UpdateDiziBag(Dizi d)
             {
+                if(SelectedDizi.Guid != d.Guid) return;
                 RewardItemView.ClearList(p => p.Destroy());
                 for (var i = 0; i < d.Capable.Bag; i++)
                 {
@@ -469,14 +485,6 @@ internal class DiziAdvManager : MainPageBase
                 }
             }
 
-            public void AdvMessageUpdate(string message, Dizi d)
-            {
-                var log = LogView.Instance(v => new LogPrefab(v));
-                log.LogMessage(message);
-                UpdateDiziBag(d);
-                AlignLogPos();
-            }
-
             public void SetInteraction(bool isInteractable)
             {
                 for(var i = 0; i < ItemSlots.Length; i++)
@@ -485,12 +493,21 @@ internal class DiziAdvManager : MainPageBase
 
             private class LogPrefab : UiBase
             {
+                private const int OneLine = 24;
                 private Text Text_Log { get; }
-                public LogPrefab(IView v) :base(v.GameObject, true)
+                public LogPrefab(IView v) :base(v, true)
                 {
                     Text_Log = v.GetObject<Text>("text_log");
                 }
-                public void LogMessage(string message) => Text_Log.text = message;
+                public void LogMessage(string message)
+                {
+                    var line = message.Length / OneLine;
+                    Text_Log.text = message;
+                    XDebug.Log($"view = {View}, rect = {View?.RectTransform}");
+                    View.RectTransform.SetSize(line * 20, RectTransform.Axis.Vertical);
+                }
+
+                public void ResetUi() => Text_Log.text = string.Empty;
             }
 
             private class Element_equip : UiBase

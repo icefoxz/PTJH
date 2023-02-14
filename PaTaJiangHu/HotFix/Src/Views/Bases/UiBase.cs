@@ -85,14 +85,16 @@ namespace HotFix_Project.Views.Bases
                 view.gameObject.SetActive(false);
         }
 
-        public T Instance(Func<View,T> func)
+        public T Instance(Func<View> onCreateView,Func<View, T> func)
         {
-            var obj = Object.Instantiate(Prefab, gameObject.transform);
+            var obj = onCreateView();
             obj.gameObject.SetActive(true);
             var ui = func.Invoke(obj);
             _list.Add(ui);
             return ui;
         }
+        public T Instance(Func<View, T> func) => Instance(() => Object.Instantiate(Prefab, gameObject.transform), func);
+
         public void ClearList(Action<T> onRemoveFromList)
         {
             foreach (var ui in _list) onRemoveFromList(ui);

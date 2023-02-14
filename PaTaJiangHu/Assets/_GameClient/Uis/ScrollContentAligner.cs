@@ -5,8 +5,20 @@ using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-public abstract class ScrollContent : MonoBehaviour
+public class ScrollContentAligner : MonoBehaviour
 {
+    public enum Modes
+    {
+        ClampBegin,
+        Infinite,
+        ClampEnd
+    }
+
+    protected Modes Mode { get; private set; }
+    protected bool AutoSlotElement { get; private set; }
+    [SerializeField] private int _cacheElemts = 30;
+    public int CacheElements => _cacheElemts;
+
     protected enum Edges
     {
         Top,
@@ -15,9 +27,8 @@ public abstract class ScrollContent : MonoBehaviour
     [SerializeField] protected ScrollRect _scrollRect;
     [SerializeField] private View _prefab;
     [SerializeField] private Edges _edge;
-    [SerializeField] private float _targetViewOffset = 5f;
 
-    protected ScrollRect ScrollRect => _scrollRect;
+    public ScrollRect ScrollRect => _scrollRect;
     protected RectTransform.Axis Vertical => RectTransform.Axis.Vertical;
     protected IView Prefab => _prefab;
     protected Edges Edge => _edge;
@@ -28,7 +39,14 @@ public abstract class ScrollContent : MonoBehaviour
     private EdgeTrigger BtmEdgeTrigger { get; set; }
 
     // 获取可视范围
-    private float GetViewSize() => ScrollRect.viewport.rect.GetSize(Vertical);
+    protected float GetViewSize() => ScrollRect.viewport.rect.GetSize(Vertical);
+
+    public event Func<int, View, IView> OnSetElement;
+    public event Action<IView> OnResetElement;
+    private List<int> _list { get; set; } = new List<int>();
+    public IReadOnlyList<int> List => _list;
+    private bool IsListLagerThanElements => _list.Count > Elements.Count;
+    private int ScrollIndex { get; set; }
 
     #region DisableTriggerMethod
     //暂停触发器
@@ -43,7 +61,7 @@ public abstract class ScrollContent : MonoBehaviour
         _disableTrigger = false;
     }
     //当滚动的时候
-    private void OnScrolling(Vector2 vec)
+    protected virtual void OnScrolling(Vector2 vec)
     {
         if (_disableTrigger) return;
         var minPos = GetMinEdge();
@@ -53,22 +71,280 @@ public abstract class ScrollContent : MonoBehaviour
     }
     #endregion
 
-    void Start()//每次开启确保可视范围Viewport的大小一致
+    #region MyRegion
+
+    public void Init()
     {
-        ScrollRect.content.sizeDelta = new Vector2(0, ScrollRect.viewport.rect.height);
+        ResetScrollRect();
+        SetNormalize(0);
+        for (var i = 0; i < CacheElements; i++)
+            CreatePrefab(v => v.gameObject.SetActive(false), false);
+        ResetListPosition(false);
+        SetMove(ScrollRect.MovementType.Clamped);
+    }
+
+    public void TestInit()
+    {
+        OnSetElement += TestSetElement;
+        Init();
+    }
+    private void ResetScrollRect()
+    {
+        _scrollRect.content.SetSize(GetViewSize(),Vertical);
+        foreach (Transform view in ScrollRect.content)
+            view.gameObject.SetActive(false);
+        ScrollRect.onValueChanged.RemoveListener(OnScrolling);
+        ScrollRect.onValueChanged.AddListener(OnScrolling);
+    }
+
+    public void SetList(List<int> list, bool inverse)
+    {
+        _list = list;
+        ListItems(inverse);
+    }
+
+    private IView TestSetElement(int index, View view)
+    {
+        view.GetComponentInChildren<Text>().text =$"list Index = {List[index]}";
+        view.name = $"Element_{index}";
+        view.gameObject.SetActive(true);
+        return view;
+    }
+
+    public void SetList(int count)
+    {
+        var list = new List<int>();
+        for (var i = 0; i < count; i++) list.Add(i);
+        SetList(list, false);
+        ResetMinMaxTrigger();
+    }
+
+    private void ListItems(bool inverse)
+    {
+        if (!inverse)
+        {
+            var maxElement = 0;
+            for (var i = 0; i < Elements.Count; i++)
+            {
+                var element = Elements[i];
+                if (i < List.Count)
+                {
+                    OnSetElement?.Invoke(List[i], element);
+                    maxElement++;
+                }
+                else ResetElement(element);
+            }
+            ScrollIndex = IndexOf(GetEdgeMaxElement());
+            ResetContentToSize(Elements.Take(maxElement)
+                    .Sum(e => e.RectTransform.rect.GetSize(Vertical)), 0,
+                Edge == Edges.Bottom);
+            SetNormalize(0);
+            ResetListPosition(false);
+        }
+        else
+        {
+            var listAlign = 1;
+            var listCount = List.Count;
+            var maxElement = 0;
+            for (var i = Elements.Count - 1; i >= 0; i--)
+            {
+                var element = Elements[i];
+                if (i < listCount)
+                {
+                    OnSetElement?.Invoke(List[listCount - listAlign], element);
+                    maxElement++;
+                }
+                else ResetElement(element);
+
+                listAlign++;
+            }
+
+            ScrollIndex = listCount - 1;
+            ResetContentToSize(Elements.TakeLast(maxElement)
+                    .Sum(e => e.RectTransform.rect.GetSize(Vertical)), 1,
+                Edge == Edges.Bottom);
+        }
+    }
+
+    private void ClampModeUpdate()
+    {
+        if (IsListLagerThanElements)
+        {
+            var halfIndex = Elements.Count / 2;
+            if ((ScrollIndex >= halfIndex && Mode == Modes.ClampBegin) ||
+                (List.Count - ScrollIndex >= halfIndex && Mode == Modes.ClampEnd))
+                SetMode(Modes.Infinite);
+        }
+    }
+
+    private void TopEdgeElementReplace(View element)
+    {
+        if (ScrollIndex == List.Count)//是否已经走完列表
+        {
+            SetList(_list, true);
+            SetMode(Modes.ClampEnd);
+            PushElementToEdge(true);
+            ScrollIndex = List.Count - 1;
+            ResetMinMaxTrigger();
+        }
+        else OnSetElement?.Invoke(ScrollIndex, element);
+    }
+    private void BottomEdgeElementReplace(View element)
+    {
+        if (ScrollIndex < 0)//是否已经走完列表
+        {
+            SetList(_list, false);
+            SetMode(Modes.ClampBegin);
+            PushElementToEdge(false);
+            ScrollIndex = 0;
+            ResetMinMaxTrigger();
+        }
+        else OnSetElement?.Invoke(ScrollIndex, element);
+    }
+
+    public void ResetUi()
+    {
+        ScrollRect.content.sizeDelta = ScrollRect.viewport.sizeDelta;
         switch (Vertical)
         {
             case RectTransform.Axis.Horizontal:
                 ScrollRect.horizontalNormalizedPosition = 0;
                 break;
             case RectTransform.Axis.Vertical:
-                ScrollRect.verticalNormalizedPosition = 0;
+                SetNormalize(0);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        ScrollRect.onValueChanged.RemoveListener(OnScrolling);
-        ScrollRect.onValueChanged.AddListener(OnScrolling);
+
+        ResetElements();
+        ResetListPosition(false, 0);
+        SetMove(ScrollRect.MovementType.Clamped);
+    }
+
+    private void ResetElements()
+    {
+        for (var i = 0; i < Elements.Count; i++)
+        {
+            var element = Elements[i];
+            ResetElement(element);
+        }
+    }
+
+    protected void ResetElement(View element)
+    {
+        var index = IndexOf(element);
+        if (List.Count == 0 || index == -1) return;
+        OnResetElement?.Invoke(element);
+        element.gameObject.SetActive(false);
+    }
+
+    public void SetMode(int mode) => SetMode((Modes)mode);
+    protected void SetMode(Modes mode)
+    {
+        Mode = mode;
+        switch (Mode)
+        {
+            case Modes.Infinite:
+                SetAutoSlotElement(true);
+                SetMove(ScrollRect.MovementType.Unrestricted);
+                break;
+            case Modes.ClampBegin:
+            case Modes.ClampEnd:
+                SetAutoSlotElement(false);
+                SetMove(ScrollRect.MovementType.Clamped);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        ResetMinMaxTrigger();
+    }
+
+    /// <summary>
+    /// 锁死滑动,把Content设成ViewPort大小, Move = Clamp
+    /// </summary>
+    public void LockContent()
+    {
+        SetContentSize(GetViewSize(), false);
+        SetNormalize(0);
+        SetMove(ScrollRect.MovementType.Clamped);
+    }
+
+    public void LockCurrentTopEdge()
+    {
+        ResetContentSizeToElement(IndexOf(GetEdgeMaxElement()));
+        SetNormalize(1);
+        SetMove(ScrollRect.MovementType.Clamped);
+    }
+
+    public void SetMove(ScrollRect.MovementType move) { ScrollRect.movementType = move; }
+    public void SetNormalize(float pos) => ScrollRect.verticalNormalizedPosition = pos;
+    /// <summary>
+    /// 根据元素(最大)设content大小
+    /// </summary>
+    /// <param name="index"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public void ResetContentSizeToElement(int index)
+    {
+        TempDisableTrigger(() =>
+        {
+            var edge = Edge switch
+            {
+                Edges.Top => Elements[index].RectTransform.offsetMin.y,
+                Edges.Bottom => Elements[index].RectTransform.offsetMax.y,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            AddContentSize(edge, Edge == Edges.Bottom);
+            ResetListPosition(Edge == Edges.Top);
+        });
+    }
+
+    /// <summary>
+    /// 重置Content大小
+    /// </summary>
+    /// <param name="size"></param>
+    /// <param name="normalize"></param>
+    /// <param name="targetTop"></param>
+    protected void ResetContentToSize(float size, float normalize, bool targetTop)
+    {
+        TempDisableTrigger(() =>
+        {
+            SetNormalize(0);
+            SetContentSize(size, targetTop);
+            SetNormalize(normalize);
+        });
+    }
+
+    /// <summary>
+    /// 把当前的元素推至最大边缘
+    /// </summary>
+    public void PushElementToEdge(bool top)
+    {
+        TempDisableTrigger(() =>
+        {
+            SetContentSize(Elements.Sum(e => e.RectTransform.rect.GetSize(Vertical)), false);
+            SetNormalize(0);
+            ResetListPosition(false);
+            if (top) SetNormalize(1);
+        });
+    }
+
+
+    #endregion
+
+    public IEnumerable<View> GetCurrentInViewElements()
+    {
+        switch (Edge)
+        {
+            case Edges.Top:
+                var min = GetMinEdge();
+                return Elements.Where(e => GetFromAxis(e.RectTransform.offsetMax) >= min);
+            case Edges.Bottom:
+                var max = GetMaxEdge();
+                return Elements.Where(e => GetFromAxis(e.RectTransform.offsetMin) <= max);
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     public void InstancePrefab() => CreatePrefab(v =>
@@ -76,27 +352,33 @@ public abstract class ScrollContent : MonoBehaviour
         v.GameObject.SetActive(true);
         v.name = $"Element{Elements.Count}";
         v.GetObject<Text>("text").text = Elements.Count.ToString();
-    });
+    }, true);
 
-    public View CreatePrefab(Action<View> instanceAction)
+    public View CreatePrefab(Action<View> instanceAction, bool autoResize)
     {
         var v = Instantiate(_prefab, _scrollRect.content);
         AlignToLastElementPosition(v, Vertical, Edge);
         _elements.Add(v);
-        AutoResizeContent();
-        //如果是由下到上,需要重新调整列表位置,但上到下不需要
-        if (Edge == Edges.Bottom &&
-            Elements.Sum(e => e.RectTransform.rect.GetSize(Vertical)) > GetViewSize()) 
+        if (autoResize)
         {
-            var last = Elements[^1];
-            var firstPos = GetFromAxis(Vertical,
-                GetEdgePointFromOffset(Edges.Top, Elements[0].RectTransform));
-            AlignListFromPosition(firstPos - GetFromAxis(last.RectTransform.offsetMax), Edges.Bottom);
+            ResizeContentToElementSize();
+            //如果是由下到上,需要重新调整列表位置,但上到下不需要
+            if (Edge == Edges.Bottom &&
+                Elements.Sum(e => e.RectTransform.rect.GetSize(Vertical)) > GetViewSize())
+            {
+                var last = Elements[^1];
+                var firstPos = GetFromAxis(Vertical,
+                    GetEdgePointFromOffset(Edges.Top, Elements[0].RectTransform));
+                AlignListFromPosition(firstPos - GetFromAxis(last.RectTransform.offsetMax), Edges.Bottom);
+            }
         }
 
         instanceAction?.Invoke(v);
         return v;
     }
+
+    public void ResetListPosition(float normalizedPosition, bool topEdge) =>
+        ResetListPosition(topEdge, CountNormalizedEdge(normalizedPosition, topEdge));
 
     public void ResetListPosition(bool alignFromTopEdge) => ResetListPosition(alignFromTopEdge, Edge switch
     {
@@ -115,7 +397,7 @@ public abstract class ScrollContent : MonoBehaviour
 
         float GetOffsetFromElement()
         {
-            var offsetMax = GetFromAxis(GetEdgeMaxElement(GetViewEdge(true, NormalizedPosition()))
+            var offsetMax = GetFromAxis(GetEdgeMaxElement(CountNormalizedEdge(NormalizedPosition(), true))
                 .RectTransform.offsetMax);
             var topEdge = GetNormalizeEdgePosition(true);
             return offsetMax - topEdge;
@@ -305,7 +587,7 @@ public abstract class ScrollContent : MonoBehaviour
     private float GetFromAxis(Vector3 vector) => GetFromAxis(Vertical, vector);
 
     //更新滑动栏大小
-    private void AutoResizeContent()
+    protected void ResizeContentToElementSize()
     {
         var contentSize = ScrollRect.content.rect.GetSize(Vertical);
         var elementsSize = Elements.Sum(e => e.RectTransform.rect.GetSize(Vertical));
@@ -346,6 +628,9 @@ public abstract class ScrollContent : MonoBehaviour
 
     protected void SetContentSize(float finalSize, bool targetTop)
     {
+        var viewSize = GetViewSize();
+        if (finalSize < viewSize)
+            finalSize = viewSize;
         var max = ScrollRect.content.offsetMax;
         var min = ScrollRect.content.offsetMin;
         if (targetTop)
@@ -402,7 +687,7 @@ public abstract class ScrollContent : MonoBehaviour
     {
         _elements.Remove(v);
         Destroy(v.GameObject);
-        AutoResizeContent();
+        ResizeContentToElementSize();
         AlignListFromPosition(GetNormalizeEdgePosition(Edge == Edges.Top), Edge);
     }
 
@@ -414,7 +699,7 @@ public abstract class ScrollContent : MonoBehaviour
     {
         var normalizedPosition = NormalizedPosition();
 
-        return GetViewEdge(topEdge, normalizedPosition);
+        return CountNormalizedEdge(normalizedPosition, topEdge);
     }
 
     private float NormalizedPosition()
@@ -428,7 +713,7 @@ public abstract class ScrollContent : MonoBehaviour
         return normalizedPosition;
     }
 
-    private float GetViewEdge(bool topEdge, float normalizedPosition)
+    protected float CountNormalizedEdge(float normalizedPosition, bool topEdge)
     {
         var contentSize = ScrollRect.content.rect.GetSize(Vertical);
         var viewPortSize = GetViewSize();
@@ -438,6 +723,56 @@ public abstract class ScrollContent : MonoBehaviour
         return normalizeFromSize - size;
     }
 
+    private void SetAutoSlotElement(bool enable)
+    {
+        AutoSlotElement = enable;
+    }
+
+    private View _topEdgeElement;
+    private View _btmEdgeElement;
+    protected void OnScrollDownTopEdge(View element, float edgePosition, float normalizedPosition)
+    {
+        if (_topEdgeElement == element) return;
+        _topEdgeElement = element;
+        if (Edge == Edges.Bottom)
+        {
+            AddScrollIndex(1);
+            if (Mode == Modes.Infinite) TopEdgeElementReplace(element);
+            else ClampModeUpdate();
+        }
+        print($"{nameof(OnScrollDownTopEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
+    }
+
+    protected void OnScrollUpTopEdge(View element, float edgePosition, float normalizedPosition)
+    {
+        if (AutoSlotElement) TempDisableTrigger(AlignLastToFirst);
+
+        //AddScrollIndex(Edge == Edges.Top ? 1 : -1);
+        //if (Mode == Modes.Infinite) InfiniteModeUpdate(element);
+        //else ClampModeUpdate();
+        //print($"{nameof(OnScrollUpTopEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
+    }
+
+    private void AddScrollIndex(int index) => ScrollIndex += index;
+
+    protected void OnScrollDownBottomEdge(View element, float edgePosition, float normalizedPosition)
+    {
+        if (AutoSlotElement) TempDisableTrigger(AlignFistToLast);
+        //print($"{nameof(OnScrollDownBottomEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
+    }
+
+    protected void OnScrollUpBottomEdge(View element, float edgePosition, float normalizedPosition)
+    {
+        if (_btmEdgeElement == element) return;
+        _btmEdgeElement = element;
+        if (Edge == Edges.Bottom)
+        {
+            AddScrollIndex(-1);
+            if (Mode == Modes.Infinite) BottomEdgeElementReplace(element);
+            else ClampModeUpdate();
+        }
+        print($"{nameof(OnScrollUpBottomEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
+    }
 
     #region EdgeTriggers
     private EdgeTrigger InstanceEdgeTrigger(string n,View element)
@@ -455,60 +790,17 @@ public abstract class ScrollContent : MonoBehaviour
     private void RegTopTrigger(View element)
     {
         TopEdgeTrigger = InstanceEdgeTrigger("Top", element);
-        TopEdgeTrigger.OnDownEdgeUpdate += OnScrollUpTopEdge;
-        TopEdgeTrigger.OnUpEdgeUpdate += OnScrollDownTopEdge;
+        TopEdgeTrigger.OnDownEdgeUpdate += OnScrollDownTopEdge;
+        TopEdgeTrigger.OnUpEdgeUpdate += OnScrollUpTopEdge;
     }
 
     //注册位置min触发器
     private void RegBtmTrigger(View element)
     {
         BtmEdgeTrigger = InstanceEdgeTrigger("Btm", element);
-        BtmEdgeTrigger.OnDownEdgeUpdate += OnScrollUpBottomEdge; 
-        BtmEdgeTrigger.OnUpEdgeUpdate += OnScrollDownBottomEdge;
+        BtmEdgeTrigger.OnDownEdgeUpdate += OnScrollDownBottomEdge; 
+        BtmEdgeTrigger.OnUpEdgeUpdate += OnScrollUpBottomEdge;
     }
-
-    //上边往上替换元素
-    protected abstract void OnScrollDownTopEdge(View element, float edgePosition, float normalizedPosition);
-    //{
-    //    //switch (Edge)
-    //    //{
-    //    //    case Edges.Top:
-    //    //        AlignFistToLast();
-    //    //        break;
-    //    //    case Edges.Bottom:
-    //    //        AlignLastToFirst();
-    //    //        TempDisableTrigger(() => SetContentSize(Elements.Last().RectTransform.rect.GetSize(Vertical), false));
-    //    //        break;
-    //    //    default:
-    //    //        throw new ArgumentOutOfRangeException();
-    //    //}
-    //    print($"TopUp {element?.name}");
-    //}
-    //上边往下替换元素
-    protected abstract void OnScrollUpTopEdge(View element, float edgePosition, float normalizedPosition);
-    //下边往下替换元素
-    protected abstract void OnScrollDownBottomEdge(View element, float edgePosition, float normalizedPosition);
-    //{
-    //    switch (Edge)
-    //    {
-    //        case Edges.Top:
-    //            AlignLastToFirst();
-    //            break;
-    //        case Edges.Bottom:
-    //            AlignFistToLast();
-    //            TempDisableTrigger(() =>
-    //            {
-    //                SetContentSize(Elements.Last().RectTransform.rect.GetSize(Vertical), true);
-    //                ResetListPosition();
-    //            });
-    //            break;
-    //        default:
-    //            throw new ArgumentOutOfRangeException();
-    //    }
-    //    print($"BtmDown {element?.name}");
-    //}
-    //下边往上替换元素
-    protected abstract void OnScrollUpBottomEdge(View element, float edgePosition, float normalizedPosition);
 
     private View OnTriggerReplaceNextElement(View v)
     {

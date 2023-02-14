@@ -206,6 +206,7 @@ namespace Server.Controllers
         private class StoryHandler
         {
             private const int RecursiveLimit = 9999;
+            private const int QueueLimit = 100;
             private int _recursiveIndex = 0;
             private List<string> Messages { get; } = new List<string>();
 
@@ -227,10 +228,15 @@ namespace Server.Controllers
             public async Task Invoke(Dizi dizi, long nowTicks, int updatedMiles)
             {
                 var diziExhausted = false;
+                var eventQueue = new Queue<string>(QueueLimit);
                 while (CurrentEvent != null)
                 {
+                    if (eventQueue.Count >= QueueLimit)
+                        eventQueue.Dequeue();
+                    eventQueue.Enqueue(CurrentEvent.name);
                     if (_recursiveIndex >= RecursiveLimit)
-                        throw new StackOverflowException($"故事{Story.Name} 死循环!检查其中事件{CurrentEvent.name}");
+                        throw new StackOverflowException(
+                            $"故事{Story.Name} 死循环!检查其中事件{CurrentEvent.name}\n事件经过:{string.Join(',', eventQueue)}");
                     //如果强制退出事件
                     diziExhausted = Story.HaltOnExhausted && dizi.Stamina.Con.IsExhausted;
                     if (diziExhausted)

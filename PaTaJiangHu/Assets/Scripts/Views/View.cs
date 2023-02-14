@@ -33,7 +33,19 @@ namespace Views
         [SerializeField] private GameObject[] _components;
         private RectTransform _rectTransform;
         public event Action OnDisableEvent;
-        public RectTransform RectTransform => _rectTransform ??= _rectTransform = GetComponent<RectTransform>();
+        public event Action<IView> OnResetUi;
+        public RectTransform RectTransform
+        {
+            get
+            {
+                if (_rectTransform is null)
+                {
+                    _rectTransform = _rectTransform = GetComponent<RectTransform>();
+                }
+
+                return _rectTransform;
+            }
+        }
 
         public View GetView() => this;
         public IReadOnlyDictionary<string, GameObject> GetMap() => _components.ToDictionary(c => c.name, c => c);
@@ -48,12 +60,19 @@ namespace Views
         public T GetObject<T>(string objName)
         {
             var obj = GetObject(objName).GetComponent<T>();
+            //if (obj == null)
+            //{
+            //    obj = GetObject(objName).GetComponent<T>();
+            //}
             return CheckNull(obj);
         }
 
         private static T CheckNull<T>(T obj)
         {
-            if (obj == null) throw new NullReferenceException($"物件与{typeof(T).Name}不匹配, 请确保控件存在.");
+            if (obj == null)
+            {
+                throw new NullReferenceException($"物件与{typeof(T).Name}不匹配, 请确保控件存在.");
+            }
             return obj;
         }
 

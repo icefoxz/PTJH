@@ -90,6 +90,8 @@ namespace Systems
             appdomain.DelegateManager.RegisterMethodDelegate<IView>();
             appdomain.DelegateManager.RegisterMethodDelegate<ILTypeInstance>();
             appdomain.DelegateManager.RegisterMethodDelegate<ObjectBag>();
+            appdomain.DelegateManager.RegisterMethodDelegate<int, IView>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<int, View, IView>();
 
             appdomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appdomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
