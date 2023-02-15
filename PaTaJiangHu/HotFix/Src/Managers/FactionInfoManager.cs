@@ -15,7 +15,6 @@ internal class FactionInfoManager : UiManagerBase
     protected override void Build(IView view)
     {
         FactionInfoUi = new View_factionInfoUi(view);
-        FactionInfoUi.SetFaction();
     }
 
     protected override void RegEvents()
