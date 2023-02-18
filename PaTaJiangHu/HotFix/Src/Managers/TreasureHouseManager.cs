@@ -287,7 +287,7 @@ internal class TreasureHouseManager : UiManagerBase
                     Text_amount.text = amount.ToString();
                     Text_amount.gameObject.SetActive(amount > 1);
                     Text_title.text = title;
-                    Text_title.color = Game.GetColorFromGrade(itemGrade);
+                    Text_title.color = Game.GetColorFromItemGrade(itemGrade);
                 }
                 
             }

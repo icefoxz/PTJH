@@ -164,6 +164,8 @@ public class ScrollContentAligner : MonoBehaviour
                     .Sum(e => e.RectTransform.rect.GetSize(Vertical)), 1,
                 Edge == Edges.Bottom);
         }
+
+        SetMode(inverse ? Modes.ClampEnd : Modes.ClampBegin);
     }
 
     private void ClampModeUpdate()

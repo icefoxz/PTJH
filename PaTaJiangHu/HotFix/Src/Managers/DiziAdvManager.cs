@@ -1,8 +1,5 @@
 using HotFix_Project.Views.Bases;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using _GameClient.Models;
 using BattleM;
 using HotFix_Project.Serialization;
@@ -90,7 +87,7 @@ internal class DiziAdvManager : MainPageBase
         public enum Items { Weapon,Armor }
 
         private Button Btn_Switch { get; }
-        private Button Btn_winConItem { get; } //新添加： Prompt 弟子道具银子使用窗口
+        private Button Btn_Condition { get; } //新添加： Prompt 弟子道具银子使用窗口
         private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
@@ -108,8 +105,8 @@ internal class DiziAdvManager : MainPageBase
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
-            //Btn_winConItem = v.GetObject<Button>("btn_switch");                               //新添加
-            //Btn_winConItem.OnClickAdd( () => {onLayoutClick?.Invoke(SelectedDizi?.Guid);});   //新添加
+            Btn_Condition = v.GetObject<Button>("btn_condition");//新添加
+            Btn_Condition.OnClickAdd(() => { onLayoutClick?.Invoke(SelectedDizi?.Guid); });   //新添加
             ElementMgr = new ElementManager(
                 new Element_con(v.GetObject<View>("element_conFood")),
                 new Element_con(v.GetObject<View>("element_conState")),
@@ -268,7 +265,7 @@ internal class DiziAdvManager : MainPageBase
             public void SetTitle(string title, int grade)
             {
                 Text_title.text = title;
-                Text_title.color = Game.GetColorFromGrade(grade);
+                Text_title.color = Game.GetColorFromItemGrade(grade);
                 Text_title.gameObject.SetActive(true);
             }
 
@@ -406,22 +403,17 @@ internal class DiziAdvManager : MainPageBase
                         AutoAdventure.States.End => Modes.Waiting,
                         _ => throw new ArgumentOutOfRangeException()
                     };
-                    SetLogs(dizi);
                 }
                 SetModes(mode);
-                UpdateDiziBag(dizi);
-
-                void SetLogs(Dizi d)
-                {
-                    SetAdvMessages(d);
-                    UpdateDiziBag(d);
-                }
             }
 
             public void SetAdvMessages(Dizi d)
             {
                 if (SelectedDizi.Guid != d.Guid) return;
-                Scroll_advLog.SetList(SelectedDizi.Adventure.StoryLog.Count);
+                var messageCount = 0;
+                if (SelectedDizi.Adventure != null)
+                    messageCount = SelectedDizi.Adventure.StoryLog.Count;
+                Scroll_advLog.SetList(messageCount);
             }
 
             private IView OnLogSet(int index, View view)
@@ -463,8 +455,9 @@ internal class DiziAdvManager : MainPageBase
                         or Modes.Waiting 
                         or Modes.Returning 
                         or Modes.Failed);
+                SetAdvMessages(SelectedDizi);
                 foreach (var slot in ItemSlots) slot.SetTimer(); //Update adv equipments
-
+                UpdateDiziBag(SelectedDizi);
                 //private method
                 void DisplayButton(Button button, bool display) => button.gameObject.SetActive(display);
             }
@@ -493,7 +486,7 @@ internal class DiziAdvManager : MainPageBase
 
             private class LogPrefab : UiBase
             {
-                private const int OneLine = 24;
+                private const int OneLine = 20;
                 private Text Text_Log { get; }
                 public LogPrefab(IView v) :base(v, true)
                 {

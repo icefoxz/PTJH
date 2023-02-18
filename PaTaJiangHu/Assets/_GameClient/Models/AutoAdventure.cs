@@ -122,7 +122,9 @@ namespace _GameClient.Models
                                         EventString.Dizi_Adv_EventMessage, Dizi.Guid,
                                         message, isStoryEnd);
                                     UpdateStoryService?.Invoke();
-                                    yield return new WaitForSeconds(MessageSecs);
+                                    var waiting = SysTime.Now;
+                                    yield return new WaitUntil(() =>
+                                        (SysTime.Now - waiting).TotalSeconds >= MessageSecs);
                                 }
                             }
                             Mode = Modes.Polling;//循环结束自动回到轮询故事
@@ -160,7 +162,8 @@ namespace _GameClient.Models
             IEnumerator ReturnFromAdventure()
             {
                 yield return new WaitUntil(() => Mode == Modes.Polling);
-                yield return new WaitForSeconds(JourneyReturnSec);
+                var returnTime = SysTime.Now;
+                yield return new WaitUntil(() => (SysTime.Now - returnTime).TotalSeconds >= JourneyReturnSec);
                 SetServiceName("已回到山门.");
                 RegStory(new DiziAdvLog(new[] { $"{Dizi.Name}已回到山门!" }, Dizi.Guid, SysTime.UnixNow, LastMile));
                 yield return new WaitForSeconds(1);

@@ -68,6 +68,7 @@ public class Game : UnitySingleton<Game>
     }
 
     public static Color GetColorFromGrade(int grade) => Config.Global.GradeColor.GetColor((GradeConfigSo.Grades)grade);
+    public static Color GetColorFromItemGrade(int grade) => GetColorFromGrade(grade + 1);
     /// <summary>
     /// 完全初始化后，游戏开始的入口
     /// </summary>

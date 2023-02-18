@@ -279,7 +279,7 @@ internal class WinEquipmentManager : UiManagerBase
             public void SetText(string name, int amount, int grade)
             {
                 Text_name.text = name;
-                Text_name.color = Game.GetColorFromGrade(grade);
+                Text_name.color = Game.GetColorFromItemGrade(grade);
                 Text_amount.text = amount.ToString();
                 Text_amount.gameObject.SetActive(amount > 1);
             }
