@@ -29,7 +29,7 @@ namespace Server.Configs.Adventures
                 Brief,
                 Adjust.Set(arg.Adjustment)
             };
-            list.AddRange(ConFields.Select(a => a.Set(arg.Adjustment)));
+            list.AddRange(ConFields.Select(a => a.Set(arg.Adjustment,this)));
             var messages = list.Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => string.Format(s, arg.DiziName))
                 .ToArray();
@@ -98,7 +98,7 @@ namespace Server.Configs.Adventures
             private int Value => 值;
             private bool Percentage => 百分比;
 
-            public string Set(IAdjustment adj)
+            public string Set(IAdjustment adj, AdjustEventSo so)
             {
                 var adjType = Kind switch
                 {
@@ -107,7 +107,7 @@ namespace Server.Configs.Adventures
                     Kinds.Condition => IAdjustment.Types.Emotion,
                     Kinds.Injury => IAdjustment.Types.Injury,
                     Kinds.Inner => IAdjustment.Types.Inner,
-                    _ => throw new ArgumentOutOfRangeException()
+                    _ => throw new ArgumentOutOfRangeException($"{so.Name} 存在未知类型 = {Kind}, 请检查配置!")
                 };
                 adj.Set(adjType, Value, Percentage);
                 return string.Empty;
