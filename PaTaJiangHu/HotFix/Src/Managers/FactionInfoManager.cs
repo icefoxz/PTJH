@@ -11,7 +11,9 @@ internal class FactionInfoManager : UiManagerBase
     protected override UiManager.Sections Section => UiManager.Sections.Top;
     protected override string ViewName => "view_factionInfoUi";
     protected override bool IsDynamicPixel => true;
-
+    public FactionInfoManager(UiManager uiManager) : base(uiManager)
+    {
+    }
     protected override void Build(IView view)
     {
         FactionInfoUi = new View_factionInfoUi(view);
@@ -29,6 +31,14 @@ internal class FactionInfoManager : UiManagerBase
             bag=> FactionInfoUi.SetSilver(bag.GetInt(0)));
         Game.MessagingManager.RegEvent(EventString.Faction_YuanBaoUpdate,
             bag => FactionInfoUi.SetYuanBao(bag.GetInt(0)));
+        Game.MessagingManager.RegEvent(EventString.Faction_FoodUpdate,
+            bag=> FactionInfoUi.SetFood(bag.GetInt(0)));
+        Game.MessagingManager.RegEvent(EventString.Faction_WineUpdate,
+            bag=> FactionInfoUi.SetWine(bag.GetInt(0)));
+        Game.MessagingManager.RegEvent(EventString.Faction_PillUpdate,
+            bag=> FactionInfoUi.SetPill(bag.GetInt(0)));
+        Game.MessagingManager.RegEvent(EventString.Faction_HerbUpdate,
+            bag=> FactionInfoUi.SetHerb(bag.GetInt(0)));
         Game.MessagingManager.RegEvent(EventString.Faction_Params_ActionLingUpdate,
             bag => FactionInfoUi.SetActionToken(bag.GetInt(0), bag.GetInt(1), bag.GetInt(2), bag.GetInt(3)));
     }
@@ -41,12 +51,20 @@ internal class FactionInfoManager : UiManagerBase
     {
         private Element Element_Silver { get; }
         private Element Element_Yuanbao { get; }
+        private Element Element_Food { get; }
+        private Element Element_Wine { get; }
+        private Element Element_Pill { get; }
+        private Element Element_Herb { get; }
         private View_actionToken ActionToken { get; }
 
         public View_factionInfoUi(IView v) : base(v.GameObject, true)
         {
             Element_Silver = new Element(v.GetObject<View>("element_silver"));
             Element_Yuanbao = new Element(v.GetObject<View>("element_yuanbao"));
+            Element_Food = new Element(v.GetObject<View>("element_food"));
+            Element_Wine = new Element(v.GetObject<View>("element_wine"));
+            Element_Pill = new Element(v.GetObject<View>("element_pill"));
+            Element_Herb = new Element(v.GetObject<View>("element_herb"));
             ActionToken = new View_actionToken(v.GetObject<View>("view_actionToken"));
         }
         public void SetFaction()
@@ -54,11 +72,19 @@ internal class FactionInfoManager : UiManagerBase
             var f = Game.World.Faction;
             Element_Silver.SetText(f.Silver.ToString());
             Element_Yuanbao.SetText(f.YuanBao.ToString());
+            Element_Food.SetText(f.Food.ToString());
+            Element_Wine.SetText(f.Wine.ToString());
+            Element_Pill.SetText(f.Pill.ToString());
+            Element_Herb.SetText(f.Herb.ToString());
             ActionToken.SetToken(f.ActionLing, f.ActionLing);
         }
 
         public void SetSilver(int silver) => Element_Silver.SetText(silver.ToString());
         public void SetYuanBao(int yuanBao) => Element_Yuanbao.SetText(yuanBao.ToString());
+        public void SetFood(int food) => Element_Food.SetText(food.ToString());
+        public void SetWine(int wine) => Element_Wine.SetText(wine.ToString());
+        public void SetPill(int pill) => Element_Pill.SetText(pill.ToString());
+        public void SetHerb(int herb) => Element_Herb.SetText(herb.ToString());
         public void SetActionToken(int value, int max, int min, int sec)
         {
             ActionToken.SetToken(value, max);
@@ -111,8 +137,5 @@ internal class FactionInfoManager : UiManagerBase
         }
 
     }
-
-    public FactionInfoManager(UiManager uiManager) : base(uiManager)
-    {
-    }
+    
 }
