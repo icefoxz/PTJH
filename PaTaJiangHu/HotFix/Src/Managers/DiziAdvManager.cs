@@ -195,17 +195,18 @@ internal class DiziAdvManager : MainPageBase
             var (silverText, sColor) = controller.GetSilverCfg(dizi.Silver.ValueMaxRatio);
             var (injuryText, jColor) = controller.GetInjuryCfg(dizi.Injury.ValueMaxRatio);
             var (innerText, nColor) = controller.GetInnerCfg(dizi.Inner.ValueMaxRatio);
-            SetElement(Conditions.Food, dizi.Food, foodText, fColor);
-            SetElement(Conditions.State, dizi.Emotion, emoText, eColor);
-            SetElement(Conditions.Silver, dizi.Silver, silverText, sColor);
-            SetElement(Conditions.Injury, dizi.Injury, injuryText, jColor);
-            SetElement(Conditions.Inner, dizi.Inner, innerText, nColor);
+            SetElement(Conditions.Food, dizi.Food, foodText, fColor, dizi.Capable.Food);
+            SetElement(Conditions.State, dizi.Emotion, emoText, eColor, dizi.Capable.Wine);
+            SetElement(Conditions.Silver, dizi.Silver, silverText, sColor, dizi.Capable.Silver);
+            SetElement(Conditions.Injury, dizi.Injury, injuryText, jColor, dizi.Capable.Herb);
+            SetElement(Conditions.Inner, dizi.Inner, innerText, nColor, dizi.Capable.Pill);
 
-            void SetElement(Conditions co, IConditionValue con, string title, Color color)
+            void SetElement(Conditions co, IConditionValue con, string title, Color color, int capable)
             {
                 ElementMgr.SetConValue(co, con.Value, con.Max);
                 ElementMgr.SetConTitle(co, title);
                 ElementMgr.SetColor(co, color);
+                ElementMgr.SetConsumeValue(co, capable);
             }
         }
 
@@ -282,6 +283,8 @@ internal class DiziAdvManager : MainPageBase
             private Text Text_title { get; }
             private Image BgImg { get; }
             private Image HandleImg { get; }
+            private Image Img_consumeIco { get; }
+            private Text Text_consumeValue { get; }
 
             public Element_con(IView v) : base(v.GameObject, true)
             {
@@ -291,6 +294,8 @@ internal class DiziAdvManager : MainPageBase
                 Text_title = v.GetObject<Text>("text_title");
                 BgImg = Scrbar_condition.GetComponent<Image>();
                 HandleImg = Scrbar_condition.image;
+                Img_consumeIco = v.GetObject<Image>("img_consumeIco");
+                Text_consumeValue = v.GetObject<Text>("text_consumeValue");
             }
             public void SetTitle(string title)
             {
@@ -307,6 +312,8 @@ internal class DiziAdvManager : MainPageBase
                 HandleImg.color = color;
                 BgImg.color = new Color(color.r - 0.7f, color.g - 0.7f, color.b - 0.7f);
             }
+            public void SetIcon(Sprite icon) => Img_consumeIco.sprite = icon;
+            public void SetConsume(int value) => Text_consumeValue.text = value.ToString();
         }
         private class View_advLayout : UiBase
         {
@@ -766,6 +773,12 @@ internal class DiziAdvManager : MainPageBase
 
 
             private void ClearItem(Element_item item) => item.SetEmpty(true);
+
+            public void SetConsumeValue(Conditions con, int capable)
+            {
+                var conText = GetConditionUi(con);
+                conText.SetConsume(capable);
+            }
 
             #endregion
         }
