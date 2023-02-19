@@ -34,8 +34,13 @@ namespace _GameClient.Models
         private List<IAdvPackage> _packages = new List<IAdvPackage>();
         private List<IGameItem> _advProps = new List<IGameItem>();
         private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
+
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
+        public int Food { get; private set; }
+        public int Wine { get; private set; }
+        public int Pill { get; private set; }
+        public int Herb { get; private set; }
 
         public int ActionLing { get; private set; }
         public int ActionLingMax { get; }

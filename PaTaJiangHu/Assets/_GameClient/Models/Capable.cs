@@ -28,6 +28,12 @@ namespace _GameClient.Models
         /// </summary>
         public int Bag { get; private set; }
 
+        public int Silver { get; }
+        public int Food { get; }
+        public int Wine { get; }
+        public int Herb { get; }
+        public int Pill { get; }
+
         public Capable()
         {
             
