@@ -153,7 +153,7 @@ namespace Server.Controllers
                 var story = await ProcessStory(place, now, toMiles, dizi);
                 //当获取到地点, 执行故事
                 dizi.AdventureStoryLogging(story.AdvLog);
-                if (story.IsAdvFailed || dizi.Stamina.Con.IsExhausted) //当历练失败
+                if (story.IsAdvFailed) //当历练失败
                 {
                     //执行历练失败的处罚
                 }
@@ -181,7 +181,7 @@ namespace Server.Controllers
         private async Task<StoryHandler> ProcessStory(IAdvPlace place, long nowTicks, int updatedMiles, Dizi dizi)
         {
             var story = place.WeighPickStory(); //根据权重随机故事
-            var eventHandler = new AdvEventMiddleware(BattleSimulation, ConditionProperty, dizi.Adventure); //生成事件处理器
+            var eventHandler = new AutoAdvEventMiddleware(BattleSimulation, ConditionProperty); //生成事件处理器
             var storyHandler = new StoryHandler(story, eventHandler); //生成故事处理器
             await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
             return storyHandler;
@@ -201,180 +201,6 @@ namespace Server.Controllers
             return miles;
         }
 
-        #region Handler
-        // 历练故事处理器
-        private class StoryHandler
-        {
-            private const int RecursiveLimit = 9999;
-            private const int QueueLimit = 100;
-            private int _recursiveIndex = 0;
-            private List<string> Messages { get; } = new List<string>();
-
-            private IAdvStory Story { get; }
-            private IAdvEvent CurrentEvent { get; set; }
-            private AdvEventMiddleware EventMiddleware { get; }
-            private TaskCompletionSource<IAdvEvent> OnNextEventTask { get; set; }
-            public bool IsAdvFailed { get; private set; }//是否历练强制失败
-            public bool IsForceQuit { get; private set; }//强制历练结束
-            public DiziAdvLog AdvLog { get; private set; }//故事信息
-
-            public StoryHandler(IAdvStory story, AdvEventMiddleware eventMiddleware)
-            {
-                Story = story;
-                CurrentEvent = Story.StartAdvEvent;
-                EventMiddleware = eventMiddleware;
-            }
-
-            public async Task Invoke(Dizi dizi, long nowTicks, int updatedMiles)
-            {
-                var diziExhausted = false;
-                var eventQueue = new Queue<string>(QueueLimit);
-                while (CurrentEvent != null)
-                {
-                    if (eventQueue.Count >= QueueLimit)
-                        eventQueue.Dequeue();
-                    eventQueue.Enqueue(CurrentEvent.name);
-                    if (_recursiveIndex >= RecursiveLimit)
-                        throw new StackOverflowException(
-                            $"故事{Story.Name} 死循环!检查其中事件{CurrentEvent.name}\n事件经过:{string.Join(',', eventQueue)}");
-                    //如果强制退出事件
-                    diziExhausted = Story.HaltOnExhausted && dizi.Stamina.Con.IsExhausted;
-                    if (diziExhausted)
-                    {
-                        IsAdvFailed = true;
-                        IsForceQuit = true;
-                        break;
-                    }
-                    if (CurrentEvent is AdvQuitEventSo q)
-                    {
-                        IsAdvFailed = q.IsAdvFailed;
-                        IsForceQuit = q.IsForceQuit;
-                        break;
-                    }
-                    CurrentEvent.OnLogsTrigger += OnLogsTrigger;
-                    CurrentEvent.OnNextEvent += OnNextEventTrigger;
-                    OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
-                    EventMiddleware.Invoke(CurrentEvent, dizi);
-                    var nextEvent = await OnNextEventTask.Task;
-                    CurrentEvent = nextEvent;
-                    _recursiveIndex++;
-                }
-
-                AdvLog = new DiziAdvLog(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles);
-            }
-
-
-            private void OnNextEventTrigger(IAdvEvent nextEvent)
-            {
-                CurrentEvent.OnNextEvent -= OnNextEventTrigger;
-                OnNextEventTask.TrySetResult(nextEvent);
-            }
-
-            private void OnLogsTrigger(string[] logs)
-            {
-                CurrentEvent.OnLogsTrigger -= OnLogsTrigger;
-                Messages.AddRange(logs);
-            }
-        }
-        // 历练事件处理器中间件
-        private class AdvEventMiddleware
-        {
-            private BattleSimulatorConfigSo Simulator { get; }
-            private ConditionPropertySo Cfg { get; }
-            private IRewardReceiver Receiver { get; }
-            public AdvEventMiddleware(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg, IRewardReceiver receiver)
-            {
-                Simulator = simulator;
-                Cfg = cfg;
-                Receiver = receiver;
-            }
-
-            public void Invoke(IAdvEvent advEvent, Dizi dizi)
-            {
-                var arg = new AdvArg(dizi,Receiver);
-                switch (advEvent.AdvType)
-                {
-                    case AdvTypes.Option:
-                    case AdvTypes.Battle:
-                        throw new NotSupportedException($"历练不支持事件={advEvent.AdvType}!");
-                    case AdvTypes.Story:
-                    case AdvTypes.Dialog:
-                    case AdvTypes.Pool:
-                    case AdvTypes.Term:
-                    case AdvTypes.Adjust:
-                    case AdvTypes.Reward: break;//其余的直接执行判断
-                    case AdvTypes.Simulation://执行模拟战斗
-                        if (advEvent is not BattleSimulationEventSo bs)
-                            throw new NotImplementedException($"{advEvent.name} 事件类型错误!");
-                        var diziSim = Cfg.GetSimulation(dizi.Name, dizi.Strength, dizi.Agility,
-                            dizi.WeaponPower, dizi.ArmorPower,
-                            dizi.CombatSkill.Grade, dizi.CombatSkill.Level,
-                            dizi.ForceSkill.Grade, dizi.ForceSkill.Level,
-                            dizi.DodgeSkill.Grade, dizi.DodgeSkill.Level);
-                        var npc = bs.GetNpc(Cfg);
-                        var outcome = Simulator.CountSimulationOutcome(diziSim, npc);
-                        var staminaController = Game.Controllers.Get<StaminaController>();
-                        if(outcome.IsPlayerWin && dizi.Stamina.Con.Value >= outcome.Result)
-                        {
-                            staminaController.ConsumeStamina(dizi.Guid, -outcome.Result);
-                        }
-                        else//当弟子战斗失败,或是血量不够扣除
-                        {
-                            staminaController.SetStaminaZero(dizi.Guid, true);
-                        }
-                        arg.SetSimulationOutcome(outcome);
-                        break;
-                    case AdvTypes.Quit://结束事件由故事处理器处理
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                advEvent.EventInvoke(arg);
-            }
-
-            private class AdvArg : IAdvEventArg , IAdjustment
-            {
-                public string DiziName => Dizi.Name;
-                private Dizi Dizi { get; }
-                public ITerm Term { get; }
-                public int InteractionResult => 0;//历练不会有交互结果
-                public ISimulationOutcome SimOutcome { get; private set; }
-                public IAdjustment Adjustment => this;
-                public IRewardReceiver Receiver { get; }
-
-                public AdvArg(Dizi dizi, IRewardReceiver receiver)
-                {
-                    Term = Dizi = dizi;
-                    Receiver = receiver;
-                }
-
-                public void SetSimulationOutcome(ISimulationOutcome simulationOutcome)
-                    => SimOutcome = simulationOutcome;
-
-                public void Set(IAdjustment.Types type, int value, bool percentage)
-                {
-                    var controller = Game.Controllers.Get<DiziController>();
-                    var adjValue = value;
-                    if (percentage)
-                    {
-                        var conMax = type switch
-                        {
-                            IAdjustment.Types.Stamina => Dizi.Stamina.Con.Max,
-                            IAdjustment.Types.Silver => Dizi.Silver.Max,
-                            IAdjustment.Types.Food => Dizi.Food.Max,
-                            IAdjustment.Types.Emotion => Dizi.Emotion.Max,
-                            IAdjustment.Types.Injury => Dizi.Injury.Max,
-                            IAdjustment.Types.Inner => Dizi.Inner.Max,
-                            IAdjustment.Types.Exp => Dizi.Exp.Max,
-                            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-                        };
-                        adjValue = value.PercentInt(conMax);
-                    }
-                    controller.AddDiziCon(Dizi.Guid, type, adjValue);
-                }
-            }
-        }
-
-        #endregion
     }
 
     public record DiziAdvLog

@@ -3,14 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Pool;
 using Utls;
 
 namespace Systems.Coroutines
 {
     public interface ICoroutineService : ISingletonDependency
     {
+        /// <summary>
+        /// 开启协程服务
+        /// </summary>
+        /// <param name="enumerator"></param>
+        /// <param name="onFinishCallback"></param>
+        /// <param name="parentName">GameObject父件,如果没有改父件将创建一个</param>
+        /// <param name="method"></param>
+        /// <returns></returns>
         ICoroutineInstance RunCo(IEnumerator enumerator, Action onFinishCallback = null, string parentName = null,
             [CallerMemberName] string method = null);
     }

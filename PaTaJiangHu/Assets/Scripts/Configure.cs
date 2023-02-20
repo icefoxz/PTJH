@@ -6,7 +6,6 @@ using Server.Configs.Characters;
 using Server.Configs.Factions;
 using Server.Configs.Items;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Utls;
 
 /// <summary>
@@ -52,6 +51,15 @@ internal class Configure : MonoBehaviour
         internal StaminaConfigSo StaminaCfg => GetSo(体力配置);
         internal LevelConfigSo LevelConfigSo => GetSo(升级配置);
         internal PropStateConfigSo PropState => GetSo(属性状态配置);
+    }
+
+    //弟子闲置配置
+    [SerializeField] private DiziIdle 弟子闲置配置;
+    public DiziIdle Idle => 弟子闲置配置;
+    [Serializable]internal class DiziIdle
+    {
+        [SerializeField]private IdleMapSo 闲置映像;
+        internal IdleMapSo IdleMapSo => 闲置映像;
     }
 
     //历练配置

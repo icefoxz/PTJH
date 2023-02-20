@@ -5,7 +5,6 @@ using System.Linq;
 using Core;
 using Server.Configs.Adventures;
 using Server.Controllers;
-using Systems.Coroutines;
 using UnityEngine;
 using UnityEngine.Events;
 using Utls;
@@ -15,18 +14,13 @@ namespace _GameClient.Models
     /// <summary>
     /// (自动)挂机历练模型
     /// </summary>
-    public class AutoAdventure : IRewardReceiver
+    public class AutoAdventure : AdvPollingHandler, IRewardHandler
     {
         public enum States
         {
             Progress,
             Recall,
             End,
-        }
-        private enum Modes
-        {
-            Polling,
-            Story
         }
 
         /// <summary>
@@ -37,115 +31,126 @@ namespace _GameClient.Models
         /// 当前状态
         /// </summary>
         public States State { get; private set; }
-        private Modes Mode { get; set; }//内部使用的状态模式
-        /// <summary>
-        /// 开始时间
-        /// </summary>
-        public long StartTime { get; }
-        /// <summary>
-        /// 上次更新时间
-        /// </summary>
-        public long LastUpdate { get; private set; }
         /// <summary>
         /// 当前里数
         /// </summary>
         public int LastMile { get; private set; }
 
         private int MessageSecs { get; } //文本展示间隔(秒)
-        private ICoroutineInstance ServiceCo { get; set; }
+        //private ICoroutineInstance ServiceCo { get; set; }
         private Dizi Dizi { get; }
         public IAutoAdvMap Map { get; }
         private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
         public IEnumerable<IStacking<IGameItem>> GetItems() => Rewards.SelectMany(i => i.AllItems);
 
-        public Equipment Equipment { get; }
         public IReadOnlyList<IGameReward> Rewards => _rewards;
         private readonly List<IGameReward> _rewards = new List<IGameReward>();
         private List<string> _storyLog = new List<string>();
         public IReadOnlyList<string> StoryLog => _storyLog;
         private Queue<DiziAdvLog> Stories { get; set; } = new Queue<DiziAdvLog>();
+        private Queue<string> MessageQueue { get; set; }
+        private DateTime messageUpdate;
 
         public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi)
+            : base(startTime)
         {
             Map = map;
             MessageSecs = messageSecs;
-            StartTime = startTime;
-            LastUpdate = startTime;
             Dizi = dizi;
             State = States.Progress;
-            StartService();
         }
 
-        private string CoName => ServiceCo?.GetInstanceID() + "历练." + State + ".";
         public UnityEvent UpdateStoryService { get; } = new UnityEvent();
 
-        private void SetServiceName(string serviceName) => ServiceCo.name = CoName + serviceName;
-        private void StartService()
+        protected override string CoName => "历练." + State + ".";
+        protected override string DiziName => Dizi.Name;
+
+        protected override void PollingUpdate()
         {
-            ServiceCo = Game.CoService.RunCo(UpdateEverySecond(), () => ServiceCo = null, Dizi.Name);
-            IEnumerator UpdateEverySecond()
+            if (State is States.End)
             {
-                yield return new WaitForEndOfFrame();
-                while (State is not States.End)
+                StopService();
+                return;
+            }
+
+            UpdateServiceName();
+            //每秒轮询是否触发故事
+            AdvController.CheckMile(Map.Id, Dizi.Guid, (totalMile, isAdvEnd) =>
+            {
+                LastMile = totalMile;
+                if (isAdvEnd)
+                    AdvController.AdventureRecall(Dizi.Guid);
+            });
+            UpdateStoryService?.Invoke();
+        }
+
+        protected override void StoryUpdate()
+        {
+            UpdateServiceName();
+            //确保信息是根据配置的秒数播放
+            var elapsedSecs = (SysTime.Now - messageUpdate).TotalSeconds;
+            var times = elapsedSecs / MessageSecs;
+            //如果当前过了一定程度的秒数,将一次更新更多历练信息(因为玩家不会死盯着一个弟子看历练)
+            for (int i = 0; i < times; i++)
+            {
+                //如果没有故事, 返回轮询模式
+                if (Stories.Count == 0 && MessageQueue?.Count == 0)
                 {
-                    SetServiceName(Mode.ToString());
-                    switch (Mode)
-                    {
-                        case Modes.Polling:
-                        {
-                            //每秒轮询是否触发故事
-                            AdvController.CheckMile(Map.Id, Dizi.Guid, (totalMile, isAdvEnd) =>
-                            {
-                                LastMile = totalMile;
-                                if (isAdvEnd)
-                                    AdvController.AdventureRecall(Dizi.Guid);
-                            });
-                            UpdateStoryService?.Invoke();
-                            yield return new WaitForSeconds(1);
-                            break;
-                        }
-                        case Modes.Story:
-                        {
-                            //当进入故事模式
-                            //循环播放直到播放队列空
-                            SetServiceName("Story");
-                            while (Stories.Count > 0)
-                            {
-                                var st = Stories.Dequeue();
-                                var messages = new Queue<string>(st.Messages);
-                                while (messages.Count > 0)
-                                {
-                                    var message = messages.Dequeue();
-                                    var isStoryEnd = messages.Count == 0;
-                                    _storyLog.Add(message);
-                                    Game.MessagingManager.SendParams(
-                                        EventString.Dizi_Adv_EventMessage, Dizi.Guid,
-                                        message, isStoryEnd);
-                                    UpdateStoryService?.Invoke();
-                                    var waiting = SysTime.Now;
-                                    yield return new WaitUntil(() =>
-                                        (SysTime.Now - waiting).TotalSeconds >= MessageSecs);
-                                }
-                            }
-                            Mode = Modes.Polling;//循环结束自动回到轮询故事
-                            break;
-                        }
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    Mode = Modes.Polling; //循环结束自动回到轮询故事
+                    break;
                 }
+
+                //如果信息为空,尝从故事中获取信息
+                if (MessageQueue == null || MessageQueue.Count == 0)
+                {
+                    var st = Stories.Dequeue();
+                    MessageQueue = new Queue<string>(st.Messages);
+                }
+
+                if (!MessageQueue.Any())
+                {
+                    Mode = Modes.Polling;
+                    break;
+                }
+
+                UpdateStoryLog(false);
+            }
+            messageUpdate = SysTime.Now;
+            UpdateStoryService?.Invoke();
+        }
+
+        //更新故事信息
+        private void UpdateStoryLog(bool clearStory)
+        {
+            if (MessageQueue == null || MessageQueue.Count == 0) return;
+            do UpdateLog();
+            while (clearStory && MessageQueue.Count > 0);
+
+            void UpdateLog()
+            {
+                var lastMessage = MessageQueue.Dequeue();
+                var isStoryEnd = MessageQueue.Count == 0; //是否当前的故事结束
+                _storyLog.Add(lastMessage);
+                Game.MessagingManager.SendParams(EventString.Dizi_Adv_EventMessage,
+                    Dizi.Guid, lastMessage, isStoryEnd);
             }
         }
 
         //更新冒险位置
         private void UpdateTime(long updatedTicks, int updatedMiles)
         {
-            LastUpdate = updatedTicks;
+            UpdateTime(updatedTicks);
             LastMile = updatedMiles;
         }
 
+        //注册故事,准备展示
         internal void RegStory(DiziAdvLog story)
         {
+            if (Mode == Modes.Story)
+            {
+                //如果还有故事未播放完毕,清除故事
+                UpdateStoryLog(true);
+            }
             Mode = Modes.Story;
             UpdateTime(story.NowTicks, story.LastMiles);//更新发生地点 & 最新里数
             Stories.Enqueue(story);
@@ -154,9 +159,14 @@ namespace _GameClient.Models
         internal void Recall(long now, int lastMile, Action recallAction)
         {
             const string RecallText = "回程中";
+            if (Mode == Modes.Story)
+            {
+                //如果还有故事未播放完毕,清除故事
+                UpdateStoryLog(true);
+            }
             UpdateTime(now, lastMile);
             State = States.Recall;
-            SetServiceName(RecallText);
+            UpdateServiceName(RecallText);
             Game.CoService.RunCo(ReturnFromAdventure(), null, Dizi.Name).name = RecallText;
 
             IEnumerator ReturnFromAdventure()
@@ -164,7 +174,7 @@ namespace _GameClient.Models
                 yield return new WaitUntil(() => Mode == Modes.Polling);
                 var returnTime = SysTime.Now;
                 yield return new WaitUntil(() => (SysTime.Now - returnTime).TotalSeconds >= JourneyReturnSec);
-                SetServiceName("已回到山门.");
+                UpdateServiceName("已回到山门.");
                 RegStory(new DiziAdvLog(new[] { $"{Dizi.Name}已回到山门!" }, Dizi.Guid, SysTime.UnixNow, LastMile));
                 yield return new WaitForSeconds(1);
                 recallAction?.Invoke();
@@ -173,30 +183,9 @@ namespace _GameClient.Models
             }
         }
 
-        void IRewardReceiver.SetReward(IGameReward reward)
+        void IRewardHandler.SetReward(IGameReward reward)
         {
             _rewards.Add(reward);
         }
-    }
-
-    public class Equipment
-    {
-
-    }
-    public class DiziBag
-    {
-        private IStacking<IGameItem>[] _items;
-        public IStacking<IGameItem>[] Items => _items;
-
-        public DiziBag(int length)
-        {
-            _items = new IStacking<IGameItem>[length];
-        }
-
-        public DiziBag(IStacking<IGameItem>[] items)
-        {
-            _items = items;
-        }
-
     }
 }

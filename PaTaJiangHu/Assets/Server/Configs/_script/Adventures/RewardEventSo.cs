@@ -20,7 +20,7 @@ namespace Server.Configs.Adventures
         IStacking<IGameItem>[] AllItems { get; }
     }
 
-    public interface IRewardReceiver
+    public interface IRewardHandler
     {
         void SetReward(IGameReward reward);
     }
@@ -41,7 +41,7 @@ namespace Server.Configs.Adventures
         public override void EventInvoke(IAdvEventArg arg)
         {
             OnLogsTrigger?.Invoke(GenerateRewardMessages(arg.DiziName));
-            arg.Receiver.SetReward(Reward);
+            arg.Handler.SetReward(Reward);
             arg.Adjustment.Set(IAdjustment.Types.Exp, Exp, false);
             OnNextEvent?.Invoke(Next);
         }

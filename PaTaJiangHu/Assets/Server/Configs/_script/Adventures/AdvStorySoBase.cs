@@ -25,6 +25,13 @@ namespace Server.Configs.Adventures
         Adjust,
         Simulation,
     }
+
+    /// <summary>
+    /// 事件总参数处理接口
+    /// </summary>
+    public interface IAdvArg : IAdvEventArg, IAdjustment
+    {
+    }
     /// <summary>
     /// 事件参数, 用于影响事件导向的接口规范
     /// </summary>
@@ -35,7 +42,7 @@ namespace Server.Configs.Adventures
         int InteractionResult { get; }
         ISimulationOutcome SimOutcome { get; }
         IAdjustment Adjustment { get; }
-        IRewardReceiver Receiver { get; }
+        IRewardHandler Handler { get; }
     }
 
     public interface IAdjustment
@@ -84,7 +91,7 @@ namespace Server.Configs.Adventures
     public interface IAdvStory
     {
         string Name { get; }
-        bool HaltOnExhausted { get; }
+        bool ContinueOnExhausted { get; }
         IAdvEvent StartAdvEvent { get; }
         IAdvEvent[] AllAdvEvents { get; }
     }
