@@ -236,8 +236,8 @@ public class ScrollContentAligner : MonoBehaviour
     protected void ResetElement(View element)
     {
         var index = IndexOf(element);
-        if (List.Count == 0 || index == -1) return;
-        OnResetElement?.Invoke(element);
+        if (List.Count != 0 && index != -1) 
+            OnResetElement?.Invoke(element);
         element.gameObject.SetActive(false);
     }
 
