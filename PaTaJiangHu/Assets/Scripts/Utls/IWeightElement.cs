@@ -68,6 +68,7 @@ namespace Utls
 
         private static (T obj, double random) ResolveWithZero<T>(T o, int weight, double sum) where T : IWeightElement
         {
+            if (weight <= 0 || sum <= 0) return (o, 0);
             var percentage = (weight / sum * 100d);
             var ran = Random.Next(1, (int)percentage);
             //Console.WriteLine($"p={percentage}, r={ran}");
