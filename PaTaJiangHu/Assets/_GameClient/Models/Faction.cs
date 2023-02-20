@@ -4,6 +4,7 @@ using System.Linq;
 using BattleM;
 using Core;
 using Server.Configs.Adventures;
+using Server.Configs.Factions;
 using Server.Configs.Items;
 using Server.Controllers;
 using Utls;
@@ -63,13 +64,18 @@ namespace _GameClient.Models
 
         public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
 
-        internal Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap)
+        internal Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap,
+            int food = 0, int wine = 0, int pill = 0, int herb = 0)
         {
             DiziMap = diziMap.ToDictionary(d => d.Guid.ToString(), d => d);
             Silver = silver;
             YuanBao = yuanBao;
             ActionLing = actionLing;
             ActionLingMax = actionLingMax;
+            Food = food;
+            Wine = wine;
+            Pill = pill;
+            Herb = herb;
         }
 
         internal void AddDizi(Dizi dizi)
@@ -149,6 +155,36 @@ namespace _GameClient.Models
             if (Medicines[med] < amount) LogError($"{med.Name}:{Medicines[med]} < {amount}! ");
             Medicines[med] -= amount;
             Log($"移除药品【{med.Name}】");
+        }
+
+        internal void AddConsumeResource(ConsumeResources resource, int value)
+        {
+            var lastValue = 0;
+            switch (resource)
+            {
+                case ConsumeResources.Silver:
+                    AddSilver(value);
+                    return;
+                case ConsumeResources.Food:
+                    lastValue = Food;
+                    Food += value;
+                    break;
+                case ConsumeResources.Wine:
+                    lastValue = Wine;
+                    Wine += value;
+                    break;
+                case ConsumeResources.Pill:
+                    lastValue = Pill;
+                    Pill += value;
+                    break;
+                case ConsumeResources.Herb:
+                    lastValue = Herb;
+                    Herb += value;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(resource), resource, null);
+            }
+            Log($"增加资源{resource}:{lastValue} => {value} : {lastValue + value}");
         }
 
         public Dizi GetDizi(string guid)

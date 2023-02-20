@@ -60,8 +60,6 @@ internal class DiziAdvManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_EventMessage, bag =>
         {
             var diziGuid = bag.Get<string>(0);
-            var message = bag.Get<string>(1);
-            var isStoryEnd = bag.Get<bool>(2);
             DiziAdv.AdvMsgUpdate(diziGuid);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Recall, bag => DiziAdv.Update());

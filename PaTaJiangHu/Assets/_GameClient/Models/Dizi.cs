@@ -87,30 +87,26 @@ namespace _GameClient.Models
         private ConditionPropertySo ConProCfg => Game.Config.AdvCfg.ConditionProperty;
         internal Dizi(string guid, string name,
             Gender gender,
-            GradeValue<int> strength, 
-            GradeValue<int> agility,
-            GradeValue<int> hp, 
-            GradeValue<int> mp, 
-            int level, int grade,
-            int stamina, int bag,
-            int combatSlot, int forceSlot, int dodgeSlot,
+            int level, 
+            int stamina, 
+            Capable capable,
             ICombatSkill combatSkill, IForceSkill forceSkill, IDodgeSkill dodgeSkill)
         {
             Guid = guid;
             Name = name;
             Gender = gender;
             Level = level;
-            Grade = grade;
-            Capable = new Capable(grade, dodgeSlot, combatSlot, bag, strength, agility, hp, mp);
+            Grade = capable.Grade;
+            Capable = capable;
             _stamina = new DiziStamina(Game.Controllers.Get<StaminaController>(), stamina);
             CombatSkill = combatSkill;
             ForceSkill = forceSkill;
             DodgeSkill = dodgeSkill;
-            var cSlot = new ICombatSkill[combatSlot];
+            var cSlot = new ICombatSkill[capable.CombatSlot];
             cSlot[0] = combatSkill;
-            var fSlot = new IForceSkill[forceSlot];
+            var fSlot = new IForceSkill[1];
             fSlot[0] = forceSkill;
-            var dSlot = new IDodgeSkill[dodgeSlot];
+            var dSlot = new IDodgeSkill[capable.DodgeSlot];
             dSlot[0] = dodgeSkill;
             Skill = new Skills(cSlot, fSlot, dSlot);
             var maxExp = LevelCfg.GetMaxExp(level);

@@ -23,7 +23,7 @@ namespace Test
         {
             XDebug.Log("TestFaction Init!");
             Game.World.SetFaction(new Faction(silver: 10000, yuanBao: 500, actionLing: 999, actionLingMax: 100,
-                diziMap: new List<Dizi>()));
+                diziMap: new List<Dizi>(),food: 1000,wine: 1000,pill: 1000,herb: 1000));
         }
         public void AddItemToFaction()
         {

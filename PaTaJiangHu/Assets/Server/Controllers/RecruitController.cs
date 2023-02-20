@@ -42,10 +42,11 @@ namespace Server.Controllers
             var forceSkill = GradeConfig.GenerateForceSkill(randomGrade);
             var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
             var diziIndex = TempDiziList.Count;
+            var capable = new Capable(randomGrade, 1, 1, bag, strength, agility, hp, mp, 50, 50, 50, 50, 50);
             var guid = Guid.NewGuid().ToString();
-            var dizi = new Dizi(guid, name.Text, gender, strength, agility, hp, mp, 1, randomGrade, stamina,
-                bag, 1, 1, 1, combatSkill.GetFromLevel(1), forceSkill.GetFromLevel(1), dodgeSkill.GetFromLevel(1));
-            
+            var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,
+                capable: capable, combatSkill: combatSkill.GetFromLevel(1),
+                forceSkill: forceSkill.GetFromLevel(1), dodgeSkill: dodgeSkill.GetFromLevel(1));
             TempDiziList.Add(dizi);
             var list = new List<int> { diziIndex };
             Game.MessagingManager.Send(EventString.Recruit_DiziGenerated, dizi.Name);

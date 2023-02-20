@@ -62,7 +62,8 @@ namespace Server.Controllers
         {
             var name = GenerateName();
             var (str, agi, hp, mp, sta, inv) = Config.GradeConfigSo.GenerateFromGrade(grade: grade);
-            var cap = new Capable(grade: grade, dodgeSlot: 3, combatSlot: 5, bag: inv, str, agi, hp, mp);
+            var cap = new Capable(grade: grade, dodgeSlot: 3, combatSlot: 5, bag: inv, strength: str, agility: agi,
+                hp: hp, mp: mp, silver: 50, food: 50, wine: 50, herb: 50, pill: 50);
             return new Dizi(
                 name: name, 
                 strength: str, 

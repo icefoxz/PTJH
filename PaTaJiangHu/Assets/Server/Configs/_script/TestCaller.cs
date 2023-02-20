@@ -81,15 +81,14 @@ namespace Server.Configs
             Hack_Faction.TestFaction();
             var faction = Game.World.Faction;
             var p = AutoAdventureCfg.Player;
-            var dizi = new Dizi(guid: Guid.NewGuid().ToString(), name: p.Name,
-                p.Gender,
-                strength: new GradeValue<int>(p.Strength, 0),
-                agility: new GradeValue<int>(p.Agility, 0),
-                hp: new GradeValue<int>(p.Hp, 0),
-                mp: new GradeValue<int>(p.Mp, 0),
-                level: 1, grade: 0, stamina: 50, bag: 5, combatSlot: 1, forceSlot: 1, dodgeSlot: 1,
+            var capable = new Capable(grade: 0, dodgeSlot: 1, combatSlot: 1, bag: 5, strength: new GradeValue<int>(value: p.Strength, grade: 0),
+                agility: new GradeValue<int>(value: p.Agility, grade: 0),
+                hp: new GradeValue<int>(value: p.Hp, grade: 0),
+                mp: new GradeValue<int>(value: p.Mp, grade: 0), silver: 50, food: 50, wine: 50, herb: 50, pill: 50);
+            var dizi = new Dizi(guid: Guid.NewGuid().ToString(), name: p.Name, gender: p.Gender,
+                level: 1, stamina: 50, capable: capable,
                 combatSkill: p.GetCombat(), forceSkill: p.GetForce(), dodgeSkill: p.GetDodge());
-            faction.AddDizi(dizi);
+            faction.AddDizi(dizi: dizi);
             return dizi.Guid;
         }
 

@@ -15,6 +15,7 @@ namespace _GameClient.Models
         public GradeValue<int> Agility { get; private set; }
         public GradeValue<int> Hp { get; private set; }
         public GradeValue<int> Mp { get; private set; }
+
         /// <summary>
         /// 轻功格
         /// </summary>
@@ -36,9 +37,11 @@ namespace _GameClient.Models
 
         public Capable()
         {
-            
         }
-        public Capable(int grade, int dodgeSlot, int combatSlot, int bag, GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp)
+
+        public Capable(int grade, int dodgeSlot, int combatSlot, int bag, GradeValue<int> strength,
+            GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int silver, int food, int wine, int herb,
+            int pill)
         {
             Grade = grade;
             DodgeSlot = dodgeSlot;
@@ -48,10 +51,20 @@ namespace _GameClient.Models
             Agility = agility;
             Hp = hp;
             Mp = mp;
+            Silver = silver;
+            Food = food;
+            Wine = wine;
+            Herb = herb;
+            Pill = pill;
         }
 
         public Capable(Capable c)
         {
+            Silver = c.Silver;
+            Food = c.Food;
+            Wine = c.Wine;
+            Herb = c.Herb;
+            Pill = c.Pill;
             Grade = c.Grade;
             DodgeSlot = c.DodgeSlot;
             CombatSlot = c.CombatSlot;
