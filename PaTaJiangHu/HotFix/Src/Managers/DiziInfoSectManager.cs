@@ -39,9 +39,12 @@ internal class DiziInfoSectManager : MainPageBase
         {
             DiziInfo.SetDizi(bag.Get<string>(0));
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziInfo.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziInfo.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziInfo.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziInfo.Update(bag.GetString(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziInfo.Update(bag.GetString(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag =>
+        {
+            DiziInfo.Update(bag.GetString(0));
+        });
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
             bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
         Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => UiManager.Show(this));
@@ -87,10 +90,10 @@ internal class DiziInfoSectManager : MainPageBase
             //var dizi = bag.Get<DiziDto>(0);
             SetDizi(dizi);
         }
-        public void Update()
+        public void Update(string guid)
         {
+            if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
             SetDizi(SelectedDizi);
-            XDebug.Log($"弟子【{SelectedDizi.Name}】更新了!");
         }
 
         public void UpdateDiziStamina(string diziGuid)

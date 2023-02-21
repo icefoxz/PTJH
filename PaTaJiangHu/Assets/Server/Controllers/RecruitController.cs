@@ -63,6 +63,7 @@ namespace Server.Controllers
                 return false;
             }
             Faction.AddDizi(dizi);
+            dizi.StartIdle(SysTime.UnixNow);
             XDebug.Log($"弟子:{dizi.Name} 加入门派!");
             return true;
         }

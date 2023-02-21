@@ -68,6 +68,8 @@ public class EventString
 
     //弟子闲置
     public const string Dizi_Idle_EventMessage = "Dizi_Idle_EventMessage";//弟子闲置状态更新
+    public const string Dizi_Idle_Start = "Dizi_Idle_Start";//弟子闲置状态开始
+    public const string Dizi_Idle_Stop = "Dizi_Idle_Stop";//弟子停止闲置通知
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";//给门派加弟子

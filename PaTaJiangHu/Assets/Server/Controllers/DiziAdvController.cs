@@ -107,6 +107,7 @@ namespace Server.Controllers
             }
             RewardController.SetRewards(dizi.Adventure.Rewards.ToArray());
             dizi.AdventureFinalize();
+            dizi.StartIdle(SysTime.UnixNow);
         }
 
         /// <summary>
@@ -181,7 +182,7 @@ namespace Server.Controllers
         private async Task<StoryHandler> ProcessStory(IAdvPlace place, long nowTicks, int updatedMiles, Dizi dizi)
         {
             var story = place.WeighPickStory(); //根据权重随机故事
-            var eventHandler = new AutoAdvEventMiddleware(BattleSimulation, ConditionProperty); //生成事件处理器
+            var eventHandler = new AdvEventMiddleware(BattleSimulation, ConditionProperty); //生成事件处理器
             var storyHandler = new StoryHandler(story, eventHandler); //生成故事处理器
             await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
             return storyHandler;

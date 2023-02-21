@@ -24,9 +24,9 @@ namespace Server.Controllers
     /// <summary>
     /// 自动事件处理器(其中包括历练与闲置状态的处理)
     /// </summary>
-    internal class AutoAdvEventMiddleware : AdvEventMiddlewareBase
+    internal class AdvEventMiddleware : AdvEventMiddlewareBase
     {
-        public AutoAdvEventMiddleware(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg) : base(simulator, cfg)
+        public AdvEventMiddleware(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg) : base(simulator, cfg)
         {
         }
 

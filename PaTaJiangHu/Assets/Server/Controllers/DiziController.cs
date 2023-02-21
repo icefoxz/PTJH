@@ -126,7 +126,7 @@ namespace Server.Controllers
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
             }
 
-            Game.MessagingManager.Send(EventString.Dizi_ItemUnEquipped, string.Empty);
+            Game.MessagingManager.Send(EventString.Dizi_ItemUnEquipped, guid);
         }
 
         public void AddDiziCon(string guid, IAdjustment.Types type, int adjValue)

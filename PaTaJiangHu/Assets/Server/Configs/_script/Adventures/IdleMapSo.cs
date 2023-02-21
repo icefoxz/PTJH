@@ -1,6 +1,7 @@
 ﻿using System;
 using BattleM;
 using System.Collections.Generic;
+using System.Linq;
 using MyBox;
 using Server.Configs.Items;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace Server.Configs.Adventures
 
         private MappingField Map => 映像配置;
 
+        public AdvStorySo TryGetStory(int elapsedSecs)=>Map.TryGetStory(elapsedSecs);
         [Serializable] private class MappingField
         {
             [SerializeField] private int 触发秒数 = 60;
@@ -37,7 +39,7 @@ namespace Server.Configs.Adventures
                 [SerializeField] private AdvStorySo 故事;
                 [SerializeField] private int 权重;
 
-                private AdvStorySo StorySo => 故事;
+                public AdvStorySo StorySo => 故事;
                 public int Weight => 权重;
 
                 private bool ChangeElementName()
@@ -47,7 +49,8 @@ namespace Server.Configs.Adventures
                     return true;
                 }
             }
-
+            public AdvStorySo TryGetStory(int elapsedSecs) =>
+                elapsedSecs < TriggerInSecs ? null : StoryFields.WeightPick().StorySo;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Server.Controllers
         public bool IsForceQuit { get; private set; }//强制历练结束
         public DiziAdvLog AdvLog { get; private set; }//故事信息
 
-        public StoryHandler(IAdvStory story, AutoAdvEventMiddleware eventMiddleware)
+        public StoryHandler(IAdvStory story, AdvEventMiddleware eventMiddleware)
         {
             Story = story;
             CurrentEvent = Story.StartAdvEvent;

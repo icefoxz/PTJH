@@ -54,23 +54,23 @@ internal class DiziAdvManager : MainPageBase
             //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
             UiManager.Show(this);
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update(bag.GetString(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update(bag.GetString(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_EventMessage, bag =>
         {
             var diziGuid = bag.Get<string>(0);
             DiziAdv.AdvMsgUpdate(diziGuid);
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Recall, bag => DiziAdv.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_End, bag => DiziAdv.Update());
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Recall, bag => DiziAdv.Update(bag.GetString(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_End, bag => DiziAdv.Update(bag.GetString(0)));
+        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag =>
         {
             //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
             UiManager.Show(this);
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => DiziAdv.Update());
+        Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotUpdate, bag => DiziAdv.SlotUpdate(bag.Get<string>(0)));
     }
 
@@ -136,11 +136,11 @@ internal class DiziAdvManager : MainPageBase
             var guid = bag.Get<string>(0);
             var dizi = Game.World.Faction.GetDizi(guid);
             SelectedDizi = dizi;
-            Update();
+            Update(SelectedDizi.Guid);
         }
-        public void Update()
+        public void Update(string guid)
         {
-            if (SelectedDizi == null) return;
+            if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
             SetDizi(SelectedDizi);
             SlotUpdate(SelectedDizi?.Guid);
             var dizi = SelectedDizi;

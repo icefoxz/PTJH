@@ -16,12 +16,13 @@ namespace _GameClient.Models
     /// <summary>
     /// 弟子模型
     /// </summary>
-    public class Dizi : ModelBase, ITerm
+    public partial class Dizi : ModelBase, ITerm
     {
         protected override string LogPrefix => Name;
         public string Guid { get; }
         public string Name { get; }
         public Gender Gender { get; }
+
         public int Strength => GetLeveledValue(DiziProps.Strength) + 
                                GetPropStateAddon(DiziProps.Strength) +
                                GetWeaponDamage();
@@ -39,7 +40,6 @@ namespace _GameClient.Models
             CombatSkill?.Grade ?? 0, CombatSkill?.Level ?? 0,
             ForceSkill?.Grade ?? 0, ForceSkill?.Level ?? 0,
             DodgeSkill?.Grade ?? 0, DodgeSkill?.Level ?? 0);
-        public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
         public int Grade { get; }
         public ICombatSkill CombatSkill { get; private set; }
         public IForceSkill ForceSkill { get; private set; }
@@ -79,7 +79,6 @@ namespace _GameClient.Models
         public IConditionValue Injury => _injury;
         public IConditionValue Inner => _inner;
 
-        public AutoAdventure Adventure { get; set; }
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
@@ -179,7 +178,10 @@ namespace _GameClient.Models
 
         internal void StaminaUpdate(long ticks)
         {
+            var lastValue = _stamina.Con.Value;
             _stamina.Update(ticks);
+            var updatedValue = _stamina.Con.Value;
+            if (lastValue == updatedValue) return;
             Log($"体力更新 = {_stamina.Con}");
             SendEvent(EventString.Dizi_Params_StaminaUpdate, Guid);
         }
@@ -237,28 +239,6 @@ namespace _GameClient.Models
             }
         }
 
-        //弟子钱包
-        private class DiziWallet
-        {
-            public int Silver { get; private set; }
-            public int MaxSilver { get; private set; }
-
-            public DiziWallet(int silver, int maxSilver)
-            {
-                Silver = silver;
-                MaxSilver = maxSilver;
-            }
-
-            public void ClearSilver() => Silver = 0;
-
-            public void TradeSilver(int silver, bool throwIfLessThanZero = false)
-            {
-                Silver += silver;
-                if (throwIfLessThanZero && Silver < 0)
-                    throw new InvalidOperationException($"{nameof(TradeSilver)}: silver = {Silver}");
-            }
-        }
-
         internal void SetWeapon(IWeapon weapon)
         {
             Log(weapon == null ? $"卸下{Weapon.Name}" : $"装备{weapon.Name}!");
@@ -268,42 +248,6 @@ namespace _GameClient.Models
         {
             Log(armor == null ? $"卸下{Armor.Name}" : $"装备{armor.Name}!");
             Armor = armor;
-        }
-        internal void AdventureStart(IAutoAdvMap map,long startTime,int messageSecs)
-        {
-            Adventure = new AutoAdventure(map, startTime, messageSecs, this);
-            Adventure.UpdateStoryService.AddListener(()=>SetStateShort("历", "历练中...", startTime));
-            Log("开始历练.");
-            SendEvent(EventString.Dizi_Adv_Start, Guid);
-        }
-
-        // 设定弟子状态短文本
-        private void SetStateShort(string title,string description,long time)
-        {
-            State.Set(title, description, time);
-            SendEvent(EventString.Dizi_Params_StateUpdate, title);
-        }
-
-        internal void AdventureStoryLogging(DiziAdvLog story)
-        {
-            if (Adventure.State == AutoAdventure.States.End)
-                throw new NotImplementedException();
-            Adventure.RegStory(story);
-        }
-        internal void AdventureRecall(long now,int lastMile)
-        {
-            SetStateShort("回", "回程中...", now);
-            Adventure.UpdateStoryService.RemoveAllListeners();
-            Adventure.Recall(now, lastMile, () => SetStateShort("待", "宗门外等待", 0));
-            Log($"停止历练, 里数: {lastMile}");
-            SendEvent(EventString.Dizi_Adv_Recall, Guid);
-        }
-        internal void AdventureFinalize()
-        {
-            Adventure = null;
-            SetStateShort("闲", "闲置中...", 0);
-            Log("历练结束!");
-            SendEvent(EventString.Dizi_Adv_Finalize, Guid);
         }
         internal void ConAdd(IAdjustment.Types type, int value)
         {
@@ -320,7 +264,7 @@ namespace _GameClient.Models
             };
             con.Add(value);
             Log($"状态[{type}]设置: {con}");
-            SendEvent(EventString.Dizi_ConditionUpdate, type, value);
+            SendEvent(EventString.Dizi_ConditionUpdate, Guid, type, value);
         }
 
         internal void SetAdvItem(int slot, IGameItem item)
@@ -364,6 +308,74 @@ namespace _GameClient.Models
                 _ => throw new ArgumentOutOfRangeException($"物品{item.Type}不支持! ")
             };
             Item = item;
+        }
+    }
+
+
+    //弟子模型,处理历练事件
+    public partial class Dizi
+    {
+        public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
+        public AutoAdventure Adventure { get; set; }
+        internal void AdventureStart(IAutoAdvMap map, long startTime, int messageSecs)
+        {
+            Adventure = new AutoAdventure(map, startTime, messageSecs, this);
+            Adventure.UpdateStoryService.AddListener(() => SetStateShort("历", "历练中...", startTime));
+            Log("开始历练.");
+            SendEvent(EventString.Dizi_Adv_Start, Guid);
+        }
+
+        // 设定弟子状态短文本
+        private void SetStateShort(string title, string description, long time)
+        {
+            State.Set(title, description, time);
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid, title);
+        }
+
+        internal void AdventureStoryLogging(DiziAdvLog story)
+        {
+            if (Adventure.State == AutoAdventure.States.End)
+                throw new NotImplementedException();
+            Adventure.RegStory(story);
+        }
+        internal void AdventureRecall(long now, int lastMile)
+        {
+            SetStateShort("回", "回程中...", now);
+            Adventure.UpdateStoryService.RemoveAllListeners();
+            Adventure.Recall(now, lastMile, () => SetStateShort("待", "宗门外等待", 0));
+            Log($"停止历练, 里数: {lastMile}");
+            SendEvent(EventString.Dizi_Adv_Recall, Guid);
+        }
+        internal void AdventureFinalize()
+        {
+            Adventure = null;
+            Log("历练结束!");
+            SendEvent(EventString.Dizi_Adv_Finalize, Guid);
+        }
+    }
+
+    //弟子模型, 处理闲置事件
+    public partial class Dizi
+    {
+        public IdleState Idle { get; private set; }
+
+        internal void StartIdle(long startTime)
+        {
+            Idle = new IdleState(this, startTime);
+            SetStateShort("闲", "闲置中...", startTime);
+            SendEvent(EventString.Dizi_Idle_Start, Guid);
+        }
+
+        internal void StopIdle()
+        {
+            Idle.StopIdleState();
+            SendEvent(EventString.Dizi_Idle_Stop, Guid);
+        }
+
+        internal void RegIdleStory(DiziAdvLog log)
+        {
+            Idle.RegStory(log);
+            
         }
     }
 }
