@@ -19,6 +19,7 @@ internal class DiziAdvManager : MainPageBase
 
     private DiziController DiziController { get; set; }
     private DiziAdvController DiziAdvController { get; set; }
+    private FactionController FactionController { get; set; }
 
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
     protected override string ViewName => "view_diziAdv";
@@ -28,6 +29,7 @@ internal class DiziAdvManager : MainPageBase
     {
         DiziController = Game.Controllers.Get<DiziController>();
         DiziAdvController = Game.Controllers.Get<DiziAdvController>();
+        FactionController = Game.Controllers.Get<FactionController>();
     }
 
     protected override void Build(IView view)
@@ -42,7 +44,7 @@ internal class DiziAdvManager : MainPageBase
             onEquipSlotAction: (guid, slot) =>
                 Game.MessagingManager.SendParams(EventString.Dizi_Adv_SlotManagement, guid, slot),
             onSwitchAction: () => XDebug.LogWarning("切换弟子管理页面!, 功能未完!"),
-            onLayoutClick: guid => DiziController.ManageDiziCondition(guid)
+            onConditionClick: (guid, con) => FactionController.ConsumeResourceByStep(guid, con)
         );
     }
 
@@ -97,7 +99,7 @@ internal class DiziAdvManager : MainPageBase
             Action<string> onDiziForgetAction,
             Action<string> onDiziBuyBackAction,
             Action<string,int> onEquipSlotAction,
-            Action<string> onLayoutClick,
+            Action<string, IAdjustment.Types> onConditionClick,
             Action onSwitchAction
             ) : base(v.GameObject, false)
         {
@@ -106,11 +108,16 @@ internal class DiziAdvManager : MainPageBase
             //Btn_Condition = v.GetObject<Button>("btn_condition");//新添加
             //Btn_Condition.OnClickAdd(() => { onLayoutClick?.Invoke(SelectedDizi?.Guid); });   //新添加
             ElementMgr = new ElementManager(
-                new Element_con(v.GetObject<View>("element_conFood")),
-                new Element_con(v.GetObject<View>("element_conState")),
-                new Element_con(v.GetObject<View>("element_conSilver")),
-                new Element_con(v.GetObject<View>("element_conInjury")),
-                new Element_con(v.GetObject<View>("element_conInner")),
+                new Element_con(v.GetObject<View>("element_conFood"),
+                    () => onConditionClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Food)),
+                new Element_con(v.GetObject<View>("element_conState"), 
+                    () => onConditionClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Emotion)),
+                new Element_con(v.GetObject<View>("element_conSilver"),
+                    () => onConditionClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Silver)),
+                new Element_con(v.GetObject<View>("element_conInjury"),
+                    () => onConditionClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Injury)),
+                new Element_con(v.GetObject<View>("element_conInner"), 
+                    () => onConditionClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Inner)),
                 new Element_skill(v.GetObject<View>("element_skillCombat")),
                 new Element_skill(v.GetObject<View>("element_skillForce")),
                 new Element_skill(v.GetObject<View>("element_skillDodge")),
@@ -283,8 +290,9 @@ internal class DiziAdvManager : MainPageBase
             private Image HandleImg { get; }
             private Image Img_consumeIco { get; }
             private Text Text_consumeValue { get; }
+            private Button Btn_action { get; }
 
-            public Element_con(IView v) : base(v.GameObject, true)
+            public Element_con(IView v, Action onClickAction) : base(v.GameObject, true)
             {
                 Scrbar_condition = v.GetObject<Scrollbar>("scrbar_condition");
                 Text_value = v.GetObject<Text>("text_value");
@@ -294,6 +302,8 @@ internal class DiziAdvManager : MainPageBase
                 HandleImg = Scrbar_condition.image;
                 Img_consumeIco = v.GetObject<Image>("img_consumeIco");
                 Text_consumeValue = v.GetObject<Text>("text_consumeValue");
+                Btn_action = v.GetObject<Button>("btn_action");
+                Btn_action.OnClickAdd(onClickAction);
             }
             public void SetTitle(string title)
             {
@@ -312,6 +322,11 @@ internal class DiziAdvManager : MainPageBase
             }
             public void SetIcon(Sprite icon) => Img_consumeIco.sprite = icon;
             public void SetConsume(int value) => Text_consumeValue.text = value.ToString();
+
+            public void SetInteraction(bool isInteractable)
+            {
+                Btn_action.interactable = isInteractable;
+            }
         }
         private class View_advLayout : UiBase
         {
@@ -697,8 +712,15 @@ internal class DiziAdvManager : MainPageBase
             }
             public void SetInteraction(bool isInteractable)
             {
+                //弟子装备UI
                 Weapon.SetInteraction(isInteractable);
                 Armor.SetInteraction(isInteractable);
+                //弟子属性UI
+                Food.SetInteraction(isInteractable);
+                State.SetInteraction(isInteractable);
+                Silver.SetInteraction(isInteractable);
+                Injury.SetInteraction(isInteractable);
+                Inner.SetInteraction(isInteractable);
             }
 
             #region element_con
