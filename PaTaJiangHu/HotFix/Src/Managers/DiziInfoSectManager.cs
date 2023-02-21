@@ -38,6 +38,7 @@ internal class DiziInfoSectManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
         {
             DiziInfo.SetDizi(bag.Get<string>(0));
+            DiziInfo.Update(bag.GetString(0));
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziInfo.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziInfo.Update(bag.GetString(0)));
