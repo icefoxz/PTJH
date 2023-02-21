@@ -52,7 +52,7 @@ namespace _GameClient.Models
         private DateTime messageUpdate;
 
         public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi)
-            : base(startTime)
+            : base(startTime,dizi.Name)
         {
             Map = map;
             MessageSecs = messageSecs;
@@ -63,7 +63,6 @@ namespace _GameClient.Models
         public UnityEvent UpdateStoryService { get; } = new UnityEvent();
 
         protected override string CoName => "历练." + State + ".";
-        protected override string DiziName => Dizi.Name;
 
         protected override void PollingUpdate()
         {

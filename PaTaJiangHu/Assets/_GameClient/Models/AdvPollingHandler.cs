@@ -17,7 +17,6 @@ namespace _GameClient.Models
         protected Modes Mode { get; set; }//内部使用的状态模式
         protected CoPollingInstance CoService { get; }
         protected virtual string CoName => string.Empty;
-        protected abstract string DiziName { get; }
         /// <summary>
         /// 开始时间
         /// </summary>
@@ -27,12 +26,12 @@ namespace _GameClient.Models
         /// </summary>
         public long LastUpdate { get; private set; }
 
-        protected AdvPollingHandler(long startTime)
+        protected AdvPollingHandler(long startTime,string diziName)
         {
             StartTime = startTime;
             LastUpdate = startTime;
             CoService = new CoPollingInstance(1, UpdateEverySecs);
-            CoService.StartService(DiziName);
+            CoService.StartService(diziName);
         }
 
         private void UpdateEverySecs()

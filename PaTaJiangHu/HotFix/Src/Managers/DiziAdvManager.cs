@@ -85,7 +85,7 @@ internal class DiziAdvManager : MainPageBase
         public enum Items { Weapon,Armor }
 
         private Button Btn_Switch { get; }
-        private Button Btn_Condition { get; } //新添加： Prompt 弟子道具银子使用窗口
+        //private Button Btn_Condition { get; } //新添加： Prompt 弟子道具银子使用窗口
         private ElementManager ElementMgr { get; }
         private View_advLayout AdvLayoutView { get; }
 
@@ -103,8 +103,8 @@ internal class DiziAdvManager : MainPageBase
         {
             Btn_Switch = v.GetObject<Button>("btn_switch");
             Btn_Switch.OnClickAdd(onSwitchAction);
-            Btn_Condition = v.GetObject<Button>("btn_condition");//新添加
-            Btn_Condition.OnClickAdd(() => { onLayoutClick?.Invoke(SelectedDizi?.Guid); });   //新添加
+            //Btn_Condition = v.GetObject<Button>("btn_condition");//新添加
+            //Btn_Condition.OnClickAdd(() => { onLayoutClick?.Invoke(SelectedDizi?.Guid); });   //新添加
             ElementMgr = new ElementManager(
                 new Element_con(v.GetObject<View>("element_conFood")),
                 new Element_con(v.GetObject<View>("element_conState")),

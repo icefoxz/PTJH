@@ -8,7 +8,6 @@ namespace _GameClient.Models
     public class DiziIdleState : AdvPollingHandler
     {
         private Dizi Dizi { get; }
-        protected override string DiziName => Dizi.Name;
         public Queue<DiziAdvLog> Stories { get; private set; } = new Queue<DiziAdvLog>();
         public DiziAdvLog CurrentStory { get; private set; }
         public int MessageIndex { get; private set; }
@@ -19,7 +18,7 @@ namespace _GameClient.Models
         private DiziIdleController IdleController => Game.Controllers.Get<DiziIdleController>();
         private int MessageUpdateSecs => IdleController.IdleCfg.MessageUpdateSecs;
 
-        public DiziIdleState(Dizi dizi,long startTime) : base(startTime)
+        public DiziIdleState(Dizi dizi,long startTime) : base(startTime,dizi.Name)
         {
             Dizi = dizi;
         }
