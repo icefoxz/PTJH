@@ -144,7 +144,7 @@ namespace _GameClient.Models
         }
 
         //注册故事,准备展示
-        internal void RegStory(DiziAdvLog story)
+        internal override void RegStory(DiziAdvLog story)
         {
             if (Mode == Modes.Story)
             {

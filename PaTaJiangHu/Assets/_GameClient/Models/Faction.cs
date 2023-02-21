@@ -167,19 +167,23 @@ namespace _GameClient.Models
                     return;
                 case ConsumeResources.Food:
                     lastValue = Food;
-                    Food += value;
+                    Food += value; 
+                    SendEvent(EventString.Faction_FoodUpdate, Food);
                     break;
                 case ConsumeResources.Wine:
                     lastValue = Wine;
                     Wine += value;
+                    SendEvent(EventString.Faction_WineUpdate, Wine);
                     break;
                 case ConsumeResources.Pill:
                     lastValue = Pill;
                     Pill += value;
+                    SendEvent(EventString.Faction_PillUpdate, Pill);
                     break;
                 case ConsumeResources.Herb:
                     lastValue = Herb;
                     Herb += value;
+                    SendEvent(EventString.Faction_HerbUpdate, Herb);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(resource), resource, null);
@@ -321,5 +325,16 @@ namespace _GameClient.Models
             SendEvent(EventString.Faction_BookUpdate, string.Empty);
             Log($"移除书籍: {book.Id}.{book.Name}");
         }
+
+        public int GetResource(ConsumeResources resourceType) =>
+            resourceType switch
+            {
+                ConsumeResources.Silver => Silver,
+                ConsumeResources.Food => Food,
+                ConsumeResources.Wine => Wine,
+                ConsumeResources.Herb => Herb,
+                ConsumeResources.Pill => Pill,
+                _ => throw new ArgumentOutOfRangeException(nameof(resourceType), resourceType, null)
+            };
     }
 }

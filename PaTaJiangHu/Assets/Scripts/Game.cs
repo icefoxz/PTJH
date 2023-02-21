@@ -100,6 +100,8 @@ public class Game : UnitySingleton<Game>
         Controllers.Reg(new DiziAdvController());
         Controllers.Reg(new RewardController());
         Controllers.Reg(new DataController());
+        Controllers.Reg(new DiziIdleController());
+        Controllers.Reg(new FactionController());
     }
 
     private static void TestFactionInventory()

@@ -8,7 +8,7 @@
         Silver,
         Food,
         Wine,
+        Herb,
         Pill,
-        Herb
     }
 }

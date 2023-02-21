@@ -305,7 +305,7 @@ namespace _GameClient.Models
             Log("历练结束!");
             SendEvent(EventString.Dizi_Adv_Finalize, Guid);
         }
-        internal void ConSet(IAdjustment.Types type, int value)
+        internal void ConAdd(IAdjustment.Types type, int value)
         {
             var con = type switch
             {

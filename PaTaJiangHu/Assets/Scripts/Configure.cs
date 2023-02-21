@@ -59,7 +59,9 @@ internal class Configure : MonoBehaviour
     [Serializable]internal class DiziIdle
     {
         [SerializeField]private IdleMapSo 闲置映像;
+        [SerializeField]private int 信息更新秒数 = 5;
         internal IdleMapSo IdleMapSo => 闲置映像;
+        internal int MessageUpdateSecs => 信息更新秒数;
     }
 
     //历练配置
@@ -75,10 +77,17 @@ internal class Configure : MonoBehaviour
         internal AdventureConfigSo AdventureCfg => GetSo(历练配置);
     }
 
+
+    //[SerializeField] private Faction 门派配置;
+    //public Faction FactionCfg => 门派配置;
+    [Serializable] internal class Faction
+    {
+    }
+
     //数据配置
     [SerializeField] private DataCfg 游戏数据;
     public DataCfg Data => 游戏数据;
-    [Serializable]public class DataCfg
+    [Serializable] public class DataCfg
     {
         [SerializeField] private WeaponFieldSo[] 武器;
         [SerializeField] private ArmorFieldSo[] 防具;

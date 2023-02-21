@@ -66,6 +66,9 @@ public class EventString
     public const string Dizi_Adv_SlotManagement = "Dizi_Adv_SlotManagement";//弟子历练道具管理
     public const string Dizi_Adv_SlotUpdate = "Dizi_Adv_SlotUpdate";//弟子历练道具更新
 
+    //弟子闲置
+    public const string Dizi_Idle_EventMessage = "Dizi_Idle_EventMessage";//弟子闲置状态更新
+
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";//给门派加弟子
     public const string Faction_Init = "Faction_Init";//实例门派
@@ -81,4 +84,7 @@ public class EventString
     public const string Faction_AdvItemsUpdate = "Faction_AdvItemsUpdate";//门派历练道具更新
     public const string Faction_AdvPackageUpdate = "Faction_AdvPackageUpdate";//门派包裹更新
     public const string Faction_BookUpdate = "Faction_BookUpdate";//门派书籍更新
+
+    //窗口
+    public const string Win_PopUp = "Win_PopUp";//弹窗ui
 }

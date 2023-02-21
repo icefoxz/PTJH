@@ -1,7 +1,6 @@
 ﻿using System;
 using _GameClient.Models;
 using Server.Configs.Adventures;
-using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Items;
 using UnityEngine;
@@ -147,7 +146,7 @@ namespace Server.Controllers
                     break;
                 }
                 default:
-                    dizi.ConSet(type, adjValue);
+                    dizi.ConAdd(type, adjValue);
                     break;
             }
         }

@@ -1,4 +1,7 @@
-﻿using Server.Configs.Skills;
+﻿using System;
+using System.Diagnostics;
+using Server.Configs.Factions;
+using Server.Configs.Skills;
 
 namespace _GameClient.Models
 {
@@ -74,5 +77,16 @@ namespace _GameClient.Models
             Hp = c.Hp;
             Mp = c.Mp;
         }
+
+        public int GetConsume(ConsumeResources resource) =>
+            resource switch
+            {
+                ConsumeResources.Silver => Silver,
+                ConsumeResources.Food => Food,
+                ConsumeResources.Wine => Wine,
+                ConsumeResources.Herb => Herb,
+                ConsumeResources.Pill => Pill,
+                _ => throw new ArgumentOutOfRangeException(nameof(resource), resource, null)
+            };
     }
 }

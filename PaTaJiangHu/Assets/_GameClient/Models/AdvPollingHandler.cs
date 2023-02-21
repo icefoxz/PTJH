@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Server.Controllers;
+using System;
 
 namespace _GameClient.Models
 {
@@ -56,8 +57,21 @@ namespace _GameClient.Models
 #endif
         }
 
+        protected void SetMode(Modes mode) => Mode = mode;
+
+        /// <summary>
+        /// 轮询模式, 每隔{自定义秒数}更新
+        /// </summary>
         protected abstract void PollingUpdate();
+        /// <summary>
+        /// 故事模式, 每隔{自定义秒数}更新
+        /// </summary>
         protected abstract void StoryUpdate();
+        /// <summary>
+        /// 当有故事注册的时候{一般上都是控制器调用}
+        /// </summary>
+        /// <param name="story"></param>
+        internal abstract void RegStory(DiziAdvLog story);
 
         //更新冒险位置
         protected void UpdateTime(long updatedTicks) => LastUpdate = updatedTicks;
