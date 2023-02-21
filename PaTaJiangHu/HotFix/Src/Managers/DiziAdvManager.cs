@@ -322,6 +322,11 @@ internal class DiziAdvManager : MainPageBase
             }
             public void SetIcon(Sprite icon) => Img_consumeIco.sprite = icon;
             public void SetConsume(int value) => Text_consumeValue.text = value.ToString();
+
+            public void SetInteraction(bool isInteractable)
+            {
+                Btn_action.interactable = isInteractable;
+            }
         }
         private class View_advLayout : UiBase
         {
@@ -707,8 +712,15 @@ internal class DiziAdvManager : MainPageBase
             }
             public void SetInteraction(bool isInteractable)
             {
+                //弟子装备UI
                 Weapon.SetInteraction(isInteractable);
                 Armor.SetInteraction(isInteractable);
+                //弟子属性UI
+                Food.SetInteraction(isInteractable);
+                State.SetInteraction(isInteractable);
+                Silver.SetInteraction(isInteractable);
+                Injury.SetInteraction(isInteractable);
+                Inner.SetInteraction(isInteractable);
             }
 
             #region element_con

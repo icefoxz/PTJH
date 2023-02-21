@@ -91,6 +91,7 @@ internal class DiziInfoSectManager : MainPageBase
         {
             SetDizi(SelectedDizi);
             XDebug.Log($"弟子【{SelectedDizi.Name}】更新了!");
+            CharInfo.SetInteraction(SelectedDizi.Adventure == null);
         }
 
         public void UpdateDiziStamina(string diziGuid)
@@ -172,6 +173,11 @@ internal class DiziInfoSectManager : MainPageBase
                 StatusList.SetState(shortTitle, description, min, sec);
             }
 
+            public void SetInteraction(bool isInteractable)
+            {
+                StatusList.SetInteraction(isInteractable);
+            }
+
             private class View_statusList : UiBase
             {
                 private Text Text_powerValue { get; }
@@ -197,6 +203,11 @@ internal class DiziInfoSectManager : MainPageBase
                     StateView.SetTime(min, sec);
                 }
 
+                public void SetInteraction(bool isInteractable)
+                {
+                    StaminaView.SetInteraction(isInteractable);
+                }
+
                 private class View_Stamina : UiBase
                 {
                     private Text Text_staminaMax { get; }
@@ -218,6 +229,11 @@ internal class DiziInfoSectManager : MainPageBase
                         Text_staminaMax.text = max.ToString("00");
                     }
                     public void SetTime(int min, int sec) => TimeView.SetTime(min, sec);
+
+                    public void SetInteraction(bool isInteractable)
+                    {
+                        Btn_stamina.interactable = isInteractable;
+                    }
                 }
                 private class View_State : UiBase
                 {
