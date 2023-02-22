@@ -70,12 +70,12 @@ internal class TreasureHouseManager : UiManagerBase
                     for (var i = 0; i < faction.Weapons.Count; i++)
                     {
                         var weapon = faction.Weapons[i];
-                        items.Add((weapon.Name, weapon.About, i)); //武器信息 = 无
+                        items.Add((weapon.Name, weapon.About, i));
                     }
                     for (var i = 0; i < faction.Armors.Count; i++)
                     {
                         var armor = faction.Armors[i];
-                        items.Add((armor.Name, armor.About, i)); //防具信息 = 无
+                        items.Add((armor.Name, armor.About, i));
                     }
                     break;
                 case View_contentList.TreasureTypes.Medicine:
@@ -83,7 +83,7 @@ internal class TreasureHouseManager : UiManagerBase
                     for(var i = 0; i < medicine.Length; i++)
                     {
                         var med = medicine[i];
-                        items.Add((med.med.Name, med.med.About, i)); //药品信息 = 无
+                        items.Add((med.med.Name, med.med.About, i));
                     }
                     break;
                 case View_contentList.TreasureTypes.Adventure:
@@ -91,10 +91,16 @@ internal class TreasureHouseManager : UiManagerBase
                     for(var i =0; i < advItems.Length; i++)
                     {
                         var adv = advItems[i];
-                        items.Add((adv.Item.Name, adv.Item.About, i)); //物品信息 = 无
+                        items.Add((adv.Item.Name, adv.Item.About, i));
                     }
                     break;
-                case View_contentList.TreasureTypes.Reward: //奖励信息 = 无
+                case View_contentList.TreasureTypes.Reward:
+                    var rewardItem = faction.Packages;
+                    for(var i = 0; i < rewardItem.Count; i++)
+                    {
+                        var reward = rewardItem[i];
+                        items.Add(($"{reward.Grade}阶包裹", reward.Grade.ToString(), i));
+                    }
                     break;
                 default:
                     break;
@@ -233,14 +239,14 @@ internal class TreasureHouseManager : UiManagerBase
                         for (var i = 0; i < advProps.Length; i++)
                         {
                             var item = advProps[i];
-                            items.Add((item.Item.Name, string.Empty, 0, 1, i, 0));
+                            items.Add((item.Item.Name, string.Empty, 0, item.Amount, i, 0));
                         }
                         break;
                     case TreasureTypes.Reward:
                         for (var i = 0; i < faction.Packages.Count; i++)
                         {
                             var item = faction.Packages;
-                            items.Add(("package", string.Empty, 0, 1, i, 0));
+                            items.Add(("package", string.Empty, 0, item.Count, i, 0));
                         }
                         break;
                     default:
