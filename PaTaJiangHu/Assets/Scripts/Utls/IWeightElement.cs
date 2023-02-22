@@ -13,7 +13,8 @@ namespace Utls
     {
         private static Random Random = new Random();
         /// <summary>
-        /// 权重计算。如果权重值>0将随机，如果0将会是保底值(不会参与权重)
+        /// 权重计算。如果权重值>0将随机，如果0将会是保底值(不会参与权重),
+        /// 多个0权重元素也保持随机属性
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
@@ -22,7 +23,8 @@ namespace Utls
             list.WeightTake(1).FirstOrDefault();
 
         /// <summary>
-        /// 权重计算。如果权重值>0将随机，如果0将会是保底值
+        /// 权重计算。如果权重值>0将随机，如果0将会是保底值,
+        /// 0权重不参与权重计算, 多个0权重元素也保持随机属性
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list"></param>
@@ -31,48 +33,23 @@ namespace Utls
         public static IEnumerable<T> WeightTake<T>(this IEnumerable<T> list, int take) where T : IWeightElement
         {
             var sortedList = SortWeightElements(list);
-            var tookList = sortedList.Take(take).ToArray();
-            var lastElement = tookList.Last();
-            var resolveList = tookList.Concat(sortedList.Except(tookList).Where(s => s.Weight == lastElement.Weight)).ToArray();
-            if (resolveList.Length >= take)
-            {
-                //避免相同权重的元素仅获取上面的,所以再次打乱;
-                return resolveList.OrderByDescending(_ => Random.Next(0, 100)).Take(take);
-            }
-            return resolveList;
+            return sortedList.Take(take);
         }
 
         private static T[] SortWeightElements<T>(IEnumerable<T> list) where T : IWeightElement
         {
             var array = list.ToArray();
             var sum = array.Sum(e => e.Weight);
-            return array.Select(e => ResolveWithZero(e, e.Weight, sum))
+            return array.Select(e => GetRandomWeightResolveWithZero(e, e.Weight, sum))
                 .OrderByDescending(w => w.random).Select(s => s.obj).ToArray();
-            /*var resolved = array.Select(e => ResolveWithZero(e, e.Weight, sum)).ToArray();
-            //Print(resolved);
-            var sorted = resolved
-                .OrderByDescending(w => w.random).ToArray();
-            //Console.WriteLine("********Sorted**********");
-            //Print(sorted);
-            return sorted.Select(s => s.obj).ToArray();
-            //var ss = list.Select(ResolveWithZero).OrderByDescending(w => w.weight).ToArray();
-            //var rr = ss.Select(s => s.obj).ToArray();
-            //return rr;
-            */
         }
 
-        //private static void Print<T>((T obj, double random)[] resolve) where T : IWeightElement
-        //{
-        //    foreach (var (obj, random) in resolve) Console.WriteLine($"w={obj.Weight}, r={random}");
-        //}
-
-        private static (T obj, double random) ResolveWithZero<T>(T o, int weight, double sum) where T : IWeightElement
+        private static (T obj, double random) GetRandomWeightResolveWithZero<T>(T o, int weight, double sum) where T : IWeightElement
         {
-            if (weight <= 0 || sum <= 0) return (o, 0);
-            var percentage = (weight / sum * 100d);
-            var ran = Random.Next(1, (int)percentage);
-            //Console.WriteLine($"p={percentage}, r={ran}");
-            return o.Weight > 0 ? (o, ran) : (o, 0);
+            if (weight <= 0 || sum <= 0) return (o, Random.Next(100));//0权重将会在百位内(1以上的权重不会有百位)
+            var percentage = (weight / sum * 10000d);//大于0以上的权重将根据百分比随机万位数(百位的小数点往后挪2位)
+            var ran = Random.Next(100, (int)percentage);
+            return (o, ran);
         }
     }
 }

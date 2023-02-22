@@ -38,11 +38,17 @@ namespace Server.Controllers
             var allGrades = Enum.GetValues(typeof(GradeConfigSo.Grades)).Cast<int>().ToArray();
             var randomGrade = Sys.Random.Next(allGrades.Length);
             var (strength, agility, hp, mp, stamina, bag) = GradeConfig.GenerateFromGrade(randomGrade);
+            var cr = GradeConfig.GetRandomConsumeResource(randomGrade).ToDictionary(r=>r.Item1,r=>r.Item2);
             var combatSkill = GradeConfig.GenerateCombatSkill(randomGrade);
             var forceSkill = GradeConfig.GenerateForceSkill(randomGrade);
             var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
             var diziIndex = TempDiziList.Count;
-            var capable = new Capable(randomGrade, 1, 1, bag, strength, agility, hp, mp, 50, 50, 50, 50, 50);
+            var capable = new Capable(grade: randomGrade,
+                dodgeSlot: 1, combatSlot: 1, bag: bag,
+                strength: strength, agility: agility, hp: hp, mp: mp,
+                silver: cr[ConsumeResources.Silver], food: cr[ConsumeResources.Food],
+                wine: cr[ConsumeResources.Wine], herb: cr[ConsumeResources.Herb],
+                pill: cr[ConsumeResources.Pill]);
             var guid = Guid.NewGuid().ToString();
             var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,
                 capable: capable, combatSkill: combatSkill.GetFromLevel(1),

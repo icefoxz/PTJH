@@ -4,6 +4,7 @@ using System.Linq;
 using _GameClient.Models;
 using NameM;
 using Server.Configs.Characters;
+using Server.Configs.Factions;
 using Server.Configs.Skills;
 using UnityEngine;
 using UnityEngine.Analytics;
@@ -62,8 +63,11 @@ namespace Server.Controllers
         {
             var name = GenerateName();
             var (str, agi, hp, mp, sta, inv) = Config.GradeConfigSo.GenerateFromGrade(grade: grade);
+            var cr = Config.GradeConfigSo.GetRandomConsumeResource(grade).ToDictionary(r => r.Item1, r => r.Item2);
             var cap = new Capable(grade: grade, dodgeSlot: 3, combatSlot: 5, bag: inv, strength: str, agility: agi,
-                hp: hp, mp: mp, silver: 50, food: 50, wine: 50, herb: 50, pill: 50);
+                hp: hp, mp: mp, silver: cr[ConsumeResources.Silver], 
+                food: cr[ConsumeResources.Food], wine: cr[ConsumeResources.Wine], 
+                herb: cr[ConsumeResources.Herb], pill: cr[ConsumeResources.Pill]);
             return new Dizi(
                 name: name, 
                 strength: str, 

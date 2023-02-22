@@ -4,6 +4,7 @@ using System.Linq;
 using Core;
 using Data;
 using MyBox;
+using Server.Configs.Factions;
 using Server.Configs.Items;
 using UnityEngine;
 
@@ -13,7 +14,18 @@ namespace Server.Configs.Adventures
     {
         int Grade { get; }
         IStacking<IGameItem>[] AllItems { get; }
+        IConsumeResources Resource { get; }
     }
+
+    public interface IConsumeResources
+    {
+        int Silver { get; }
+        int Food { get; }
+        int Wine { get; }
+        int Herb { get; }
+        int Pill { get; }
+    }
+
     public interface IGameReward
     {
         IAdvPackage[] Packages { get; }
@@ -90,7 +102,7 @@ namespace Server.Configs.Adventures
                 .Concat(防具).Concat(丹药).Concat(秘籍).Concat(故事道具)
                 .Concat(功能道具).ToArray();
         }
-        [Serializable] private class AdvPackage : IAdvPackage
+        [Serializable] private class AdvPackage : IAdvPackage, IConsumeResources
         {
             private bool ChangeElementName()
             {
@@ -108,10 +120,12 @@ namespace Server.Configs.Adventures
             [ConditionalField(true,nameof(ChangeElementName))][SerializeField][ReadOnly]private string _name;
 
             [SerializeField] private int 品级;
+            [SerializeField] private ConsumeResourceField[] 资源;
             [SerializeField] private WeaponItem[] 武器;
             [SerializeField] private ArmorItem[] 防具;
             [SerializeField] private MedicineItem[] 丹药;
             [SerializeField] private BookItem[] 秘籍;
+            private ConsumeResourceField[] Resources => 资源;
             public IStacking<IGameItem>[] Weapons => 武器;
             public IStacking<IGameItem>[] Armor => 防具;
             public IStacking<IGameItem>[] Medicines => 丹药;
@@ -123,6 +137,43 @@ namespace Server.Configs.Adventures
                 .Concat(Medicines)
                 .Concat(Book)
                 .ToArray();
+            public IConsumeResources Resource => this;
+            public int Silver => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Silver)?.Value ?? 0;
+            public int Food => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Food)?.Value ?? 0;
+            public int Wine => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Wine)?.Value ?? 0;
+            public int Herb => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Herb)?.Value ?? 0;
+            public int Pill => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Pill)?.Value ?? 0;
+
+            [Serializable] private class ConsumeResourceField
+            {
+                private bool ChangeConsumeResourceName()
+                {
+                    if (Value <= 0)
+                    {
+                        _name = "未设置资源!";
+                        return true;
+                    }
+                    _name = $"{GetResourceName(Resource)}x{Value}";
+                    return true;
+                }
+
+                private string GetResourceName(ConsumeResources resource) => resource switch
+                {
+                    ConsumeResources.Silver => "银两",
+                    ConsumeResources.Food => "食物",
+                    ConsumeResources.Wine => "酒水",
+                    ConsumeResources.Herb => "药草",
+                    ConsumeResources.Pill => "丹药",
+                    _ => throw new ArgumentOutOfRangeException(nameof(resource), resource, null)
+                };
+
+                [ConditionalField(true, nameof(ChangeConsumeResourceName))][SerializeField][ReadOnly] private string _name;
+                [SerializeField] private ConsumeResources 资源;
+                [SerializeField] private int 数量;
+
+                public ConsumeResources Resource => 资源;
+                public int Value => 数量 < 0 ? throw new InvalidOperationException($"资源数量 = {数量}!") : 数量;
+            }
         }
         [Serializable] private class WeaponItem : GameItem, IEquipment
         {

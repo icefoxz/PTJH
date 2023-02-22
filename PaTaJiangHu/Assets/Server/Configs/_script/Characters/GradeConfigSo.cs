@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MyBox;
 using Server.Configs.Battles;
+using Server.Configs.Factions;
 using Server.Configs.Skills;
 using Server.Controllers;
 using UnityEngine;
@@ -69,6 +70,11 @@ namespace Server.Configs.Characters
             }
         }
 
+        public (ConsumeResources, int)[] GetRandomConsumeResource(int grade)
+        {
+            return GradeConfigs((Grades)grade).ConsumeResourcesSo.GetRandomElements()
+                .Select((value, index) => ((ConsumeResources)index, value)).ToArray();
+        }
 
         [Serializable]
         private class GradeConfig
@@ -96,6 +102,7 @@ namespace Server.Configs.Characters
             [SerializeField] public Grades Grade;
             [SerializeField] private MinMaxVectorInt 体力;
             [SerializeField] private MinMaxVectorInt 背包格;
+            [SerializeField] private ConsumeResourcesConfigSo 消耗资源策略;
             [SerializeField] private PentagonConfig[] 随机五维;
             [SerializeField] private CombatSkillGradeSo 初始武功配置;
             [SerializeField] private ForceSkillGradeSo 初始内功配置;
@@ -103,6 +110,7 @@ namespace Server.Configs.Characters
 
             private MinMaxVectorInt Stamina => 体力;
             private MinMaxVectorInt InventorySlot => 背包格;
+            public ConsumeResourcesConfigSo ConsumeResourcesSo => 消耗资源策略;
             private CombatSkillGradeSo CombatSkillGradeSo => 初始武功配置;
             private ForceSkillGradeSo ForceSkillGradeSo => 初始内功配置;
             private DodgeSkillGradeSo DodgeSkillGradeSo => 初始轻功配置;
@@ -125,6 +133,7 @@ namespace Server.Configs.Characters
                 PentagonGradeSo.Elements.Hp,
                 PentagonGradeSo.Elements.Mp,
             };
+
 
             public CombatFieldSo GenerateCombatSkill() => CombatSkillGradeSo.PickSkill();
             public ForceFieldSo GenerateForceSkill() => ForceSkillGradeSo.PickSkill();
