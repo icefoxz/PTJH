@@ -281,6 +281,8 @@ namespace _GameClient.Models
             Log("移除" + $"历练道具[{slot}]:" + item?.Item?.Name);
             return item.Item;
         }
+
+        public override string ToString() => Name;
     }
 
     /// <summary>
@@ -375,7 +377,6 @@ namespace _GameClient.Models
         internal void RegIdleStory(DiziAdvLog log)
         {
             Idle.RegStory(log);
-            
         }
     }
 }
