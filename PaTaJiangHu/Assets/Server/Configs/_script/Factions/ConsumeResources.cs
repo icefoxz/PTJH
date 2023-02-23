@@ -7,7 +7,6 @@ namespace Server.Configs.Factions
     /// </summary>
     public enum ConsumeResources
     {
-        [InspectorName("银两")]Silver,
         [InspectorName("食物")]Food,
         [InspectorName("酒水")]Wine,
         [InspectorName("药草")]Herb,

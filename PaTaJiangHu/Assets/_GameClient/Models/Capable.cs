@@ -32,7 +32,6 @@ namespace _GameClient.Models
         /// </summary>
         public int Bag { get; private set; }
 
-        public int Silver { get; }
         public int Food { get; }
         public int Wine { get; }
         public int Herb { get; }
@@ -43,7 +42,7 @@ namespace _GameClient.Models
         }
 
         public Capable(int grade, int dodgeSlot, int combatSlot, int bag, GradeValue<int> strength,
-            GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int silver, int food, int wine, int herb,
+            GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int food, int wine, int herb,
             int pill)
         {
             Grade = grade;
@@ -54,7 +53,6 @@ namespace _GameClient.Models
             Agility = agility;
             Hp = hp;
             Mp = mp;
-            Silver = silver;
             Food = food;
             Wine = wine;
             Herb = herb;
@@ -63,7 +61,6 @@ namespace _GameClient.Models
 
         public Capable(Capable c)
         {
-            Silver = c.Silver;
             Food = c.Food;
             Wine = c.Wine;
             Herb = c.Herb;
@@ -81,7 +78,6 @@ namespace _GameClient.Models
         public int GetConsume(ConsumeResources resource) =>
             resource switch
             {
-                ConsumeResources.Silver => Silver,
                 ConsumeResources.Food => Food,
                 ConsumeResources.Wine => Wine,
                 ConsumeResources.Herb => Herb,

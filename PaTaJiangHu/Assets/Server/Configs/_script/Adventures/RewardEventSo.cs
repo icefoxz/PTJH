@@ -19,7 +19,6 @@ namespace Server.Configs.Adventures
 
     public interface IConsumeResources
     {
-        int Silver { get; }
         int Food { get; }
         int Wine { get; }
         int Herb { get; }
@@ -138,7 +137,6 @@ namespace Server.Configs.Adventures
                 .Concat(Book)
                 .ToArray();
             public IConsumeResources Resource => this;
-            public int Silver => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Silver)?.Value ?? 0;
             public int Food => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Food)?.Value ?? 0;
             public int Wine => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Wine)?.Value ?? 0;
             public int Herb => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Herb)?.Value ?? 0;
@@ -159,7 +157,6 @@ namespace Server.Configs.Adventures
 
                 private string GetResourceName(ConsumeResources resource) => resource switch
                 {
-                    ConsumeResources.Silver => "银两",
                     ConsumeResources.Food => "食物",
                     ConsumeResources.Wine => "酒水",
                     ConsumeResources.Herb => "药草",

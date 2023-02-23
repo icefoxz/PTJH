@@ -162,9 +162,6 @@ namespace _GameClient.Models
             var lastValue = 0;
             switch (resource)
             {
-                case ConsumeResources.Silver:
-                    AddSilver(value);
-                    return;
                 case ConsumeResources.Food:
                     lastValue = Food;
                     Food += value; 
@@ -288,7 +285,7 @@ namespace _GameClient.Models
                     throw new ArgumentOutOfRangeException();
             }
         }
-
+        
         internal void AddAdvItem(IGameItem item)
         {
             AddGameItem(new Stacking<IGameItem>(item, 1));
@@ -329,7 +326,6 @@ namespace _GameClient.Models
         public int GetResource(ConsumeResources resourceType) =>
             resourceType switch
             {
-                ConsumeResources.Silver => Silver,
                 ConsumeResources.Food => Food,
                 ConsumeResources.Wine => Wine,
                 ConsumeResources.Herb => Herb,
