@@ -25,6 +25,12 @@ namespace Views
         string name { get; }
         View GetView();
     }
+
+    public interface IPage : IView
+    {
+
+    }
+
     /// <summary>
     /// 挂在Ui父件的身上的整合插件
     /// </summary>

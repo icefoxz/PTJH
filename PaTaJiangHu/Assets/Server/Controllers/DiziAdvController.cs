@@ -71,6 +71,7 @@ namespace Server.Controllers
                 return;
             }
             var dizi = Faction.GetDizi(guid);
+            dizi.StopIdle();
             dizi.AdventureStart(map, SysTime.UnixNow, EventLogSecs);
         }
 

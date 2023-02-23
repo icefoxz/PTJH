@@ -23,6 +23,7 @@ namespace Server.Controllers
             if (story == null) return;
             var handler = new StoryHandler(story, new AdvEventMiddleware(BattleSimulation, ConditionProperty));
             await handler.Invoke(dizi, now, -1);//闲置状态没有里数概念,所以里数-1
+            dizi.RegIdleStory(handler.AdvLog);
         }
     }
 }

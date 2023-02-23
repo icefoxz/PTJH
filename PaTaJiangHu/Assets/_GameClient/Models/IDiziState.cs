@@ -33,7 +33,9 @@ namespace _GameClient.Models
         {
             //当有故事注册的时候
             Mode = Modes.Story;
+            CurrentStory = story;
             _messageUpdateTime = SysTime.Now;
+            UpdateTime(SysTime.UnixNow);
         }
 
         internal void StopIdleState() => StopService();
@@ -71,8 +73,12 @@ namespace _GameClient.Models
             var loops = (int)(ts.TotalSeconds / MessageUpdateSecs);
             UpdateCurrentStoryMessage(loops);
 
-            if (MessageIndex >= CurrentStory.Messages.Length) return;
-            _messageUpdateTime = SysTime.Now;
+            if (loops > 0) _messageUpdateTime = SysTime.Now;
+
+            if (MessageIndex >= CurrentStory.Messages.Length)
+            {
+                CurrentStory = null;//故事结束
+            }
         }
     }
 }

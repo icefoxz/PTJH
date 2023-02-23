@@ -16,6 +16,6 @@ namespace Server.Configs.Characters
         private int Sum => 总值;
 
         public int[] GetRandomElements() =>
-            Sys.RandomElementValue(5, Min, Max, Sum).OrderBy(_ => Sys.Random.Next(100)).ToArray();
+            Sys.RandomElementValue(4, Min, Max, Sum).OrderBy(_ => Sys.Random.Next(100)).ToArray();
     }
 }

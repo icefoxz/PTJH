@@ -35,7 +35,7 @@ namespace Server.Controllers
 
         public void SetInteractionResult(int result) => InteractionResult = result;
 
-        void IAdjustment.Set(IAdjustment.Types type, int value, bool percentage)
+        string IAdjustment.Set(IAdjustment.Types type, int value, bool percentage)
         {
             var controller = Game.Controllers.Get<DiziController>();
             var adjValue = value;
@@ -56,6 +56,9 @@ namespace Server.Controllers
             }
 
             controller.AddDiziCon(Dizi.Guid, type, adjValue);
+            if (adjValue == 0) return string.Empty;
+            var plusSign = adjValue > 0 ? "+" : string.Empty;
+            return Dizi.Name + type.GetText() + plusSign + $"({adjValue})";
         }
     }
 }

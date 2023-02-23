@@ -29,7 +29,7 @@ namespace Server.Configs.Adventures
                 Brief,
                 Adjust.Set(arg.Adjustment)
             };
-            list.AddRange(ConFields.Select(a => a.Set(arg.Adjustment,this)));
+            list.AddRange(ConFields.Select(a => a.Set(arg.Adjustment, this)));
             var messages = list.Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => string.Format(s, arg.DiziName))
                 .ToArray();
@@ -109,8 +109,7 @@ namespace Server.Configs.Adventures
                     Kinds.Inner => IAdjustment.Types.Inner,
                     _ => throw new ArgumentOutOfRangeException($"{so.Name} 存在未知类型 = {Kind}, 请检查配置!")
                 };
-                adj.Set(adjType, Value, Percentage);
-                return string.Empty;
+                return adj.Set(adjType, Value, Percentage);
             }
         }
 
@@ -124,11 +123,9 @@ namespace Server.Configs.Adventures
 
             private int Stamina => 弟子体力;
             private bool Percentage => 百分比;
-            public string Set(IAdjustment adj)
-            {
-                if(AdjustStamina) adj.Set(IAdjustment.Types.Stamina, Stamina, Percentage);
-                return string.Empty;
-            }
+            public string Set(IAdjustment adj) => AdjustStamina 
+                ? adj.Set(IAdjustment.Types.Stamina, Stamina, Percentage) 
+                : string.Empty;
         }
     }
 }
