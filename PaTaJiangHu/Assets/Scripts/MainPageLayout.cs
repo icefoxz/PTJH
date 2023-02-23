@@ -9,7 +9,8 @@ public class MainPageLayout : View
     {
         Top,
         Mid,
-        Btm
+        Btm,
+        Page
     }
     [SerializeField] private Transform _top;
     [SerializeField] private Transform _mid;
@@ -44,6 +45,7 @@ public class MainPageLayout : View
             Sections.Top => Top,
             Sections.Mid => Mid,
             Sections.Btm => Btm,
+            Sections.Page => transform,
             _ => throw new ArgumentOutOfRangeException(nameof(section), section, null)
         };
         return sectionTran;
