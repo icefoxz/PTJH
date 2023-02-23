@@ -46,9 +46,8 @@ namespace Server.Controllers
             var capable = new Capable(grade: randomGrade,
                 dodgeSlot: 1, combatSlot: 1, bag: bag,
                 strength: strength, agility: agility, hp: hp, mp: mp,
-                silver: cr[ConsumeResources.Silver], food: cr[ConsumeResources.Food],
-                wine: cr[ConsumeResources.Wine], herb: cr[ConsumeResources.Herb],
-                pill: cr[ConsumeResources.Pill]);
+                food: cr[ConsumeResources.Food], wine: cr[ConsumeResources.Wine], 
+                herb: cr[ConsumeResources.Herb], pill: cr[ConsumeResources.Pill]);
             var guid = Guid.NewGuid().ToString();
             var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,
                 capable: capable, combatSkill: combatSkill.GetFromLevel(1),

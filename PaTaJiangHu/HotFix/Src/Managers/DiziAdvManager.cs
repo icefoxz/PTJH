@@ -200,9 +200,9 @@ internal class DiziAdvManager : MainPageBase
             var (silverText, sColor) = controller.GetSilverCfg(dizi.Silver.ValueMaxRatio);
             var (injuryText, jColor) = controller.GetInjuryCfg(dizi.Injury.ValueMaxRatio);
             var (innerText, nColor) = controller.GetInnerCfg(dizi.Inner.ValueMaxRatio);
+            SetElement(Conditions.Silver, dizi.Silver, silverText, sColor, 100);
             SetElement(Conditions.Food, dizi.Food, foodText, fColor, dizi.Capable.Food);
             SetElement(Conditions.State, dizi.Emotion, emoText, eColor, dizi.Capable.Wine);
-            SetElement(Conditions.Silver, dizi.Silver, silverText, sColor, dizi.Capable.Silver);
             SetElement(Conditions.Injury, dizi.Injury, injuryText, jColor, dizi.Capable.Herb);
             SetElement(Conditions.Inner, dizi.Inner, innerText, nColor, dizi.Capable.Pill);
 
