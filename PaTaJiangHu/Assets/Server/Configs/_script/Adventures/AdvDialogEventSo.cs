@@ -38,6 +38,8 @@ namespace Server.Configs.Adventures
             [SerializeField]private string _npcName;
             //[Header("id 0是玩家执行单位,如果设置为-1为自定义名字")][SerializeField]private int _id;
             [SerializeField] [TextArea] private string _message;
+
+            private const char Paragraph = '\n';
             //public int Id => _id;
             public string NpcName => _npcName;
             public string Message => _message;
@@ -47,7 +49,7 @@ namespace Server.Configs.Adventures
             //    _name = _id.ToString();
             //    return false;
             //}
-            public string GetMessage(string charName) => string.Format(_message, charName, NpcName);
+            public string GetMessage(string charName) => string.Format(_message, charName + Paragraph , NpcName + Paragraph);
         }
     }
 }

@@ -45,22 +45,6 @@ namespace Server.Configs.Adventures
         IRewardHandler Handler { get; }
     }
 
-    public interface IAdjustment
-    {
-        public enum Types
-        {
-            Stamina = 0,
-            Silver = 1,
-            Food = 2,
-            Emotion = 3,
-            Injury = 4,
-            Inner = 5,
-            Exp = 6,
-        }
-
-        void Set(Types type, int value, bool percentage);
-    }
-
     public interface IAdvEvent
     {
         string name { get; }
