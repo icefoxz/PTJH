@@ -83,11 +83,21 @@ public class ScrollContentAligner : MonoBehaviour
         SetMove(ScrollRect.MovementType.Clamped);
     }
 
+#if UNITY_EDITOR
     public void TestInit()
     {
         OnSetElement += TestSetElement;
         Init();
     }
+    private IView TestSetElement(int index, View view)
+    {
+        view.GetComponentInChildren<Text>().text =$"list Index = {List[index]}";
+        view.name = $"Element_{index}";
+        view.gameObject.SetActive(true);
+        return view;
+    }
+#endif
+
     private void ResetScrollRect()
     {
         _scrollRect.content.SetSize(GetViewSize(),Vertical);
@@ -103,13 +113,6 @@ public class ScrollContentAligner : MonoBehaviour
         ListItems(inverse);
     }
 
-    private IView TestSetElement(int index, View view)
-    {
-        view.GetComponentInChildren<Text>().text =$"list Index = {List[index]}";
-        view.name = $"Element_{index}";
-        view.gameObject.SetActive(true);
-        return view;
-    }
 
     public void SetList(int count)
     {
@@ -742,7 +745,7 @@ public class ScrollContentAligner : MonoBehaviour
             if (Mode == Modes.Infinite) TopEdgeElementReplace(element);
             else ClampModeUpdate();
         }
-        print($"{nameof(OnScrollDownTopEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
+        //print($"{nameof(OnScrollDownTopEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
     }
 
     protected void OnScrollUpTopEdge(View element, float edgePosition, float normalizedPosition)
@@ -773,7 +776,7 @@ public class ScrollContentAligner : MonoBehaviour
             if (Mode == Modes.Infinite) BottomEdgeElementReplace(element);
             else ClampModeUpdate();
         }
-        print($"{nameof(OnScrollUpBottomEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
+        //print($"{nameof(OnScrollUpBottomEdge)}: ScrollIndex = {ScrollIndex}, {element}, edge = {edgePosition}, nor = {normalizedPosition}");
     }
 
     #region EdgeTriggers

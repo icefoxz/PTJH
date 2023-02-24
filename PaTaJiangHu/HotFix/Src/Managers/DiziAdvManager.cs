@@ -516,7 +516,6 @@ internal class DiziAdvManager : MainPageBase
                 {
                     var line = message.Length / OneLine;
                     Text_Log.text = message;
-                    XDebug.Log($"view = {View}, rect = {View?.RectTransform}");
                     View.RectTransform.SetSize(line * 20, RectTransform.Axis.Vertical);
                 }
 

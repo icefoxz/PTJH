@@ -47,9 +47,13 @@ namespace _GameClient.Models
         private readonly List<IGameReward> _rewards = new List<IGameReward>();
         private List<string> _storyLog = new List<string>();
         public IReadOnlyList<string> StoryLog => _storyLog;
-        private Queue<DiziAdvLog> Stories { get; set; } = new Queue<DiziAdvLog>();
+
+        private IReadOnlyList<DiziAdvLog> Stories => _stories;
+
         private Queue<string> MessageQueue { get; set; }
         private DateTime messageUpdate;
+        private List<DiziAdvLog> _stories = new List<DiziAdvLog>();
+        private int _storyIndex;
 
         public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi)
             : base(startTime,dizi.Name)
@@ -93,7 +97,7 @@ namespace _GameClient.Models
             for (int i = 0; i < times; i++)
             {
                 //如果没有故事, 返回轮询模式
-                if (Stories.Count == 0 && MessageQueue?.Count == 0)
+                if (Stories.Count - 1 == _storyIndex && MessageQueue?.Count == 0)
                 {
                     Mode = Modes.Polling; //循环结束自动回到轮询故事
                     break;
@@ -102,7 +106,8 @@ namespace _GameClient.Models
                 //如果信息为空,尝从故事中获取信息
                 if (MessageQueue == null || MessageQueue.Count == 0)
                 {
-                    var st = Stories.Dequeue();
+                    var st = Stories[_storyIndex];
+                    _storyIndex++;
                     MessageQueue = new Queue<string>(st.Messages);
                 }
 
@@ -152,7 +157,7 @@ namespace _GameClient.Models
             }
             Mode = Modes.Story;
             UpdateTime(story.NowTicks, story.LastMiles);//更新发生地点 & 最新里数
-            Stories.Enqueue(story);
+            _stories.Add(story);
         }
 
         internal void Recall(long now, int lastMile, Action recallAction)
@@ -174,7 +179,9 @@ namespace _GameClient.Models
                 var returnTime = SysTime.Now;
                 yield return new WaitUntil(() => (SysTime.Now - returnTime).TotalSeconds >= JourneyReturnSec);
                 UpdateServiceName("已回到山门.");
-                RegStory(new DiziAdvLog(new[] { $"{Dizi.Name}已回到山门!" }, Dizi.Guid, SysTime.UnixNow, LastMile));
+                var advLog = new DiziAdvLog(Dizi.Guid, SysTime.UnixNow, LastMile);
+                advLog.SetMessages(new[] { $"{Dizi.Name}已回到山门!" });
+                RegStory(advLog);
                 yield return new WaitForSeconds(1);
                 recallAction?.Invoke();
                 State = States.End;

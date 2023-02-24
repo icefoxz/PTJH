@@ -59,6 +59,11 @@ namespace Server.Configs.Adventures
         /// </summary>
         event Action<IAdvEvent> OnNextEvent;
         /// <summary>
+        /// 调整事件触发,参数调整信息
+        /// </summary>
+        event Action<string[]> OnAdjustmentEvent;
+        event Action<IGameReward> OnRewardEvent;
+        /// <summary>
         /// 所有事件
         /// </summary>
         IAdvEvent[] AllEvents { get; }
