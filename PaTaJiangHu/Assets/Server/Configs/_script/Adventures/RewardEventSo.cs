@@ -51,17 +51,22 @@ namespace Server.Configs.Adventures
         //public override int Id => _id;
         public override void EventInvoke(IAdvEventArg arg)
         {
-            OnLogsTrigger?.Invoke(GenerateRewardMessages(arg.DiziName));
+            var messages = GenerateRewardMessages(arg.DiziName);
+            var adjustment = arg.Adjustment.Set(IAdjustment.Types.Exp, Exp, false);
+            messages.Add(adjustment);
+            var eventMsgs = messages.ToArray();
+            OnLogsTrigger?.Invoke(eventMsgs);
             arg.Handler.SetReward(Reward);
-            arg.Adjustment.Set(IAdjustment.Types.Exp, Exp, false);
+            InvokeAdjustmentEvent(new[] { adjustment });
+            InvokeRewardEvent(Reward);
             OnNextEvent?.Invoke(Next);
         }
 
-        private string[] GenerateRewardMessages(string diziName)
+        private List<string> GenerateRewardMessages(string diziName)
         {
             var messages = new List<string>(GameReward.AllItemFields.Select(m => GenerateLogFromItem(m, diziName)));
             if (Exp > 0) messages.Insert(0, $"{diziName}获得经验【{Exp}】");
-            return messages.ToArray();
+            return messages;
         }
         private string GenerateLogFromItem(GameItem item, string diziName) => $"{diziName}获得【{item.Name}】x{item.Amount}。";
 

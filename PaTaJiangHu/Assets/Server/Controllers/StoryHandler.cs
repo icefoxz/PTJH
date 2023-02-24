@@ -38,6 +38,7 @@ namespace Server.Controllers
         public async Task Invoke(Dizi dizi, long nowTicks, int updatedMiles)
         {
             var eventQueue = new Queue<string>(QueueLimit);
+            AdvLog = new DiziAdvLog(dizi.Guid, nowTicks, updatedMiles);
             while (CurrentEvent != null)
             {
                 if (eventQueue.Count >= QueueLimit)
@@ -57,6 +58,8 @@ namespace Server.Controllers
                 }
                 CurrentEvent.OnLogsTrigger += OnLogsTrigger;
                 CurrentEvent.OnNextEvent += OnNextEventTrigger;
+                CurrentEvent.OnAdjustmentEvent += OnAdjustEventTrigger;
+                CurrentEvent.OnRewardEvent += OnRewardTrigger;
                 OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
                 var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.Adventure, dizi: dizi);
                 CurrentEvent.EventInvoke(advArg);
@@ -64,8 +67,19 @@ namespace Server.Controllers
                 CurrentEvent = nextEvent;
                 _recursiveIndex++;
             }
+            AdvLog.SetMessages(Messages.ToArray());
+        }
 
-            AdvLog = new DiziAdvLog(Messages.ToArray(), dizi.Guid, nowTicks, updatedMiles);
+        private void OnRewardTrigger(IGameReward reward)
+        {
+            CurrentEvent.OnRewardEvent -= OnRewardTrigger;
+            AdvLog.SetReward(reward);
+        }
+
+        private void OnAdjustEventTrigger(string[] adjustMessages)
+        {
+            CurrentEvent.OnAdjustmentEvent -= OnAdjustEventTrigger;
+            AdvLog.AddAdjustmentInfo(adjustMessages);
         }
 
         private void OnNextEventTrigger(IAdvEvent nextEvent)

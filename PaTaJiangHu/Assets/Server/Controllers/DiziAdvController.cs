@@ -90,7 +90,8 @@ namespace Server.Controllers
         private static void DiziRecallStory(Dizi dizi, long now, int totalMile)
         {
             var recallMsg = $"{dizi.Name}回程中...";
-            var recallLog = new DiziAdvLog(new[] { recallMsg }, dizi.Guid, now, totalMile);
+            var recallLog = new DiziAdvLog(dizi.Guid, now, totalMile);
+            recallLog.SetMessages(new[] { recallMsg });
             dizi.AdventureStoryLogging(recallLog);
             dizi.AdventureRecall(now, totalMile);
         }
@@ -211,13 +212,30 @@ namespace Server.Controllers
         public string DiziGuid { get; set; }
         public long NowTicks { get; set; }
         public int LastMiles { get; set; }
+        public List<string> AdjustEvents { get; set; }
+        public IGameReward Reward { get; set; }
 
-        public DiziAdvLog(string[] messages, string diziGuid, long nowTicks, int lastMiles)
+        public DiziAdvLog(string diziGuid, long nowTicks, int lastMiles)
         {
-            Messages = messages;
             DiziGuid = diziGuid;
             NowTicks = nowTicks;
             LastMiles = lastMiles;
+            AdjustEvents = new List<string>();
+        }
+
+        public void SetMessages(string[] messages)
+        {
+            Messages = messages;
+        }
+
+        public void SetReward(IGameReward reward)
+        {
+            Reward = reward;
+        }
+
+        public void AddAdjustmentInfo(string[] adjustMessages)
+        {
+            AdjustEvents.AddRange(adjustMessages);
         }
     }
 }
