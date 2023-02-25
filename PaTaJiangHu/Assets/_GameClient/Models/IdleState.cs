@@ -5,11 +5,14 @@ using Utls;
 
 namespace _GameClient.Models
 {
+    /// <summary>
+    /// 闲置状态
+    /// </summary>
     public class IdleState : AdvPollingHandler
     {
         private Dizi Dizi { get; }
         
-        public DiziAdvLog CurrentStory { get; private set; }
+        public DiziActivityLog CurrentStory { get; private set; }
         public int MessageIndex { get; private set; }
 
         private readonly List<string> _messages = new List<string>();
@@ -29,7 +32,7 @@ namespace _GameClient.Models
             IdleController.QueryIdleStory(Dizi.Guid);
         }
 
-        internal override void RegStory(DiziAdvLog story)
+        internal override void RegStory(DiziActivityLog story)
         {
             //当有故事注册的时候
             Mode = Modes.Story;

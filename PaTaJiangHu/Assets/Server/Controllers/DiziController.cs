@@ -10,7 +10,7 @@ namespace Server.Controllers
 {
     public class DiziController : IGameController
     {
-        private LevelConfigSo LevelConfig => Game.Config.DiziCfg.LevelConfigSo;
+        private Config.DiziConfig DiziConfig => Game.Config.DiziCfg; 
         private PropStateConfigSo PropStateCfg => Game.Config.DiziCfg.PropState;
         private Faction Faction => Game.World.Faction;
 
@@ -41,13 +41,14 @@ namespace Server.Controllers
         public void DiziExpAdd(string guid, int exp)
         {
             if (exp == 0) return;
+            var levelConfig = DiziConfig.LevelConfigSo;
             var dizi = Faction.GetDizi(guid);
-            var max = LevelConfig.GetMaxExp(dizi.Level);
+            var max = levelConfig.GetMaxExp(dizi.Level);
             var value = dizi.Exp.Value;
             int balance;
             var newValue = balance = value + exp;
             var level = dizi.Level;
-            var maxLevel = LevelConfig.MaxLevel;
+            var maxLevel = levelConfig.MaxLevel;
             if (max <= newValue && //到达上限
                 maxLevel > level + 1) //小于弟子配置上限
             {
@@ -55,7 +56,7 @@ namespace Server.Controllers
                 balance = newValue - max;
                 //升级
                 dizi.LevelSet(level);
-                max = LevelConfig.GetMaxExp(level);
+                max = levelConfig.GetMaxExp(level);
             }
             dizi.ExpSet(balance, max);
         }
@@ -177,6 +178,18 @@ namespace Server.Controllers
                 XDebug.LogError($"门派银两({Faction.Silver})小于消费银两({amount})!");
             Faction.AddSilver(-amount);
             AddDiziCon(guid, IAdjustment.Types.Silver, amount);
+        }
+
+        /// <summary>
+        /// 把失踪的弟子召唤回来
+        /// </summary>
+        /// <param name="guid"></param>
+        public void RecallDiziFromLost(string guid)
+        {
+            var dizi = Faction.GetDizi(guid);
+            if (dizi.LostState == null)
+                XDebug.LogError($"{dizi}状态不符! {dizi.State}");
+            dizi.RestoreFromLost();
         }
     }
 }

@@ -71,6 +71,8 @@ namespace Server.Controllers
                 return;
             }
             var dizi = Faction.GetDizi(guid);
+            if (dizi.State.Current != DiziStateHandler.States.Idle)
+                XDebug.Log($"状态切换异常! : {dizi.State.Current}");
             dizi.StopIdle();
             dizi.AdventureStart(map, SysTime.UnixNow, EventLogSecs);
         }
@@ -80,6 +82,8 @@ namespace Server.Controllers
         {
             var now = SysTime.UnixNow;
             var dizi = Faction.GetDizi(guid);
+            if (dizi.State.Current != DiziStateHandler.States.Adventure)
+                XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
             CheckMile(dizi.Adventure.Map.Id, dizi.Guid, (totalMile, isAdvEnd) =>
             {
                 if (dizi.Adventure.State == AutoAdventure.States.Progress)
@@ -90,7 +94,7 @@ namespace Server.Controllers
         private static void DiziRecallStory(Dizi dizi, long now, int totalMile)
         {
             var recallMsg = $"{dizi.Name}回程中...";
-            var recallLog = new DiziAdvLog(dizi.Guid, now, totalMile);
+            var recallLog = new DiziActivityLog(dizi.Guid, now, totalMile);
             recallLog.SetMessages(new[] { recallMsg });
             dizi.AdventureStoryLogging(recallLog);
             dizi.AdventureRecall(now, totalMile);
@@ -103,10 +107,11 @@ namespace Server.Controllers
         public void AdventureFinalize(string guid)
         {
             var dizi = Faction.GetDizi(guid);
-            if (dizi.Adventure is not { State: AutoAdventure.States.End })
-            {
+            if (dizi.State.Current != DiziStateHandler.States.Adventure)
+                XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
+            if (dizi.State.Adventure.State != AutoAdventure.States.End)
                 XDebug.Log($"操作异常!弟子状态 = {dizi.Adventure?.State}");
-            }
+
             RewardController.SetRewards(dizi.Adventure.Rewards.ToArray());
             dizi.AdventureFinalize();
             dizi.StartIdle(SysTime.UnixNow);
@@ -155,7 +160,12 @@ namespace Server.Controllers
                 var place = places[i];
                 var story = await ProcessStory(place, now, toMiles, dizi);
                 //当获取到地点, 执行故事
-                dizi.AdventureStoryLogging(story.AdvLog);
+                dizi.AdventureStoryLogging(story.ActivityLog);
+                if (story.IsLost)//强制失踪事件
+                {
+                    SetLost(dizi.Guid, story.ActivityLog);
+                    return true;
+                }
                 if (story.IsAdvFailed) //当历练失败
                 {
                     //执行历练失败的处罚
@@ -204,9 +214,17 @@ namespace Server.Controllers
             return miles;
         }
 
+        //历练状态失踪方法
+        private void SetLost(string guid, DiziActivityLog lastLog)
+        {
+            var dizi = Faction.GetDizi(guid);
+            var now = SysTime.UnixNow;
+            dizi.AdventureTerminate(now, lastLog.LastMiles);
+            dizi.StartLostState(now, lastLog);
+        }
     }
 
-    public record DiziAdvLog
+    public record DiziActivityLog
     {
         public string[] Messages { get; set; }
         public string DiziGuid { get; set; }
@@ -215,7 +233,7 @@ namespace Server.Controllers
         public List<string> AdjustEvents { get; set; }
         public IGameReward Reward { get; set; }
 
-        public DiziAdvLog(string diziGuid, long nowTicks, int lastMiles)
+        public DiziActivityLog(string diziGuid, long nowTicks, int lastMiles)
         {
             DiziGuid = diziGuid;
             NowTicks = nowTicks;

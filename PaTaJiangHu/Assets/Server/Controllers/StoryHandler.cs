@@ -26,7 +26,8 @@ namespace Server.Controllers
         private TaskCompletionSource<IAdvEvent> OnNextEventTask { get; set; }
         public bool IsAdvFailed { get; private set; }//是否历练强制失败
         public bool IsForceQuit { get; private set; }//强制历练结束
-        public DiziAdvLog AdvLog { get; private set; }//故事信息
+        public bool IsLost { get; private set; }//强制失踪
+        public DiziActivityLog ActivityLog { get; private set; }//故事信息
 
         public StoryHandler(IAdvStory story, AdvEventMiddleware eventMiddleware)
         {
@@ -38,7 +39,7 @@ namespace Server.Controllers
         public async Task Invoke(Dizi dizi, long nowTicks, int updatedMiles)
         {
             var eventQueue = new Queue<string>(QueueLimit);
-            AdvLog = new DiziAdvLog(dizi.Guid, nowTicks, updatedMiles);
+            ActivityLog = new DiziActivityLog(dizi.Guid, nowTicks, updatedMiles);
             while (CurrentEvent != null)
             {
                 if (eventQueue.Count >= QueueLimit)
@@ -54,6 +55,7 @@ namespace Server.Controllers
                 {
                     IsAdvFailed = q.IsAdvFailed;
                     IsForceQuit = q.IsForceQuit;
+                    IsLost = q.IsLost;
                     break;
                 }
                 CurrentEvent.OnLogsTrigger += OnLogsTrigger;
@@ -67,19 +69,19 @@ namespace Server.Controllers
                 CurrentEvent = nextEvent;
                 _recursiveIndex++;
             }
-            AdvLog.SetMessages(Messages.ToArray());
+            ActivityLog.SetMessages(Messages.ToArray());
         }
 
         private void OnRewardTrigger(IGameReward reward)
         {
             CurrentEvent.OnRewardEvent -= OnRewardTrigger;
-            AdvLog.SetReward(reward);
+            ActivityLog.SetReward(reward);
         }
 
         private void OnAdjustEventTrigger(string[] adjustMessages)
         {
             CurrentEvent.OnAdjustmentEvent -= OnAdjustEventTrigger;
-            AdvLog.AddAdjustmentInfo(adjustMessages);
+            ActivityLog.AddAdjustmentInfo(adjustMessages);
         }
 
         private void OnNextEventTrigger(IAdvEvent nextEvent)

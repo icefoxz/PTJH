@@ -70,6 +70,7 @@ namespace Server.Configs.Characters
             }
         }
 
+        public int GetRestoreCost(Grades grade) => GradeConfigs(grade).RestoreCost;
         public (ConsumeResources, int)[] GetRandomConsumeResource(int grade)
         {
             return GradeConfigs((Grades)grade).ConsumeResourcesSo.GetRandomElements()
@@ -107,7 +108,9 @@ namespace Server.Configs.Characters
             [SerializeField] private CombatSkillGradeSo 初始武功配置;
             [SerializeField] private ForceSkillGradeSo 初始内功配置;
             [SerializeField] private DodgeSkillGradeSo 初始轻功配置;
+            [SerializeField] private int 失踪时召唤成本 = 500;
 
+            public int RestoreCost => 失踪时召唤成本;
             private MinMaxVectorInt Stamina => 体力;
             private MinMaxVectorInt InventorySlot => 背包格;
             public ConsumeResourcesConfigSo ConsumeResourcesSo => 消耗资源策略;
@@ -133,6 +136,7 @@ namespace Server.Configs.Characters
                 PentagonGradeSo.Elements.Hp,
                 PentagonGradeSo.Elements.Mp,
             };
+
 
 
             public CombatFieldSo GenerateCombatSkill() => CombatSkillGradeSo.PickSkill();

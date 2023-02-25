@@ -41,9 +41,9 @@ internal class Configure : MonoBehaviour
     }
 
     //弟子配置
-    [SerializeField] private Dizi 弟子配置;
-    public Dizi DiziCfg => 弟子配置;
-    [Serializable] internal class Dizi
+    [SerializeField] private DiziConfig 弟子配置;
+    public DiziConfig DiziCfg => 弟子配置;
+    [Serializable] internal class DiziConfig
     {
         [SerializeField] private StaminaConfigSo 体力配置;
         [SerializeField] private LevelConfigSo 升级配置;
@@ -78,11 +78,11 @@ internal class Configure : MonoBehaviour
     }
 
 
-    //[SerializeField] private Faction 门派配置;
-    //public Faction FactionCfg => 门派配置;
-    [Serializable] internal class Faction
-    {
-    }
+    //[SerializeField] private FactionConfig 门派配置;
+    //public FactionConfig FactionCfg => 门派配置;
+    //[Serializable] internal class FactionConfig
+    //{
+    //}
 
     //数据配置
     [SerializeField] private DataCfg 游戏数据;

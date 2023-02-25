@@ -70,7 +70,7 @@ namespace _GameClient.Models
         /// 当有故事注册的时候{一般上都是控制器调用}
         /// </summary>
         /// <param name="story"></param>
-        internal abstract void RegStory(DiziAdvLog story);
+        internal abstract void RegStory(DiziActivityLog story);
 
         //更新冒险位置
         protected void UpdateTime(long updatedTicks) => LastUpdate = updatedTicks;

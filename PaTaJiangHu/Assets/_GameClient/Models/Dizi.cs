@@ -8,6 +8,7 @@ using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Configs.Skills;
 using Server.Controllers;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -55,7 +56,6 @@ namespace _GameClient.Models
         /// 防具战力
         /// </summary>
         public int ArmorPower => GetArmorDef();
-        public StateModel State { get; private set; } = new StateModel();
 
         private ConValue _exp;
 
@@ -73,12 +73,16 @@ namespace _GameClient.Models
 
         public AdvItemModel[] AdvItems => _advItems;
 
+        public IConditionValue Silver => _silver;
         public IConditionValue Food => _food;
         public IConditionValue Emotion => _emotion;
-        public IConditionValue Silver => _silver;
         public IConditionValue Injury => _injury;
         public IConditionValue Inner => _inner;
 
+        /// <summary>
+        /// 状态信息, 提供当前状态的描述,与时长
+        /// </summary>
+        public DiziStateHandler State { get; }
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
@@ -115,6 +119,7 @@ namespace _GameClient.Models
             _silver = new ConValue(PropStateCfg.SilverDefault.Max, PropStateCfg.SilverDefault.Min);
             _injury = new ConValue(PropStateCfg.InjuryDefault.Max, PropStateCfg.InjuryDefault.Min);
             _inner = new ConValue(PropStateCfg.InnerDefault.Max, PropStateCfg.InnerDefault.Min);
+            State = new DiziStateHandler(this);
             StaminaService();
         }
 
@@ -197,20 +202,6 @@ namespace _GameClient.Models
             if (max > 0) _exp.SetMax(max);
             _exp.Set(exp);
             Log($"经验设置 = {_exp}");
-        }
-
-        public class StateModel
-        {
-            public string ShortTitle { get; private set; } = "闲";
-            public string Description { get; private set; }
-            public long LastUpdate { get; private set; }
-
-            public void Set(string shortTitle, string description, long lastUpdate)
-            {
-                ShortTitle = shortTitle;
-                Description = description;
-                LastUpdate = lastUpdate;
-            }
         }
 
         //弟子技能栏
@@ -318,23 +309,16 @@ namespace _GameClient.Models
     public partial class Dizi
     {
         public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
-        public AutoAdventure Adventure { get; set; }
+        public AutoAdventure Adventure => State.Adventure;
         internal void AdventureStart(IAutoAdvMap map, long startTime, int messageSecs)
         {
-            Adventure = new AutoAdventure(map, startTime, messageSecs, this);
-            Adventure.UpdateStoryService.AddListener(() => SetStateShort("历", "历练中...", startTime));
+            State.StartAdventure(map, startTime, messageSecs);
             Log("开始历练.");
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Adv_Start, Guid);
         }
 
-        // 设定弟子状态短文本
-        private void SetStateShort(string title, string description, long time)
-        {
-            State.Set(title, description, time);
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid, title);
-        }
-
-        internal void AdventureStoryLogging(DiziAdvLog story)
+        internal void AdventureStoryLogging(DiziActivityLog story)
         {
             if (Adventure.State == AutoAdventure.States.End)
                 throw new NotImplementedException();
@@ -342,41 +326,70 @@ namespace _GameClient.Models
         }
         internal void AdventureRecall(long now, int lastMile)
         {
-            SetStateShort("回", "回程中...", now);
-            Adventure.UpdateStoryService.RemoveAllListeners();
-            Adventure.Recall(now, lastMile, () => SetStateShort("待", "宗门外等待", 0));
+            State.RecallFromAdventure(now, lastMile);
             Log($"停止历练, 里数: {lastMile}");
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Adv_Recall, Guid);
         }
         internal void AdventureFinalize()
         {
-            Adventure = null;
+            State.FinalizeAdventure();
             Log("历练结束!");
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Adv_Finalize, Guid);
+        }
+
+        public void AdventureTerminate(long terminateTime,int lastMile)
+        {
+            Log("历练中断!");
+            State.Terminate(terminateTime, lastMile);
+            SendEvent(EventString.Dizi_Adv_Terminate, Guid);
         }
     }
 
     //弟子模型, 处理闲置事件
     public partial class Dizi
     {
-        public IdleState Idle { get; private set; }
+        //闲置状态
+        public IdleState Idle => State.Idle;
 
         internal void StartIdle(long startTime)
         {
-            Idle = new IdleState(this, startTime);
-            SetStateShort("闲", "闲置中...", startTime);
+            State.StartIdle(startTime);
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Idle_Start, Guid);
         }
 
         internal void StopIdle()
         {
             Idle.StopIdleState();
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Idle_Stop, Guid);
         }
 
-        internal void RegIdleStory(DiziAdvLog log)
+        internal void RegIdleStory(DiziActivityLog log)
         {
             Idle.RegStory(log);
+        }
+    }
+
+    //处理失踪事件
+    public partial class Dizi
+    {
+        public LostState LostState => State.LostState;
+
+        internal void StartLostState(long startTime, DiziActivityLog lastActivityLog)
+        {
+            State.StartLost(this, startTime, lastActivityLog);
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
+            SendEvent(EventString.Dizi_Lost_Start, Guid);
+        }
+
+        internal void RestoreFromLost()
+        {
+            State.RestoreFromLost();
+            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
+            SendEvent(EventString.Dizi_Lost_End, Guid);
         }
     }
 }

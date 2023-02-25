@@ -48,11 +48,11 @@ namespace _GameClient.Models
         private List<string> _storyLog = new List<string>();
         public IReadOnlyList<string> StoryLog => _storyLog;
 
-        private IReadOnlyList<DiziAdvLog> Stories => _stories;
+        private IReadOnlyList<DiziActivityLog> Stories => _stories;
 
         private Queue<string> MessageQueue { get; set; }
         private DateTime messageUpdate;
-        private List<DiziAdvLog> _stories = new List<DiziAdvLog>();
+        private List<DiziActivityLog> _stories = new List<DiziActivityLog>();
         private int _storyIndex;
 
         public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi)
@@ -96,31 +96,30 @@ namespace _GameClient.Models
             //如果当前过了一定程度的秒数,将一次更新更多历练信息(因为玩家不会死盯着一个弟子看历练)
             for (int i = 0; i < times; i++)
             {
-                //如果没有故事, 返回轮询模式
-                if (Stories.Count - 1 == _storyIndex && MessageQueue?.Count == 0)
+                //优先处理遗留的信息
+                if (MessageQueue != null && MessageQueue.Any())
                 {
-                    Mode = Modes.Polling; //循环结束自动回到轮询故事
-                    break;
+                    UpdateStoryLog(false);
+                    messageUpdate = SysTime.Now;
+                    UpdateStoryService?.Invoke();
+                    continue;
                 }
 
-                //如果信息为空,尝从故事中获取信息
-                if (MessageQueue == null || MessageQueue.Count == 0)
+                if (_storyIndex < Stories.Count) //有故事未完成
                 {
+                    //从故事中获取信息
                     var st = Stories[_storyIndex];
                     _storyIndex++;
                     MessageQueue = new Queue<string>(st.Messages);
                 }
 
-                if (!MessageQueue.Any())
+                //如果没有故事, 返回轮询模式
+                if (_storyIndex >= Stories.Count && MessageQueue?.Count == 0)
                 {
-                    Mode = Modes.Polling;
+                    Mode = Modes.Polling; //循环结束自动回到轮询故事
                     break;
                 }
-
-                UpdateStoryLog(false);
             }
-            messageUpdate = SysTime.Now;
-            UpdateStoryService?.Invoke();
         }
 
         //更新故事信息
@@ -148,8 +147,8 @@ namespace _GameClient.Models
         }
 
         //注册故事,准备展示
-        internal override void RegStory(DiziAdvLog story)
-        {
+        internal override void RegStory(DiziActivityLog story)
+            {
             if (Mode == Modes.Story)
             {
                 //如果还有故事未播放完毕,清除故事
@@ -157,6 +156,8 @@ namespace _GameClient.Models
             }
             Mode = Modes.Story;
             UpdateTime(story.NowTicks, story.LastMiles);//更新发生地点 & 最新里数
+            if (messageUpdate == default)
+                messageUpdate = SysTime.Now;
             _stories.Add(story);
         }
 
@@ -179,7 +180,7 @@ namespace _GameClient.Models
                 var returnTime = SysTime.Now;
                 yield return new WaitUntil(() => (SysTime.Now - returnTime).TotalSeconds >= JourneyReturnSec);
                 UpdateServiceName("已回到山门.");
-                var advLog = new DiziAdvLog(Dizi.Guid, SysTime.UnixNow, LastMile);
+                var advLog = new DiziActivityLog(Dizi.Guid, SysTime.UnixNow, LastMile);
                 advLog.SetMessages(new[] { $"{Dizi.Name}已回到山门!" });
                 RegStory(advLog);
                 yield return new WaitForSeconds(1);
@@ -192,6 +193,25 @@ namespace _GameClient.Models
         void IRewardHandler.SetReward(IGameReward reward)
         {
             _rewards.Add(reward);
+        }
+
+        /// <summary>
+        /// 强制历练状态中断, (一般历练召回是有回家过程,此方法是完全中断,用于直接转换状态)
+        /// </summary>
+        /// <param name="terminateTime"></param>
+        /// <param name="lastMile"></param>
+        public void Terminate(long terminateTime, int lastMile)
+        {
+            const string Terminattext = "中断";
+            UpdateServiceName(Terminattext);
+            StopService();
+            UpdateTime(terminateTime, lastMile);
+            if (Mode == Modes.Story)
+            {
+                //如果还有故事未播放完毕,清除故事
+                UpdateStoryLog(true);
+            }
+            State = States.End;
         }
     }
 }

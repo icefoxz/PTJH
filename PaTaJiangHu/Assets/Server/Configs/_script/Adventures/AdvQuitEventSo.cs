@@ -10,6 +10,7 @@ namespace Server.Configs.Adventures
         [SerializeField] private bool 强制历练结束;
         [SerializeField] private bool 标记历练失败;
         [SerializeField][TextArea] private string 文本;
+        [SerializeField] private bool 标记失踪;
 
         //[Header("副本结束事件请保持一个")]
         //[ReadOnly][SerializeField]private int _id = 1;
@@ -29,7 +30,9 @@ namespace Server.Configs.Adventures
 
         public bool IsForceQuit => 强制历练结束;
         public bool IsAdvFailed => 标记历练失败;
-        public string Message => 文本;
+        public bool IsLost => 标记失踪;
+
+        private string Message => 文本;
 
         public override event Action<string[]> OnLogsTrigger;
     }
