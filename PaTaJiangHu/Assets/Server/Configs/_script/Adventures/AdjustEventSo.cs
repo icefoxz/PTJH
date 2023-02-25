@@ -29,7 +29,9 @@ namespace Server.Configs.Adventures
                 Brief,
                 Adjust.Set(arg.Adjustment)
             };
-            list.AddRange(ConFields.Select(a => a.Set(arg.Adjustment, this)));
+            var adjustments = ConFields.Select(a => a.Set(arg.Adjustment, this)).ToArray();
+            InvokeAdjustmentEvent(adjustments);
+            list.AddRange(adjustments);
             var messages = list.Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => string.Format(s, arg.DiziName))
                 .ToArray();

@@ -42,6 +42,7 @@ namespace _GameClient.Models
         protected override void StopService()
         {
             base.StopService();
+            if (CurrentStory == null) return;
             UpdateCurrentStoryMessage(CurrentStory.Messages.Length);
             MessageIndex = 0;
         }

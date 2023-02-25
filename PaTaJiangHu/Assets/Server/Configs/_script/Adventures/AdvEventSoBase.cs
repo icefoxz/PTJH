@@ -19,9 +19,15 @@ namespace Server.Configs.Adventures
         public abstract string Name { get; }
         public abstract void EventInvoke(IAdvEventArg arg);
         public abstract event Action<IAdvEvent> OnNextEvent;
+        public virtual event Action<string[]> OnAdjustmentEvent;
+        public virtual event Action<IGameReward> OnRewardEvent;
         public abstract IAdvEvent[] AllEvents { get; }
         public abstract AdvTypes AdvType { get; }
         public abstract event Action<string[]> OnLogsTrigger;
+
+        protected void InvokeAdjustmentEvent(string[] adjustments) =>
+            OnAdjustmentEvent?.Invoke(adjustments);
+        protected void InvokeRewardEvent(IGameReward reward)=> OnRewardEvent?.Invoke(reward);
     }
 
 }
