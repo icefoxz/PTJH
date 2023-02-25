@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using Systems.Coroutines;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
@@ -17,6 +19,9 @@ namespace HotFix_Project.Views.Bases
         protected Transform parent => gameObject.transform.parent;
         public IView View { get; private set; }
 
+        private ICoroutineInstance ServiceCo { get; set; }
+        private List<Action> Events { get; } = new List<Action>();
+
         protected UiBase(IView v, bool display)
         {
             View = v;
@@ -24,6 +29,22 @@ namespace HotFix_Project.Views.Bases
             Display(display);
         }
 
+        protected void WhileActiveUpdatePerSec(Action action)
+        {
+            ServiceCo ??= Game.CoService.RunCo(UpdatePerSec(), null, gameObject?.name);
+            Events.Add(action);
+        }
+
+        private IEnumerator UpdatePerSec()
+        {
+            while (true)
+            {
+                yield return new WaitUntil(() => gameObject.activeSelf);
+                foreach (var action in Events)
+                    action?.Invoke();
+                yield return new WaitForSeconds(1);
+            }
+        }
 
         protected UiBase(GameObject gameObject,bool display)
         {

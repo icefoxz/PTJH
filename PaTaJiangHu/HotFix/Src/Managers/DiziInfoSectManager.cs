@@ -8,7 +8,6 @@ using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;
-using Server.Configs.Characters;
 
 namespace HotFix_Project.Managers;
 
@@ -46,8 +45,8 @@ internal class DiziInfoSectManager : MainPageBase
         {
             DiziInfo.Update(bag.GetString(0));
         });
-        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
-            bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
+        //Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
+        //    bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
         Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => UiManager.Show(this));
     }
 
@@ -65,9 +64,19 @@ internal class DiziInfoSectManager : MainPageBase
                 () => onStaminaBtnClick(SelectedDizi?.Guid));
             DiziProps = new View_diziProps(v.GetObject<View>("view_diziProps"));
             SetInitValue();
+            WhileActiveUpdatePerSec(DiziUiSelfUpdate);
         }
 
-        public void SetInitValue()
+        private void DiziUiSelfUpdate()
+        {
+            if (SelectedDizi == null) return;
+            var dizi = SelectedDizi;
+            UpdateDiziStamina(dizi.Guid);
+            var state = dizi.State;
+            CharInfo.SetState(state.ShortTitle, state.Description, state.LastUpdate);
+        }
+
+        private void SetInitValue()
         {
             CharInfo.SetName(string.Empty, 0);
             CharInfo.SetExp(0, 0);
@@ -98,7 +107,7 @@ internal class DiziInfoSectManager : MainPageBase
             CharInfo.SetInteraction(SelectedDizi.Adventure == null);
         }
 
-        public void UpdateDiziStamina(string diziGuid)
+        private void UpdateDiziStamina(string diziGuid)
         {
             if (SelectedDizi == null || SelectedDizi.Guid != diziGuid)
                 return;

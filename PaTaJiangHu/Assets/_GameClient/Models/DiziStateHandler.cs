@@ -76,7 +76,6 @@ namespace _GameClient.Models
         public void RecallFromAdventure(long now, int lastMile)
         {
             Set("回", "回程中...", now);
-            Adventure.UpdateStoryService.RemoveAllListeners();
             Adventure.Recall(now, lastMile, () => Set("待", "宗门外等待", 0));
         }
 
@@ -88,12 +87,14 @@ namespace _GameClient.Models
 
         public void FinalizeAdventure()
         {
+            Adventure.UpdateStoryService.RemoveAllListeners();
             Set("归", "历练回归...", SysTime.UnixNow);
             Adventure = null;
         }
 
         public void Terminate(long terminateTime,int lastMile)
         {
+            Adventure.UpdateStoryService.RemoveAllListeners();
             Set("断", "历练中断...", terminateTime);
             Adventure.Terminate(terminateTime, lastMile);
         }

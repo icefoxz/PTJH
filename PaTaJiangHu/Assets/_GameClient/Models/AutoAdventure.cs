@@ -81,7 +81,7 @@ namespace _GameClient.Models
             AdvController.CheckMile(Map.Id, Dizi.Guid, (totalMile, isAdvEnd) =>
             {
                 LastMile = totalMile;
-                if (isAdvEnd)
+                if (isAdvEnd && State == States.Progress)
                     AdvController.AdventureRecall(Dizi.Guid);
             });
             UpdateStoryService?.Invoke();

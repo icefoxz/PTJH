@@ -38,6 +38,7 @@ namespace Server.Controllers
         {
             var dizi = Faction.GetDizi(guid);
             var now = SysTime.UnixNow;
+            dizi.StopIdle();
             dizi.StartLostState(now, lastLog);
         }
 
