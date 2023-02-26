@@ -33,7 +33,7 @@ internal class TestAutoAdvManager
                         var lastMile = dizi.Adventure is { State: AutoAdventure.States.Progress }
                             ? dizi.Adventure.LastMile
                             : 0;
-                        AdvController.OnMileTrigger(0,SysTime.UnixNow, lastMile, mile, DiziGuid);
+                        AdvController.OnAdventureProgress(0,SysTime.UnixNow, lastMile, mile, DiziGuid);
 
                     }, () => AdvController.AdventureRecall(DiziGuid));
             },RegEvent);

@@ -14,6 +14,10 @@ namespace _GameClient.Models
         
         public DiziActivityLog CurrentStory { get; private set; }
         public int MessageIndex { get; private set; }
+        /// <summary>
+        /// 状态是否还在活动,一般停止状态会返回false
+        /// </summary>
+        public bool IsActive { get; private set; }
 
         private readonly List<string> _messages = new List<string>();
         public IReadOnlyList<string> Messages => _messages;
@@ -24,6 +28,7 @@ namespace _GameClient.Models
         public IdleState(Dizi dizi,long startTime) : base(startTime,dizi.Name)
         {
             Dizi = dizi;
+            IsActive = true;
         }
 
         protected override void PollingUpdate()
@@ -44,6 +49,7 @@ namespace _GameClient.Models
         internal void StopIdleState() => StopService();
         protected override void StopService()
         {
+            IsActive = false;
             base.StopService();
             if (CurrentStory == null) return;
             UpdateCurrentStoryMessage(CurrentStory.Messages.Length);

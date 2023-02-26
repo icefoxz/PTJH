@@ -12,7 +12,7 @@ namespace Server.Configs.Adventures
     /// <summary>
     /// 条款
     /// </summary>
-    public interface IIClause<in T>
+    public interface IIClause
     {
         bool IsInTerm(ITerm term);
     }

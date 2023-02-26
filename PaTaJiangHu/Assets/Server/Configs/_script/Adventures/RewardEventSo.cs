@@ -14,15 +14,17 @@ namespace Server.Configs.Adventures
     {
         int Grade { get; }
         IStacking<IGameItem>[] AllItems { get; }
-        IConsumeResources Resource { get; }
+        IAdvResPackage Package { get; }
     }
-
-    public interface IConsumeResources
+    
+    public interface IAdvResPackage
     {
         int Food { get; }
         int Wine { get; }
         int Herb { get; }
         int Pill { get; }
+        int Silver { get; }
+        int YuanBao { get; }
     }
 
     public interface IGameReward
@@ -106,7 +108,7 @@ namespace Server.Configs.Adventures
                 .Concat(防具).Concat(丹药).Concat(秘籍).Concat(故事道具)
                 .Concat(功能道具).ToArray();
         }
-        [Serializable] private class AdvPackage : IAdvPackage, IConsumeResources
+        [Serializable] private class AdvPackage : IAdvPackage, IAdvResPackage
         {
             private bool ChangeElementName()
             {
@@ -141,11 +143,13 @@ namespace Server.Configs.Adventures
                 .Concat(Medicines)
                 .Concat(Book)
                 .ToArray();
-            public IConsumeResources Resource => this;
+            public IAdvResPackage Package => this;
             public int Food => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Food)?.Value ?? 0;
             public int Wine => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Wine)?.Value ?? 0;
             public int Herb => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Herb)?.Value ?? 0;
             public int Pill => Resources.SingleOrDefault(r => r.Resource == ConsumeResources.Pill)?.Value ?? 0;
+            public int Silver => Resources.Sum(r => r.Silver);
+            public int YuanBao => Resources.Sum(r => r.YuanBao);
 
             [Serializable] private class ConsumeResourceField
             {
@@ -172,7 +176,11 @@ namespace Server.Configs.Adventures
                 [ConditionalField(true, nameof(ChangeConsumeResourceName))][SerializeField][ReadOnly] private string _name;
                 [SerializeField] private ConsumeResources 资源;
                 [SerializeField] private int 数量;
+                [SerializeField] private int 银两;
+                [SerializeField] private int 元宝;
 
+                public int Silver => 银两;
+                public int YuanBao => 元宝;
                 public ConsumeResources Resource => 资源;
                 public int Value => 数量 < 0 ? throw new InvalidOperationException($"资源数量 = {数量}!") : 数量;
             }

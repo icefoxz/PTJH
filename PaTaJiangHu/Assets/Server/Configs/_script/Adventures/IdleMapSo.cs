@@ -18,11 +18,13 @@ namespace Server.Configs.Adventures
             return true;
         }
         [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private IdleMapSo So;
-        [SerializeField]private MappingField 映像配置;
+        [SerializeField] private LostStrategySo 失踪策略;
+        [SerializeField] private MappingField 映像配置;
 
+        public LostStrategySo LostStrategy => 失踪策略;
         private MappingField Map => 映像配置;
-
         public AdvStorySo TryGetStory(int elapsedSecs)=>Map.TryGetStory(elapsedSecs);
+
         [Serializable] private class MappingField
         {
             [SerializeField] private int 触发秒数 = 60;

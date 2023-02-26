@@ -324,10 +324,10 @@ namespace _GameClient.Models
                 throw new NotImplementedException();
             Adventure.RegStory(story);
         }
-        internal void AdventureRecall(long now, int lastMile)
+        internal void AdventureRecall(long now, int lastMile, long reachingTime)
         {
-            State.RecallFromAdventure(now, lastMile);
-            Log($"停止历练, 里数: {lastMile}");
+            State.RecallFromAdventure(now, lastMile, reachingTime);
+            Log($"停止历练, 里数: {lastMile}, 将{TimeSpan.FromMilliseconds(reachingTime - now).TotalSeconds}秒后到达宗门!");
             SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Adv_Recall, Guid);
         }

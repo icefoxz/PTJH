@@ -2,6 +2,7 @@
 using _GameClient.Models;
 using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
+using Utls;
 
 namespace Server.Controllers
 {
@@ -43,6 +44,7 @@ namespace Server.Controllers
                 case AdvTypes.Pool:
                 case AdvTypes.Term:
                 case AdvTypes.Adjust:
+                case AdvTypes.Quit: //结束事件由故事处理器处理
                 case AdvTypes.Reward: break; //其余的直接执行判断
                 case AdvTypes.Simulation: //执行模拟战斗
                     if (advEvent is not BattleSimulationEventSo bs)
@@ -55,20 +57,23 @@ namespace Server.Controllers
                     var npc = bs.GetNpc(Cfg);
                     var outcome = Simulator.CountSimulationOutcome(diziSim, npc);
                     var staminaController = Game.Controllers.Get<StaminaController>();
-                    if (outcome.IsPlayerWin && dizi.Stamina.Con.Value >= outcome.Result)
+                    if (!outcome.IsPlayerWin)
+                    {
+                        staminaController.SetStaminaZero(dizi.Guid, true);
+
+                    }else if (dizi.Stamina.Con.Value >= outcome.Result)
                     {
                         staminaController.ConsumeStamina(dizi.Guid, -outcome.Result);
                     }
-                    else //当弟子战斗失败,或是血量不够扣除
+                    else //当弟子战斗胜,血量不够扣除
                     {
                         staminaController.SetStaminaZero(dizi.Guid, true);
                     }
 
                     arg.SetSimulationOutcome(outcome);
                     break;
-                case AdvTypes.Quit: //结束事件由故事处理器处理
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException($"事件异常! = {advEvent.AdvType}");
             }
             return arg;
         }

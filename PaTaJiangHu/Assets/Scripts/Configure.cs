@@ -77,7 +77,6 @@ internal class Configure : MonoBehaviour
         internal AdventureConfigSo AdventureCfg => GetSo(历练配置);
     }
 
-
     //[SerializeField] private FactionConfig 门派配置;
     //public FactionConfig FactionCfg => 门派配置;
     //[Serializable] internal class FactionConfig

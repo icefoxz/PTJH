@@ -8,6 +8,10 @@ namespace Utls
     public static class Sys
     {
         public static Random Random { get; } = new Random(DateTime.Now.Millisecond);
+        /// <summary>
+        /// 运气,获取0-99取1值
+        /// </summary>
+        public static int Luck => Random.Next(100);
         public static bool RandomBool() => Random.NextDouble() >= 0.5;
         public static int[] RandomElementValue(int elements, int min, int max, int sum)
         {
