@@ -13,8 +13,7 @@ namespace Server.Configs.Adventures
     /// <summary>
     /// 条款基类
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    internal abstract class ClauseFieldBase<T> : IIClause<T>
+    internal abstract class ClauseFieldBase : IIClause
     {
         public abstract bool IsInTerm(ITerm term);
     }
@@ -65,8 +64,13 @@ namespace Server.Configs.Adventures
         //}
 
     }
-    [Serializable] internal class StatusClauseField : ClauseFieldBase<ICombatStatus>
+    [Serializable] internal class StatusClauseField : ClauseFieldBase
     {
+        private enum Modes
+        {
+            [InspectorName("所有条件")] And,
+            [InspectorName("任何条件")] Or
+        }
         private const string StaminaText = "体力";
         private const string SilverText = "俸禄";
         private const string FoodText = "食物";
@@ -94,10 +98,12 @@ namespace Server.Configs.Adventures
             [InspectorName(InnerText)]Inner
         }
         
+        [SerializeField] private Modes 判断模式;
         [SerializeField] private ConValueSettingField[] 状态;
 
+        private Modes Mode => 判断模式;
         private ConValueSettingField[] Cons => 状态;
-        
+
         public override bool IsInTerm(ITerm term)
         {
             var stas = Cons.Where(c => c.Con == Conditions.Stamina).ToArray();
@@ -112,7 +118,22 @@ namespace Server.Configs.Adventures
             var isEmotionInTerm = InConInTerm(term.Emotion, emos);
             var isInjuryInTerm = InConInTerm(term.Injury,injs);
             var isInnerInTerm = InConInTerm(term.Inner, inns);
-            return isStaInTerm && isSilverInTerm && isFoodInTerm && isEmotionInTerm && isInjuryInTerm && isInnerInTerm;
+            return Mode switch
+            {
+                Modes.And => isStaInTerm && 
+                             isSilverInTerm && 
+                             isFoodInTerm && 
+                             isEmotionInTerm && 
+                             isInjuryInTerm &&
+                             isInnerInTerm,
+                Modes.Or => isStaInTerm || 
+                            isSilverInTerm || 
+                            isFoodInTerm || 
+                            isEmotionInTerm || 
+                            isInjuryInTerm ||
+                            isInnerInTerm,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         private bool InConInTerm(IConditionValue con, ConValueSettingField[] clauses) =>

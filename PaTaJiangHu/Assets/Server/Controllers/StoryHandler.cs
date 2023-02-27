@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using _GameClient.Models;
 using Server.Configs.Adventures;
+using Utls;
 
 namespace Server.Controllers
 {
@@ -21,6 +22,7 @@ namespace Server.Controllers
         private List<string> Messages { get; } = new List<string>();
 
         private IAdvStory Story { get; }
+        private LostStrategySo LostStrategy { get; }
         private IAdvEvent CurrentEvent { get; set; }
         private IAdvEventMiddleware EventMiddleware { get; }
         private TaskCompletionSource<IAdvEvent> OnNextEventTask { get; set; }
@@ -29,11 +31,12 @@ namespace Server.Controllers
         public bool IsLost { get; private set; }//强制失踪
         public DiziActivityLog ActivityLog { get; private set; }//故事信息
 
-        public StoryHandler(IAdvStory story, AdvEventMiddleware eventMiddleware)
+        public StoryHandler(IAdvStory story, AdvEventMiddleware eventMiddleware, LostStrategySo lostStrategy)
         {
             Story = story;
             CurrentEvent = Story.StartAdvEvent;
             EventMiddleware = eventMiddleware;
+            LostStrategy = lostStrategy;
         }
 
         public async Task Invoke(Dizi dizi, long nowTicks, int updatedMiles)
@@ -51,6 +54,14 @@ namespace Server.Controllers
                 //如果强制退出事件
                 IsAdvFailed = dizi.Stamina.Con.IsExhausted && !Story.ContinueOnExhausted;
                 if (IsAdvFailed) break;
+                CurrentEvent.OnLogsTrigger += OnLogsTrigger;
+                CurrentEvent.OnNextEvent += OnNextEventTrigger;
+                CurrentEvent.OnAdjustmentEvent += OnAdjustEventTrigger;
+                CurrentEvent.OnRewardEvent += OnRewardTrigger;
+                var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.Adventure, dizi: dizi);
+                OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
+                CurrentEvent.EventInvoke(advArg);
+
                 if (CurrentEvent is AdvQuitEventSo q)
                 {
                     IsAdvFailed = q.IsAdvFailed;
@@ -58,13 +69,13 @@ namespace Server.Controllers
                     IsLost = q.IsLost;
                     break;
                 }
-                CurrentEvent.OnLogsTrigger += OnLogsTrigger;
-                CurrentEvent.OnNextEvent += OnNextEventTrigger;
-                CurrentEvent.OnAdjustmentEvent += OnAdjustEventTrigger;
-                CurrentEvent.OnRewardEvent += OnRewardTrigger;
-                OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
-                var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.Adventure, dizi: dizi);
-                CurrentEvent.EventInvoke(advArg);
+                if (LostStrategy != null && (advArg.SimOutcome?.IsPlayerWin ?? false)) //如果有战斗并战败 + 失踪策略
+                {
+                    var luck = Sys.Luck;
+                    IsLost = LostStrategy.IsTriggerBattleLost(luck);//如果触发概率
+                    break;
+                }
+
                 var nextEvent = await OnNextEventTask.Task;
                 CurrentEvent = nextEvent;
                 _recursiveIndex++;
@@ -87,7 +98,15 @@ namespace Server.Controllers
         private void OnNextEventTrigger(IAdvEvent nextEvent)
         {
             CurrentEvent.OnNextEvent -= OnNextEventTrigger;
-            OnNextEventTask.TrySetResult(nextEvent);
+            try
+            {
+                OnNextEventTask.TrySetResult(nextEvent);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private void OnLogsTrigger(string[] logs)

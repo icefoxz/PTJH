@@ -21,9 +21,11 @@ namespace _GameClient.Models
         {
             get
             {
-                var result = CheckNull(LostState) + CheckNull(Idle) + CheckNull(Adventure);
+                //闲置状态会延迟,所以用IsActive来检查是否活跃
+                var result = CheckNull(LostState) + (Idle.IsActive ? 1 : 0) + CheckNull(Adventure);
                 if (result > 1)
-                    XDebug.LogError($"状态异常!活跃状态: Lost:{LostState}, Idle:{Idle}, Adventure:{Adventure}");
+                    XDebug.LogError(
+                        $"状态异常!活跃状态: Lost:{LostState != null}, Idle:{Idle?.IsActive}, Adventure:{Adventure != null}");
                 if (LostState != null) return States.Lost;
                 if (Idle != null) return States.Idle;
                 if (Adventure != null) return States.Adventure;
@@ -73,10 +75,10 @@ namespace _GameClient.Models
             Set("归", "失踪回归...", SysTime.UnixNow);
         }
 
-        public void RecallFromAdventure(long now, int lastMile)
+        public void RecallFromAdventure(long now, int lastMile,long reachingTime)
         {
             Set("回", "回程中...", now);
-            Adventure.Recall(now, lastMile, () => Set("待", "宗门外等待", 0));
+            Adventure.Recall(now, lastMile, reachingTime, () => Set("待", "宗门外等待", 0));
         }
 
         public void StartAdventure(IAutoAdvMap map, long startTime, int messageSecs)
@@ -97,6 +99,7 @@ namespace _GameClient.Models
             Adventure.UpdateStoryService.RemoveAllListeners();
             Set("断", "历练中断...", terminateTime);
             Adventure.Terminate(terminateTime, lastMile);
+            Adventure = null;
         }
     }
 }

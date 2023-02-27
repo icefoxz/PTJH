@@ -18,18 +18,31 @@ namespace Server.Controllers
         public async void QueryIdleStory(string guid)
         {
             var dizi = Faction.GetDizi(guid);
+            var lostStrategy = IdleCfg.IdleMapSo.LostStrategy;
             var lastUpdate = dizi.Idle.LastUpdate;
             var now = SysTime.UnixNow;
             var elapsedSecs = (int)TimeSpan.FromMilliseconds(now - lastUpdate).TotalSeconds;
             var story = IdleCfg.IdleMapSo.TryGetStory(elapsedSecs);
             if (story == null) return;
-            var handler = new StoryHandler(story, new AdvEventMiddleware(BattleSimulation, ConditionProperty));
+            var handler = new StoryHandler(story,
+                new AdvEventMiddleware(BattleSimulation, ConditionProperty), lostStrategy);
             await handler.Invoke(dizi, now, -1);//闲置状态没有里数概念,所以里数-1
             if (handler.IsLost)
             {
                 SetLost(guid, handler.ActivityLog);
                 return;
             }
+
+            if (lostStrategy?.IsInTerm(dizi) ?? false) //如果状态触发失踪
+            {
+                var luck = Sys.Luck;
+                if (lostStrategy.IsTriggerConditionLost(luck)) //如果触发失踪
+                {
+                    SetLost(guid, handler.ActivityLog);
+                    return;
+                }
+            }
+
             dizi.RegIdleStory(handler.ActivityLog);
         }
 

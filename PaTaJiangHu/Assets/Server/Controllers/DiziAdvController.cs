@@ -91,13 +91,15 @@ namespace Server.Controllers
             });
         }
 
-        private static void DiziRecallStory(Dizi dizi, long now, int totalMile)
+        private void DiziRecallStory(Dizi dizi, long now, int totalMile)
         {
             var recallMsg = $"{dizi.Name}回程中...";
             var recallLog = new DiziActivityLog(dizi.Guid, now, totalMile);
             recallLog.SetMessages(new[] { recallMsg });
             dizi.AdventureStoryLogging(recallLog);
-            dizi.AdventureRecall(now, totalMile);
+            var reachingTime = now + TimeSpan.FromSeconds(AdvMaps[dizi.Adventure.Map.Id].JourneyReturnSec * 0.01d *
+                                                          AdventureCfg.ReturnPercentage).Milliseconds;
+            dizi.AdventureRecall(now, totalMile, reachingTime);
         }
 
         /// <summary>
@@ -137,7 +139,7 @@ namespace Server.Controllers
                 return; //return lastMile;
             }
             var totalMiles = lastMile + miles;
-            var isAdvEnd = await OnMileTrigger(mapId, now, lastMile, totalMiles, diziGuid);
+            var isAdvEnd = await OnAdventureProgress(mapId, now, lastMile, totalMiles, diziGuid);
             onCallbackAction?.Invoke(totalMiles, isAdvEnd);
         }
 
@@ -149,22 +151,33 @@ namespace Server.Controllers
         /// <param name="fromMiles"></param>
         /// <param name="toMiles"></param>
         /// <param name="diziGuid"></param>
-        public async Task<bool> OnMileTrigger(int mapId,long now, int fromMiles, int toMiles, string diziGuid)
+        public async Task<bool> OnAdventureProgress(int mapId,long now, int fromMiles, int toMiles, string diziGuid)
         {
             var dizi = Faction.GetDizi(diziGuid);
             if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return true;//返回故事继续
-            var places = GetMap(mapId).PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
+            var map = GetMap(mapId);
+            var places = map.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
             if (places.Length <= 0) return true; //返回故事继续
             for (var i = 0; i < places.Length; i++) //为每一个故事地点获取一个故事
             {
                 var place = places[i];
-                var story = await ProcessStory(place, now, toMiles, dizi);
+                var story = await ProcessStory(place, now, toMiles, dizi, map);
                 //当获取到地点, 执行故事
                 dizi.AdventureStoryLogging(story.ActivityLog);
                 if (story.IsLost)//强制失踪事件
                 {
                     SetLost(dizi.Guid, story.ActivityLog);
                     return true;
+                }
+
+                if (map.LostStrategy?.IsInTerm(dizi) ?? false) //如果弟子状态触发失踪
+                {
+                    var luck = Sys.Luck;
+                    if (map.LostStrategy.IsTriggerConditionLost(luck))
+                    {
+                        SetLost(dizi.Guid, story.ActivityLog);
+                        return true;
+                    }
                 }
                 if (story.IsAdvFailed) //当历练失败
                 {
@@ -191,11 +204,12 @@ namespace Server.Controllers
         }
 
         //获取故事信息
-        private async Task<StoryHandler> ProcessStory(IAdvPlace place, long nowTicks, int updatedMiles, Dizi dizi)
+        private async Task<StoryHandler> ProcessStory(IAdvPlace place, long nowTicks, int updatedMiles, Dizi dizi,
+            AdventureMapSo map)
         {
             var story = place.WeighPickStory(); //根据权重随机故事
             var eventHandler = new AdvEventMiddleware(BattleSimulation, ConditionProperty); //生成事件处理器
-            var storyHandler = new StoryHandler(story, eventHandler); //生成故事处理器
+            var storyHandler = new StoryHandler(story, eventHandler, map.LostStrategy); //生成故事处理器
             await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
             return storyHandler;
         }

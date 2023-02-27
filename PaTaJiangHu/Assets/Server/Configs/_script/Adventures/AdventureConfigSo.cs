@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Server.Configs.Factions;
+using UnityEngine;
 
 namespace Server.Configs.Adventures
 {

@@ -24,10 +24,6 @@ namespace _GameClient.Models
         }
 
         /// <summary>
-        /// 回程秒数
-        /// </summary>
-        public int JourneyReturnSec => Map.JourneyReturnSec;
-        /// <summary>
         /// 当前状态
         /// </summary>
         public States State { get; private set; }
@@ -161,7 +157,7 @@ namespace _GameClient.Models
             _stories.Add(story);
         }
 
-        internal void Recall(long now, int lastMile, Action recallAction)
+        internal void Recall(long now, int lastMile, long reachingTime, Action recallAction)
         {
             const string RecallText = "回程中";
             if (Mode == Modes.Story)
@@ -169,6 +165,7 @@ namespace _GameClient.Models
                 //如果还有故事未播放完毕,清除故事
                 UpdateStoryLog(true);
             }
+
             UpdateTime(now, lastMile);
             State = States.Recall;
             UpdateServiceName(RecallText);
@@ -176,9 +173,7 @@ namespace _GameClient.Models
 
             IEnumerator ReturnFromAdventure()
             {
-                yield return new WaitUntil(() => Mode == Modes.Polling);
-                var returnTime = SysTime.Now;
-                yield return new WaitUntil(() => (SysTime.Now - returnTime).TotalSeconds >= JourneyReturnSec);
+                yield return new WaitUntil(() => Mode == Modes.Polling && LastUpdate >= reachingTime);
                 UpdateServiceName("已回到山门.");
                 var advLog = new DiziActivityLog(Dizi.Guid, SysTime.UnixNow, LastMile);
                 advLog.SetMessages(new[] { $"{Dizi.Name}已回到山门!" });

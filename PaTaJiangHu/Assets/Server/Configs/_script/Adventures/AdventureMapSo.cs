@@ -29,6 +29,7 @@ namespace Server.Configs.Adventures
         [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdventureMapSo So;
 
         [SerializeField] private int 执行令消耗;
+        [SerializeField] private LostStrategySo 失踪策略;
         [SerializeField] private MajorPlaceConfig 固定里数触发配置;
         [SerializeField] private MinorPlaceConfig 小故事;
         //[SerializeField] private MinorPlaceConfig 随机触发配置;
@@ -36,11 +37,11 @@ namespace Server.Configs.Adventures
         [SerializeField] private Sprite 图片;
         [SerializeField] [TextArea]private string 说明;
 
+        public LostStrategySo LostStrategy => 失踪策略;
 
         public int JourneyReturnSec => 回程秒数;
         //private MinorPlaceConfig MinorPlace => 随机触发配置;
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;
-
         private MinorPlaceConfig MinorPlace => 小故事;
 
         public int ActionLingCost => 执行令消耗;
