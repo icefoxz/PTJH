@@ -39,5 +39,20 @@ namespace Server.Controllers
             Faction.AddConsumeResource(resourceType, -consume);
             dizi.ConAdd(con, 1);
         }
+
+        public void OpenAdvPackage(int index)
+        {
+            var package = Faction.Packages[index];
+            Faction.RemovePackages(package);
+            var res = package.Package;
+            foreach (var item in package.AllItems) 
+                Faction.AddGameItem(item);
+            Faction.AddYuanBao(res.YuanBao);
+            Faction.AddSilver(res.Silver);
+            Faction.AddConsumeResource(ConsumeResources.Food,res.Food);
+            Faction.AddConsumeResource(ConsumeResources.Wine, res.Wine);
+            Faction.AddConsumeResource(ConsumeResources.Herb, res.Herb);
+            Faction.AddConsumeResource(ConsumeResources.Pill, res.Pill);
+        }
     }
 }

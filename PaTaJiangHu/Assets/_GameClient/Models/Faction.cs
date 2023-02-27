@@ -94,6 +94,7 @@ namespace _GameClient.Models
 
         internal void AddSilver(int silver)
         {
+            if (silver == 0) return;
             var last = Silver;
             Silver += silver;
             Log($"银两【{last}】增加了{silver},总:【{Silver}】");
@@ -102,6 +103,7 @@ namespace _GameClient.Models
 
         internal void AddYuanBao(int yuanBao)
         {
+            if (yuanBao == 0) return;
             var last = YuanBao;
             YuanBao += yuanBao;
             Log($"元宝【{last}】增加了{yuanBao},总:【{YuanBao}】");
@@ -110,6 +112,7 @@ namespace _GameClient.Models
 
         internal void AddLing(int ling)
         {
+            if (ling == 0) return;
             var last = ActionLing;
             ActionLing += ling;
             ActionLing = Math.Clamp(ActionLing, 0, ActionLingMax);
@@ -119,29 +122,35 @@ namespace _GameClient.Models
 
         internal void AddWeapon(IWeapon weapon)
         {
+            if(weapon == null) LogError("Weapon = null!");
             _weapons.Add(weapon);
             Log($"添加武器【{weapon.Name}】");
         }
         internal void RemoveWeapon(IWeapon weapon)
         {
+            if(weapon == null) LogError("Weapon = null!");
             _weapons.Remove(weapon);
             Log($"移除武器【{weapon.Name}】");
         }
 
         internal void AddArmor(IArmor armor)
         {
+            if(armor == null) LogError("armor = null!");
             _armors.Add(armor);
             Log($"添加防具【{armor.Name}】");
         }
 
         internal void RemoveArmor(IArmor armor)
         {
+            if(armor == null) LogError("armor = null!");
             _armors.Remove(armor);
             Log($"移除防具【{armor.Name}】");
         }
 
         internal void AddMedicine(IMedicine med, int amount)
         {
+            if(med == null) LogError("med = null!");
+            if (amount == 0) return;
             if (!Medicines.ContainsKey(med))
                 Medicines.Add(med, 0);
             Medicines[med] += amount;
@@ -150,6 +159,8 @@ namespace _GameClient.Models
 
         internal void RemoveMedicine(IMedicine med,int amount)
         {
+            if (med == null) LogError("med = null!");
+            if (amount == 0) return;
             if (!Medicines.ContainsKey(med))
                 LogError($"找不到{med.Name},Id = {med.Id}");
             if (Medicines[med] < amount) LogError($"{med.Name}:{Medicines[med]} < {amount}! ");
@@ -159,6 +170,7 @@ namespace _GameClient.Models
 
         internal void AddConsumeResource(ConsumeResources resource, int value)
         {
+            if (value == 0) return;
             var lastValue = 0;
             switch (resource)
             {
@@ -288,36 +300,42 @@ namespace _GameClient.Models
         
         internal void AddAdvItem(IGameItem item)
         {
+            if (item == null) LogError("item = null!");
             AddGameItem(new Stacking<IGameItem>(item, 1));
             SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"添加历练道具: {item.Id}.{item.Name}");
         }
         internal void AddPackages(ICollection<IAdvPackage> packages)
         {
+            if (packages == null) LogError("package = null!");
             _packages.AddRange(packages);
             SendEvent(EventString.Faction_AdvPackageUpdate, string.Empty);
             Log($"添加包裹x{packages.Count}");
         }
         internal void AddBook(IBook book)
         {
+            if (book == null) LogError("book = null!");
             _books.Add(book);
             Log($"添加书籍: {book.Id}.{book.Name}");
             SendEvent(EventString.Faction_BookUpdate, string.Empty);
         }
         internal void RemoveAdvItem(IGameItem item)
         {
+            if (item == null) LogError("item = null!");
             RemoveGameItem(item, 1);//移除道具将直接执行gameItem移除
             SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"移除历练道具: {item.Id}.{item.Name}");
         }
         internal void RemovePackages(IAdvPackage package)
         {
+            if (package == null) LogError("package = null!");
             _packages.Remove(package);
             SendEvent(EventString.Faction_AdvPackageUpdate, string.Empty);
             Log($"移除包裹: 品级【{package.Grade}】");
         }
         internal void RemoveBook(IBook book)
         {
+            if (book == null) LogError("book = null!");
             _books.Remove(book);
             SendEvent(EventString.Faction_BookUpdate, string.Empty);
             Log($"移除书籍: {book.Id}.{book.Name}");
@@ -332,5 +350,6 @@ namespace _GameClient.Models
                 ConsumeResources.Pill => Pill,
                 _ => throw new ArgumentOutOfRangeException(nameof(resourceType), resourceType, null)
             };
+
     }
 }
