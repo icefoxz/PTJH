@@ -112,12 +112,12 @@ namespace Server.Configs.Adventures
         {
             private enum PackageResources
             {
-                [InspectorName("银两")]Silver = -1,
-                [InspectorName("食物")]Food = 0,
-                [InspectorName("酒水")]Wine = 1,
-                [InspectorName("药草")]Herb = 2,
-                [InspectorName("丹药")]Pill = 3,
-                [InspectorName("元宝")]YuanBao = -2,
+                [InspectorName("银两")]Silver,
+                [InspectorName("食物")]Food,
+                [InspectorName("酒水")]Wine,
+                [InspectorName("药草")]Herb,
+                [InspectorName("丹药")]Pill,
+                [InspectorName("元宝")]YuanBao,
             }
             private bool ChangeElementName()
             {
@@ -173,16 +173,19 @@ namespace Server.Configs.Adventures
                     return true;
                 }
 
-                private string GetResourceName(PackageResources resource) => resource switch
+                private string GetResourceName(PackageResources resource)
                 {
-                    PackageResources.Food => "食物",
-                    PackageResources.Wine => "酒水",
-                    PackageResources.Herb => "药草",
-                    PackageResources.Pill => "丹药",
-                    PackageResources.Silver => "银两",
-                    PackageResources.YuanBao => "元宝",
-                    _ => throw new ArgumentOutOfRangeException(nameof(resource), resource, null)
-                };
+                    return resource switch
+                    {
+                        PackageResources.Food => "食物",
+                        PackageResources.Wine => "酒水",
+                        PackageResources.Herb => "药草",
+                        PackageResources.Pill => "丹药",
+                        PackageResources.Silver => "银两",
+                        PackageResources.YuanBao => "元宝",
+                        _ => throw new ArgumentOutOfRangeException(nameof(resource), resource, null)
+                    };
+                }
 
                 [ConditionalField(true, nameof(ChangeConsumeResourceName))][SerializeField][ReadOnly] private string _name;
                 [SerializeField] private PackageResources 资源;
