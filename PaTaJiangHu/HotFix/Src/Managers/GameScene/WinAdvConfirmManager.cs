@@ -5,17 +5,17 @@ using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class WinAdvConfirmManager : UiManagerBase
 {
     private View_winAdvConfirm WinAdvConfirm { get; set; }
 
-    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
     protected override string ViewName => "view_winAdvConfirm";
     protected override bool IsDynamicPixel => false;
 
-    public WinAdvConfirmManager(UiManager uiManager) : base(uiManager)
+    public WinAdvConfirmManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
     }
 

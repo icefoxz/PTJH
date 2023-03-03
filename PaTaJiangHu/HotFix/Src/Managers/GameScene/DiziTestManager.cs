@@ -14,7 +14,7 @@ using Utls;
 using Views;
 using Object = UnityEngine.Object;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 public class DiziTestManager
 {

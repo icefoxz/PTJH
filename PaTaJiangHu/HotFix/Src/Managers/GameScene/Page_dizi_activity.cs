@@ -1,17 +1,16 @@
-﻿using _GameClient.Models;
+﻿using System;
+using _GameClient.Models;
 using BattleM;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
-using System;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
-using Visual.BaseUis;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class Page_dizi_activity :MainPageBase
 {
@@ -21,7 +20,7 @@ internal class Page_dizi_activity :MainPageBase
     private View_rewards Rewards { get; set; }
     private DiziController DiziController { get; set; }
 
-    public Page_dizi_activity(UiManager uiManager) : base(uiManager)
+    public Page_dizi_activity(GameSceneAgent uiAgent) : base(uiAgent)
     {
     }
 

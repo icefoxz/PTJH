@@ -1,24 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using Core;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class TreasureHouseManager : UiManagerBase
 {
     private View_treasureHouse TreasureHouse { get; set; }
 
-    protected override UiManager.Sections Section => UiManager.Sections.Page;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Page;
     protected override string ViewName => "view_treasureHouse";
     protected override bool IsDynamicPixel => true;
 
-    public TreasureHouseManager(UiManager uiManager) : base(uiManager)
+    public TreasureHouseManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
     }
     protected override void Build(IView view)
@@ -30,7 +28,7 @@ internal class TreasureHouseManager : UiManagerBase
     {
         Game.MessagingManager.RegEvent(EventString.Page_TreasureHouse, bag =>
         {
-            UiManager.Show(this);
+            MainUiAgent.Show(this);
         });
     }
 

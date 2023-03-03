@@ -13,7 +13,7 @@ using Utls;
 using Views;
 using Object = UnityEngine.Object;
 
-namespace HotFix_Project.Managers
+namespace HotFix_Project.Managers.GameScene
 {
     /// <summary>
     /// 冒险任务管理器，主要管理UI与本地数据的交互

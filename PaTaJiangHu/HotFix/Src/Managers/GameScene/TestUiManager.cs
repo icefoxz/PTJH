@@ -1,8 +1,6 @@
-﻿using HotFix_Project.Serialization.LitJson;
-using Server;
-using Utls;
+﻿using Utls;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class TestUiManager
 {

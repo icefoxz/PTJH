@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class WinEquipmentManager : UiManagerBase
 {
@@ -16,11 +16,11 @@ internal class WinEquipmentManager : UiManagerBase
     private DiziController DiziController { get; set; }
     private DiziAdvController DiziAdvController { get; set; }
 
-    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
     protected override string ViewName => "view_winEquipment";
     protected override bool IsDynamicPixel => true;
 
-    public WinEquipmentManager(UiManager uiManager) : base(uiManager)
+    public WinEquipmentManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
         DiziController = Game.Controllers.Get<DiziController>();
         DiziAdvController = Game.Controllers.Get<DiziAdvController>();
@@ -51,8 +51,9 @@ internal class WinEquipmentManager : UiManagerBase
         {
             var guid = bag.Get<string>(0);
             var itemType = bag.GetInt(1);
-            WinEquipment.Set(guid, itemType, 0); //weapon or armor
-            Game.MainUi.ShowWindow(WinEquipment.View);
+            Set(guid,itemType,0);
+            //WinEquipment.Set(guid, itemType, 0); //weapon or armor
+            //Game.MainUi.ShowWindow(WinEquipment.View);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => 
         {
@@ -75,6 +76,12 @@ internal class WinEquipmentManager : UiManagerBase
             WinEquipment.UpdateItemList();
             Game.MainUi.HideWindows();
         });
+    }
+
+    public void Set(string diziGuid, int itemType, int slot)
+    {
+        WinEquipment.Set(diziGuid, itemType, slot);
+        Game.MainUi.ShowWindow(WinEquipment.View);
     }
 
     public override void Show() => WinEquipment.Display(true);

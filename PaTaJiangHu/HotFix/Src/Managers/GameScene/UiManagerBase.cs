@@ -1,20 +1,20 @@
 ﻿using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 /// <summary>
 /// 基于MainPage的UiManagerBase 扩展类
 /// </summary>
 internal abstract class MainPageBase : UiManagerBase
 {
-    protected override UiManager.Sections Section => UiManager.Sections.MainPage;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.MainPage;
     protected abstract MainPageLayout.Sections MainPageSection { get; }
 
-    protected MainPageBase(UiManager uiManager) : base(uiManager)
+    protected MainPageBase(MainUiAgent uiAgent) : base(uiAgent)
     {
     }
 
-    protected override void RegUiManager() => UiManager.SetToMainPage(this, View, MainPageSection, IsDynamicPixel);
+    protected override void RegUiManager() => MainUiAgent.SetToMainPage(this, View, MainPageSection, IsDynamicPixel);
 }
 
 /// <summary>
@@ -22,8 +22,8 @@ internal abstract class MainPageBase : UiManagerBase
 /// </summary>
 internal abstract class UiManagerBase
 {
-    protected UiManager UiManager { get; }
-    protected abstract UiManager.Sections Section { get; }
+    protected MainUiAgent MainUiAgent { get; }
+    protected abstract MainUiAgent.Sections Section { get; }
     protected abstract string ViewName { get; }
 
     /// <summary>
@@ -32,9 +32,9 @@ internal abstract class UiManagerBase
     protected abstract bool IsDynamicPixel { get; }
     protected IView View { get; private set; }
 
-    protected UiManagerBase(UiManager uiManager)
+    protected UiManagerBase(MainUiAgent uiAgent)
     {
-        UiManager = uiManager;
+        MainUiAgent = uiAgent;
         Game.UiBuilder.Build(ViewName, v =>
         {
             Build(v);
@@ -49,7 +49,7 @@ internal abstract class UiManagerBase
     /// <summary>
     /// 不去需要特别重写,仅仅是因为MainPage是特别处理才需要重新注册UiManager
     /// </summary>
-    protected virtual void RegUiManager() => UiManager.SetToMainUi(this, View, Section, IsDynamicPixel);
+    protected virtual void RegUiManager() => MainUiAgent.SetToMainUi(this, View, Section, IsDynamicPixel);
 
     protected abstract void Build(IView view);
     protected abstract void RegEvents();

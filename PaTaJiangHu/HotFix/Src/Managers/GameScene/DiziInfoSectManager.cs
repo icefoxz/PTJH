@@ -1,15 +1,15 @@
 using System;
-using UnityEngine;
-using UnityEngine.UI;
-using Utls;
-using Views;
 using _GameClient.Models;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;
+using UnityEngine;
+using UnityEngine.UI;
+using Utls;
+using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 /// <summary>
 /// 弟子信息板块Ui控制器
@@ -22,7 +22,7 @@ internal class DiziInfoSectManager : MainPageBase
     protected override string ViewName => "view_diziInfoSect";
     protected override bool IsDynamicPixel => true;
 
-    public DiziInfoSectManager(UiManager uiManager) : base(uiManager)
+    public DiziInfoSectManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
         Controller = Game.Controllers.Get<DiziController>();
     }
@@ -47,7 +47,7 @@ internal class DiziInfoSectManager : MainPageBase
         });
         //Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate,
         //    bag => DiziInfo.UpdateDiziStamina(bag.Get<string>(0)));
-        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => UiManager.Show(this));
+        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => MainUiAgent.Show(this));
     }
 
     public override void Show() => DiziInfo.Display(true);

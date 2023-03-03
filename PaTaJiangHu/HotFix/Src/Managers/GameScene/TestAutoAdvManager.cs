@@ -12,7 +12,7 @@ using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class TestAutoAdvManager
 {

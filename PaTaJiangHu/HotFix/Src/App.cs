@@ -1,11 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Net.Http;
-using HotFix_Project.Data;
-using HotFix_Project.Managers;
-using JetBrains.Annotations;
+using HotFix_Project.Managers.GameScene;
 using Systems;
 using Systems.Coroutines;
-using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +16,7 @@ namespace HotFix_Project
     internal class App 
     {
         private static TestUiManager TestUiManager { get; set; } = new TestUiManager();
-        private static UiManager UiManager { get; set; }
+        private static MainUiAgent MainUiAgent { get; set; }
         public void Init()
         {
             Debug.Log($"{nameof(App)}.{nameof(Init)}!");
@@ -29,8 +27,12 @@ namespace HotFix_Project
 
         private void InitUiManager()
         {
-            UiManager = new UiManager(Game.MainUi);
-            UiManager.LoadAllUis();
+            MainUiAgent = AppLunch.UiAgent switch
+            {
+                "GameScene" => new GameSceneAgent(Game.MainUi),
+                "Demo_v1" => new Demo_v1Agent(Game.MainUi),
+                _ => throw new NotImplementedException($"找不到指定的MainUi代理= {AppLunch.UiAgent}!")
+            };
         }
 
         public void InitTest()

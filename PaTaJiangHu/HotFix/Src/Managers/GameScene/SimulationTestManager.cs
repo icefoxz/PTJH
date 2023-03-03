@@ -7,7 +7,7 @@ using Systems.Messaging;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class SimulationTestManager
 {

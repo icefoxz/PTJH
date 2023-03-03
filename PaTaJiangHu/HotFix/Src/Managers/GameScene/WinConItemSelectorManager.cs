@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using HotFix_Project.Views.Bases;
 using _GameClient.Models;
+using BattleM;
 using HotFix_Project.Serialization;
+using HotFix_Project.Views.Bases;
+using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
-using Server.Controllers;
-using BattleM;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class WinConItemSelectorManager : UiManagerBase
 {
     private View_winConItemSelector WinConItemSelector { get; set; }
     private DiziController DiziController { get; set; }
 
-    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
     protected override string ViewName => "view_winConItemSelector";
     protected override bool IsDynamicPixel => true;
 
-    public WinConItemSelectorManager(UiManager uiManager) : base(uiManager)
+    public WinConItemSelectorManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
         DiziController = Game.Controllers.Get<DiziController>();
     }
@@ -54,6 +54,8 @@ internal class WinConItemSelectorManager : UiManagerBase
         Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate,
             bag => WinConItemSelector.DiziUpdate(bag.Get<string>(0)));
     }
+
+    public void Set(string guid) => WinConItemSelector.Set(guid);
 
     public override void Show() => WinConItemSelector.Display(true);
 

@@ -1,8 +1,8 @@
-using HotFix_Project.Views.Bases;
 using System;
 using _GameClient.Models;
 using BattleM;
 using HotFix_Project.Serialization;
+using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
 using Server.Controllers;
 using Systems.Messaging;
@@ -11,7 +11,7 @@ using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class DiziAdvManager : MainPageBase
 {
@@ -25,7 +25,7 @@ internal class DiziAdvManager : MainPageBase
     protected override string ViewName => "view_diziAdv";
     protected override bool IsDynamicPixel => true;
 
-    public DiziAdvManager(UiManager uiManager) : base(uiManager)
+    public DiziAdvManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
         DiziController = Game.Controllers.Get<DiziController>();
         DiziAdvController = Game.Controllers.Get<DiziAdvController>();
@@ -35,7 +35,7 @@ internal class DiziAdvManager : MainPageBase
     protected override void Build(IView view)
     {
         DiziAdv = new View_diziAdv(v: view, DiziAdvController,
-            onItemSelectAction: (guid, itemType) => DiziController.ManageDiziEquipment(guid, itemType),
+            onItemSelectAction: (guid, itemType) => MainUiAgent.Show<WinEquipmentManager>(mgr=>mgr.Set(guid,itemType,0)),
             onAdvStartAction: (guid, index) => DiziAdvController.AdventureStart(guid, index),
             onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
             onDiziFinalizeAction: guid => DiziAdvController.AdventureFinalize(guid),
@@ -54,7 +54,7 @@ internal class DiziAdvManager : MainPageBase
         {
             DiziAdv.Set(bag);
             //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            UiManager.Show(this);
+            MainUiAgent.Show(this);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update(bag.GetString(0)));
@@ -70,7 +70,7 @@ internal class DiziAdvManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag =>
         {
             //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            UiManager.Show(this);
+            MainUiAgent.Show(this);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotUpdate, bag => DiziAdv.SlotUpdate(bag.Get<string>(0)));

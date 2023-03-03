@@ -4,17 +4,17 @@ using Systems.Messaging;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class BtmPageBtnsManager : UiManagerBase
 {
     private View_btmPageBtns BtmPageBtns { get; set; }
 
-    protected override UiManager.Sections Section => UiManager.Sections.Bottom;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Bottom;
     protected override string ViewName => "view_btmPageBtns";
     protected override bool IsDynamicPixel => true;
 
-    public BtmPageBtnsManager(UiManager uiManager) : base(uiManager)
+    public BtmPageBtnsManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
     }
 

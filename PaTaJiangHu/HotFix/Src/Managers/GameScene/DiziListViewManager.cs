@@ -8,14 +8,14 @@ using Systems.Messaging;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class DiziListViewManager : MainPageBase
 {
     private DiziListView DiziList { get; set; }
     private DiziController DiziInteraction { get; } = Game.Controllers.Get<DiziController>();
 
-    public DiziListViewManager(UiManager uiManager) : base(uiManager)
+    public DiziListViewManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
     }
 
@@ -32,7 +32,7 @@ internal class DiziListViewManager : MainPageBase
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList());
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziList.UpdateDiziState());
-        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => UiManager.Show(this));
+        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => MainUiAgent.Show(this));
     }
 
     public override void Show() => DiziList.Display(true);

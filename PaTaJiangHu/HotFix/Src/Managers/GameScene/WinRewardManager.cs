@@ -1,21 +1,20 @@
 ﻿using System;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
-using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class WinRewardManager : UiManagerBase
 {
     private View_winReward WinReward { get; set; }
 
-    protected override UiManager.Sections Section => UiManager.Sections.Window;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
     protected override string ViewName => "view_winReward";
     protected override bool IsDynamicPixel => false;
 
-    public WinRewardManager(UiManager uiManager) : base(uiManager)
+    public WinRewardManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
     }
 

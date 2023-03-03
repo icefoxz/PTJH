@@ -2,16 +2,16 @@
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class FactionInfoManager : UiManagerBase
 {
     private View_factionInfoUi FactionInfoUi { get; set; }
 
-    protected override UiManager.Sections Section => UiManager.Sections.Top;
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Top;
     protected override string ViewName => "view_factionInfoUi";
     protected override bool IsDynamicPixel => true;
-    public FactionInfoManager(UiManager uiManager) : base(uiManager)
+    public FactionInfoManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
     }
     protected override void Build(IView view)

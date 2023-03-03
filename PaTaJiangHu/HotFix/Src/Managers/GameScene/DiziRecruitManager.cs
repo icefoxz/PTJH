@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Managers;
+namespace HotFix_Project.Managers.GameScene;
 
 internal class DiziRecruitManager : MainPageBase
 {
@@ -17,7 +17,7 @@ internal class DiziRecruitManager : MainPageBase
     private int CurrentDiziIndex { get; set; }
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
 
-    public DiziRecruitManager(UiManager uiManager) : base(uiManager)
+    public DiziRecruitManager(GameSceneAgent uiAgent) : base(uiAgent)
     {
         RecruitController = Game.Controllers.Get<RecruitController>();
     }
@@ -39,7 +39,7 @@ internal class DiziRecruitManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Page_DiziRecruit, bag =>
         {
             Game.MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            UiManager.Show(this);
+            MainUiAgent.Show(this);
         });
     }
 
