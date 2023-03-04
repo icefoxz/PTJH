@@ -11,9 +11,9 @@ namespace HotFix_Project.Src.Managers.Demo_v1
     internal class Demo_View_Faction_InfoMgr : UiManagerBase
     {
         private View_Faction_Info View_faction_info { get; set; }
-        protected override MainUiAgent.Sections Section { get; } = MainUiAgent.Sections.Top;
-        protected override string ViewName { get; } = "demo_view_faction_info";
-        protected override bool IsDynamicPixel { get; } = true;
+        protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Top;
+        protected override string ViewName => "demo_view_faction_info";
+        protected override bool IsDynamicPixel => true;
 
         public Demo_View_Faction_InfoMgr(MainUiAgent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)

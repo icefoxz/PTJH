@@ -9,9 +9,13 @@ internal class Demo_v1Agent : MainUiAgent
 {
     private Demo_View_PagesMgr Demo_View_PageMgr { get; }
     private Demo_View_Faction_InfoMgr Demo_View_Faction_InfoMgr { get; }
+    private Demo_Dizi_InfoMgr Demo_Dizi_InfoMgr { get; }
+    private Demo_View_DiziListMgr Demo_View_DiziListMgr { get; }
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
         Demo_View_Faction_InfoMgr = new Demo_View_Faction_InfoMgr(this);
+        Demo_Dizi_InfoMgr = new Demo_Dizi_InfoMgr(this);
+        Demo_View_DiziListMgr = new Demo_View_DiziListMgr(this);
     }
 }
