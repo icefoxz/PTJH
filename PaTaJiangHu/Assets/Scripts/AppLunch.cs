@@ -31,6 +31,9 @@ public class AppLunch : UnitySingleton<AppLunch>
     [SerializeField] private Canvas _sceneCanvas;
     [SerializeField] private ConfigureSo _configureSo;
     [SerializeField] private Preloader _preloader;
+    [Header("填入所启动的UI代理器")]
+    [SerializeField] private string _uiAgent;
+    public static string UiAgent { get; private set; }
 
     //*************初始化Unity项目底层框架：*****************
     private IEnumerator CheckHotFix()
@@ -42,6 +45,7 @@ public class AppLunch : UnitySingleton<AppLunch>
 
     protected override void OnAwake()
     {
+        UiAgent = _uiAgent;
         _appDomain = new AppDomain();
         ILRuntimeMgr = new IlRuntimeManager(_appDomain);
         StartCoroutine(CoInit());

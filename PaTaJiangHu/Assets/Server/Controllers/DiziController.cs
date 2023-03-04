@@ -62,16 +62,6 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// 管理弟子的装备, itemType { 0 : weapon, 1 : armor }
-        /// </summary>
-        /// <param name="guid"></param>
-        /// <param name="itemType">0 = weapon, 1 = armor</param>
-        public void ManageDiziEquipment(string guid, int itemType)
-        {
-            Game.MessagingManager.SendParams(EventString.Dizi_EquipmentManagement, guid, itemType);
-        }
-
-        /// <summary>
         /// 弟子装备物件, itemType { 0 : weapon, 1 : armor }
         /// </summary>
         /// <param name="guid">弟子guid</param>
