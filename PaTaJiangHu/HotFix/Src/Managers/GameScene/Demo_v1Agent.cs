@@ -13,6 +13,7 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_View_DiziListMgr Demo_View_DiziListMgr { get; }
     private Demo_View_ConsumeResMgr Demo_View_ConsumeResMgr { get; }
     private Demo_View_ConPropsMgr Demo_View_ConPropsMgr { get; }
+    private Demo_View_DiziActivityMgr Demo_View_DiziActivityMgr { get; }
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
@@ -21,5 +22,6 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_View_DiziListMgr = new Demo_View_DiziListMgr(this);
         Demo_View_ConsumeResMgr = new Demo_View_ConsumeResMgr(this);
         Demo_View_ConPropsMgr = new Demo_View_ConPropsMgr(this);
+        Demo_View_DiziActivityMgr = new Demo_View_DiziActivityMgr(this);
     }
 }
