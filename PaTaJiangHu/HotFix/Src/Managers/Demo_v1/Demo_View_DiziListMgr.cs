@@ -15,7 +15,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         private View_DiziList DiziList { get; set; }
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
         protected override string ViewName => "demo_view_diziList";
-        protected override bool IsDynamicPixel => false;
+        protected override bool IsDynamicPixel => true;
         public Demo_View_DiziListMgr(MainUiAgent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {

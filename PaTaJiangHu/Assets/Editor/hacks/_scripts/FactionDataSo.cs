@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using _GameClient.Models;
-using BattleM;
+using Server.Configs.Battles;
 using UnityEngine;
 
 // 门派数据So

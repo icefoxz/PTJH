@@ -12,7 +12,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         private View_ConProps View_conProps { get; set; }
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_view_conProps";
-        protected override bool IsDynamicPixel => false;
+        protected override bool IsDynamicPixel => true;
         public Demo_View_ConPropsMgr(MainUiAgent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {

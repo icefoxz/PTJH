@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BattleM;
+using DiziM;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs;

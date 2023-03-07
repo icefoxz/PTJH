@@ -17,7 +17,7 @@ internal class DiziRecruitManager : MainPageBase
     private int CurrentDiziIndex { get; set; }
     protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
 
-    public DiziRecruitManager(GameSceneAgent uiAgent) : base(uiAgent)
+    public DiziRecruitManager(MainUiAgent uiAgent) : base(uiAgent)
     {
         RecruitController = Game.Controllers.Get<RecruitController>();
     }

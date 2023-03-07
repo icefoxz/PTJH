@@ -11,14 +11,12 @@ namespace Server.Controllers
     /// </summary>
     internal abstract class AdvEventMiddlewareBase : IAdvEventMiddleware
     {
-        public AdvEventMiddlewareBase(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg)
+        public AdvEventMiddlewareBase(BattleSimulatorConfigSo simulator)
         {
             Simulator = simulator;
-            Cfg = cfg;
         }
 
         protected BattleSimulatorConfigSo Simulator { get; }
-        protected ConditionPropertySo Cfg { get; }
         public abstract IAdvArg Invoke(IAdvEvent advEvent, IRewardHandler rewardHandler, Dizi dizi);
     }
 
@@ -27,7 +25,7 @@ namespace Server.Controllers
     /// </summary>
     internal class AdvEventMiddleware : AdvEventMiddlewareBase
     {
-        public AdvEventMiddleware(BattleSimulatorConfigSo simulator, ConditionPropertySo cfg) : base(simulator, cfg)
+        public AdvEventMiddleware(BattleSimulatorConfigSo simulator) : base(simulator)
         {
         }
 
@@ -49,12 +47,9 @@ namespace Server.Controllers
                 case AdvTypes.Simulation: //执行模拟战斗
                     if (advEvent is not BattleSimulationEventSo bs)
                         throw new NotImplementedException($"{advEvent.name} 事件类型错误!");
-                    var diziSim = Cfg.GetSimulation(dizi.Name, dizi.Strength, dizi.Agility,
-                        dizi.WeaponPower, dizi.ArmorPower,
-                        dizi.CombatSkill.Grade, dizi.CombatSkill.Level,
-                        dizi.ForceSkill.Grade, dizi.ForceSkill.Level,
-                        dizi.DodgeSkill.Grade, dizi.DodgeSkill.Level);
-                    var npc = bs.GetNpc(Cfg);
+                    var diziSim = Simulator.GetSimulation(simName: dizi.Name, strength: dizi.Strength, agility: dizi.Agility,hp: dizi.Hp,mp: dizi.Mp,
+                        weaponDamage: dizi.WeaponPower, armorAddHp: dizi.ArmorPower);
+                    var npc = bs.GetNpc(Simulator);
                     var outcome = Simulator.CountSimulationOutcome(diziSim, npc);
                     var staminaController = Game.Controllers.Get<StaminaController>();
                     if (!outcome.IsPlayerWin)

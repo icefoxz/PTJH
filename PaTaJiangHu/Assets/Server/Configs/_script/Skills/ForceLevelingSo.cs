@@ -1,7 +1,5 @@
 using System;
-using System.Linq;
 using System.Text;
-using BattleM;
 using MyBox;
 using Server.Configs.Battles;
 using UnityEngine;
@@ -12,7 +10,7 @@ namespace Server.Configs.Skills
     /// 内功等级配置
     /// </summary>
     [CreateAssetMenu(fileName = "forceLevelSo", menuName = "战斗测试/内功等级配置")]
-    internal class ForceLevelingSo : ScriptableObject,ILeveling<IForceSkill>
+    internal class ForceLevelingSo : ScriptableObject//,ILeveling<IForceSkill>
     {
         #region ReferenceSo
         private bool ReferenceSo()
@@ -34,24 +32,24 @@ namespace Server.Configs.Skills
         private LevelField[] Levels => 等级列;
         private ForceFieldSo ForceSo => 内功;
 
-        public IForceSkill GetFromLevel(int level)
-        {
-            if (level == 1) return ForceSo.GetMinLevel();//TODO: 注意这里会照成死循环!, 不可以调用 So.GetFromLevel
-            var index = LevelToIndex(level);
-            if (index < 0 || index >= Levels.Length)
-                throw new IndexOutOfRangeException($"等级[{level}]不支持！等级总长度{Levels.Length + 2}");
-            return Levels[index].GetForce(level);
-        }
+        //public IForceSkill GetFromLevel(int level)
+        //{
+        //    if (level == 1) return ForceSo.GetMinLevel();//TODO: 注意这里会照成死循环!, 不可以调用 So.GetFromLevel
+        //    var index = LevelToIndex(level);
+        //    if (index < 0 || index >= Levels.Length)
+        //        throw new IndexOutOfRangeException($"等级[{level}]不支持！等级总长度{Levels.Length + 2}");
+        //    return Levels[index].GetForce(level);
+        //}
 
         private static int LevelToIndex(int level) => level - 2;
         private static int IndexToLevel(int index) => index + 2;
 
         public int MaxLevel => Levels.Length + 1;//最大等级 = 最后一个索引+2 = 索引长度+1
 
-        public IForceSkill GetMaxLevel() => Levels[^1].GetForce(IndexToLevel(Levels.Length - 1));
+        //public IForceSkill GetMaxLevel() => Levels[^1].GetForce(IndexToLevel(Levels.Length - 1));
 
-        public CombatBuffSoBase[] GetBuffs(int level) =>
-            level == 1 ? ForceSo.GetAllBuffs() : Levels[LevelToIndex(level)].GetBuffs();
+        //public CombatBuffSoBase[] GetBuffs(int level) =>
+        //    level == 1 ? ForceSo.GetAllBuffs() : Levels[LevelToIndex(level)].GetBuffs();
 
         [Serializable] private class LevelField
         {
@@ -85,8 +83,6 @@ namespace Server.Configs.Skills
             [SerializeField] private SoValueConfig 护甲内耗;
             [SerializeField] private SoValueConfig 恢复值;
             [SerializeField] private SoValueConfig 蓄转内;
-            [SerializeField] private CombatBuffSoBase[] _buffs;
-
             private ForceFieldSo Force => 内功;
             private SoValueConfig BreathCfg => 息;
             private SoValueConfig ForceRateCfg => 内功转化;
@@ -95,18 +91,15 @@ namespace Server.Configs.Skills
             private SoValueConfig RecoverCfg => 恢复值;
             private SoValueConfig MpChargeCfg => 蓄转内;
 
-            private CombatBuffSoBase[] Buffs => _buffs;
-            public CombatBuffSoBase[] GetBuffs() => Force.GetAllBuffs().Concat(Buffs).ToArray();
-
-            public IForceSkill GetForce(int level) => new ForceFieldSo.LevelForce(Force, 
-                GetBreath(), 
-                GetForceRate(), 
-                GetArmor(),
-                GetArmorDepletion(), 
-                GetRecover(), 
-                GetMpCharge(),
-                level,
-                Buffs);
+            //public IForceSkill GetForce(int level) => new ForceFieldSo.LevelForce(Force, 
+            //    GetBreath(), 
+            //    GetForceRate(), 
+            //    GetArmor(),
+            //    GetArmorDepletion(), 
+            //    GetRecover(), 
+            //    GetMpCharge(),
+            //    level,
+            //    Buffs);
 
             private int GetBreath() => BreathCfg.GetValue(Force.Breath);
             private int GetForceRate() => ForceRateCfg.GetValue(Force.ForceRate);

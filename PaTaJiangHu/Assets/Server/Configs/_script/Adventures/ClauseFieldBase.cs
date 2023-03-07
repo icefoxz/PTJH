@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Linq;
-using BattleM;
+using DiziM;
 using MyBox;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Utls;
 
 namespace Server.Configs.Adventures
@@ -50,18 +47,6 @@ namespace Server.Configs.Adventures
         public IAdvEvent Event => 事件;
         public string Title => Rename ? _title : string.Empty;
         public bool InTerm(ITerm term) => StatusTerm.IsInTerm(term);
-
-        //public bool ResetDefault()
-        //{
-        //    if (重置器 == Resetter.Reset)
-        //    {
-        //        重置器 = Resetter.Default;
-        //        _title = string.Empty;
-        //        //状态条件.ResetDefault();
-        //        事件 = null;
-        //    }
-        //    return true;
-        //}
 
     }
     [Serializable] internal class StatusClauseField : ClauseFieldBase

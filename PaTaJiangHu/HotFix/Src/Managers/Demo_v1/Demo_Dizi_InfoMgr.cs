@@ -3,11 +3,6 @@ using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
@@ -20,7 +15,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         private DiziController DiziController { get; set; }
         protected override MainPageLayout.Sections MainPageSection { get; } = MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_dizi_info";
-        protected override bool IsDynamicPixel => false;
+        protected override bool IsDynamicPixel => true;
         public Demo_Dizi_InfoMgr(MainUiAgent uiAgent) : base(uiAgent)
         {
             DiziController = Game.Controllers.Get<DiziController>();

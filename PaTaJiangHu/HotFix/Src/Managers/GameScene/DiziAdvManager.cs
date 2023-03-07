@@ -1,6 +1,6 @@
 using System;
 using _GameClient.Models;
-using BattleM;
+using DiziM;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
@@ -188,9 +188,9 @@ internal class DiziAdvManager : MainPageBase
         private void SetDiziElements(Dizi dizi)
         {
             var controller = Game.Controllers.Get<DiziController>();
-            ElementMgr.SetSkill(Skills.Combat, dizi.CombatSkill.Name, dizi.CombatSkill.Level);
-            ElementMgr.SetSkill(Skills.Force, dizi.ForceSkill.Name, dizi.ForceSkill.Level);
-            ElementMgr.SetSkill(Skills.Dodge, dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
+            //ElementMgr.SetSkill(Skills.Combat, dizi.CombatSkill.Name, dizi.CombatSkill.Level);
+            //ElementMgr.SetSkill(Skills.Force, dizi.ForceSkill.Name, dizi.ForceSkill.Level);
+            //ElementMgr.SetSkill(Skills.Dodge, dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
             if (dizi.Weapon == null) ElementMgr.ClearItem(Items.Weapon);
             else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name, (int) dizi.Weapon.Grade);
             if (dizi.Armor == null) ElementMgr.ClearItem(Items.Armor);

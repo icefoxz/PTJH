@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BattleM;
 using Core;
+using DiziM;
+using Server.Configs.Battles;
 using UnityEngine;
 using UnityEngine.Analytics;
 using Utls;
@@ -28,18 +29,18 @@ namespace Server.Configs.Adventures
         IConditionValue Emotion { get; }
         IConditionValue Injury { get; }
         IConditionValue Inner { get; }
-        /// <summary>
+        ///// <summary>
         /// 当前武功
         /// </summary>
-        ICombatSkill CombatSkill { get; }
-        /// <summary>
+        //ICombatSkill CombatSkill { get; }
+        ///// <summary>
         /// 当前内功
         /// </summary>
-        IForceSkill ForceSkill { get; }
-        /// <summary>
+        //IForceSkill ForceSkill { get; }
+        ///// <summary>
         /// 当前轻功
         /// </summary>
-        IDodgeSkill DodgeSkill { get; }
+        //IDodgeSkill DodgeSkill { get; }
         /// <summary>
         /// 当前武器
         /// </summary>

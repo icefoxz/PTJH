@@ -4,8 +4,10 @@ using System.Linq;
 using Core;
 using Data;
 using MyBox;
+using Server.Configs.Battles;
 using Server.Configs.Factions;
 using Server.Configs.Items;
+using Server.Controllers;
 using UnityEngine;
 
 namespace Server.Configs.Adventures
@@ -194,7 +196,7 @@ namespace Server.Configs.Adventures
                 public int Value => 数量 < 0 ? throw new InvalidOperationException($"资源数量 = {数量}!") : 数量;
             }
         }
-        [Serializable] private class WeaponItem : GameItem, IEquipment
+        [Serializable] private class WeaponItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
             
@@ -202,16 +204,14 @@ namespace Server.Configs.Adventures
             protected override ScriptableObject So => 武器;
             protected override IGameItem Gi => 武器;
             protected override bool IsSupportSo => true;
-            public EquipKinds EquipKind => EquipKinds.Weapon;
         }
-        [Serializable] private class ArmorItem : GameItem, IEquipment
+        [Serializable] private class ArmorItem : GameItem
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 防具;
             public override Kinds Kind => Kinds.Armor;
             protected override ScriptableObject So => 防具;
             protected override IGameItem Gi => 防具;
             protected override bool IsSupportSo => true;
-            public EquipKinds EquipKind => EquipKinds.Armor;
         }
         [Serializable] private class MedicineItem : GameItem
         {

@@ -1,5 +1,5 @@
 ﻿using System;
-using BattleM;
+using DiziM;
 using Server.Controllers;
 
 namespace _GameClient.Models

@@ -15,20 +15,7 @@ public class EventString
     public const string Test_AdventureMap = "Test_AdventureMap";
     public const string Test_AdvEventInvoke = "Test_EventInvoke";
     public const string Test_DiziLeveling = "Test_DiziLeveling";
-    public const string Test_CombatSoList = "Test_CombatSoList";
-    public const string Test_CombatSkillSelected = "Test_CombatSkillSelected";
-    public const string Test_CombatSkillLeveling = "Test_CombatSkillLeveling";
-    public const string Test_ForceSkillSelected = "Test_ForceSkillSelected";
-    public const string Test_ForceSkillLeveling = "Test_ForceSkillLeveling";
-    public const string Test_ForceSoList = "Test_ForceSoList";
-    public const string Test_DodgeSoList = "Test_DodgeSoList";
-    public const string Test_DodgeSkillLeveling = "Test_DodgeSkillLeveling";
-    public const string Test_DodgeSkillSelected = "Test_DodgeSkillSelected";
     public const string Test_AdvMapLoad = "Test_AdvMapLoad";
-    public const string Test_SimulationOutcome = "Test_SimulationOutcome";
-    public const string Test_SimulationUpdateModel = "Test_SimulationUpdateModel";
-    public const string Test_SimulationStart = "Test_SimulationStart";
-
     public const string Test_AutoAdvDiziInit = "Test_AutoAdvDiziInit";
 
     //页面

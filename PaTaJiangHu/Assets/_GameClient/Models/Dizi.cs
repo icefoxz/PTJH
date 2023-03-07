@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using BattleM;
 using Core;
+using DiziM;
 using Server.Configs.Adventures;
+using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
-using Server.Configs.Skills;
 using Server.Controllers;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -36,15 +35,12 @@ namespace _GameClient.Models
 
         public int Level { get; private set; }
         public IConditionValue Exp => _exp;
-
-        public int Power => ConProCfg.GetPower(Strength, Agility, WeaponPower, ArmorPower,
-            CombatSkill?.Grade ?? 0, CombatSkill?.Level ?? 0,
-            ForceSkill?.Grade ?? 0, ForceSkill?.Level ?? 0,
-            DodgeSkill?.Grade ?? 0, DodgeSkill?.Level ?? 0);
+        private BattleSimulatorConfigSo BattleSimulator => Game.Config.AdvCfg.BattleSimulation;
+        public int Power => BattleSimulator.GetPower(Strength + WeaponPower, Agility, Hp + ArmorPower, Mp);
         public int Grade { get; }
-        public ICombatSkill CombatSkill { get; private set; }
-        public IForceSkill ForceSkill { get; private set; }
-        public IDodgeSkill DodgeSkill { get; private set; }
+        //public ICombatSkill CombatSkill { get; private set; }
+        //public IForceSkill ForceSkill { get; private set; }
+        //public IDodgeSkill DodgeSkill { get; private set; }
         public IWeapon Weapon { get; private set; }
         public IArmor Armor { get; private set; }
 
@@ -55,7 +51,7 @@ namespace _GameClient.Models
         /// <summary>
         /// 防具战力
         /// </summary>
-        public int ArmorPower => GetArmorDef();
+        public int ArmorPower => GetArmorAddHp();
 
         private ConValue _exp;
 
@@ -68,7 +64,7 @@ namespace _GameClient.Models
         private ConValue _inner;
         private AdvItemModel[] _advItems = new AdvItemModel[3];
 
-        public Skills Skill { get; set; }
+        //public Skills Skill { get; set; }
         public Capable Capable { get; private set; }
 
         public AdvItemModel[] AdvItems => _advItems;
@@ -87,13 +83,11 @@ namespace _GameClient.Models
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
         private PropStateConfigSo.ConfigField PropStateCfg => Game.Config.DiziCfg.PropState.Config;
-        private ConditionPropertySo ConProCfg => Game.Config.AdvCfg.ConditionProperty;
         internal Dizi(string guid, string name,
             Gender gender,
             int level, 
             int stamina, 
-            Capable capable,
-            ICombatSkill combatSkill, IForceSkill forceSkill, IDodgeSkill dodgeSkill)
+            Capable capable)
         {
             Guid = guid;
             Name = name;
@@ -102,16 +96,6 @@ namespace _GameClient.Models
             Grade = capable.Grade;
             Capable = capable;
             _stamina = new DiziStamina(Game.Controllers.Get<StaminaController>(), stamina);
-            CombatSkill = combatSkill;
-            ForceSkill = forceSkill;
-            DodgeSkill = dodgeSkill;
-            var cSlot = new ICombatSkill[capable.CombatSlot];
-            cSlot[0] = combatSkill;
-            var fSlot = new IForceSkill[1];
-            fSlot[0] = forceSkill;
-            var dSlot = new IDodgeSkill[capable.DodgeSlot];
-            dSlot[0] = dodgeSkill;
-            Skill = new Skills(cSlot, fSlot, dSlot);
             var maxExp = LevelCfg.GetMaxExp(level);
             _exp = new ConValue(maxExp, maxExp, 0);
             _food = new ConValue(PropStateCfg.FoodDefault.Max, PropStateCfg.FoodDefault.Min);
@@ -174,7 +158,7 @@ namespace _GameClient.Models
         }
 
         private int GetWeaponDamage() => Weapon?.Damage ?? 0;
-        private int GetArmorDef()=> Armor?.Def ?? 0;
+        private int GetArmorAddHp()=> Armor?.AddHp ?? 0;
 
         #region ITerm
 
@@ -205,30 +189,30 @@ namespace _GameClient.Models
         }
 
         //弟子技能栏
-        public class Skills
-        {
-            public IDodgeSkill[] DodgeSkills { get; private set; }
-            public ICombatSkill[] CombatSkills { get; private set; }
-            public IForceSkill[] ForceSkills { get; private set; }
+        //public class Skills
+        //{
+        //    public IDodgeSkill[] DodgeSkills { get; private set; }
+        //    public ICombatSkill[] CombatSkills { get; private set; }
+        //    public IForceSkill[] ForceSkills { get; private set; }
 
-            public Skills()
-            {
+        //    public Skills()
+        //    {
                 
-            }
-            public Skills(ICombatSkill[] combatSlot, IForceSkill[] forceSkill, IDodgeSkill[] dodgeSlot)
-            {
-                DodgeSkills = dodgeSlot;
-                CombatSkills = combatSlot;
-                ForceSkills = forceSkill;
-            }
+        //    }
+        //    public Skills(ICombatSkill[] combatSlot, IForceSkill[] forceSkill, IDodgeSkill[] dodgeSlot)
+        //    {
+        //        DodgeSkills = dodgeSlot;
+        //        CombatSkills = combatSlot;
+        //        ForceSkills = forceSkill;
+        //    }
 
-            public Skills(int combatSlot, int forceSkill, int dodgeSlot)
-            {
-                DodgeSkills = new IDodgeSkill[dodgeSlot];
-                CombatSkills = new ICombatSkill[combatSlot];
-                ForceSkills = new IForceSkill[forceSkill];
-            }
-        }
+        //    public Skills(int combatSlot, int forceSkill, int dodgeSlot)
+        //    {
+        //        DodgeSkills = new IDodgeSkill[dodgeSlot];
+        //        CombatSkills = new ICombatSkill[combatSlot];
+        //        ForceSkills = new IForceSkill[forceSkill];
+        //    }
+        //}
 
         internal void SetWeapon(IWeapon weapon)
         {

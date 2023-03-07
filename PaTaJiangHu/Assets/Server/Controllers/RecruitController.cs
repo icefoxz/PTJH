@@ -39,9 +39,9 @@ namespace Server.Controllers
             var randomGrade = Sys.Random.Next(allGrades.Length);
             var (strength, agility, hp, mp, stamina, bag) = GradeConfig.GenerateFromGrade(randomGrade);
             var cr = GradeConfig.GetRandomConsumeResource(randomGrade).ToDictionary(r=>r.Item1,r=>r.Item2);
-            var combatSkill = GradeConfig.GenerateCombatSkill(randomGrade);
-            var forceSkill = GradeConfig.GenerateForceSkill(randomGrade);
-            var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
+            //var combatSkill = GradeConfig.GenerateCombatSkill(randomGrade);
+            //var forceSkill = GradeConfig.GenerateForceSkill(randomGrade);
+            //var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
             var diziIndex = TempDiziList.Count;
             var capable = new Capable(grade: randomGrade,
                 dodgeSlot: 1, combatSlot: 1, bag: bag,
@@ -50,8 +50,7 @@ namespace Server.Controllers
                 herb: cr[ConsumeResources.Herb], pill: cr[ConsumeResources.Pill]);
             var guid = Guid.NewGuid().ToString();
             var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,
-                capable: capable, combatSkill: combatSkill.GetFromLevel(1),
-                forceSkill: forceSkill.GetFromLevel(1), dodgeSkill: dodgeSkill.GetFromLevel(1));
+                capable: capable);
             TempDiziList.Add(dizi);
             var list = new List<int> { diziIndex };
             Game.MessagingManager.Send(EventString.Recruit_DiziGenerated, dizi.Name);

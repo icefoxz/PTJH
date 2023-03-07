@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Server.Configs.BattleSimulation;
-using Server.Controllers;
 using UnityEngine;
 
 namespace Server.Configs.Adventures
@@ -36,7 +35,7 @@ namespace Server.Configs.Adventures
         public override IAdvEvent[] AllEvents => Battle.GetAllEvents();
         public override AdvTypes AdvType => AdvTypes.Simulation;
 
-        public ISimCombat GetNpc(ConditionPropertySo so) => Npc.GetSimCombat(so);
+        public ISimCombat GetNpc(BattleSimulatorConfigSo so) => Npc.GetSimCombat(so);
 
         private string[] GetResult(ISimulationOutcome outCome,string diziName,string npcName)
         {

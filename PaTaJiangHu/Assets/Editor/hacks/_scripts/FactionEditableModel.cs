@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using _GameClient.Models;
-using BattleM;
 using UnityEngine;
 using Utls;
 

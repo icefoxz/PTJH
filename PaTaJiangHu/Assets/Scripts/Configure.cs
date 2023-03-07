@@ -71,9 +71,7 @@ internal class Configure : MonoBehaviour
     {
         [SerializeField] private AdventureConfigSo 历练配置;
         [SerializeField] private BattleSimulatorConfigSo 战斗模拟器;
-        [SerializeField] private ConditionPropertySo 状态属性系数配置;
         internal BattleSimulatorConfigSo BattleSimulation => GetSo(战斗模拟器);
-        internal ConditionPropertySo ConditionProperty => GetSo(状态属性系数配置);
         internal AdventureConfigSo AdventureCfg => GetSo(历练配置);
     }
 

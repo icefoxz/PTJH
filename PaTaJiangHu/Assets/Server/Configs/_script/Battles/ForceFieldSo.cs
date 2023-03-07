@@ -1,5 +1,4 @@
 using System.Linq;
-using BattleM;
 using Data;
 using MyBox;
 using Server.Configs.Skills;
@@ -28,11 +27,7 @@ namespace Server.Configs.Battles
         [SerializeField] private int 护甲值;
         [SerializeField] private int 护甲消耗;
         [SerializeField] private SkillGrades _grade;
-        [SerializeField] private CombatBuffSoBase[] _buffs;
         [SerializeField] private ForceLevelingSo 等级配置;
-
-        public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) =>
-            _buffs.GetSortedInstance(append, unit).ToArray();
 
         public int Id => id;
         public string Name => _name;
@@ -45,45 +40,6 @@ namespace Server.Configs.Battles
         public SkillGrades Grade => _grade;
 
         public ForceLevelingSo LevelingSo => 等级配置;
-        public CombatBuffSoBase[] GetAllBuffs() => _buffs;
-
-        public IForceSkill GetFromLevel(int level) => LevelingSo.GetFromLevel(level);
-        public IForceSkill GetMaxLevel() => LevelingSo.GetMaxLevel();
-        public IForceSkill GetMinLevel() => new LevelForce(this, Breath, ForceRate, Armor, ArmorCost, Recover, MpCharge,
-            1, GetAllBuffs());
-
-        public record LevelForce : IForceSkill
-        {
-            private ForceFieldSo ForceSo { get; }
-            private CombatBuffSoBase[] AddOnBuffs { get; }
-            public LevelForce(ForceFieldSo force, int breath, int forceRate, int armor, int armorDepletion,
-                int recover, int mpConvert, int level, CombatBuffSoBase[] addOnBuffs)
-            {
-                ForceSo = force;
-                Breath = breath;
-                ForceRate = forceRate;
-                Armor = armor;
-                ArmorCost = armorDepletion;
-                Recover = recover;
-                MpCharge = mpConvert;
-                AddOnBuffs = addOnBuffs;
-                Level = level;
-            }
-
-            public int Breath { get; }
-            public int ForceRate { get; }
-            public int Armor { get; }
-            public int ArmorCost { get; }
-            public int Recover { get; }
-            public int MpCharge { get; }
-            public SkillGrades Grade => ForceSo.Grade;
-            public int Level { get; }
-            public string Name => ForceSo.Name;
-
-            public IBuffInstance[] GetBuffs(ICombatUnit unit, ICombatBuff.Appends append) => ForceSo
-                .GetBuffs(unit, append).Concat(AddOnBuffs.GetSortedInstance(append, unit)).ToArray();
-
-        }
     }
 
 }

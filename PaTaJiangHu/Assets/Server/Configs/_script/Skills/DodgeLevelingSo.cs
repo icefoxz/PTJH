@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using BattleM;
 using MyBox;
 using Server.Configs.Battles;
 using Server.Controllers;
@@ -9,7 +8,7 @@ using UnityEngine;
 namespace Server.Configs.Skills
 {
     [CreateAssetMenu(fileName = "dodgeLevelSo", menuName = "战斗测试/轻功等级配置")]
-    internal class DodgeLevelingSo : ScriptableObject,ILeveling<IDodgeSkill>
+    internal class DodgeLevelingSo : ScriptableObject//,ILeveling<IDodgeSkill>
     {
         #region ReferenceSo
         private bool ReferenceSo()
@@ -37,22 +36,22 @@ namespace Server.Configs.Skills
 
         private SkillGrades Grade => _grade;
 
-        public IDodgeSkill GetFromLevel(int level)
-        {
-            if (level == 1) return DodgeSo.GetMinLevel();//TODO: 注意这里会照成死循环!, 不可以调用 So.GetFromLevel
-            var index = LevelToIndex(level);
-            if (index < 0 || index >= Levels.Length)
-                throw new IndexOutOfRangeException($"等级[{level}]不支持！等级总长度{Levels.Length + 2}");
-            return Levels[index].GetDodge(level);
-        }
-        private static int LevelToIndex(int level) => level - 2;
-        private static int IndexToLevel(int index) => index + 2;
-        public int MaxLevel => Levels.Length + 1;//最大等级 = 最后一个索引+2 = 索引长度+1
+        //public IDodgeSkill GetFromLevel(int level)
+        //{
+        //    if (level == 1) return DodgeSo.GetMinLevel();//TODO: 注意这里会照成死循环!, 不可以调用 So.GetFromLevel
+        //    var index = LevelToIndex(level);
+        //    if (index < 0 || index >= Levels.Length)
+        //        throw new IndexOutOfRangeException($"等级[{level}]不支持！等级总长度{Levels.Length + 2}");
+        //    return Levels[index].GetDodge(level);
+        //}
+        //private static int LevelToIndex(int level) => level - 2;
+        //private static int IndexToLevel(int index) => index + 2;
+        //public int MaxLevel => Levels.Length + 1;//最大等级 = 最后一个索引+2 = 索引长度+1
 
-        public IDodgeSkill GetMaxLevel() => Levels[^1].GetDodge(IndexToLevel(Levels.Length - 1));
+        //public IDodgeSkill GetMaxLevel() => Levels[^1].GetDodge(IndexToLevel(Levels.Length - 1));
 
-        public CombatBuffSoBase[] GetBuffs(int level) =>
-            level == 1 ? DodgeSo.GetAllBuffs() : Levels[LevelToIndex(level)].GetBuffs();
+        //public CombatBuffSoBase[] GetBuffs(int level) =>
+        //    level == 1 ? DodgeSo.GetAllBuffs() : Levels[LevelToIndex(level)].GetBuffs();
 
         [Serializable] private class LevelField
         {
@@ -82,7 +81,6 @@ namespace Server.Configs.Skills
             [SerializeField] private SoValueConfig 息;
             [SerializeField] private SoValueConfig 身法值;
             [SerializeField] private SoValueConfig 身法内耗;
-            [SerializeField] private CombatBuffSoBase[] _buffs;
 
             private DodgeFieldSo Dodge => _dodge;
 
@@ -90,14 +88,11 @@ namespace Server.Configs.Skills
             private SoValueConfig DodgeCfg => 身法值;
             private SoValueConfig DodgeMpCfg => 身法内耗;
 
-            private CombatBuffSoBase[] Buffs => _buffs;
-            public CombatBuffSoBase[] GetBuffs() => Buffs;
-
-            public IDodgeSkill GetDodge(int level) => new DodgeFieldSo.LevelDodge(Dodge,
-                GetBreath(),
-                GetDodgeValue(),
-                GetDodgeMp(),
-                level, GetBuffs());
+            //public IDodgeSkill GetDodge(int level) => new DodgeFieldSo.LevelDodge(Dodge,
+            //    GetBreath(),
+            //    GetDodgeValue(),
+            //    GetDodgeMp(),
+            //    level, GetBuffs());
 
             private int GetBreath() => BreathCfg.GetValue(Dodge.Breath);
             private int GetDodgeValue() => DodgeCfg.GetValue(Dodge.Dodge);

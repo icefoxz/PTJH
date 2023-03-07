@@ -51,9 +51,9 @@ namespace Server.Configs.Characters
             _configsCache ??= _gradeConfigs.ToDictionary(g => g.Grade, g => g);
             return _configsCache[grade];
         }
-        public CombatFieldSo GenerateCombatSkill(int grade) => GradeConfigs((Grades)grade).GenerateCombatSkill();
-        public ForceFieldSo GenerateForceSkill(int grade) => GradeConfigs((Grades)grade).GenerateForceSkill();
-        public DodgeFieldSo GenerateDodgeSkill(int grade) => GradeConfigs((Grades)grade).GenerateDodgeSkill();
+        //public CombatFieldSo GenerateCombatSkill(int grade) => GradeConfigs((Grades)grade).GenerateCombatSkill();
+        //public ForceFieldSo GenerateForceSkill(int grade) => GradeConfigs((Grades)grade).GenerateForceSkill();
+        //public DodgeFieldSo GenerateDodgeSkill(int grade) => GradeConfigs((Grades)grade).GenerateDodgeSkill();
 
         public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int Stamina, int bagSlot)
             GenerateFromGrade(int grade)
@@ -137,11 +137,9 @@ namespace Server.Configs.Characters
                 PentagonGradeSo.Elements.Mp,
             };
 
-
-
-            public CombatFieldSo GenerateCombatSkill() => CombatSkillGradeSo.PickSkill();
-            public ForceFieldSo GenerateForceSkill() => ForceSkillGradeSo.PickSkill();
-            public DodgeFieldSo GenerateDodgeSkill() => DodgeSkillGradeSo.PickSkill();
+            //public CombatFieldSo GenerateCombatSkill() => CombatSkillGradeSo.PickSkill();
+            //public ForceFieldSo GenerateForceSkill() => ForceSkillGradeSo.PickSkill();
+            //public DodgeFieldSo GenerateDodgeSkill() => DodgeSkillGradeSo.PickSkill();
             
             public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp) GeneratePentagon()
             {

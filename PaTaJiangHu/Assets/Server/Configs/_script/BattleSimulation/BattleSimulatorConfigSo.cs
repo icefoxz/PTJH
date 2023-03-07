@@ -97,6 +97,21 @@ namespace Server.Configs.BattleSimulation
             return m.Value;
         }
 
+        public int GetPower(int strength, int agility, int hp, int mp) => (strength + agility) * (hp + mp) / 1000;
+        public ISimCombat GetSimulation(string simName, int strength, int agility, int hp, int mp, int weaponDamage,
+            int armorAddHp) => new SimCombat(simName, strength, agility, hp, mp, weaponDamage, armorAddHp);
+
+        private record SimCombat(string Name, float Offend, float Defend, float Strength, float Agility, float Weapon, float Armor) : ISimCombat
+        {
+            public string Name { get; } = Name;
+            public float Offend { get; } = Offend;
+            public float Defend { get; } = Defend;
+            public float Strength { get; } = Strength;
+            public float Agility { get; } = Agility;
+            public float Weapon { get; } = Weapon;
+            public float Armor { get; } = Armor;
+        }
+
         public record Round : ISimulationRound
         {
             public float PlayerDefend { get; }
@@ -134,5 +149,6 @@ namespace Server.Configs.BattleSimulation
                 Result = result;
             }
         }
+
     }
 }

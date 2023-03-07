@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BattleM;
 using Core;
 using Server.Configs.Adventures;
+using Server.Configs.Battles;
 using Server.Configs.Factions;
 using Server.Configs.Items;
 using Server.Controllers;

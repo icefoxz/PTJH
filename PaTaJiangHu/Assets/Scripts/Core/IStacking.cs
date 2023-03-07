@@ -28,21 +28,6 @@ namespace Core
         /// </summary>
         AdvProps,
     }
-
-    /// <summary>
-    /// 装备类型
-    /// </summary>
-    public enum EquipKinds
-    {
-        Weapon,
-        Armor
-    }
-
-    public interface IEquipment : IGameItem
-    {
-        EquipKinds EquipKind { get; }
-    }
-
     public interface IGameItem
     {
         public int Id { get; }

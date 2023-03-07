@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using _GameClient.Models;
-using BattleM;
 using Core;
+using DiziM;
 using MyBox;
 using Server.Configs.Adventures;
+using Server.Configs.Battles;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -219,9 +219,6 @@ namespace Server.Controllers
             public IConditionValue Emotion { get; }
             public IConditionValue Injury { get; }
             public IConditionValue Inner { get; }
-            public ICombatSkill CombatSkill { get; }
-            public IForceSkill ForceSkill { get; }
-            public IDodgeSkill DodgeSkill { get; }
             public IWeapon Weapon { get; }
             public IArmor Armor { get; }
             public Gender Gender { get; }
@@ -256,16 +253,6 @@ namespace Server.Controllers
         {
             Hp = new ConValue(hp);
             Mp = new ConValue(mp);
-        }
-
-        public ICombatStatus GetCombatStatus() => CombatStatus.Instance(
-            Hp.Value, Hp.Max, Hp.Fix,
-            Mp.Value, Mp.Max, Mp.Fix);
-
-        public void Clone(ICombatStatus c)
-        {
-            Hp.Clone(c.Hp);
-            Mp.Clone(c.Mp);
         }
         public override string ToString() => $"Hp{Hp},Mp{Mp}";
     }

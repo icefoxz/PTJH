@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using _GameClient.Models;
-using BattleM;
+using DiziM;
 using Server.Configs.Adventures;
-using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Configs.TestControllers;
 using Server.Controllers;
@@ -16,11 +13,10 @@ namespace Server.Configs
 {
     public interface ITestCaller : ISingletonDependency
     {
-        ISkillController InstanceSkillController();
+        //ISkillController InstanceSkillController();
         ITestDiziController InstanceDiziController();
         ITestAdventureController InstanceAdventureController();
         IAdvMapController InstanceAdvMapController();
-        IBattleSimController InstanceBattleSimController();
         string InitAutoAdventure();
         void SetHpValue(int value);
         void SetHpMax(int value);
@@ -37,9 +33,8 @@ namespace Server.Configs
         //在测试模式中，controller是模拟服务器的数据控制器，在客户端使用都是直接向服务器请求的
         private TestAdventureController AdvController { get; set; }
         private TestTestDiziController TestTestDiziController { get; set; }
-        private SkillController SkillController { get; set; }
+        //private SkillController SkillController { get; set; }
         private AdvMapController MapController { get; set; }
-        private BattleSimController BattleSimController { get; set; }
 
         [SerializeField] private AdvMapController.Configure 地图;
         private AdvMapController.Configure MapConfig => 地图;
@@ -47,33 +42,21 @@ namespace Server.Configs
         private TestTestDiziController.DiziConfig DiziCfg => 弟子配置;
         [SerializeField] private TestAdventureController.AdvConfig 副本配置;
         private TestAdventureController.AdvConfig AdvConfig => 副本配置;
-        [SerializeField] private SkillController.Configure 技能配置;
-        private SkillController.Configure SkillConfig => 技能配置;
-        [SerializeField] private BattleSimController.Configure 模拟战斗配置;
-        private BattleSimController.Configure BattleSimConfig => 模拟战斗配置;
+        //[SerializeField] private SkillController.Configure 技能配置;
+        //private SkillController.Configure SkillConfig => 技能配置;
         [SerializeField] private AutoAdventureConfig 历练配置;
         private AutoAdventureConfig AutoAdventureCfg => 历练配置;
 
-        public IBattleSimController InstanceBattleSimController()
-        {
-            BattleSimController = new BattleSimController(BattleSimConfig);
-            return BattleSimController;
-        }
         public IAdvMapController InstanceAdvMapController()=> MapController = new AdvMapController(MapConfig);
-        public ISkillController InstanceSkillController() => SkillController = new SkillController(SkillConfig);
+        //public ISkillController InstanceSkillController() => SkillController = new SkillController(SkillConfig);
         public ITestDiziController InstanceDiziController() => TestTestDiziController = new TestTestDiziController(DiziCfg);
         public ITestAdventureController InstanceAdventureController() => AdvController = new TestAdventureController(AdvConfig);
 
         public void StartAdvMapLoad() => MapController.LoadMap();
-        public void StartCombatLevelTest() => SkillController.ListCombatSkills();
-        public void StartForceLevelTest() => SkillController.ListForceSkills();
-        public void StartDodgeLevelTest() => SkillController.ListDodgeSkills();
+        //public void StartCombatLevelTest() => SkillController.ListCombatSkills();
+        //public void StartForceLevelTest() => SkillController.ListForceSkills();
+        //public void StartDodgeLevelTest() => SkillController.ListDodgeSkills();
         public void StartAdventureMaps() => AdvController.StartAdventureMaps();
-        public void StartSimulationSo()
-        {
-            Game.MessagingManager.Send(EventString.Test_SimulationStart, string.Empty);
-            //BattleSimController.Start();
-        }
 
         public void StartAutoAdventure() => Game.MessagingManager.Send(EventString.Test_AutoAdvDiziInit, string.Empty);
         public string InitAutoAdventure()
@@ -86,8 +69,7 @@ namespace Server.Configs
                 hp: new GradeValue<int>(value: p.Hp, grade: 0), mp: new GradeValue<int>(value: p.Mp, grade: 0),
                 food: 50, wine: 50, herb: 50, pill: 50);
             var dizi = new Dizi(guid: Guid.NewGuid().ToString(), name: p.Name, gender: p.Gender,
-                level: 1, stamina: 50, capable: capable,
-                combatSkill: p.GetCombat(), forceSkill: p.GetForce(), dodgeSkill: p.GetDodge());
+                level: 1, stamina: 50, capable: capable);
             faction.AddDizi(dizi: dizi);
             return dizi.Guid;
         }
@@ -125,11 +107,6 @@ namespace Server.Configs
             public Status()
             {
                 
-            }
-            public Status(ICombatStatus s)
-            {
-                Hp = new GameCon(s.Hp);
-                Mp = new GameCon(s.Mp);
             }
 
             public class GameCon
