@@ -1,0 +1,168 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b2630880b788cb49b27008854a94aa6, type: 3}
+  m_Name: "\u6A21\u62DF\u6218\u6597\u6587\u672C\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  "\u8FDB\u653B\u524D\u6447\u9ED8\u8BA4": "{0}\u8FDB\u653B,"
+  "\u8FDB\u653B\u6267\u884C\u9ED8\u8BA4": "\u653B\u51FB{1}\u7684{2}\uFF01"
+  "\u53CD\u9988\u524D\u6447\u9ED8\u8BA4": "{1}\u770B\u51C6\u65F6\u673A"
+  "\u53CD\u9988\u6267\u884C\u9ED8\u8BA4": "\u62B5\u5FA1{0}\u7684\u653B\u51FB\u3002"
+  "\u4F24\u5BB3\u63CF\u8FF0\u9ED8\u8BA4": "{1}\u53D7\u4E86\u4F24\uFF0C\u4F46\u5E76\u65E0\u5927\u788D\u3002"
+  "\u968F\u673A\u653B\u51FB\u90E8\u4F4D":
+  - "\u5934\u90E8"
+  - "\u9888\u90E8"
+  - "\u8116\u5B50"
+  - "\u80A9\u8180"
+  - "\u80F8\u90E8"
+  - "\u8170\u90E8"
+  - "\u8179\u90E8"
+  - "\u9ACB\u90E8"
+  - "\u81C0\u90E8"
+  - "\u817F\u90E8"
+  - "\u5927\u817F"
+  - "\u5C0F\u817F"
+  - "\u811A\u8E1D"
+  - "\u819D\u76D6"
+  - "\u624B\u81C2"
+  - "\u624B\u8155"
+  - "\u8098\u90E8"
+  - "\u80CC\u90E8"
+  - "\u8170\u690E"
+  - "\u80A9\u80DB\u9AA8"
+  - "\u88C6\u90E8"
+  "\u56DE\u5408\u6587\u672C":
+    "\u8FDB\u653B\u524D\u6447":
+    - _name: "\u6218\u529B\u5F3A30\u4EE5\u4E0A%"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u6218\u529B\u5F3A\u4E8E:0%~30%(\u8303\u56F4\u5916)"
+        "\u5224\u65AD\u7C7B\u578B": 0
+        "\u8303\u56F4\u5916": 1
+        "\u8303\u56F4":
+          Min: 0
+          Max: 30
+      "\u6587\u672C":
+      - "{0}\u4E0D\u614C\u4E0D\u5FD9\uFF0C"
+      - "{0}\u773C\u795E\u9510\u5229\u6C14\u52BF\u903C\u4EBA\uFF0C"
+      - "{0}\u4E00\u4E2A\u8D77\u624B\u5F0F\uFF0C"
+    - _name: "\u654F\u6377\u7279\u957F"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u654F\u6377\u5927\u4E8E:0%~50%(\u8303\u56F4\u5916)"
+        "\u5224\u65AD\u7C7B\u578B": 8
+        "\u8303\u56F4\u5916": 1
+        "\u8303\u56F4":
+          Min: 0
+          Max: 50
+      "\u6587\u672C":
+      - "{0}\u8EAB\u5F62\u5982\u7535\uFF0C\u4E00\u4E0B\u5B50\u95EA\u5230\u4E86{1}\u8EAB\u524D\uFF0C"
+      - "{0}\u8F7B\u8F7B\u4E00\u8E0F\uFF0C\u8EAB\u5F62\u98DE\u5FEB\uFF0C"
+    - _name: "\u653B\u51FB\u529B\u7279\u957F"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u653B\u51FB\u5F3A\u4E8E:0%~50%(\u8303\u56F4\u5916)"
+        "\u5224\u65AD\u7C7B\u578B": 2
+        "\u8303\u56F4\u5916": 1
+        "\u8303\u56F4":
+          Min: 0
+          Max: 50
+      "\u6587\u672C":
+      - "{0}\u795E\u8272\u51B7\u6F20\uFF0C\u624B\u4E2D\u5175\u5668\u51CC\u5389\uFF0C\u5A01\u4E0D\u53EF\u6321!"
+    - _name: "\u8010\u529B\u7279\u957F"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u8840\u91CF\u5927\u4E8E:0%~50%(\u8303\u56F4\u5916)"
+        "\u5224\u65AD\u7C7B\u578B": 4
+        "\u8303\u56F4\u5916": 1
+        "\u8303\u56F4":
+          Min: 0
+          Max: 50
+      "\u6587\u672C":
+      - "{0}\u5F3A\u5927\u7684\u5185\u529B\u51B2\u51FB\u7740\u56DB\u5468\uFF0C"
+    "\u8FDB\u653B\u6267\u884C":
+    - _name: "\u529B\u91CF\u5927\u4E8E50%\u4EE5\u4E0A"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u529B\u91CF\u5927\u4E8E:0%~50%(\u8303\u56F4\u5916)"
+        "\u5224\u65AD\u7C7B\u578B": 6
+        "\u8303\u56F4\u5916": 1
+        "\u8303\u56F4":
+          Min: 0
+          Max: 50
+      "\u6587\u672C":
+      - "\u653B\u51FB\u731B\u70C8\u65E0\u6BD4\u6253\u5411{1}\u7684{2}\u3002"
+      - "\u5DE8\u5927\u7684\u529B\u91CF\u91CD\u91CD\u7684\u62DB\u547C{1}\u7684{2}\uFF01"
+    - _name: "\u653B\u51FB\u529B\u5F3A\u4E8E50%\u4EE5\u4E0A"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u653B\u51FB\u5F3A\u4E8E:0%~50%(\u8303\u56F4\u5916)"
+        "\u5224\u65AD\u7C7B\u578B": 2
+        "\u8303\u56F4\u5916": 1
+        "\u8303\u56F4":
+          Min: 0
+          Max: 50
+      "\u6587\u672C":
+      - "\u51FA\u624B\u90FD\u5E26\u7740\u60CA\u4EBA\u7684\u7206\u53D1\u529B\u653B\u51FB{1}\u7684{2}\uFF01"
+      - "\u72C2\u98CE\u66B4\u96E8\u822C\u4E0D\u65AD\u7684\u62DB\u547C{1}\u7684{2}\uFF01"
+    "\u53CD\u9988\u524D\u6447":
+    - _name: "\u653B\u51FB\u65B9\u6218\u80DC"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u662F\u6218\u80DC\u8005"
+        "\u5224\u65AD\u7C7B\u578B": 10
+        "\u8303\u56F4\u5916": 0
+        "\u8303\u56F4":
+          Min: 0
+          Max: 0
+      "\u6587\u672C":
+      - "{1}\u88AB{0}\u7262\u7262\u538B\u5236!"
+      - "{1}\u6709\u70B9\u6050\u60E7,"
+      - "{1}\u5F88\u7D27\u5F20,"
+      - "{1}\u5904\u4E8E\u88AB\u52A8,"
+    - _name: "\u653B\u51FB\u65B9\u6218\u8D25"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u662F\u6218\u8D25\u8005"
+        "\u5224\u65AD\u7C7B\u578B": 11
+        "\u8303\u56F4\u5916": 0
+        "\u8303\u56F4":
+          Min: 0
+          Max: 0
+      "\u6587\u672C":
+      - "{1}\u5F88\u4ECE\u5BB9,"
+      - "{1}\u7ECF\u9A8C\u8001\u5230,"
+    "\u53CD\u9988\u6267\u884C":
+    - _name: "\u653B\u51FB\u8005\u6218\u529B\u5F3A50%\u4EE5\u4E0A"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u6218\u529B\u5F3A\u4E8E:0%~50%(\u8303\u56F4\u5916)"
+        "\u5224\u65AD\u7C7B\u578B": 0
+        "\u8303\u56F4\u5916": 1
+        "\u8303\u56F4":
+          Min: 0
+          Max: 50
+      "\u6587\u672C":
+      - "\u8270\u96BE\u7684\u63A5\u4E0B{0}\u4E00\u62DB\u3002"
+    "\u4F24\u5BB3\u63CF\u8FF0":
+    - _name: "\u8FDB\u653B\u8005\u6218\u80DC"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u662F\u6218\u80DC\u8005"
+        "\u5224\u65AD\u7C7B\u578B": 10
+        "\u8303\u56F4\u5916": 0
+        "\u8303\u56F4":
+          Min: 0
+          Max: 0
+      "\u6587\u672C":
+      - "{1}\u53D7\u4E86\u91CD\u4F24\uFF0C\u770B\u8D77\u6765\u72B6\u6001\u4E0D\u592A\u597D\uFF01"
+      - "{1}\u6C14\u5598\u5401\u5401\uFF0C\u4F3C\u4E4E\u4E0A\u6C14\u63A5\u4E0D\u5230\u4E0B\u6C14\u3002"
+    - _name: "\u8FDB\u653B\u8005\u6218\u8D25"
+      "\u6761\u4EF6":
+      - _name: "\u8FDB\u653B\u8005\u662F\u6218\u8D25\u8005"
+        "\u5224\u65AD\u7C7B\u578B": 11
+        "\u8303\u56F4\u5916": 0
+        "\u8303\u56F4":
+          Min: 0
+          Max: 0
+      "\u6587\u672C":
+      - "{1}\u53D7\u4E86\u70B9\u76AE\u5916\u4F24\uFF0C\u770B\u8D77\u6765\u5E76\u65E0\u5927\u788D\u3002"
+      - "{1}\u8F7B\u8511\u7684\u54FC\u4E86\u4E00\u58F0\u3002"

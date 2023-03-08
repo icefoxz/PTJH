@@ -3,11 +3,14 @@
     public interface ISimCombat
     {
         string Name { get; }
-        float Offend { get; }
-        float Defend { get; }
-        float Strength { get; }
-        float Agility { get; }
-        float Weapon { get; }
-        float Armor { get; }
+        int Power { get; }
+        int Offend { get; }
+        int Defend { get; }
+        int Strength { get; }
+        int Agility { get; }
+        int Hp { get; }
+        int Mp { get; }
+        int Weapon { get; }
+        int Armor { get; }
     }
 }

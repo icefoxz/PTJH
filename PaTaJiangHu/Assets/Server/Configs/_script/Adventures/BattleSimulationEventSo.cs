@@ -46,23 +46,23 @@ namespace Server.Configs.Adventures
 
         private string[] GenerateBattleLog(ISimulationOutcome outcome, string diziName, string npcName)
         {
-            var roundLog = outcome.Rounds.Select((s, i) => GenRoundLog(s, i, diziName, npcName)).ToList();
+            var roundLog = outcome.CombatMessages.ToList();
             (string winner, string loser) = outcome.IsPlayerWin ? (diziName, npcName) : (npcName, diziName);
             roundLog.Add($"{winner}打败{loser}!");
             return roundLog.ToArray();
         }
 
-        private string GenRoundLog(ISimulationRound sim,int index,string diziName,string npcName)
-        {
-            var round = index + 1;
-            var isPlayerAdvantage = sim.PlayerDefend > sim.EnemyDefend;
-            (string adv, string tar) = isPlayerAdvantage ? (diziName, npcName) : (npcName, diziName);
-            if (round % 2 == 0)
-            {
-                return $"【回合{round}】:" + $"{tar}趁{adv}的招数使老, 反击!";
-            }
-            return $"【回合{round}】:" + $"{adv}抢得先机猛攻{tar}!";
-        }
+        //private string GenRoundLog(ISimulationRound sim,int index,string diziName,string npcName)
+        //{
+        //    var round = index + 1;
+        //    var isPlayerAdvantage = sim.PlayerDefend > sim.EnemyDefend;
+        //    (string adv, string tar) = isPlayerAdvantage ? (diziName, npcName) : (npcName, diziName);
+        //    if (round % 2 == 0)
+        //    {
+        //        return $"【回合{round}】:" + $"{tar}趁{adv}的招数使老, 反击!";
+        //    }
+        //    return $"【回合{round}】:" + $"{adv}抢得先机猛攻{tar}!";
+        //}
 
         [Serializable]
         private class BattleResult

@@ -36,7 +36,9 @@ namespace _GameClient.Models
         public int Level { get; private set; }
         public IConditionValue Exp => _exp;
         private BattleSimulatorConfigSo BattleSimulator => Game.Config.AdvCfg.BattleSimulation;
-        public int Power => BattleSimulator.GetPower(Strength + WeaponPower, Agility, Hp + ArmorPower, Mp);
+
+        public int Power => BattleSimulator.GetPower(strength: Strength, agility: Agility, hp: Hp, mp: Mp,
+            weaponDamage: WeaponPower, armorAddHp: ArmorPower);
         public int Grade { get; }
         //public ICombatSkill CombatSkill { get; private set; }
         //public IForceSkill ForceSkill { get; private set; }
