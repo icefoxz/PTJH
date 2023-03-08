@@ -56,9 +56,9 @@ namespace Server.Controllers
                     {
                         staminaController.SetStaminaZero(dizi.Guid, true);
 
-                    }else if (dizi.Stamina.Con.Value >= outcome.Result)
+                    }else if (dizi.Stamina.Con.Value >= outcome.PlayerRemaining)
                     {
-                        staminaController.ConsumeStamina(dizi.Guid, -outcome.Result);
+                        staminaController.ConsumeStamina(dizi.Guid, -outcome.PlayerRemaining);
                     }
                     else //当弟子战斗胜,血量不够扣除
                     {

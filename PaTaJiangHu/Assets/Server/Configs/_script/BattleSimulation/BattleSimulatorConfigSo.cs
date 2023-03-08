@@ -1,38 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NameM;
 using Server.Configs.SoUtls;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utls;
 
 namespace Server.Configs.BattleSimulation
 {
     public interface ISimulationOutcome
     {
-        ISimulationRound[] Rounds { get; }
-        int RemainingHp { get; }
-        float RemainingRatio { get; }
-        bool IsPlayerWin { get; }
-        float PlayerOffend { get; }
-        float EnemyOffend { get; }
-        float PlayerDefend { get; }
-        float EnemyDefend { get; }
+        int Rounds { get; }//回合数
+        bool IsPlayerWin { get; }//是否玩家赢
+        int PlayerOffend { get; }//玩家攻击
+        int PlayerDefend { get; }//玩家血量
+        int EnemyOffend { get; }//敌人攻击
+        int EnemyDefend { get; }//敌人血量
         /// <summary>
         /// 配置结果, -1为战斗失败, 正数为扣除的体力值
         /// </summary>
-        int Result { get; }
-    }
-    public interface ISimulationRound
-    {
-        float PlayerDefend { get; }
-        float EnemyDefend { get; }
+        int PlayerRemaining { get; }//玩家战后血量
+        int EnemyRemaining { get; }//敌人战后血量
+        string[] CombatMessages { get; }//战斗文本
     }
 
     [CreateAssetMenu(fileName = "模拟战斗配置", menuName = "配置/简易战斗/模拟战斗配置")]
     internal class BattleSimulatorConfigSo : ScriptableObject
     {
-        [SerializeField] private ValueMapping<int>[] _maps;
-        private ValueMapping<int>[] Maps => _maps;
+        [FormerlySerializedAs("_maps")][SerializeField] private ValueMapping<int>[] 体力扣除配置;
+        [SerializeField] private int 回合限制 = 20;
+        [SerializeField] private BattleSimulatorMessageSo 文本配置;
+        private BattleSimulatorMessageSo BattleMessageSo => 文本配置;
+        private ValueMapping<int>[] Maps => 体力扣除配置;
+        private int RoundLimit => 回合限制;
+
         private const int LimitedRound = 99;
 
         /// <summary>
@@ -47,45 +49,33 @@ namespace Server.Configs.BattleSimulation
             var enemyHp = enemy.Defend;
             var playerAtt = player.Offend <= 0 ? 1 : player.Offend;//攻击最小数为1
             var enemyAtt = enemy.Offend <= 0 ? 1 : enemy.Offend;
-            var recursiveRound = 0;
-            var balance = 0;
-            var list = new List<ISimulationRound>();
-            while (true)
+            var isPlayerWin = false;
+            var round = 1;
+            for (var i = 0; i < RoundLimit; i++)
             {
-                playerHp -= enemyAtt;
-                enemyHp -= playerAtt;
-                list.Add(new Round(playerHp, enemyHp));
+                enemyHp -= playerAtt; //玩家先攻击
                 if (enemyHp <= 0)
                 {
-                    //balance = (int)(1f * playerHp / player.Defend);
-                    var remainingHp = (int)playerHp;
-                    return new Outcome(list.ToArray(), remainingHp, playerHp / player.Defend, true, player.Offend,
-                        enemy.Offend, player.Defend, enemy.Defend, GetValueFromRemaining(remainingHp));
+                    isPlayerWin = true;
+                    break;
                 }
 
-                if (playerHp <= 0)
-                    return new Outcome(list.ToArray(), (int)enemyHp, enemyHp / enemy.Defend, false, player.Offend,
-                        enemy.Offend, player.Defend, enemy.Defend);
-#if UNITY_EDITOR
-                if (recursiveRound >= LimitedRound)
-                    throw new StackOverflowException($"战斗回合数超过 = {LimitedRound}");
-#else
-                if (recursiveRound >= 10)
+                playerHp -= enemyAtt; //敌人后攻击
+                if (playerHp > 0)
                 {
-                    XDebug.LogWarning(
-                        $"战斗回合超过 10 次!playerHp = {playerHp}, enemyHp = {enemyHp} \nPlayer: {player}\nenemy{enemy}");
-                    var isPlayerWin = playerHp >= enemyHp;
-                    var remainingHp = isPlayerWin ? (int)playerHp : (int)enemyHp;
-                    var remainingRatio = isPlayerWin ? playerHp / player.Defend : enemyHp / enemy.Defend;
-                    return new Outcome(list.ToArray(), remainingHp, remainingRatio, isPlayerWin, player.Offend,
-                        enemy.Offend, player.Defend, enemy.Defend);
+                    round++;
+                    continue;
                 }
-#endif
-                recursiveRound++;
+
+                break;
             }
-            throw new NotImplementedException();
+
+            var playerHpRatio = playerHp == 0 ? 0 : 1f * playerHp / player.Defend;
+            var messages = BattleMessageSo.GetSimulationMessages(round, isPlayerWin, player, enemy, playerHp);
+            return new Outcome(round, playerHpRatio, isPlayerWin, player.Offend,
+                enemy.Offend, player.Defend, enemy.Defend, playerHp, enemyHp, messages);
         }
-        private int GetValueFromRemaining(int hp)
+        public int GetDeductionValueFromRemaining(int hp)
         {
             if (hp <= 0)
             {
@@ -97,58 +87,77 @@ namespace Server.Configs.BattleSimulation
             return m.Value;
         }
 
-        public int GetPower(int strength, int agility, int hp, int mp) => (strength + agility) * (hp + mp) / 1000;
+        public int GetPower(int strength, int agility, int hp, int mp, int weaponDamage = 0,
+            int armorAddHp = 0) => (strength + agility) * (hp + mp) / 1000;
+
         public ISimCombat GetSimulation(string simName, int strength, int agility, int hp, int mp, int weaponDamage,
-            int armorAddHp) => new SimCombat(simName, strength, agility, hp, mp, weaponDamage, armorAddHp);
+            int armorAddHp) => new SimCombat(name: simName,
+            power: GetPower(strength, agility, hp, mp, weaponDamage, armorAddHp),
+            strength: strength, agility: agility, hp: hp, mp: mp, weaponDamage, armorAddHp);
 
-        private record SimCombat(string Name, float Offend, float Defend, float Strength, float Agility, float Weapon, float Armor) : ISimCombat
+        private record SimCombat : ISimCombat
         {
-            public string Name { get; } = Name;
-            public float Offend { get; } = Offend;
-            public float Defend { get; } = Defend;
-            public float Strength { get; } = Strength;
-            public float Agility { get; } = Agility;
-            public float Weapon { get; } = Weapon;
-            public float Armor { get; } = Armor;
-        }
-
-        public record Round : ISimulationRound
-        {
-            public float PlayerDefend { get; }
-            public float EnemyDefend { get; }
-
-            public Round(float playerDefend, float enemyDefend)
+            public SimCombat(string name,int power, int strength, int agility, int hp, int mp, int weapon, int armor)
             {
-                PlayerDefend = playerDefend;
-                EnemyDefend = enemyDefend;
+                Name = name;
+                Power = power;
+                Strength = strength;
+                Agility = agility;
+                Weapon = weapon;
+                Armor = armor;
+                Hp = hp;
+                Mp = mp;
+            }
+
+            public string Name { get; }
+            public int Power { get; }
+            public int Offend => Strength + Agility + Weapon;
+            public int Defend => Hp + Mp + Armor;
+            public int Strength { get; }
+            public int Agility { get; }
+            public int Hp { get; }
+            public int Mp { get; }
+            public int Weapon { get; }
+            public int Armor { get; }
+
+            public void Deconstruct(out string Name, out int Power, out float Strength, out float Agility, out float Weapon, out float Armor)
+            {
+                Name = this.Name;
+                Power = this.Power;
+                Strength = this.Strength;
+                Agility = this.Agility;
+                Weapon = this.Weapon;
+                Armor = this.Armor;
             }
         }
 
         public record Outcome : ISimulationOutcome
         {
-            public ISimulationRound[] Rounds { get; }
-            public int RemainingHp { get; }
+            public int Rounds { get; }
             public float RemainingRatio { get; }
             public bool IsPlayerWin { get; }
-            public float PlayerOffend { get; }
-            public float EnemyOffend { get; }
-            public float PlayerDefend { get; }
-            public float EnemyDefend { get; }
-            public int Result { get; }
+            public int PlayerOffend { get; }
+            public int PlayerDefend { get; }
+            public int EnemyOffend { get; }
+            public int EnemyDefend { get; }
+            public int PlayerRemaining { get; }
+            public int EnemyRemaining { get; }
+            public string[] CombatMessages { get; }
 
-            public Outcome(ISimulationRound[] rounds, int remainingHp, float remainingRatio, bool isPlayerWin, float playerOffend, float enemyOffend, float playerDefend, float enemyDefend, int result = -1)
+            public Outcome(int rounds, float remainingRatio, bool isPlayerWin, int playerOffend, int enemyOffend,
+                int playerDefend, int enemyDefend, int playerRemaining, int enemyRemaining, string[] combatMessages)
             {
                 Rounds = rounds;
-                RemainingHp = remainingHp;
                 IsPlayerWin = isPlayerWin;
                 PlayerOffend = playerOffend;
                 EnemyOffend = enemyOffend;
                 PlayerDefend = playerDefend;
                 EnemyDefend = enemyDefend;
                 RemainingRatio = remainingRatio;
-                Result = result;
+                PlayerRemaining = playerRemaining;
+                CombatMessages = combatMessages;
+                EnemyRemaining = enemyRemaining;
             }
         }
-
     }
 }
