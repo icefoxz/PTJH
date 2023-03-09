@@ -1,0 +1,106 @@
+﻿using _GameClient.Models;
+using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Views.Bases;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Systems.Messaging;
+using UnityEngine;
+using UnityEngine.UI;
+using Utls;
+using Views;
+
+namespace HotFix_Project.Src.Managers.Demo_v1
+{
+    internal class Demo_View_EquipmentMgr : MainPageBase
+    {
+        private View_Equipment Equipment { get; set; }
+        protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
+        protected override string ViewName => "demo_view_equipment";
+        protected override bool IsDynamicPixel => true;
+        public Demo_View_EquipmentMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        protected override void Build(IView view)
+        {
+            Equipment = new View_Equipment(view,
+                onItemSelection: (guid, itemType) => XDebug.LogWarning("打开武器/防具弹窗")
+                //MainUiAgent.Show<Demo_Win_ItemMgr>(mgr =>mgr.Set(guid,itemType,0))
+                );
+        }
+
+        protected override void RegEvents()
+        {
+        }
+        public override void Show() => Equipment.Display(true);
+        public override void Hide() => Equipment.Display(false);
+
+        private class View_Equipment : UiBase
+        {
+            private Element WeaponElement { get; }
+            private Element ArmorElement { get; }
+            public View_Equipment(IView v, Action<string, int> onItemSelection) : base(v, true)
+            {
+                WeaponElement = new Element(v.GetObject<View>("element_weapon"),
+                    () => onItemSelection?.Invoke(SelectedDizi?.Guid, 0));
+                ArmorElement = new Element(v.GetObject<View>("element_armor"),
+                    () => onItemSelection?.Invoke(SelectedDizi?.Guid, 1));
+            }
+            private Dizi SelectedDizi { get; set; }
+            public void Update(string guid)
+            {
+                if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
+                SetDizi(SelectedDizi);
+            }
+            private void SetDizi(Dizi dizi)
+            {
+                SetDiziEquipment(dizi);
+            }
+            private void SetDiziEquipment(Dizi dizi)
+            {
+                if (dizi.Weapon == null) WeaponElement.ClearItem(WeaponElement);
+                else WeaponElement.SetItem(WeaponElement, dizi.Weapon.Name, (int)dizi.Weapon.Grade);
+                if (dizi.Armor == null) ArmorElement.ClearItem(ArmorElement);
+                else ArmorElement.SetItem(ArmorElement, dizi.Weapon.Name, (int)dizi.Armor.Grade);
+            }
+            private class Element : UiBase
+            {
+                private Image Img_ico { get; }
+                private Text Text_title { get; }
+                private Button Btn_element { get; }
+                public Element(IView v, Action onClickAction) : base(v, true)
+                {
+                    Img_ico = v.GetObject<Image>("img_ico");
+                    Text_title = v.GetObject<Text>("text_title");
+                    Btn_element = v.GetObject<Button>("btn_element");
+                    Btn_element.OnClickAdd(onClickAction);
+                }
+                public void SetImage(Sprite img)
+                {
+                    Img_ico.sprite = img;
+                    Img_ico.gameObject.SetActive(true);
+                }
+                public void SetTitle(string title, int grade)
+                {
+                    Text_title.text = title;
+                    Text_title.color = Game.GetColorFromItemGrade(grade);
+                    Text_title.gameObject.SetActive(true);
+                }
+                public void ClearItem(Element item)
+                {
+                    item.SetEmpty(true);
+                }
+
+                private void SetEmpty(bool empty)
+                {
+                    Img_ico.gameObject.SetActive(!empty);
+                }
+
+                public void SetItem(Element item, string itemName, int grade)
+                {
+                    item.SetTitle(itemName, grade);
+                }
+            }
+        }
+    }
+}
