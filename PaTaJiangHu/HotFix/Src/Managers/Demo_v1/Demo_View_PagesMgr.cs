@@ -19,10 +19,11 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             View_pages = new View_Pages(view,
-                ()=> XDebug.LogWarning("打开宝物库"),
-                ()=> XDebug.LogWarning("打开弟子页面"),
-                ()=> XDebug.LogWarning("打开门派页面"),
-                ()=> XDebug.LogWarning("打开弟子招募页面"));
+                onTreasureHouse: () => XDebug.LogWarning("打开宝物库"),
+                onDiziPage: () => XDebug.LogWarning("打开弟子页面"),
+                onFactionPage: () => XDebug.LogWarning("打开门派页面"),
+                onRecruitPage: () => Game.MessagingManager.Send(EventString.Page_DiziRecruit, null)
+                );
         }
         protected override void RegEvents()
         {
@@ -48,7 +49,8 @@ namespace HotFix_Project.Managers.Demo_v1
                     () => onDiziPage?.Invoke());
                 FactionElement = new Element(v.GetObject<View>("element_faction"),
                     () => onFactionPage?.Invoke());
-                //RecruitElement = new Element(v.GetObject<View>("element_recruit"), () => onRecruitPage?.Invoke());
+                RecruitElement = new Element(v.GetObject<View>("element_recruit"),
+                    () => onRecruitPage?.Invoke());
             }
 
             private class Element : UiBase
