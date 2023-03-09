@@ -10,7 +10,8 @@ namespace Server.Configs.Adventures
 {
     public interface IAutoAdvMap
     {
-        int JourneyReturnSec { get; }
+        int ProductionReturnSec { get; }
+        bool IsFixReturnTime { get; }
         int ActionLingCost { get; }
         Sprite Image { get; }
         string About { get; }
@@ -33,13 +34,15 @@ namespace Server.Configs.Adventures
         [SerializeField] private MajorPlaceConfig 固定里数触发配置;
         [SerializeField] private MinorPlaceConfig 小故事;
         //[SerializeField] private MinorPlaceConfig 随机触发配置;
-        [SerializeField] private int 回程秒数 = 10;
+
+        [SerializeField] private bool 固定回程秒数;
+        [ConditionalField(nameof(固定回程秒数))][SerializeField] private int 回程秒数 = 10;
         [SerializeField] private Sprite 图片;
         [SerializeField] [TextArea]private string 说明;
 
         public LostStrategySo LostStrategy => 失踪策略;
-
-        public int JourneyReturnSec => 回程秒数;
+        public bool IsFixReturnTime => 固定回程秒数;
+        public int ProductionReturnSec => 回程秒数;
         //private MinorPlaceConfig MinorPlace => 随机触发配置;
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;
         private MinorPlaceConfig MinorPlace => 小故事;

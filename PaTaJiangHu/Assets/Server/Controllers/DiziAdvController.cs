@@ -29,12 +29,18 @@ namespace Server.Controllers
         /// <returns></returns>
         public IAutoAdvMap[] AutoAdvMaps() => AdventureCfg.AdvMaps;
 
-        private AdventureMapSo GetMap(int mapId)
+        private (AdventureMapSo map,bool isProduction) GetMap(int mapId)
         {
             var map = AdvMaps.FirstOrDefault(m => m.Id == mapId);
+            var isProduction = false;
+            if (map == null)
+            {
+                map = AdventureCfg.ProductionMaps.FirstOrDefault(m => m.Id == mapId);
+                isProduction = true;
+            }
             if (map == null)
                 XDebug.LogError($"找不到地图id={mapId},请确保地图已配置!");
-            return map;
+            return (map, isProduction);
         }
 
         /// <summary>
@@ -60,10 +66,10 @@ namespace Server.Controllers
             var item = dizi.RemoveAdvItem(slot);
             Faction.AddAdvItem(item);
         }
-        //历练开始s
+        //历练开始
         public void AdventureStart(string guid,int mapId)
         {
-            var map = GetMap(mapId);
+            var (map,isProduction) = GetMap(mapId);
             if (Faction.ActionLing < map.ActionLingCost)
             {
                 XDebug.LogWarning($"行动令{Faction.ActionLing}不足以执行{map.Name}.体力消耗={map.ActionLingCost}");
@@ -73,7 +79,7 @@ namespace Server.Controllers
             if (dizi.State.Current != DiziStateHandler.States.Idle)
                 XDebug.Log($"状态切换异常! : {dizi.State.Current}");
             dizi.StopIdle();
-            dizi.AdventureStart(map, SysTime.UnixNow, EventLogSecs);
+            dizi.AdventureStart(map, SysTime.UnixNow, EventLogSecs, isProduction);
         }
 
         //让弟子回程
@@ -81,23 +87,40 @@ namespace Server.Controllers
         {
             var now = SysTime.UnixNow;
             var dizi = Faction.GetDizi(guid);
-            if (dizi.State.Current != DiziStateHandler.States.Adventure)
+            if (dizi.State.Current != DiziStateHandler.States.AdvProgress)
                 XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
             CheckMile(dizi.Adventure.Map.Id, dizi.Guid, (totalMile, isAdvEnd) =>
             {
                 if (dizi.Adventure.State == AutoAdventure.States.Progress)
-                    DiziRecallStory(dizi, now, totalMile);
+                {
+                    var reachingTime = GetReachingTime(dizi);
+                    DiziRecallStory(dizi, now, totalMile, reachingTime);
+                }
             });
         }
 
-        private void DiziRecallStory(Dizi dizi, long now, int totalMile)
+        /// <summary>
+        /// 获取回程时间
+        /// </summary>
+        /// <param name="dizi"></param>
+        /// <returns></returns>
+        public long GetReachingTime(Dizi dizi)
+        {
+            var now = SysTime.UnixNow;
+            var adv = dizi.Adventure;
+            var reachingTime = now + adv.Map.ProductionReturnSec * 1000;//转化成milliseconds
+            if (!adv.IsProduction && !adv.Map.IsFixReturnTime)
+                reachingTime = now + TimeSpan.FromSeconds(AdventureCfg
+                        .GetSeconds(dizi.Adventure.LastMile) / 2d).Milliseconds;//如果不是生产, 时间将根据当前里数计算回程秒数
+            return reachingTime;
+        }
+
+        private void DiziRecallStory(Dizi dizi, long now, int totalMile, long reachingTime)
         {
             var recallMsg = $"{dizi.Name}回程中...";
             var recallLog = new DiziActivityLog(dizi.Guid, now, totalMile);
             recallLog.SetMessages(new[] { recallMsg });
             dizi.AdventureStoryLogging(recallLog);
-            var reachingTime = now + TimeSpan.FromSeconds(AdvMaps[dizi.Adventure.Map.Id].JourneyReturnSec * 0.01d *
-                                                          AdventureCfg.ReturnPercentage).Milliseconds;
             dizi.AdventureRecall(now, totalMile, reachingTime);
         }
 
@@ -108,7 +131,7 @@ namespace Server.Controllers
         public void AdventureFinalize(string guid)
         {
             var dizi = Faction.GetDizi(guid);
-            if (dizi.State.Current != DiziStateHandler.States.Adventure)
+            if (dizi.State.Current != DiziStateHandler.States.AdvProgress)
                 XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
             if (dizi.State.Adventure.State != AutoAdventure.States.End)
                 XDebug.Log($"操作异常!弟子状态 = {dizi.Adventure?.State}");
@@ -154,7 +177,7 @@ namespace Server.Controllers
         {
             var dizi = Faction.GetDizi(diziGuid);
             if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return true;//返回故事继续
-            var map = GetMap(mapId);
+            var (map, isProduction) = GetMap(mapId);
             var places = map.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
             if (places.Length <= 0) return true; //返回故事继续
             for (var i = 0; i < places.Length; i++) //为每一个故事地点获取一个故事
@@ -190,7 +213,7 @@ namespace Server.Controllers
         /// 获取所有的触发主要故事点的里数
         /// </summary>
         /// <returns></returns>
-        public int[] GetMajorMiles(int mapId) => GetMap(mapId).ListMajorMiles();
+        public int[] GetMajorMiles(int mapId) => GetMap(mapId).map.ListMajorMiles();
 
         /// <summary>
         /// 获取所有触发小故事的里数
@@ -198,7 +221,7 @@ namespace Server.Controllers
         /// <returns></returns>
         public int[] GetMinorMiles(int mapId)
         {
-            var miles = GetMap(mapId).ListMinorMiles();
+            var miles = GetMap(mapId).map.ListMinorMiles();
             return miles;
         }
 

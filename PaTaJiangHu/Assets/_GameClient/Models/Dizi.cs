@@ -296,9 +296,9 @@ namespace _GameClient.Models
     {
         public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
         public AutoAdventure Adventure => State.Adventure;
-        internal void AdventureStart(IAutoAdvMap map, long startTime, int messageSecs)
+        internal void AdventureStart(IAutoAdvMap map, long startTime, int messageSecs,bool isProduction)
         {
-            State.StartAdventure(map, startTime, messageSecs);
+            State.StartAdventure(map, startTime, messageSecs, isProduction);
             Log("开始历练.");
             SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Adv_Start, Guid);

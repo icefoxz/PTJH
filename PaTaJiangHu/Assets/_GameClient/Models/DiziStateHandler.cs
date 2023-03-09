@@ -12,9 +12,30 @@ namespace _GameClient.Models
     {
         public enum States
         {
+            /// <summary>
+            /// 失踪状态
+            /// </summary>
             Lost,
+            /// <summary>
+            /// 发呆状态
+            /// </summary>
             Idle,
-            Adventure
+            /// <summary>
+            /// 历练中
+            /// </summary>
+            AdvProgress,
+            /// <summary>
+            /// 生产中
+            /// </summary>
+            AdvProduction,
+            /// <summary>
+            /// 历练回程中
+            /// </summary>
+            AdvReturning,
+            /// <summary>
+            /// 历练等待中
+            /// </summary>
+            AdvWaiting,
         }
         
         public States Current
@@ -28,7 +49,16 @@ namespace _GameClient.Models
                         $"状态异常!活跃状态: Lost:{LostState != null}, Idle:{Idle?.IsActive}, Adventure:{Adventure != null}");
                 if (LostState != null) return States.Lost;
                 if (Idle != null) return States.Idle;
-                if (Adventure != null) return States.Adventure;
+                if (Adventure != null)
+                {
+                    return Adventure.State switch
+                    {
+                        AutoAdventure.States.Progress => States.AdvProgress,
+                        AutoAdventure.States.Recall => States.AdvReturning,
+                        AutoAdventure.States.End => States.AdvWaiting,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
                 throw new NotImplementedException();
                 int CheckNull(object obj) => obj != null ? 1 : 0;
             }
@@ -81,9 +111,9 @@ namespace _GameClient.Models
             Adventure.Recall(now, lastMile, reachingTime, () => Set("待", "宗门外等待", 0));
         }
 
-        public void StartAdventure(IAutoAdvMap map, long startTime, int messageSecs)
+        public void StartAdventure(IAutoAdvMap map, long startTime, int messageSecs, bool isProduction)
         {
-            Adventure = new AutoAdventure(map, startTime, messageSecs, Dizi);
+            Adventure = new AutoAdventure(map, startTime, messageSecs, Dizi, isProduction);
             Adventure.UpdateStoryService.AddListener(() => Set("历", "历练中...", startTime));
         }
 

@@ -43,7 +43,7 @@ namespace _GameClient.Models
         private readonly List<IGameReward> _rewards = new List<IGameReward>();
         private List<string> _storyLog = new List<string>();
         public IReadOnlyList<string> StoryLog => _storyLog;
-
+        public bool IsProduction { get; }
         private IReadOnlyList<DiziActivityLog> Stories => _stories;
 
         private Queue<string> MessageQueue { get; set; }
@@ -51,13 +51,14 @@ namespace _GameClient.Models
         private List<DiziActivityLog> _stories = new List<DiziActivityLog>();
         private int _storyIndex;
 
-        public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi)
-            : base(startTime,dizi.Name)
+        public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi, bool isProduction)
+            : base(startTime, dizi.Name)
         {
             Map = map;
             MessageSecs = messageSecs;
             Dizi = dizi;
             State = States.Progress;
+            IsProduction = isProduction;
         }
 
         public UnityEvent UpdateStoryService { get; } = new UnityEvent();
