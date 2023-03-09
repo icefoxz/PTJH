@@ -56,9 +56,9 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 foreach( var rewards in Game.World.RewardContainer.Rewards)
                 {
                     foreach (var item in rewards.AllItems)
-                        InstancePrefab().Set(item.Item.Name, item.Amount);
+                        InstancePrefab().Set(item.Item.Name, item.Item.About, item.Amount);
                     foreach (var package in rewards.Packages)
-                        InstancePrefab().Set($"{package.Grade}阶包裹", 1);
+                        InstancePrefab().Set($"{package.Grade}阶包裹", package.Grade.ToString() ,1);
                 }
                 Display(true);
                 Prefab_item InstancePrefab() => ItemPrefab.Instance(v => new Prefab_item(v, true));
@@ -68,18 +68,21 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 private Image Img_ico { get; }
                 private Text Text_title { get; }
                 private Text Text_value { get; }
+                private Text Text_info { get; }
                 public Prefab_item(IView v, bool display) : base(v, true)
                 {
                     Img_ico = v.GetObject<Image>("img_ico");
                     Text_title = v.GetObject<Text>("text_title");
                     Text_value = v.GetObject<Text>("text_value");
+                    Text_info = v.GetObject<Text>("text_info");
                 }
                 public void SetIcon(Sprite ico) => Img_ico.sprite = ico;
-                public void Set(string title, int amount)
+                public void Set(string title, string info, int amount)
                 {
                     var amtText = amount > 1 ? amount.ToString() : string.Empty;
                     Text_title.text = title;
                     Text_value.text = amtText;
+                    Text_info.text = info;
                 }
             }
         }

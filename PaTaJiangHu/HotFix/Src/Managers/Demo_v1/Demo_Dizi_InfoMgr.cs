@@ -3,6 +3,7 @@ using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
@@ -12,13 +13,11 @@ namespace HotFix_Project.Src.Managers.Demo_v1
     internal class Demo_Dizi_InfoMgr : MainPageBase
     {
         private Dizi_Info Dizi_info {  get; set; }
-        private DiziController DiziController { get; set; }
         protected override MainPageLayout.Sections MainPageSection { get; } = MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_dizi_info";
         protected override bool IsDynamicPixel => true;
         public Demo_Dizi_InfoMgr(MainUiAgent uiAgent) : base(uiAgent)
         {
-            DiziController = Game.Controllers.Get<DiziController>();
         }
         protected override void Build(IView view)
         {
@@ -68,6 +67,15 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 LevelView.SetLevel(dizi.Level);
                 LevelView.SetExp(dizi.Exp.Value, dizi.Exp.Max);
                 StaminaView.SetHour(0);
+                UpdateDiziStamina(dizi.Guid);
+            }
+            private void UpdateDiziStamina(string diziGuid)
+            {
+                if (SelectedDizi == null || SelectedDizi.Guid != diziGuid)
+                    return;
+                var (stamina, max, min, sec) = SelectedDizi.Stamina.GetStaminaValue();
+                StaminaView.SetStamina(stamina, max);
+                StaminaView.SetTime(min, sec);
             }
             private class View_Level : UiBase
             {
@@ -95,12 +103,15 @@ namespace HotFix_Project.Src.Managers.Demo_v1
             {
                 private View_Volume VolumeView { get; }
                 private Text Text_hour { get; }
+                private View_Time TimeView { get; }
                 public View_Stamina(IView v) : base(v, true)
                 {
                     VolumeView = new View_Volume(v.GetObject<View>("view_volume"));
                     Text_hour = v.GetObject<Text>("text_hour");
                 }
                 public void SetHour(int hour) => Text_hour.text = hour.ToString();
+                public void SetStamina(int value, int max) => VolumeView.SetVolume(value, max);
+                public void SetTime(int min, int sec) => TimeView.SetTime(min, sec);
 
                 private class View_Volume : UiBase
                 {
@@ -116,6 +127,23 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                         Text_value.text = value.ToString();
                         Text_max.text = max.ToString();
                     }
+                }
+
+                private class View_Time : UiBase
+                {
+                    private Text Text_min { get; }
+                    private Text Text_sec { get; }
+                    public View_Time(IView v) : base(v, true)
+                    {
+                        Text_min = v.GetObject<Text>("text_min");
+                        Text_sec = v.GetObject<Text>("text_sec");
+                    }
+                    public void SetTime(int min, int sec)
+                    {
+                        Text_min.text = EmptyIfZero(min);
+                        Text_sec.text = EmptyIfZero(sec);
+                    }
+                    private string EmptyIfZero(int value) => value == 0 ? string.Empty : value.ToString("00");
                 }
             }
         }

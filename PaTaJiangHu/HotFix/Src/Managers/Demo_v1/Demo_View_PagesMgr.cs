@@ -14,41 +14,43 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override MainUiAgent.Sections Section { get; } = MainUiAgent.Sections.Bottom;
         protected override string ViewName { get; } = "demo_view_pages";
         protected override bool IsDynamicPixel { get; } = true;
-
         public Demo_View_PagesMgr(MainUiAgent uiAgent) : base(uiAgent) { }
 
         protected override void Build(IView view)
         {
             View_pages = new View_Pages(view,
-                ()=> XDebug.LogWarning("打开宝物库"),
-                ()=> XDebug.LogWarning("打开弟子页面"),
-                ()=> XDebug.LogWarning("打开门派页面"));
+                onTreasureHouse: () => XDebug.LogWarning("打开宝物库"),
+                onDiziPage: () => XDebug.LogWarning("打开弟子页面"),
+                onFactionPage: () => XDebug.LogWarning("打开门派页面"),
+                onRecruitPage: () => Game.MessagingManager.Send(EventString.Page_DiziRecruit, null)
+                );
         }
-
         protected override void RegEvents()
         {
         }
-
         public override void Show() => View_pages.Display(true);
-
         public override void Hide() => View_pages.Display(false);
 
         private class View_Pages : UiBase
         {
-            private Element elmtTreasureHouse { get; }
-            private Element elmtDizi { get; }
-            private Element elmtFaction { get; }
+            private Element TreasureHouseElement { get; }
+            private Element DiziElement { get; }
+            private Element FactionElement { get; }
+            private Element RecruitElement { get; }
             public View_Pages(IView v,
                 Action onTreasureHouse,
                 Action onDiziPage,
-                Action onFactionPage) : base(v, true)
+                Action onFactionPage,
+                Action onRecruitPage) : base(v, true)
             {
-                elmtTreasureHouse = new Element(v.GetObject<View>("element_tresureHouse"),
+                TreasureHouseElement = new Element(v.GetObject<View>("element_tresureHouse"),
                     () => onTreasureHouse?.Invoke());
-                elmtDizi = new Element(v.GetObject<View>("element_dizi"),
+                DiziElement = new Element(v.GetObject<View>("element_dizi"),
                     () => onDiziPage?.Invoke());
-                elmtFaction = new Element(v.GetObject<View>("element_faction"),
+                FactionElement = new Element(v.GetObject<View>("element_faction"),
                     () => onFactionPage?.Invoke());
+                RecruitElement = new Element(v.GetObject<View>("element_recruit"),
+                    () => onRecruitPage?.Invoke());
             }
 
             private class Element : UiBase
