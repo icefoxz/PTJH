@@ -14,8 +14,10 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_View_ConsumeResMgr Demo_View_ConsumeResMgr { get; }
     private Demo_View_ConPropsMgr Demo_View_ConPropsMgr { get; }
     private Demo_View_DiziActivityMgr Demo_View_DiziActivityMgr { get; }
-    private Demo_Win_RewardMgr Demo_Win_RewardMgr { get; } 
+    private Demo_Win_RewardMgr Demo_Win_RewardMgr { get; }
+    private Demo_Win_ItemMgr Demo_Win_ItemMgr { get; }
     private DiziRecruitManager DiziRecruitManager { get; }
+    private Demo_View_EquipmentMgr Demo_View_EquipmentMgr { get; }
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
@@ -26,7 +28,9 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_View_ConPropsMgr = new Demo_View_ConPropsMgr(this);
         Demo_View_DiziActivityMgr = new Demo_View_DiziActivityMgr(this);
         DiziRecruitManager = new DiziRecruitManager(this);
+        Demo_View_EquipmentMgr = new Demo_View_EquipmentMgr(this);
         //窗口 Windows
         Demo_Win_RewardMgr = new Demo_Win_RewardMgr(this);
+        Demo_Win_ItemMgr = new Demo_Win_ItemMgr(this);
     }
 }
