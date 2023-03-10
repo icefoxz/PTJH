@@ -23,27 +23,34 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
         protected override string ViewName => "demo_view_adventureMaps";
         protected override bool IsDynamicPixel => true;
+
         public Demo_View_AdventureMapsMgr(MainUiAgent uiAgent) : base(uiAgent)
         {
             DiziAdvController = Game.Controllers.Get<DiziAdvController>();
         }
+
         protected override void Build(IView view)
         {
             AdventureMaps = new View_AdventureMaps(view,
                 () => XDebug.LogWarning("更新历练地图"),
-                onAdvStartAction: (guid, index) => DiziAdvController.AdventureStart(guid, index)
-                );
+                onAdvStartAction: index => DiziAdvController.AdventureStart(SelectedDizi.Guid, index)
+            );
         }
-        protected override void RegEvents()
-        {
-            Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag =>  //Temporary
-            {
-                AdventureMaps.ListMap(DiziAdvController.AutoAdvMaps());
-                Show();
-            });
-        }
+        protected override void RegEvents(){ }
         public override void Show() => AdventureMaps.Display(true);
         public override void Hide() => AdventureMaps.Display(false);
+
+        private Dizi SelectedDizi { get; set; }
+        /// <summary>
+        /// 0 = 历练, 1 = production
+        /// </summary>
+        public void Set(string guid,int mapType)
+        {
+            SelectedDizi = Game.World.Faction.GetDizi(guid);
+            var maps = DiziAdvController.AutoAdvMaps(mapType);
+            AdventureMaps.ListMap(maps);
+        }
+
 
         private class View_AdventureMaps : UiBase
         {
@@ -54,7 +61,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
             private Button Btn_cancel { get; }
             public View_AdventureMaps(IView v,
                 Action onRefreshAction,
-                Action<string, int> onAdvStartAction
+                Action<int> onAdvStartAction
                 ) : base(v, false)
             {
                 Scroll_mapSelector = v.GetObject<ScrollRect>("scroll_mapSelector");
@@ -62,15 +69,12 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 Btn_refersh = v.GetObject<Button>("btn_refresh");
                 Btn_refersh.OnClickAdd(onRefreshAction);
                 Btn_action = v.GetObject<Button>("btn_action");
-                Btn_action.OnClickAdd(() => onAdvStartAction?.Invoke(SelectedDizi?.Guid, SelectedMap.Id));
+                Btn_action.OnClickAdd(() => onAdvStartAction?.Invoke(SelectedMap.Id));
                 Btn_cancel = v.GetObject<Button>("btn_cancel");
-                Btn_cancel.OnClickAdd(() =>
-                {
-                    Display(false);
-                });
+                Btn_cancel.OnClickAdd(() => Display(false));
             }
-            private Dizi SelectedDizi { get; set; }
             private IAutoAdvMap SelectedMap { get; set; }
+
             public void ListMap(IAutoAdvMap[] maps)
             {
                 for(var i = 0; i < maps.Length; i++)

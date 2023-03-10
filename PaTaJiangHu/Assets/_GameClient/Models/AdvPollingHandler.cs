@@ -25,13 +25,14 @@ namespace _GameClient.Models
         /// 上次更新时间
         /// </summary>
         public long LastUpdate { get; private set; }
-
-        protected AdvPollingHandler(long startTime,string diziName)
+        private DiziActivityPlayer ActivityPlayer { get; }
+        protected AdvPollingHandler(long startTime,string diziName, DiziActivityPlayer activityPlayer)
         {
             StartTime = startTime;
             LastUpdate = startTime;
             CoService = new CoPollingInstance(1, UpdateEverySecs);
             CoService.StartService(diziName);
+            ActivityPlayer = activityPlayer;
         }
 
         private void UpdateEverySecs()
@@ -66,11 +67,18 @@ namespace _GameClient.Models
         /// 故事模式, 每隔{自定义秒数}更新
         /// </summary>
         protected abstract void StoryUpdate();
+
         /// <summary>
         /// 当有故事注册的时候{一般上都是控制器调用}
         /// </summary>
         /// <param name="story"></param>
-        internal abstract void RegStory(DiziActivityLog story);
+        internal void RegStory(DiziActivityLog story)
+        {
+            ActivityPlayer.Reg(story);
+            OnRegStory(story);
+        }
+
+        protected abstract void OnRegStory(DiziActivityLog story);
 
         //更新冒险位置
         protected void UpdateTime(long updatedTicks) => LastUpdate = updatedTicks;

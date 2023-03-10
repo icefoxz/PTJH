@@ -51,8 +51,8 @@ namespace _GameClient.Models
         private List<DiziActivityLog> _stories = new List<DiziActivityLog>();
         private int _storyIndex;
 
-        public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi, bool isProduction)
-            : base(startTime, dizi.Name)
+        public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi, bool isProduction,DiziActivityPlayer activityPlayer)
+            : base(startTime, dizi.Name, activityPlayer)
         {
             Map = map;
             MessageSecs = messageSecs;
@@ -144,7 +144,7 @@ namespace _GameClient.Models
         }
 
         //注册故事,准备展示
-        internal override void RegStory(DiziActivityLog story)
+        protected override void OnRegStory(DiziActivityLog story)
             {
             if (Mode == Modes.Story)
             {

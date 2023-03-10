@@ -44,6 +44,11 @@ public class EventString
     public const string Dizi_ItemUnEquipped = "Dizi_ItemUnEquipped";//卸下物品
     public const string Dizi_Props_Update = "Dizi_Props_Update";
 
+    //弟子活动
+    public const string Dizi_Activity_Reward = "Dizi_Activity_Reward";//弟子奖励活动
+    public const string Dizi_Activity_Adjust = "Dizi_Activity_Adjust";//弟子调整活动
+    public const string Dizi_Activity_Message = "Dizi_Activity_Messasge";//弟子活动信息
+
     //弟子历练
     public const string Dizi_Adv_EventMessage = "Dizi_Adv_Message";//弟子历练单个事件信息
     public const string Dizi_Adv_Start = "Dizi_Adv_Start";//弟子历练开始

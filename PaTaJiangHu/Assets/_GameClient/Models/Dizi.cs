@@ -105,9 +105,15 @@ namespace _GameClient.Models
             _silver = new ConValue(PropStateCfg.SilverDefault.Max, PropStateCfg.SilverDefault.Min);
             _injury = new ConValue(PropStateCfg.InjuryDefault.Max, PropStateCfg.InjuryDefault.Min);
             _inner = new ConValue(PropStateCfg.InnerDefault.Max, PropStateCfg.InnerDefault.Min);
-            State = new DiziStateHandler(this);
+            State = new DiziStateHandler(this, OnMessageAction, OnAdjustAction, OnRewardAction);
             StaminaService();
         }
+
+        #region StateHandler
+        private void OnRewardAction() => SendEvent(EventString.Dizi_Activity_Reward, Guid);
+        private void OnAdjustAction(string adjust) => SendEvent(EventString.Dizi_Activity_Adjust, Guid, adjust);
+        private void OnMessageAction(string message) => SendEvent(EventString.Dizi_Activity_Message, Guid, message);
+        #endregion
 
         private void StaminaService()
         {
@@ -289,7 +295,6 @@ namespace _GameClient.Models
             Item = item;
         }
     }
-
 
     //弟子模型,处理历练事件
     public partial class Dizi

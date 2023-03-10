@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Server.Configs.Adventures;
 using Server.Controllers;
+using UnityEngine.Events;
 using Utls;
 
 namespace _GameClient.Models
@@ -70,12 +72,28 @@ namespace _GameClient.Models
         public string ShortTitle { get; private set; } = "闲";
         public string Description { get; private set; }
         public long LastUpdate { get; private set; }
+        /// <summary>
+        /// 上一个获取的奖励
+        /// </summary>
+        public IGameReward LastReward { get; private set; }
         private Dizi Dizi { get; }
+        private DiziActivityPlayer ActivityPlayer { get; }
+        public IReadOnlyList<ActivityFragment> LogHistory => ActivityPlayer.LogHistory;
 
-        public DiziStateHandler(Dizi dizi)
+        public DiziStateHandler(Dizi dizi, UnityAction<string> messageAction, UnityAction<string> adjustAction,
+            UnityAction rewardAction)
         {
             Dizi = dizi;
+            ActivityPlayer = new DiziActivityPlayer(dizi);
+            ActivityPlayer.PlayMessage += messageAction;
+            ActivityPlayer.PlayAdjustment += adjustAction;
+            ActivityPlayer.PlayReward += r =>
+            {
+                RewardMethod(r);
+                rewardAction?.Invoke();
+            };
         }
+        private void RewardMethod(IGameReward reward) => LastReward = reward;
 
         // 设定弟子状态短文本
         private void Set(string shortTitle, string description, long lastUpdate)
@@ -89,7 +107,7 @@ namespace _GameClient.Models
 
         public void StartIdle(long startTime)
         {
-            Idle = new IdleState(Dizi, startTime);
+            Idle = new IdleState(Dizi, startTime, ActivityPlayer);
             Set("闲", "闲置中...", startTime);
         }
 
@@ -113,7 +131,7 @@ namespace _GameClient.Models
 
         public void StartAdventure(IAutoAdvMap map, long startTime, int messageSecs, bool isProduction)
         {
-            Adventure = new AutoAdventure(map, startTime, messageSecs, Dizi, isProduction);
+            Adventure = new AutoAdventure(map, startTime, messageSecs, Dizi, isProduction, ActivityPlayer);
             Adventure.UpdateStoryService.AddListener(() => Set("历", "历练中...", startTime));
         }
 

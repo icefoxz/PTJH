@@ -65,4 +65,10 @@ internal class Demo_v1Agent : MainUiAgent
             Demo_Dizi_InfoMgr,
         });
     }
+
+    public void MapSelection(string guid,int mapType)
+    {
+        Demo_View_AdventureMapsMgr.Set(guid, mapType);
+        Demo_View_AdventureMapsMgr.Show();
+    }
 }

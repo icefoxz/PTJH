@@ -386,7 +386,7 @@ internal class DiziAdvManager : MainPageBase
                 Btn_recall.OnClickAdd(onRecallAction);
                 Btn_advStart.OnClickAdd(() =>
                 {
-                    View_advMapSelector.ListMaps(controller.AutoAdvMaps());
+                    View_advMapSelector.ListMaps(controller.AutoAdvMaps(0));
                     SetModes(Modes.SelectMap);
                 });
                 Btn_advFinalize.OnClickAdd(onDiziFinalizeAction);

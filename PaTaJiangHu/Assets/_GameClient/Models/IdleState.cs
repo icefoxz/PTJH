@@ -25,7 +25,8 @@ namespace _GameClient.Models
         private DiziIdleController IdleController => Game.Controllers.Get<DiziIdleController>();
         private int MessageUpdateSecs => Game.Config.Idle.MessageUpdateSecs;
 
-        public IdleState(Dizi dizi,long startTime) : base(startTime,dizi.Name)
+        public IdleState(Dizi dizi, long startTime, DiziActivityPlayer activityPlayer) : base(startTime, dizi.Name,
+            activityPlayer)
         {
             Dizi = dizi;
             IsActive = true;
@@ -37,7 +38,7 @@ namespace _GameClient.Models
             IdleController.QueryIdleStory(Dizi.Guid);
         }
 
-        internal override void RegStory(DiziActivityLog story)
+        protected override void OnRegStory(DiziActivityLog story)
         {
             //当有故事注册的时候
             Mode = Modes.Story;

@@ -24,10 +24,16 @@ namespace Server.Controllers
         private RewardController RewardController => Game.Controllers.Get<RewardController>();
 
         /// <summary>
-        /// 获取所有可历练的地图
+        /// 获取所有可历练的地图,
+        /// 0 = 历练, 1 = 
         /// </summary>
         /// <returns></returns>
-        public IAutoAdvMap[] AutoAdvMaps() => AdventureCfg.AdvMaps;
+        public IAutoAdvMap[] AutoAdvMaps(int mapType) => mapType switch
+        {
+            0 => AdventureCfg.AdvMaps,
+            1 => AdventureCfg.ProductionMaps,
+            _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
+        };
 
         private (AdventureMapSo map,bool isProduction) GetMap(int mapId)
         {
