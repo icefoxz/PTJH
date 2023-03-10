@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
@@ -25,7 +25,9 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void Build(IView view)
         {
-            View_diziActivity = new View_DiziActivity(view);
+            View_diziActivity = new View_DiziActivity(view,
+                onAdvMapListAction: () => Game.MessagingManager.Send(EventString.Dizi_Adv_Start, null)
+                );
         }
         protected override void RegEvents() { }
         public override void Show() => View_diziActivity.Display(true);
@@ -37,7 +39,9 @@ namespace HotFix_Project.Managers.Demo_v1
         {
             private ScrollContentAligner Scroll_advLog { get; }
             private View_Buttons ButtonsView { get;}
-            public View_DiziActivity(IView v) : base(v, true)
+            public View_DiziActivity(IView v,
+                Action onAdvMapListAction
+                ) : base(v, true)
             {
                 Scroll_advLog = v.GetObject<ScrollContentAligner>("scroll_advLog");
                 Scroll_advLog.OnResetElement += OnAdvMsgReset;
@@ -46,7 +50,7 @@ namespace HotFix_Project.Managers.Demo_v1
 
                 ButtonsView = new View_Buttons(v.GetObject<View>("view_buttons"),
                     onRecallAction: () => XDebug.LogWarning("当前弟子被召回门派"),
-                    onAdvMapSelectAction: () => XDebug.LogWarning("当前弟子选择历练地图"),
+                    onAdvMapSelectAction: () => onAdvMapListAction?.Invoke(),
                     onAdvStartAction: () => XDebug.LogWarning("当前弟子历练开始"),
                     onDiziForgetAction: () => XDebug.LogWarning("当前弟子遗忘互动"),
                     onDiziBuyBackAction: () => XDebug.LogWarning("当前弟子买回互动"),
@@ -110,7 +114,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     Btn_selectAdvMap.OnClickAdd(() =>
                     {
                         onAdvMapSelectAction?.Invoke();
-                        SetModes(Modes.SelectMap);
+                        SetModes(Modes.Prepare);
                     });
                     Btn_startAdv = v.GetObject<Button>("btn_startAdv");
                     Btn_startAdv.OnClickAdd(() =>
