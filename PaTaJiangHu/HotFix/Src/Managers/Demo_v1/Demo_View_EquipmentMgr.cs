@@ -2,6 +2,7 @@
 using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine;
@@ -21,13 +22,18 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             Equipment = new View_Equipment(view,
-                onItemSelection: (guid, itemType) => XDebug.LogWarning("打开武器/防具弹窗")
-                //MainUiAgent.Show<Demo_Win_ItemMgr>(mgr =>mgr.Set(guid,itemType,0))
-                );
+                onItemSelection: (guid, itemType) =>
+                Game.MessagingManager.SendParams(EventString.Dizi_EquipmentManagement, guid, itemType, 0)
+                //MainUiAgent.Show<Demo_Win_ItemMgr>(mgr => mgr.Set(guid, itemType, 0))
+                );;
         }
 
         protected override void RegEvents()
         {
+            Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
+            {
+                Equipment.Set(bag);
+            });
         }
         public override void Show() => Equipment.Display(true);
         public override void Hide() => Equipment.Display(false);
@@ -63,6 +69,15 @@ namespace HotFix_Project.Managers.Demo_v1
                 if (dizi.Armor == null) ArmorElement.ClearItem(ArmorElement);
                 else ArmorElement.SetItem(ArmorElement, dizi.Weapon.Name, (int)dizi.Armor.Grade);
             }
+
+            public void Set(ObjectBag bag)
+            {
+                var guid = bag.Get<string>(0);
+                var dizi = Game.World.Faction.GetDizi(guid);
+                SelectedDizi = dizi;
+                Update(SelectedDizi.Guid);
+            }
+
             private class Element : UiBase
             {
                 private Image Img_ico { get; }

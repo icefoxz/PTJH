@@ -61,11 +61,13 @@ namespace HotFix_Project.Managers.Demo_v1
                 Btn_unequip.OnClickAdd(() =>
                 {
                     onUnequip?.Invoke();
+                    Display(false); //Temporary
                 });
                 Btn_equip = v.GetObject<Button>("btn_equip");
                 Btn_equip.OnClickAdd(() =>
                 {
                     onEquip?.Invoke();
+                    Display(false); //Temporary
                 });
             }
             private string SelectedDiziGuid { get; set; }
