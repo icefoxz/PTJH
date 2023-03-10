@@ -109,6 +109,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 private void SetEmpty(bool empty)
                 {
                     Img_ico.gameObject.SetActive(!empty);
+                    Text_title.gameObject.SetActive(!empty);
                 }
 
                 public void SetItem(Element item, string itemName, int grade)

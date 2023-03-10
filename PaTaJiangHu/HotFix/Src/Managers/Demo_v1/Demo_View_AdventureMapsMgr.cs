@@ -1,5 +1,6 @@
-﻿using _GameClient.Models;
+using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
 using Server.Controllers;
@@ -36,7 +37,18 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 onAdvStartAction: index => DiziAdvController.AdventureStart(SelectedDizi.Guid, index)
             );
         }
-        protected override void RegEvents(){ }
+        protected override void RegEvents()
+        {
+            //Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
+            //{
+            //    AdventureMaps.Set();
+            //});
+            //Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag =>  //Temporary
+            //{
+            //    AdventureMaps.ListMap(DiziAdvController.AutoAdvMaps(0));
+            //    Show();
+            //});
+        }
         public override void Show() => AdventureMaps.Display(true);
         public override void Hide() => AdventureMaps.Display(false);
 

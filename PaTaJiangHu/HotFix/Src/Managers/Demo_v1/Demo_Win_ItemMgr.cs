@@ -47,7 +47,6 @@ namespace HotFix_Project.Managers.Demo_v1
             {
                 Weapon,
                 Armor,
-                AdvItems
             }
             private ScrollRect Scroll_item { get; }
             private ListViewUi<Prefab_Item> ItemView { get; }
@@ -118,17 +117,17 @@ namespace HotFix_Project.Managers.Demo_v1
                             items.Add((item.Name, i , 1, (int)item.Grade));
                         }
                         break;
-                    case ItemTypes.AdvItems:
-                        var advitems = faction.GetAllSupportedAdvItems();
-                        var diziAdvItem = selectedDizi.AdvItems[SelectedSlot];
-                        IsDiziEquipped = diziAdvItem != null;
-                        if (IsDiziEquipped) items.Add((diziAdvItem.Item.Name, -1, 1, 0));
-                        for(var i = 0; i < advitems.Length; i++)
-                        {
-                            var item = advitems[i];
-                            items.Add((item.Item.Name, i, item.Amount, 0));
-                        }
-                        break;
+                    //case ItemTypes.AdvItems:
+                    //    var advitems = faction.GetAllSupportedAdvItems();
+                    //    var diziAdvItem = selectedDizi.AdvItems[SelectedSlot];
+                    //    IsDiziEquipped = diziAdvItem != null;
+                    //    if (IsDiziEquipped) items.Add((diziAdvItem.Item.Name, -1, 1, 0));
+                    //    for(var i = 0; i < advitems.Length; i++)
+                    //    {
+                    //        var item = advitems[i];
+                    //        items.Add((item.Item.Name, i, item.Amount, 0));
+                    //    }
+                    //    break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);
                 }

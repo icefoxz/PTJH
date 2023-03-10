@@ -81,13 +81,13 @@ namespace HotFix_Project.Managers.Demo_v1
                 Scroll_advLog.Init();
 
                 ButtonsView = new View_Buttons(v.GetObject<View>("view_buttons"),
-                    ()=>onRecallAction(SelectedDizi.Guid),
-                    ()=>onMapListAction(SelectedDizi.Guid,0),
-                    ()=>onMapListAction(SelectedDizi.Guid,1),
-                    ()=>onDiziForgetAction(SelectedDizi.Guid),
-                    ()=>onDiziBuyBackAction(SelectedDizi.Guid),
-                    ()=>onDiziReturnAction(SelectedDizi.Guid)
-                    );
+                    () => onRecallAction(SelectedDizi.Guid),
+                    () => onMapListAction(SelectedDizi.Guid, 0),
+                    () => onMapListAction(SelectedDizi.Guid, 1),
+                    () => onDiziForgetAction(SelectedDizi.Guid),
+                    () => onDiziBuyBackAction(SelectedDizi.Guid),
+                    () => onDiziReturnAction(SelectedDizi.Guid)
+                );
                 ButtonsView.SetMode(View_Buttons.Modes.Idle);
             }
 
