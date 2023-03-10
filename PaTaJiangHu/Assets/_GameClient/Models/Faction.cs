@@ -17,9 +17,9 @@ namespace _GameClient.Models
         int YuanBao { get; }
         int ActionLing { get; }
         int ActionLingMax { get; }
+        IReadOnlyList<Dizi> DiziList { get; }
         IReadOnlyList<IWeapon> Weapons { get; }
         IReadOnlyList<IArmor> Armors { get; }
-        ICollection<Dizi> DiziList { get; }
         Dizi GetDizi(string guid);
     }
 
@@ -34,6 +34,7 @@ namespace _GameClient.Models
         private List<IArmor> _armors = new List<IArmor>();
         private List<IAdvPackage> _packages = new List<IAdvPackage>();
         private List<IGameItem> _advProps = new List<IGameItem>();
+        private List<Dizi> _diziList = new List<Dizi>();
         private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
 
         public int Silver { get; private set; }
@@ -52,7 +53,7 @@ namespace _GameClient.Models
         private Dictionary<string,Dizi> DiziMap { get; }
         public IReadOnlyList<IWeapon> Weapons => _weapons;
         public IReadOnlyList<IArmor> Armors => _armors;
-        public ICollection<Dizi> DiziList => DiziMap.Values;
+        public IReadOnlyList<Dizi> DiziList => _diziList;
         public IReadOnlyList<IAdvPackage> Packages => _packages;
         public IReadOnlyList<IBook> Books => _books;
         public IReadOnlyList<IGameItem> AdvProps => _advProps;
@@ -81,6 +82,7 @@ namespace _GameClient.Models
         internal void AddDizi(Dizi dizi)
         {
             DiziMap.Add(dizi.Guid, dizi);
+            _diziList.Add(dizi);
             Log($"添加弟子{dizi.Name}");
             SendEvent(EventString.Faction_DiziAdd, dizi.Guid);
             SendEvent(EventString.Faction_DiziListUpdate, string.Empty);
@@ -90,6 +92,7 @@ namespace _GameClient.Models
         {
             Log($"移除弟子{dizi.Name}");
             DiziMap.Remove(dizi.Guid);
+            _diziList.Remove(dizi);
         }
 
         internal void AddSilver(int silver)

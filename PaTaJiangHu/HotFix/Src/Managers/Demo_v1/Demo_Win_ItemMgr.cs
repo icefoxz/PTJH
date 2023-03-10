@@ -1,18 +1,15 @@
-﻿using HotFix_Project.Managers.GameScene;
+﻿using System;
+using System.Collections.Generic;
+using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_Win_ItemMgr : UiManagerBase
     {
@@ -20,7 +17,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
         protected override string ViewName => "demo_win_item";
         protected override bool IsDynamicPixel => true;
-        public Demo_Win_ItemMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        public Demo_Win_ItemMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {
             ItemWindow = new Win_Item(view,

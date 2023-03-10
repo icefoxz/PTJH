@@ -10,18 +10,19 @@ using Views;
 
 namespace HotFix_Project.Managers.GameScene;
 
-internal class DiziRecruitManager : MainPageBase
+internal class DiziRecruitManager : UiManagerBase
 {
     private View_diziRecruitPage DiziRecruitPage { get; set; }
     private RecruitController RecruitController { get; set; }
     private int CurrentDiziIndex { get; set; }
-    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
+    
 
     public DiziRecruitManager(MainUiAgent uiAgent) : base(uiAgent)
     {
         RecruitController = Game.Controllers.Get<RecruitController>();
     }
-    
+
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Page;
     protected override string ViewName => "view_diziRecruitPage";
     protected override bool IsDynamicPixel => true;
 

@@ -69,6 +69,8 @@ namespace Systems
             appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, ILTypeInstance>();
             appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance[]>();
             appdomain.DelegateManager.RegisterFunctionDelegate<IView, ILTypeInstance>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<int, View, IView>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance>();
 
             appdomain.DelegateManager.RegisterFunctionDelegate<object>();
             appdomain.DelegateManager.RegisterFunctionDelegate<string>();
@@ -91,7 +93,7 @@ namespace Systems
             appdomain.DelegateManager.RegisterMethodDelegate<ILTypeInstance>();
             appdomain.DelegateManager.RegisterMethodDelegate<ObjectBag>();
             appdomain.DelegateManager.RegisterMethodDelegate<int, IView>();
-            appdomain.DelegateManager.RegisterFunctionDelegate<int, View, IView>();
+
 
             appdomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appdomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());

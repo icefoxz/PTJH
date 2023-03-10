@@ -1,12 +1,10 @@
 ﻿using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
-using System;
-using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_Faction_InfoMgr : UiManagerBase
     {
@@ -15,7 +13,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override string ViewName => "demo_view_faction_info";
         protected override bool IsDynamicPixel => true;
 
-        public Demo_View_Faction_InfoMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        public Demo_View_Faction_InfoMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {
             View_faction_info = new View_Faction_Info(view);

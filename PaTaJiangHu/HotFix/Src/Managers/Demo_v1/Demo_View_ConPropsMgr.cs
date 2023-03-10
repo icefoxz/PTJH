@@ -1,11 +1,13 @@
-﻿using _GameClient.Models;
+﻿using System;
+using System.Linq;
+using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
-using System;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_ConPropsMgr : MainPageBase
     {
@@ -13,7 +15,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_view_conProps";
         protected override bool IsDynamicPixel => true;
-        public Demo_View_ConPropsMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        public Demo_View_ConPropsMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {
             View_conProps = new View_ConProps(view);
@@ -24,6 +26,9 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         }
         public override void Show() => View_conProps.Display(true);
         public override void Hide() => View_conProps.Display(false);
+
+        public void Set(Dizi dizi) => View_conProps.Update(dizi.Guid);
+
         private class View_ConProps : UiBase
         {
             public enum Props { Strength, Agility, Hp, Mp }
@@ -38,6 +43,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 Hp = new Element_prop(v.GetObject<View>("element_hp"));
                 Mp = new Element_prop(v.GetObject<View>("element_mp"));
             }
+
             private Dizi SelectedDizi { get; set; }
             public void Update(string guid)
             {

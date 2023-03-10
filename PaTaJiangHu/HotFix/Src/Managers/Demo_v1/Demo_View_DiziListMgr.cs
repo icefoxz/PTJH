@@ -1,14 +1,15 @@
-﻿using _GameClient.Models;
-using HotFix_Project.Managers.GameScene;
-using HotFix_Project.Views.Bases;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using _GameClient.Models;
+using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Views.Bases;
+using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_DiziListMgr : MainPageBase
     {
@@ -16,10 +17,18 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
         protected override string ViewName => "demo_view_diziList";
         protected override bool IsDynamicPixel => true;
-        public Demo_View_DiziListMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        private Demo_v1Agent DemoAgent { get; }
+        public Demo_View_DiziListMgr(Demo_v1Agent uiAgent) : base(uiAgent)
+        {
+            DemoAgent = uiAgent;
+        }
         protected override void Build(IView view)
         {
-            DiziList = new View_DiziList(view);
+            DiziList = new View_DiziList(view, diziIndex =>
+            {
+                var dizi = Game.World.Faction.DiziList[diziIndex];
+                DemoAgent.SetDiziView(dizi.Guid);
+            });
         }
         protected override void RegEvents()
         {
@@ -41,8 +50,10 @@ namespace HotFix_Project.Src.Managers.Demo_v1
             private Element Elm_idle { get; }
             private Element Elm_production { get; }
             private Element Elm_adventure { get; }
-            public View_DiziList(IView v) : base(v, true)
+            private event Action<int> OnDiziSelected;
+            public View_DiziList(IView v,Action<int> onDiziClicked) : base(v, true)
             {
+                OnDiziSelected = onDiziClicked;
                 Scroll_dizi = v.GetObject<ScrollRect>("scroll_dizi");
                 DiziList = new ListViewUi<DiziPrefab>(v.GetObject<View>("prefab_dizi"), Scroll_dizi);
                 Elm_all = new Element(v.GetObject<View>("element_all"));
@@ -71,7 +82,8 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 for(var i = 0; i< arg.Count; i++)
                 {
                     var dizi = arg[i];
-                    var ui = DiziList.Instance(v => new DiziPrefab(v));
+                    var index = i;
+                    var ui = DiziList.Instance(v => new DiziPrefab(v, () => OnDiziSelected?.Invoke(index)));
                     ui.Init(dizi.Name, dizi.Grade);
                 }
             }
@@ -82,10 +94,13 @@ namespace HotFix_Project.Src.Managers.Demo_v1
             {
                 private Image Img_avatar { get; }
                 private Text Text_name { get; }
-                public DiziPrefab(IView v) : base(v, true)
+                private Button Btn_dizi { get; }
+                public DiziPrefab(IView v,Action onClickAction) : base(v, true)
                 {
                     Img_avatar = v.GetObject<Image>("img_avatar");
                     Text_name = v.GetObject<Text>("text_name");
+                    Btn_dizi = v.GetObject<Button>("btn_dizi");
+                    Btn_dizi.OnClickAdd(onClickAction);
                 }
                 public void SetIcon(Sprite ico) => Img_avatar.sprite = ico;
                 public void Init(string name, int grade)

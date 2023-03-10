@@ -1,16 +1,12 @@
-﻿using HotFix_Project.Managers.GameScene;
+﻿using System;
+using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_Win_RewardMgr : UiManagerBase
     {
@@ -18,7 +14,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
         protected override string ViewName => "demo_win_reward";
         protected override bool IsDynamicPixel => false;
-        public Demo_Win_RewardMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        public Demo_Win_RewardMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {
             RewardWindow = new Win_Reward(view, () => Game.MainUi.HideWindows());

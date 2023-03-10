@@ -21,7 +21,7 @@ internal class FactionDataSo : ScriptableObject, IFaction
     private Dictionary<string, Dizi> DiziMap => 弟子;
     public IReadOnlyList<IWeapon> Weapons => 武器;
     public IReadOnlyList<IArmor> Armors => 防具;
-    public ICollection<Dizi> DiziList => DiziMap.Values;
+    public IReadOnlyList<Dizi> DiziList { get; }
 
     public Dizi GetDizi(string guid)
     {

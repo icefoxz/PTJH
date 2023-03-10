@@ -1,18 +1,15 @@
-﻿using _GameClient.Models;
+﻿using System;
+using System.Linq;
+using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_EquipmentMgr : MainPageBase
     {
@@ -20,7 +17,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_view_equipment";
         protected override bool IsDynamicPixel => true;
-        public Demo_View_EquipmentMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        public Demo_View_EquipmentMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {
             Equipment = new View_Equipment(view,
@@ -35,6 +32,8 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         public override void Show() => Equipment.Display(true);
         public override void Hide() => Equipment.Display(false);
 
+        public void Set(Dizi dizi) => Equipment.Update(dizi.Guid);
+
         private class View_Equipment : UiBase
         {
             private Element WeaponElement { get; }
@@ -46,6 +45,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 ArmorElement = new Element(v.GetObject<View>("element_armor"),
                     () => onItemSelection?.Invoke(SelectedDizi?.Guid, 1));
             }
+
             private Dizi SelectedDizi { get; set; }
             public void Update(string guid)
             {

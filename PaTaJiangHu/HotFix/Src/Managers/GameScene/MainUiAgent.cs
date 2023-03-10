@@ -34,7 +34,7 @@ internal class MainUiAgent
     public void RegPage<T>(Sections section, T manager) where T : UiManagerBase
     {
         if (!UiMappers.Any(m => m.Manager == manager && section == m.Section))
-            UiMappers.Add(new UiMapper(section, typeof(T).Name, manager));
+            UiMappers.Add(new UiMapper(section, manager.GetType().Name, manager));
     }
 
     public void SetToMainUi(UiManagerBase manager, IView view, Sections section, bool isFixPixel)
@@ -79,45 +79,52 @@ internal class MainUiAgent
         var type = typeof(T);
         var map = UiMappers.First(m => m.Key == type.Name);
         mgrAction?.Invoke((T)map.Manager);
+        OnShowUi(map.Section,map);
     }
     public void Show(UiManagerBase manager)
     {
         var map = UiMappers.FirstOrDefault(m => m.Manager == manager);
-        OnShowUi(map);
+        OnShowUi(map.Section, map);
+    }
+    public void Show(UiManagerBase[] managers)
+    {
+        var maps = UiMappers.Where(m => managers.Contains(m.Manager)).ToArray();
+        var section = maps.First().Section;
+        OnShowUi(section, maps);
     }
     public void Show(Type type)
     {
         var map = UiMappers.FirstOrDefault(m => m.Key == type.Name);
-        OnShowUi(map);
+        OnShowUi(map.Section, map);
     }
 
-    private void OnShowUi(UiMapper map)
+    private void OnShowUi(Sections section, params UiMapper[] maps)
     {
-        switch (map.Section)
+        switch (section)
         {
             case Sections.Top:
             case Sections.Bottom:
             case Sections.Panel:
             case Sections.Window:
             case Sections.Page:
-                CloseAllUi(map, map.Section);
+                CloseAllUi(maps, section);
                 MainUi.HideMainPage();
-                map.Manager.Show();
+                foreach (var mapper in maps) mapper.Manager.Show();
                 break;
             case Sections.MainPage:
-                CloseAllUi(map, Sections.Page);
+                CloseAllUi(maps, Sections.Page);
                 MainUi.ShowMainPage();
-                MainPageMgr.Show(map);
+                MainPageMgr.Show(maps);
                 break; //MainPage
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
-    private void CloseAllUi(UiMapper map, Sections section)
+    private void CloseAllUi(UiMapper[] maps, Sections section)
     {
         foreach (var mapper in UiMappers.Where(m => m.Section == section).ToList())
         {
-            if (mapper == map) continue;
+            if (maps.Contains(mapper)) continue;
             mapper.Manager.Hide();
         }
     }
@@ -143,14 +150,20 @@ internal class MainUiAgent
         private Dictionary<UiManagerBase, MainPageLayout.Sections> Nav { get; } =
             new Dictionary<UiManagerBase, MainPageLayout.Sections>();
 
-        public void Show(UiMapper map)
+        public void Show(UiMapper[] mappers)
         {
-            foreach (var manager in Data[Nav[map.Manager]])
+            var first = mappers.First();
+            var maps = mappers.Select(m => m.Manager).ToArray();
+            var section = Nav[first.Manager];
+            foreach (var manager in Data[section])
             {
-                if(manager == map.Manager) continue;
+                if(maps.Contains(manager))
+                {
+                    manager.Show();
+                    continue;
+                }
                 manager.Hide();
             }
-            map.Manager.Show();
         }
 
         public void Reg(MainPageLayout.Sections section, UiManagerBase manager)

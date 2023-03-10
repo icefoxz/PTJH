@@ -1,15 +1,17 @@
-﻿using _GameClient.Models;
+﻿using System;
+using System.Linq;
+using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
 using Server.Controllers;
-using System;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_ConsumeResMgr : MainPageBase
     {
@@ -18,7 +20,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_view_consumeRes";
         protected override bool IsDynamicPixel => true;
-        public Demo_View_ConsumeResMgr(MainUiAgent uiAgent) : base(uiAgent)
+        public Demo_View_ConsumeResMgr(Demo_v1Agent uiAgent) : base(uiAgent)
         {
             FactionController = Game.Controllers.Get<FactionController>();
         }
@@ -34,6 +36,8 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         }
         public override void Show() => ConsumeRes.Display(true);
         public override void Hide() => ConsumeRes.Display(false);
+
+        public void Set(Dizi dizi) => ConsumeRes.Update(dizi.Guid);
 
         private class View_ConsumeResMgr : UiBase
         {
@@ -56,6 +60,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 Inner = new Element(v.GetObject<View>("element_inner"),
                     ()=> onResourceClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Inner));
             }
+
             private Dizi SelectedDizi { get; set; }
             public void Update(string guid)
             {

@@ -1,20 +1,16 @@
-﻿using _GameClient.Models;
+﻿using System;
+using System.Collections.Generic;
+using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Systems.Messaging;
-using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_DiziActivityMgr : MainPageBase
     {
@@ -22,8 +18,8 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         private DiziAdvController DiziAdvController { get; set; }
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
         protected override string ViewName => "demo_view_diziActivity";
-        protected override bool IsDynamicPixel => false;
-        public Demo_View_DiziActivityMgr(MainUiAgent uiAgent) : base(uiAgent)
+        protected override bool IsDynamicPixel => true;
+        public Demo_View_DiziActivityMgr(Demo_v1Agent uiAgent) : base(uiAgent)
         {
             DiziAdvController = Game.Controllers.Get<DiziAdvController>();
         }
@@ -34,6 +30,8 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override void RegEvents() { }
         public override void Show() => View_diziActivity.Display(true);
         public override void Hide() => View_diziActivity.Display(false);
+
+        public void Set(Dizi dizi) => View_diziActivity.Set(dizi.Guid);
 
         private class View_DiziActivity : UiBase
         {
@@ -55,6 +53,13 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                     onDiziReturnAction: () => XDebug.LogWarning("当前弟子回门派互动")
                     );
                 ButtonsView.SetModes(View_Buttons.Modes.SelectMap);
+            }
+
+            public void Set(string diziGuid)
+            {
+                var dizi = Game.World.Faction.GetDizi(diziGuid);
+                SelectedDizi = dizi;
+                XDebug.LogWarning("弟子Activity交互还未实现!");
             }
 
             private IView OnLogSet(int index, View view)

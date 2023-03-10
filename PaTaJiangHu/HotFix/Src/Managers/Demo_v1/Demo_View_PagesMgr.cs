@@ -14,13 +14,21 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override MainUiAgent.Sections Section { get; } = MainUiAgent.Sections.Bottom;
         protected override string ViewName { get; } = "demo_view_pages";
         protected override bool IsDynamicPixel { get; } = true;
-        public Demo_View_PagesMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        private Demo_v1Agent DemoAgent { get; set; }
+
+        public Demo_View_PagesMgr(Demo_v1Agent uiAgent) : base(uiAgent)
+        {
+            DemoAgent = uiAgent;
+        }
 
         protected override void Build(IView view)
         {
             View_pages = new View_Pages(view,
-                onTreasureHouse: () => XDebug.LogWarning("打开宝物库"),
-                onDiziPage: () => XDebug.LogWarning("打开弟子页面"),
+                onTreasureHouse: ()=> MainUiAgent.Show<TreasureHouseManager>(m=> m.Show()),
+                onDiziPage: () =>
+                {
+                    DemoAgent.SetDiziView();
+                },
                 onFactionPage: () => XDebug.LogWarning("打开门派页面"),
                 onRecruitPage: () => Game.MessagingManager.Send(EventString.Page_DiziRecruit, null)
                 );

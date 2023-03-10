@@ -1,14 +1,14 @@
-﻿using _GameClient.Models;
+﻿using System.Linq;
+using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
-using Server.Controllers;
-using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_Dizi_InfoMgr : MainPageBase
     {
@@ -16,7 +16,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         protected override MainPageLayout.Sections MainPageSection { get; } = MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_dizi_info";
         protected override bool IsDynamicPixel => true;
-        public Demo_Dizi_InfoMgr(MainUiAgent uiAgent) : base(uiAgent)
+        public Demo_Dizi_InfoMgr(Demo_v1Agent uiAgent) : base(uiAgent)
         {
         }
         protected override void Build(IView view)
@@ -33,6 +33,9 @@ namespace HotFix_Project.Src.Managers.Demo_v1
 
         public override void Show() => Dizi_info.Display(true);
         public override void Hide() => Dizi_info.Display(false);
+
+        public void Set(Dizi dizi) => Dizi_info.SetDizi(dizi.Guid);
+
         private class Dizi_Info : UiBase
         {
             private Image Img_diziAvatar { get; }
@@ -46,7 +49,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 LevelView = new View_Level(v.GetObject<View>("view_level"));
                 StaminaView = new View_Stamina(v.GetObject<View>("view_stamina"));
             }
-            private Dizi SelectedDizi { get; set; }
+            public Dizi SelectedDizi { get; private set; }
             public void SetIcon(Sprite ico) => Img_diziAvatar.sprite = ico;
             public void SetName(string name, int color)
             {
@@ -107,6 +110,7 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 public View_Stamina(IView v) : base(v, true)
                 {
                     VolumeView = new View_Volume(v.GetObject<View>("view_volume"));
+                    TimeView = new View_Time(v.GetObject<View>("view_time"));
                     Text_hour = v.GetObject<Text>("text_hour");
                 }
                 public void SetHour(int hour) => Text_hour.text = hour.ToString();
