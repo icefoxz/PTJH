@@ -22,6 +22,7 @@ internal class Demo_v1Agent : MainUiAgent
     private DiziRecruitManager DiziRecruitManager { get; }
     private Demo_View_EquipmentMgr Demo_View_EquipmentMgr { get; }
     private Demo_View_AdventureMapsMgr Demo_View_AdventureMapsMgr { get; }
+    private Demo_Game_ViewMgr Demo_Game_ViewMgr { get; }
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
@@ -34,6 +35,7 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_View_EquipmentMgr = new Demo_View_EquipmentMgr(this);
         DiziRecruitManager = new DiziRecruitManager(this);
         Demo_View_AdventureMapsMgr = new Demo_View_AdventureMapsMgr(this);
+        Demo_Game_ViewMgr = new Demo_Game_ViewMgr(this);
         //窗口 Windows
         Demo_Win_RewardMgr = new Demo_Win_RewardMgr(this);
         Demo_Win_ItemMgr = new Demo_Win_ItemMgr(this);
