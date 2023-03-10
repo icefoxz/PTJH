@@ -147,7 +147,7 @@ namespace HotFix_Project.Managers.Demo_v1
                         Text_min.text = EmptyIfZero(min);
                         Text_sec.text = EmptyIfZero(sec);
                     }
-                    private string EmptyIfZero(int value) => value == 0 ? string.Empty : value.ToString("00");
+                    private string EmptyIfZero(int value) => value <= 0 ? string.Empty : value.ToString("00");
                 }
             }
         }

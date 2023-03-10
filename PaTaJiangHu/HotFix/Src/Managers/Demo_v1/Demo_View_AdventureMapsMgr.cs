@@ -1,5 +1,6 @@
 ﻿using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
 using Server.Controllers;
@@ -36,6 +37,10 @@ namespace HotFix_Project.Src.Managers.Demo_v1
         }
         protected override void RegEvents()
         {
+            Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
+            {
+                AdventureMaps.Set(bag);
+            });
             Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag =>  //Temporary
             {
                 AdventureMaps.ListMap(DiziAdvController.AutoAdvMaps());
@@ -81,6 +86,13 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                     ui.Set(map.Name, map.About, map.ActionLingCost);
                     ui.SetMapImage(map.Image);
                 }
+            }
+
+            public void Set(ObjectBag bag)
+            {
+                var guid = bag.Get<string>(0);
+                var dizi = Game.World.Faction.GetDizi(guid);
+                SelectedDizi = dizi;
             }
 
             private class Prefab_map : UiBase
