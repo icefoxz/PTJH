@@ -98,7 +98,16 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                     ui.SetMapImage(map.Image);
                 }
             }
-
+            private void SetSelected(int index)
+            {
+                for(var i = 0; i < MapView.List.Count; i++)
+                {
+                    var ui = MapView.List[i];
+                    var selected = i == index;
+                    ui.SetSelected(selected);
+                    if (selected) SelectedMap = ui.Map;
+                }
+            }
             private class Prefab_map : UiBase
             {
                 private Image Img_mapIco { get; }
@@ -106,6 +115,8 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 private Text Text_about { get; }
                 private Image Img_costIco { get; }
                 private Text Text_cost { get; }
+                private Image Img_selected { get; }
+                private Button MapButton { get; }
                 public IAutoAdvMap Map { get; }
                 public Prefab_map(IView v, IAutoAdvMap map) : base(v, true)
                 {
@@ -115,9 +126,13 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                     Text_about = v.GetObject<Text>("text_about");
                     Img_costIco = v.GetObject<Image>("img_costIco");
                     Text_cost = v.GetObject<Text>("text_cost");
+                    Img_selected = v.GetObject<Image>("img_selected");
+                    //MapButton = v.GameObject.GetComponent<Button>(); //prefab 里没有 Button component
+                    //MapButton.OnClickAdd(onClickAction);
                 }
+                public void SetSelected(bool isSelected) => Img_selected.gameObject.SetActive(isSelected);
                 public void SetMapImage(Sprite mapImg) => Img_mapIco.sprite = mapImg;
-                public void SetCostIco(Sprite costImg) => Img_costIco.sprite = costImg;
+                public void SetCost(Sprite costImg) => Img_costIco.sprite = costImg;
                 public void Set(string title, string about, int advCost)
                 {
                     Text_mapTitle.text = title;

@@ -133,6 +133,10 @@ namespace HotFix_Project.Managers.Demo_v1
                 var item = (ItemTypes)itemType;
                 ListItems(item);
             }
+            public void SetInteraction(bool isInteractable)
+            {
+
+            }
             
             private void ListItems(ItemTypes type)
             {
@@ -182,6 +186,20 @@ namespace HotFix_Project.Managers.Demo_v1
                     var ui = ItemView.Instance(v => new Prefab_Item(v));
                     ui.SetText(item.name, item.amount, string.Empty ,item.grade);
                 }
+                Btn_unequip.interactable = items.Count != 0;
+            }
+            private void OnSelectedItem(int index)
+            {
+                for (var i = 0; i <ItemView.List.Count; i++)
+                {
+                    var ui = ItemView.List[i];
+                    var isSelected = i == index;
+                    ui.SetSelected(isSelected);
+                    if(isSelected)
+                    {
+                        SelectedItemIndex = ui.ItemIndex;
+                    }
+                }
             }
 
             private class Prefab_Item : UiBase
@@ -190,6 +208,8 @@ namespace HotFix_Project.Managers.Demo_v1
                 private Text Text_title { get; }
                 private Text Text_value { get; }
                 private Text Text_info { get; }
+                public int ItemIndex { get; }
+
                 public Prefab_Item(IView v) : base(v, true)
                 {
                     Img_ico = v.GetObject<Image>("img_ico");
@@ -205,6 +225,10 @@ namespace HotFix_Project.Managers.Demo_v1
                     Text_value.text = amount.ToString();
                     Text_value.gameObject.SetActive(amount > 1);
                     Text_info.text = info;
+                }
+                public void SetSelected(bool isSelected)
+                {
+                    //Img_selected.interactable = isSelected;
                 }
             }
         }
