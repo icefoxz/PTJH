@@ -2,6 +2,7 @@
 using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
 using Server.Controllers;
@@ -32,7 +33,12 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void RegEvents()
         {
+            Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
+            {
+                ConsumeRes.Set(bag);
+            });
             Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => ConsumeRes.Update(bag.GetString(0)));
+
         }
         public override void Show() => ConsumeRes.Display(true);
         public override void Hide() => ConsumeRes.Display(false);
@@ -82,12 +88,26 @@ namespace HotFix_Project.Managers.Demo_v1
                 var (injuryText, jColor) = controller.GetInjuryCfg(dizi.Injury.ValueMaxRatio);
                 var (innerText, nColor) = controller.GetInnerCfg(dizi.Inner.ValueMaxRatio);
                 Silver.SetElement(100, sColor, silverText);
+                Silver.SetValue(dizi.Silver.Value, dizi.Silver.Max);
                 Food.SetElement(dizi.Capable.Food, fColor, foodText);
+                Food.SetValue(dizi.Food.Value, dizi.Food.Max);
                 Emotion.SetElement(dizi.Capable.Wine, eColor, emotionText);
+                Emotion.SetValue(dizi.Emotion.Value, dizi.Emotion.Max);
                 Injury.SetElement(dizi.Capable.Herb, jColor, injuryText);
+                Injury.SetValue(dizi.Injury.Value, dizi.Injury.Max);
                 Inner.SetElement(dizi.Capable.Pill, nColor, innerText);
+                Inner.SetValue(dizi.Inner.Value, dizi.Inner.Max);
 
             }
+
+            internal void Set(ObjectBag bag)
+            {
+                var guid = bag.Get<string>(0);
+                var dizi = Game.World.Faction.GetDizi(guid);
+                SelectedDizi = dizi;
+                Update(SelectedDizi.Guid);
+            }
+
             private class Element : UiBase
             {
                 private Text Text_consume { get; }
@@ -121,10 +141,10 @@ namespace HotFix_Project.Managers.Demo_v1
                     HandleImg.color = color;
                     BgImg.color = new Color(color.r - 0.7f, color.g - 0.7f, color.b - 0.7f);
                 }
-                public void SetValue(int value)
+                public void SetValue(int value, int max)
                 {
                     Text_statusValue.text = value.ToString();
-                    Scrbar_status.size = 1 * value/100;
+                    Scrbar_status.size = 1f * value/max;
                 }
 
                 public void SetInteraction(bool isInteractable)
