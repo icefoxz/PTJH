@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Core;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
+using JetBrains.Annotations;
+using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,15 +17,33 @@ namespace HotFix_Project.Managers.Demo_v1
     internal class Demo_Win_ItemMgr : UiManagerBase
     {
         private Win_Item ItemWindow { get; set; }
+        private DiziController DiziController { get; set; }
+        private DiziAdvController DiziAdvController { get; set; }
         protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
         protected override string ViewName => "demo_win_item";
         protected override bool IsDynamicPixel => true;
-        public Demo_Win_ItemMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
+        public Demo_Win_ItemMgr(Demo_v1Agent uiAgent) : base(uiAgent)
+        {
+            DiziController = Game.Controllers.Get<DiziController>();
+            DiziAdvController = Game.Controllers.Get<DiziAdvController>();
+        }
         protected override void Build(IView view)
         {
             ItemWindow = new Win_Item(view,
-                () => XDebug.LogWarning("弟子佩戴装备/防具/历练物品"),
-                () => XDebug.LogWarning("弟子卸下装备/防具/历练物品")
+                (guid, index, itemType, slot) =>
+                {
+                    if(itemType == 2)
+                        DiziAdvController.SetDiziAdvItem(guid, index, slot);
+                    else
+                        DiziController.DiziEquip(guid, index, itemType);
+                },
+                (guid, index, itemType, slot) =>
+                {
+                    if (itemType == 2)
+                        DiziAdvController.RemoveDiziAdvItem(guid, index, slot);
+                    else
+                        DiziController.DiziUnEquipItem(guid, itemType);
+                }
                 );
         }
         protected override void RegEvents()
@@ -32,6 +53,15 @@ namespace HotFix_Project.Managers.Demo_v1
                 var guid = bag.Get<string>(0);
                 var itemType = bag.GetInt(1);
                 Set(guid, itemType, 0);
+            });
+            Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag =>
+            {
+                ItemWindow.UpdateItemList();
+                Game.MainUi.HideWindows();
+            });
+            Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag =>
+            {
+                ItemWindow.UpdateItemList();
             });
         }
         public void Set(string diziGuid, int itemType, int slot)
@@ -52,28 +82,41 @@ namespace HotFix_Project.Managers.Demo_v1
             private ListViewUi<Prefab_Item> ItemView { get; }
             private Button Btn_unequip { get; }
             private Button Btn_equip { get; }
-            public Win_Item(IView v, Action onEquip, Action onUnequip) : base(v, false)
+            private Button Btn_x { get; }
+            public Win_Item(IView v, 
+                Action<string, int, int, int> onEquip, 
+                Action<string, int, int, int> onUnequip) : base(v, false)
             {
                 Scroll_item = v.GetObject<ScrollRect>("scroll_item");
                 ItemView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), Scroll_item);
                 Btn_unequip = v.GetObject<Button>("btn_unequip");
                 Btn_unequip.OnClickAdd(() =>
                 {
-                    onUnequip?.Invoke();
+                    if (!IsDiziEquipped) return;
+                    onUnequip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
+                    ListItems((ItemTypes)SelectedType);
                     Display(false); //Temporary
                 });
                 Btn_equip = v.GetObject<Button>("btn_equip");
                 Btn_equip.OnClickAdd(() =>
                 {
-                    onEquip?.Invoke();
+                    if (SelectedItemIndex < 0) return;
+                    onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
+                    ListItems((ItemTypes)SelectedType);
                     Display(false); //Temporary
+                });
+                Btn_x = v.GetObject<Button>("btn_x");
+                Btn_x.OnClickAdd(() =>
+                {
+                    Display(false);
                 });
             }
             private string SelectedDiziGuid { get; set; }
+            private int SelectedItemIndex { get; set; }
             private int SelectedType { get; set; }
             private int SelectedSlot { get; set; }
             private bool IsDiziEquipped { get; set; }
-            public void UpdateItemLsit()
+            public void UpdateItemList()
             {
                 var type = (ItemTypes)SelectedType;
                 ListItems(type);
@@ -90,7 +133,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 var item = (ItemTypes)itemType;
                 ListItems(item);
             }
-
+            
             private void ListItems(ItemTypes type)
             {
                 var faction = Game.World.Faction;
@@ -131,8 +174,15 @@ namespace HotFix_Project.Managers.Demo_v1
                     default:
                         throw new ArgumentOutOfRangeException(nameof(type), type, null);
                 }
+                ItemView.ClearList(ui => ui.Display(false));
+                for (var i = 0; i < items.Count; i++)
+                {
+                    var item = items[i];
+                    var index = i;
+                    var ui = ItemView.Instance(v => new Prefab_Item(v));
+                    ui.SetText(item.name, item.amount, string.Empty ,item.grade);
+                }
             }
-
 
             private class Prefab_Item : UiBase
             {
