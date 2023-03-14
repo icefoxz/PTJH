@@ -136,14 +136,17 @@ namespace HotFix_Project.Managers.Demo_v1
                 private class View_Time : UiBase
                 {
                     private Text Text_min { get; }
+                    private Text Text_Separator { get; }
                     private Text Text_sec { get; }
                     public View_Time(IView v) : base(v, true)
                     {
                         Text_min = v.GetObject<Text>("text_min");
+                        Text_Separator = v.GetObject<Text>("text_separator");
                         Text_sec = v.GetObject<Text>("text_sec");
                     }
                     public void SetTime(int min, int sec)
                     {
+                        Text_Separator.gameObject.SetActive(min + sec <= 0);
                         Text_min.text = EmptyIfZero(min);
                         Text_sec.text = EmptyIfZero(sec);
                     }
