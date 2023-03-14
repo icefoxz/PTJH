@@ -9,6 +9,7 @@ namespace _GameClient.Models
         IGameCondition Con { get; }
         long ZeroTicks { get; }
         TimeSpan GetCountdown();
+        int SecsPerRecover { get; }
         (int stamina, int max, int min, int sec) GetStaminaValue();
     }
 
@@ -23,6 +24,9 @@ namespace _GameClient.Models
         public IGameCondition Con => _con;
 
         public TimeSpan GetCountdown() => Controller.GetCountdown(ZeroTicks);// 5 -> 6 : 
+
+        public int SecsPerRecover => (int)Game.Config.DiziCfg.StaminaCfg.PerStamina.TotalSeconds;
+
         public DiziStamina(StaminaController controller,long zeroTicks, int max):base(zeroTicks)
         {
             Controller = controller;
