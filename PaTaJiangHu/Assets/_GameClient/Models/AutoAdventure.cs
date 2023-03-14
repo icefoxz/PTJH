@@ -31,7 +31,7 @@ namespace _GameClient.Models
         /// 当前里数
         /// </summary>
         public int LastMile { get; private set; }
-
+        public string Occasion { get; private set; }
         private int MessageSecs { get; } //文本展示间隔(秒)
         //private ICoroutineInstance ServiceCo { get; set; }
         private Dizi Dizi { get; }
@@ -59,6 +59,7 @@ namespace _GameClient.Models
             Dizi = dizi;
             State = States.Progress;
             IsProduction = isProduction;
+            Occasion = map.Name;
         }
 
         public UnityEvent UpdateStoryService { get; } = new UnityEvent();
@@ -75,8 +76,11 @@ namespace _GameClient.Models
 
             UpdateServiceName();
             //每秒轮询是否触发故事
-            AdvController.CheckMile(Map.Id, Dizi.Guid, (totalMile, isAdvEnd) =>
+            AdvController.CheckMile(Map.Id, Dizi.Guid, arg =>
             {
+                var (totalMile, placeName, isAdvEnd) = arg;
+                if(!string.IsNullOrWhiteSpace(placeName))
+                    Occasion = placeName;
                 LastMile = totalMile;
                 if (isAdvEnd && State == States.Progress)
                     AdvController.AdventureRecall(Dizi.Guid);
@@ -208,6 +212,14 @@ namespace _GameClient.Models
                 UpdateStoryLog(true);
             }
             State = States.End;
+        }
+        /// <summary>
+        /// 更新地点名字
+        /// </summary>
+        /// <param name="placeName"></param>
+        private void UpdateOccasion(string placeName)
+        {
+            Occasion = placeName;
         }
     }
 }

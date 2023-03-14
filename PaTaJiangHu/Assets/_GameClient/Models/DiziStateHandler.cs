@@ -79,6 +79,25 @@ namespace _GameClient.Models
         private Dizi Dizi { get; }
         private DiziActivityPlayer ActivityPlayer { get; }
         public IReadOnlyList<ActivityFragment> LogHistory => ActivityPlayer.LogHistory;
+        public string CurrentOccasion => Current switch
+        {
+            States.Lost => "未知",
+            States.Idle => "山门",
+            States.AdvProgress => Adventure.Occasion,
+            States.AdvProduction => Adventure.Occasion,
+            States.AdvReturning => "回程中",
+            States.AdvWaiting => "山门前",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        /// <summary>
+        /// 当前状态事件经过(多少秒)
+        /// </summary>
+        public int CurrentStateProgressInSecs =>
+            (int)TimeSpan.FromMilliseconds(SysTime.UnixNow - LastStateTick).TotalSeconds;
+        /// <summary>
+        /// 上一个状态开始时间
+        /// </summary>
+        public long LastStateTick { get; private set; }
         /// <summary>
         /// 是否可能失踪
         /// </summary>
@@ -120,12 +139,14 @@ namespace _GameClient.Models
 
         public void StartIdle(long startTime)
         {
+            LastStateTick = startTime;
             Idle = new IdleState(Dizi, startTime, ActivityPlayer);
             Set("闲", "闲置中...", startTime);
         }
 
         public void StartLost(Dizi dizi, long startTime, DiziActivityLog lastActivityLog)
         {
+            LastStateTick = startTime;
             LostState = new LostState(dizi, startTime, lastActivityLog);
             Set("失", "失踪了...", startTime);
         }
@@ -144,6 +165,7 @@ namespace _GameClient.Models
 
         public void StartAdventure(IAutoAdvMap map, long startTime, int messageSecs, bool isProduction)
         {
+            LastStateTick = startTime;
             Adventure = new AutoAdventure(map, startTime, messageSecs, Dizi, isProduction, ActivityPlayer);
             Adventure.UpdateStoryService.AddListener(() => Set("历", "历练中...", startTime));
         }
@@ -162,5 +184,6 @@ namespace _GameClient.Models
             Adventure.Terminate(terminateTime, lastMile);
             Adventure = null;
         }
+
     }
 }

@@ -25,7 +25,7 @@ namespace Server.Controllers
 
         /// <summary>
         /// 获取所有可历练的地图,
-        /// 0 = 历练, 1 = 
+        /// 0 = 历练, 1 = 生产
         /// </summary>
         /// <returns></returns>
         public IAutoAdvMap[] AutoAdvMaps(int mapType) => mapType switch
@@ -73,14 +73,15 @@ namespace Server.Controllers
             Faction.AddAdvItem(item);
         }
         //历练开始
-        public void AdventureStart(string guid,int mapId)
+        public void AdventureStart(string guid, int mapId)
         {
-            var (map,isProduction) = GetMap(mapId);
+            var (map, isProduction) = GetMap(mapId);
             if (Faction.ActionLing < map.ActionLingCost)
             {
                 XDebug.LogWarning($"行动令{Faction.ActionLing}不足以执行{map.Name}.体力消耗={map.ActionLingCost}");
                 return;
             }
+
             var dizi = Faction.GetDizi(guid);
             if (dizi.State.Current != DiziStateHandler.States.Idle)
                 XDebug.Log($"状态切换异常! : {dizi.State.Current}");
@@ -95,12 +96,13 @@ namespace Server.Controllers
             var dizi = Faction.GetDizi(guid);
             if (dizi.State.Current != DiziStateHandler.States.AdvProgress)
                 XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
-            CheckMile(dizi.Adventure.Map.Id, dizi.Guid, (totalMile, isAdvEnd) =>
+            CheckMile(dizi.Adventure.Map.Id, dizi.Guid, arg =>
             {
+                var (totalMile, placeName, isAdvEnd) = arg;
                 if (dizi.Adventure.State == AutoAdventure.States.Progress)
                 {
                     var reachingTime = GetReachingTime(dizi);
-                    DiziRecallStory(dizi, now, totalMile, reachingTime);
+                    DiziRecallStory(dizi, now, totalMile , reachingTime);
                 }
             });
         }
@@ -153,22 +155,23 @@ namespace Server.Controllers
         /// <param name="mapId"></param>
         /// <param name="diziGuid"></param>
         /// <param name="onCallbackAction">回调返回历练总里数,和是否历练继续, true = 冒险结束</param>
-        public async void CheckMile(int mapId,string diziGuid, Action<int ,bool> onCallbackAction)
+        public async void CheckMile(int mapId, string diziGuid,
+            Action<(int mile, string placeName, bool adventureEnd)> onCallbackAction)
         {
             var dizi = Faction.GetDizi(diziGuid);
             var lastMile = dizi.Adventure.LastMile;
             var lastUpdate = dizi.Adventure.LastUpdate;
             var now = SysTime.UnixNow;
             var miles = GetMiles(now, lastUpdate);
-            //如果里数=0表示未去到任何地方,直接放回上个里数
+            //如果里数=0表示未去到任何地方, 不执行callback
             if (miles == 0)
             {
-                onCallbackAction?.Invoke(lastMile, dizi.Stamina.Con.IsExhausted);
+                //onCallbackAction?.Invoke((lastMile, string.Empty ,dizi.Stamina.Con.IsExhausted));
                 return; //return lastMile;
             }
             var totalMiles = lastMile + miles;
-            var isAdvEnd = await OnAdventureProgress(mapId, now, lastMile, totalMiles, diziGuid);
-            onCallbackAction?.Invoke(totalMiles, isAdvEnd);
+            var (stopAdv, placeName) = await OnAdventureProgress(mapId, now, lastMile, totalMiles, diziGuid);
+            onCallbackAction?.Invoke((totalMiles, placeName, stopAdv));
         }
 
         /// <summary>
@@ -179,13 +182,13 @@ namespace Server.Controllers
         /// <param name="fromMiles"></param>
         /// <param name="toMiles"></param>
         /// <param name="diziGuid"></param>
-        public async Task<bool> OnAdventureProgress(int mapId,long now, int fromMiles, int toMiles, string diziGuid)
+        public async Task<(bool stopAdv,string placeName)> OnAdventureProgress(int mapId,long now, int fromMiles, int toMiles, string diziGuid)
         {
             var dizi = Faction.GetDizi(diziGuid);
-            if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return true;//返回故事继续
+            if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return (true, string.Empty);//返回故事继续
             var (map, isProduction) = GetMap(mapId);
             var places = map.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
-            if (places.Length <= 0) return true; //返回故事继续
+            if (places.Length <= 0) return (true, string.Empty); //返回故事继续
             for (var i = 0; i < places.Length; i++) //为每一个故事地点获取一个故事
             {
                 var place = places[i];
@@ -195,7 +198,7 @@ namespace Server.Controllers
                 if (story.IsLost)//强制失踪事件
                 {
                     SetLost(dizi.Guid, story.ActivityLog);
-                    return true;
+                    return (true, place.Name);
                 }
 
                 if (map.LostStrategy?.IsInTerm(dizi) ?? false) //如果弟子状态触发失踪
@@ -204,16 +207,17 @@ namespace Server.Controllers
                     if (map.LostStrategy.IsTriggerConditionLost(luck))
                     {
                         SetLost(dizi.Guid, story.ActivityLog);
-                        return true;
+                        return (true, place.Name);
                     }
                 }
                 if (story.IsAdvFailed) //当历练失败
                 {
                     //执行历练失败的处罚
                 }
-                if (story.IsForceQuit) return true;//结束故事
+
+                if (story.IsForceQuit) return (true, place.Name); //结束故事
             }
-            return false;//返回故事继续
+            return (false, places.Last().Name); //返回故事继续
         }
         /// <summary>
         /// 获取所有的触发主要故事点的里数
