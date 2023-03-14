@@ -44,18 +44,18 @@ namespace HotFix_Project.Managers.Demo_v1
             {
                 var guid = b.GetString(0);
                 var message = b.GetString(1);
-                View_diziActivity.OnActivityUpdate(guid, message);
+                View_diziActivity.OnActivityUpdate(guid);
             });
             Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Adjust, b =>
             {
                 var guid = b.GetString(0);
                 var adjust = b.GetString(1);
-                View_diziActivity.OnActivityUpdate(guid, adjust);
+                View_diziActivity.OnActivityUpdate(guid);
             });
             Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Reward, b =>
             {
                 var guid = b.GetString(0);
-                View_diziActivity.OnActivityUpdate(guid, string.Empty);
+                View_diziActivity.OnActivityUpdate(guid);
             });
         }
         public override void Show() => View_diziActivity.Display(true);
@@ -106,9 +106,10 @@ namespace HotFix_Project.Managers.Demo_v1
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 ButtonsView.SetMode(mode);
+                OnActivityUpdate(SelectedDizi.Guid);
             }
 
-            public void OnActivityUpdate(string guid, string message)
+            public void OnActivityUpdate(string guid)
             {
                 if (guid != SelectedDizi.Guid) return;
                 var logs = SelectedDizi.State.LogHistory;
@@ -187,12 +188,13 @@ namespace HotFix_Project.Managers.Demo_v1
 
             private class Prefab_Log : UiBase
             {
+                const int RowHeight = 60;
                 private View_TextHandler TextHandlerView { get; }
                 private View_Reward RewardView { get; }
                 public Prefab_Log(IView v) : base(v, true)
                 {
-                    TextHandlerView = new View_TextHandler(v.GetObject<View>("view_textHandler"));
-                    RewardView = new View_Reward(v.GetObject<View>("view_reward"));
+                    TextHandlerView = new View_TextHandler(v.GetObject<View>("view_textHandler"),this);
+                    RewardView = new View_Reward(v.GetObject<View>("view_reward"),this);
                 }
                 public void SetMessage(string message)
                 {
@@ -215,20 +217,24 @@ namespace HotFix_Project.Managers.Demo_v1
                     RewardView.Display(true);
                 }
 
+                private void SetHeight(int height) => View.RectTransform.SetHeight(height);
+
                 private class View_TextHandler : UiBase
                 {
                     private const int OneLine = 24;
                     private Text Text_time { get; }
                     private Text Text_message { get; }
-                    public View_TextHandler(IView v) : base(v, true)
+                    private Prefab_Log Prefab { get; }
+                    public View_TextHandler(IView v, Prefab_Log prefab) : base(v, true)
                     {
+                        Prefab = prefab;
                         Text_message = v.GetObject<Text>("text_message");
                     }
                     public void LogMessage(string message)
                     {
                         var line = message.Length / OneLine;
                         Text_message.text = message;
-                        View.RectTransform.rect.size.SetY(line * 20);
+                        Prefab.SetHeight((1 + line) * RowHeight);
                     }
                     public void ResetUi() => Text_message.text = string.Empty;
                 }
@@ -250,8 +256,10 @@ namespace HotFix_Project.Managers.Demo_v1
                     private Element_Prefab RewardElement12 { get; }
                     private Element_Prefab RewardElement13 { get; }
                     private List<Element_Prefab> AllRewardElement { get; }
-                    public View_Reward(IView v) : base(v, true)
+                    private Prefab_Log Prefab { get; }
+                    public View_Reward(IView v, Prefab_Log prefab) : base(v, true)
                     {
+                        Prefab = prefab;
                         ExpElement = new Element_Prefab(v.GetObject<View>("element_exp"));
                         RewardElement1 = new Element_Prefab(v.GetObject<View>("element_reward1"));
                         RewardElement2=new Element_Prefab(v.GetObject<View>("element_reward2"));
@@ -309,8 +317,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     }
                     private void SetPrefabSize(int rows)
                     {
-                        const int RowHeight = 60;
-                        View.RectTransform.rect.size.SetY(rows * RowHeight);
+                        Prefab.SetHeight(rows * RowHeight);
                     }
                     private class Element_Prefab : UiBase
                     {

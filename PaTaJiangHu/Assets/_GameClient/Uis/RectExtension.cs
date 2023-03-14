@@ -26,6 +26,19 @@ public static class RectExtension
         }
     }
 
+    /// <summary>
+    /// Set width of RectTransform with sizeDelta.x
+    /// </summary>
+    public static void SetWidth(this RectTransform transform, float width)
+        => transform.sizeDelta = transform.sizeDelta.SetX(width);
+
+    /// <summary>
+    /// Set height of RectTransform with sizeDelta.y
+    /// </summary>
+    public static void SetHeight(this RectTransform transform, float height)
+        => transform.sizeDelta = transform.sizeDelta.SetY(height);
+
+
     #region Set X/Y/Z
 
     // Set X
