@@ -17,6 +17,7 @@ namespace Server.Configs.Adventures
         string About { get; }
         string Name { get; }
         int Id { get; }
+        bool PossibleLost(ITerm term);
     }
 
     [CreateAssetMenu(fileName = "id_历练地图名", menuName = "历练/历练地图")]
@@ -50,7 +51,7 @@ namespace Server.Configs.Adventures
         public int ActionLingCost => 执行令消耗;
         public Sprite Image => 图片;
         public string About => 说明;
-
+        public bool PossibleLost(ITerm term) => LostStrategy.IsInTerm(term);
         //public int MinorMile => MinorPlace.Mile;
         public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => fromMiles != toMiles
             ? MajorPlace.GetRandomPlace(fromMiles, toMiles).Select(m => m.place).ToArray()

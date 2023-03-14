@@ -34,11 +34,12 @@ internal class DiziInfoSectManager : MainPageBase
 
     protected override void RegEvents()
     {
-        Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
-        {
-            DiziInfo.SetDizi(bag.Get<string>(0));
-            DiziInfo.Update(bag.GetString(0));
-        });
+        //todo: 方法弃用, 用UiAgent来实现Ui与Ui交互
+        //Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
+        //{
+        //    DiziInfo.SetDizi(bag.Get<string>(0));
+        //    DiziInfo.Update(bag.GetString(0));
+        //});
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziInfo.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziInfo.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag =>

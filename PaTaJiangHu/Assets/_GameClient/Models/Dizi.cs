@@ -84,7 +84,8 @@ namespace _GameClient.Models
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
-        private PropStateConfigSo.ConfigField PropStateCfg => Game.Config.DiziCfg.PropState.Config;
+        private PropStateConfigSo.ConfigField PropStateCfg => PropState.Config;
+
         internal Dizi(string guid, string name,
             Gender gender,
             int level, 

@@ -34,7 +34,6 @@ public class EventString
     public const string Recruit_DiziInSlot = "Recruit_DiziInSlot";
 
     //弟子dizi
-    public const string Dizi_AdvManagement = "Dizi_AdvManagement";//历练管理项
     public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";//弟子体力更新
     public const string Dizi_Params_StateUpdate = "Dizi_Params_StateUpdate";//弟子状态更新
     public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";//弟子状态管理(打开窗口吃药)
@@ -72,7 +71,6 @@ public class EventString
     public const string Faction_DiziAdd = "Faction_DiziAdd";//给门派加弟子
     public const string Faction_Init = "Faction_Init";//实例门派
     public const string Faction_DiziListUpdate = "Faction_DiziListUpdate";//门派弟子列表更新
-    public const string Faction_DiziSelected = "Faction_DiziSelected";
     public const string Faction_SilverUpdate = "Faction_SilverUpdate";//门派银两更新
     public const string Faction_YuanBaoUpdate = "Faction_YuanBaoUpdate";//门派元宝更新
     public const string Faction_FoodUpdate = "Faction_FoodUpdate"; //门派食物更新

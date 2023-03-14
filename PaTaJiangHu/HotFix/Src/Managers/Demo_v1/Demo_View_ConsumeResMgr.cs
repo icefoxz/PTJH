@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
-using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
@@ -17,33 +14,39 @@ namespace HotFix_Project.Managers.Demo_v1
     internal class Demo_View_ConsumeResMgr : MainPageBase
     {
         private View_ConsumeResMgr ConsumeRes { get; set; }
-        private FactionController FactionController { get; set; }
+        private FactionController FactionController { get; }
+        private DiziController DiziController { get; }
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_view_consumeRes";
         protected override bool IsDynamicPixel => true;
         public Demo_View_ConsumeResMgr(Demo_v1Agent uiAgent) : base(uiAgent)
         {
             FactionController = Game.Controllers.Get<FactionController>();
+            DiziController = Game.Controllers.Get<DiziController>();
         }
 
         protected override void Build(IView view)
         {
             ConsumeRes = new View_ConsumeResMgr(view,
-                onResourceClick: (guid, res)=> FactionController.ConsumeResourceByStep(guid, res));
+                onResourceClick: (guid, res)=> FactionController.ConsumeResourceByStep(guid, res),
+                onSilverAction: () =>
+                {
+                    //todo:自己加
+                } );
         }
         protected override void RegEvents()
         {
-            Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
-            {
-                ConsumeRes.Set(bag);
-            });
+            //Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
+            //{
+            //    ConsumeRes.Set(bag);
+            //});
             Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => ConsumeRes.Update(bag.GetString(0)));
 
         }
         public override void Show() => ConsumeRes.Display(true);
         public override void Hide() => ConsumeRes.Display(false);
 
-        public void Set(Dizi dizi) => ConsumeRes.Update(dizi.Guid);
+        public void Set(Dizi dizi) => ConsumeRes.Set(dizi.Guid);
 
         private class View_ConsumeResMgr : UiBase
         {
@@ -53,10 +56,9 @@ namespace HotFix_Project.Managers.Demo_v1
             private Element Injury { get; }
             private Element Inner { get; }
             public View_ConsumeResMgr(IView v,
-                Action<string, IAdjustment.Types> onResourceClick) : base(v, true)
+                Action<string, IAdjustment.Types> onResourceClick,Action onSilverAction) : base(v, true)
             {
-                Silver = new Element(v.GetObject<View>("element_silver"),
-                    ()=> onResourceClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Silver));
+                Silver = new Element(v.GetObject<View>("element_silver"), onSilverAction);
                 Food = new Element(v.GetObject<View>("element_food"),
                     ()=> onResourceClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Food));
                 Emotion = new Element(v.GetObject<View>("element_emotion"),
@@ -100,9 +102,8 @@ namespace HotFix_Project.Managers.Demo_v1
 
             }
 
-            internal void Set(ObjectBag bag)
+            internal void Set(string guid)
             {
-                var guid = bag.Get<string>(0);
                 var dizi = Game.World.Faction.GetDizi(guid);
                 SelectedDizi = dizi;
                 Update(SelectedDizi.Guid);

@@ -50,12 +50,13 @@ internal class DiziAdvManager : MainPageBase
 
     protected override void RegEvents()
     {
-        Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
-        {
-            DiziAdv.Set(bag);
-            //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            MainUiAgent.Show(this);
-        });
+        //todo: 方法被弃用, 现在是使用UiAgent来管理Ui与Ui的交互
+        //Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
+        //{
+        //    DiziAdv.Set(bag);
+        //    //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
+        //    MainUiAgent.Show(this);
+        //});
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => DiziAdv.Update(bag.GetString(0)));

@@ -8,6 +8,7 @@ using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
@@ -15,7 +16,6 @@ namespace HotFix_Project.Managers.Demo_v1
     internal class Demo_View_DiziListMgr : MainPageBase
     {
         private View_DiziList DiziList { get; set; }
-        private DiziController DiziController { get; set; }
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
         protected override string ViewName => "demo_view_diziList";
         protected override bool IsDynamicPixel => true;
@@ -23,7 +23,6 @@ namespace HotFix_Project.Managers.Demo_v1
         public Demo_View_DiziListMgr(Demo_v1Agent uiAgent) : base(uiAgent)
         {
             DemoAgent = uiAgent;
-            DiziController = Game.Controllers.Get<DiziController>();
         }
         protected override void Build(IView view)
         {
@@ -31,7 +30,6 @@ namespace HotFix_Project.Managers.Demo_v1
             {
                 var dizi = Game.World.Faction.DiziList[diziIndex];
                 DemoAgent.SetDiziView(dizi.Guid);
-                DiziController.SelectDizi(dizi.Guid);
             });
         }
         protected override void RegEvents()

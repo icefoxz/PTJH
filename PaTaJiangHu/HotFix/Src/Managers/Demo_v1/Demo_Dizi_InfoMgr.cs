@@ -25,10 +25,10 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void RegEvents()
         {
-            Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
-            {
-                Dizi_info.SetDizi(bag.Get<string>(0));
-            });
+            //Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag =>
+            //{
+            //    Dizi_info.SetDizi(bag.Get<string>(0));
+            //});
         }
 
         public override void Show() => Dizi_info.Display(true);
@@ -72,7 +72,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 StaminaView.SetHour(0);
                 UpdateDiziStamina(dizi.Guid);
             }
-            private void UpdateDiziStamina(string diziGuid)
+            public void UpdateDiziStamina(string diziGuid)
             {
                 if (SelectedDizi == null || SelectedDizi.Guid != diziGuid)
                     return;

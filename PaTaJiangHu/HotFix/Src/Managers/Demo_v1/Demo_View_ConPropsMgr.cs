@@ -22,7 +22,7 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void RegEvents()
         {
-            Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag => View_conProps.Update(bag.GetString(0)));
+            //Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag => View_conProps.Update(bag.GetString(0)));
         }
         public override void Show() => View_conProps.Display(true);
         public override void Hide() => View_conProps.Display(false);

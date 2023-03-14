@@ -20,13 +20,6 @@ namespace Server.Controllers
         public (string title, Color color) GetInjuryCfg(double ratio) => PropStateCfg.GetInjuryCfg(ratio);
         public (string title, Color color) GetInnerCfg(double ratio) => PropStateCfg.GetInnerCfg(ratio);
 
-        public void SelectDizi(string guid)
-        {
-            var selectedDizi = Faction.GetDizi(guid);
-            Game.MessagingManager.Send(EventString.Faction_DiziSelected, selectedDizi.Guid);
-            Game.MessagingManager.Send(EventString.Dizi_AdvManagement, selectedDizi.Guid);
-        }
-
         public void ManageDiziCondition(string guid)
         {
             Game.MessagingManager.Send(EventString.Dizi_ConditionManagement, guid);

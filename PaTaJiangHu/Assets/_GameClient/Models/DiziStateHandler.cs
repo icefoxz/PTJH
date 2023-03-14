@@ -79,6 +79,19 @@ namespace _GameClient.Models
         private Dizi Dizi { get; }
         private DiziActivityPlayer ActivityPlayer { get; }
         public IReadOnlyList<ActivityFragment> LogHistory => ActivityPlayer.LogHistory;
+        /// <summary>
+        /// 是否可能失踪
+        /// </summary>
+        public bool IsPossibleLost => Current switch
+        {
+            States.Lost => true,
+            States.Idle => false,
+            States.AdvProgress => Adventure.Map.PossibleLost(Dizi),
+            States.AdvProduction => Adventure.Map.PossibleLost(Dizi),
+            States.AdvReturning => Adventure.Map.PossibleLost(Dizi),
+            States.AdvWaiting => Adventure.Map.PossibleLost(Dizi),
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         public DiziStateHandler(Dizi dizi, UnityAction<string> messageAction, UnityAction<string> adjustAction,
             UnityAction rewardAction)

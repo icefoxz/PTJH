@@ -25,7 +25,12 @@ internal class DiziListViewManager : MainPageBase
 
     protected override void Build(IView view)
     {
-        DiziList = new DiziListView(view, key => DiziInteraction.SelectDizi(key));
+        DiziList = new DiziListView(view, key =>
+        {
+            //todo: 方法弃用, 用UiAgent来实现Ui与Ui交互
+            //todo: 这里可以直接调用uiAgent.SelectDizi()方法来选择缓存弟子
+            //DiziInteraction.SelectDizi(key);
+        });
     }
 
     protected override void RegEvents()

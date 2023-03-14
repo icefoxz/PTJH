@@ -12,6 +12,9 @@ namespace _GameClient.Models
         (int stamina, int max, int min, int sec) GetStaminaValue();
     }
 
+    /// <summary>
+    /// 弟子体力信息
+    /// </summary>
     public class DiziStamina : TimeValueTicker, IDiziStamina
     {
         private ConValue _con;
@@ -19,7 +22,7 @@ namespace _GameClient.Models
         private StaminaController Controller { get; }
         public IGameCondition Con => _con;
 
-        public TimeSpan GetCountdown() => Controller.GetCountdown(ZeroTicks);
+        public TimeSpan GetCountdown() => Controller.GetCountdown(ZeroTicks);// 5 -> 6 : 
         public DiziStamina(StaminaController controller,long zeroTicks, int max):base(zeroTicks)
         {
             Controller = controller;

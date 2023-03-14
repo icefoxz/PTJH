@@ -30,15 +30,15 @@ namespace HotFix_Project.Managers.Demo_v1
 
         protected override void RegEvents()
         {
-            Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
-            {
-                Equipment.Set(bag);
-            });
+            //Game.MessagingManager.RegEvent(EventString.Dizi_AdvManagement, bag =>
+            //{
+            //    Equipment.Set(bag);
+            //});
         }
         public override void Show() => Equipment.Display(true);
         public override void Hide() => Equipment.Display(false);
 
-        public void Set(Dizi dizi) => Equipment.Update(dizi.Guid);
+        public void Set(Dizi dizi) => Equipment.Set(dizi.Guid);
 
         private class View_Equipment : UiBase
         {
@@ -70,9 +70,8 @@ namespace HotFix_Project.Managers.Demo_v1
                 else ArmorElement.SetItem(ArmorElement, dizi.Weapon.Name, (int)dizi.Armor.Grade);
             }
 
-            public void Set(ObjectBag bag)
+            public void Set(string guid)
             {
-                var guid = bag.Get<string>(0);
                 var dizi = Game.World.Faction.GetDizi(guid);
                 SelectedDizi = dizi;
                 Update(SelectedDizi.Guid);
