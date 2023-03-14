@@ -1,21 +1,18 @@
-using _GameClient.Models;
-using HotFix_Project.Managers.GameScene;
-using HotFix_Project.Serialization;
-using HotFix_Project.Views.Bases;
-using Server.Configs.Adventures;
-using Server.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using _GameClient.Models;
+using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Views.Bases;
+using Server.Configs.Adventures;
+using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Src.Managers.Demo_v1
+namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_AdventureMapsMgr : MainPageBase
     {
@@ -63,7 +60,6 @@ namespace HotFix_Project.Src.Managers.Demo_v1
             AdventureMaps.ListMap(maps);
         }
 
-
         private class View_AdventureMaps : UiBase
         {
             private ScrollRect Scroll_mapSelector { get; }
@@ -71,43 +67,49 @@ namespace HotFix_Project.Src.Managers.Demo_v1
             private Button Btn_refersh { get; }
             private Button Btn_action { get; }
             private Button Btn_cancel { get; }
+
             public View_AdventureMaps(IView v,
                 Action onRefreshAction,
                 Action<int> onAdvStartAction
-                ) : base(v, false)
+            ) : base(v, false)
             {
                 Scroll_mapSelector = v.GetObject<ScrollRect>("scroll_mapSelector");
-                MapView = new ListViewUi<Prefab_map>(v.GetObject<View>("prefab"), Scroll_mapSelector);
+                MapView = new ListViewUi<Prefab_map>(v.GetObject<View>("prefab_map"), Scroll_mapSelector);
                 Btn_refersh = v.GetObject<Button>("btn_refresh");
                 Btn_refersh.OnClickAdd(onRefreshAction);
                 Btn_action = v.GetObject<Button>("btn_action");
-                Btn_action.OnClickAdd(() => onAdvStartAction?.Invoke(SelectedMap.Id));
+                Btn_action.OnClickAdd(() =>
+                {
+                    onAdvStartAction?.Invoke(SelectedIndex);
+                    Display(false);
+                });
                 Btn_cancel = v.GetObject<Button>("btn_cancel");
                 Btn_cancel.OnClickAdd(() => Display(false));
             }
-            private IAutoAdvMap SelectedMap { get; set; }
 
+            private int SelectedIndex { get; set; }
             public void ListMap(IAutoAdvMap[] maps)
             {
-                for(var i = 0; i < maps.Length; i++)
+                for (var i = 0; i < maps.Length; i++)
                 {
                     var map = maps[i];
-                    var index = i;
-                    var ui = MapView.Instance(v => new Prefab_map(v, map));
+                    var ui = MapView.Instance(v => new Prefab_map(v, map, SetSelected));
                     ui.Set(map.Name, map.About, map.ActionLingCost);
                     ui.SetMapImage(map.Image);
                 }
             }
-            private void SetSelected(int index)
+
+            private void SetSelected(int mapId)
             {
-                for(var i = 0; i < MapView.List.Count; i++)
+                for (var i = 0; i < MapView.List.Count; i++)
                 {
                     var ui = MapView.List[i];
-                    var selected = i == index;
+                    var selected = ui.Map.Id == mapId;
                     ui.SetSelected(selected);
-                    if (selected) SelectedMap = ui.Map;
+                    if (selected) SelectedIndex = mapId;
                 }
             }
+
             private class Prefab_map : UiBase
             {
                 private Image Img_mapIco { get; }
@@ -116,9 +118,10 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                 private Image Img_costIco { get; }
                 private Text Text_cost { get; }
                 private Image Img_selected { get; }
-                private Button MapButton { get; }
+                private Button Btn_Map { get; }
                 public IAutoAdvMap Map { get; }
-                public Prefab_map(IView v, IAutoAdvMap map) : base(v, true)
+
+                public Prefab_map(IView v, IAutoAdvMap map, Action<int> onClickAction) : base(v, true)
                 {
                     Map = map;
                     Img_mapIco = v.GetObject<Image>("img_mapIco");
@@ -127,12 +130,14 @@ namespace HotFix_Project.Src.Managers.Demo_v1
                     Img_costIco = v.GetObject<Image>("img_costIco");
                     Text_cost = v.GetObject<Text>("text_cost");
                     Img_selected = v.GetObject<Image>("img_selected");
-                    //MapButton = v.GameObject.GetComponent<Button>(); //prefab 里没有 Button component
-                    //MapButton.OnClickAdd(onClickAction);
+                    Btn_Map = v.GetObject<Button>("btn_map");
+                    Btn_Map.OnClickAdd(() => onClickAction(map.Id));
                 }
+
                 public void SetSelected(bool isSelected) => Img_selected.gameObject.SetActive(isSelected);
                 public void SetMapImage(Sprite mapImg) => Img_mapIco.sprite = mapImg;
                 public void SetCost(Sprite costImg) => Img_costIco.sprite = costImg;
+
                 public void Set(string title, string about, int advCost)
                 {
                     Text_mapTitle.text = title;
