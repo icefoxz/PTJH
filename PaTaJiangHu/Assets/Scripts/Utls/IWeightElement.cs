@@ -50,7 +50,7 @@ namespace Utls
             var percentage = (weight / sum * 10000d);//大于0以上的权重将根据百分比随机万位数(百位的小数点往后挪2位)
             if (percentage <= 100)
                 throw new InvalidOperationException($"权重值异常: 当前权重 ={weight}, 总权重 ={sum}, 而权重百分比={percentage}");
-            var ran = Random.Next(100, (int)percentage);
+            var ran = Random.Next(0, (int)percentage);
             return (o, ran);
         }
     }
