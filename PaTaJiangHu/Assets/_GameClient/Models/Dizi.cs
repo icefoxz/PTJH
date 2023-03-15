@@ -343,7 +343,7 @@ namespace _GameClient.Models
     public partial class Dizi
     {
         //闲置状态
-        public IdleState Idle => State.Idle;
+        //public IdleState Idle => State.Idle;
 
         internal void StartIdle(long startTime)
         {
@@ -354,21 +354,21 @@ namespace _GameClient.Models
 
         internal void StopIdle()
         {
-            Idle.StopIdleState();
+            State.StopIdleState();
             SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Idle_Stop, Guid);
         }
 
         internal void RegIdleStory(DiziActivityLog log)
         {
-            Idle.RegStory(log);
+            State.RegIdleStory(log);
         }
     }
 
     //处理失踪事件
     public partial class Dizi
     {
-        public LostState LostState => State.LostState;
+        //public LostState LostState => State.LostState;
 
         internal void StartLostState(long startTime, DiziActivityLog lastActivityLog)
         {

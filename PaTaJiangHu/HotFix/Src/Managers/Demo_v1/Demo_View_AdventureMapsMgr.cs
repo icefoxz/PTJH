@@ -90,6 +90,7 @@ namespace HotFix_Project.Managers.Demo_v1
             private int SelectedIndex { get; set; }
             public void ListMap(IAutoAdvMap[] maps)
             {
+                MapView.ClearList(ui=>ui.Destroy());
                 for (var i = 0; i < maps.Length; i++)
                 {
                     var map = maps[i];

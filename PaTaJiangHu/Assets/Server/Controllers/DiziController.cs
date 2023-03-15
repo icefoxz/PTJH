@@ -170,7 +170,7 @@ namespace Server.Controllers
         public void RecallDiziFromLost(string guid)
         {
             var dizi = Faction.GetDizi(guid);
-            if (dizi.LostState == null)
+            if (dizi.State.LostState == null)
                 XDebug.LogError($"{dizi}状态不符! {dizi.State}");
             dizi.RestoreFromLost();
         }
