@@ -18,7 +18,7 @@ namespace Server.Controllers
         {
             var dizi = Faction.GetDizi(guid);
             var lostStrategy = IdleCfg.IdleMapSo.LostStrategy;
-            var lastUpdate = dizi.Idle.LastUpdate;
+            var lastUpdate = dizi.State.Idle.LastUpdate;
             var now = SysTime.UnixNow;
             var elapsedSecs = (int)TimeSpan.FromMilliseconds(now - lastUpdate).TotalSeconds;
             var story = IdleCfg.IdleMapSo.TryGetStory(elapsedSecs);

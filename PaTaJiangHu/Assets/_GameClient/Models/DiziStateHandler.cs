@@ -45,7 +45,7 @@ namespace _GameClient.Models
             get
             {
                 //闲置状态会延迟,所以用IsActive来检查是否活跃
-                var result = CheckNull(LostState) + (Idle.IsActive ? 1 : 0) + CheckNull(Adventure);
+                var result = CheckNull(LostState) + (Idle is { IsActive: true } ? 1 : 0) + CheckNull(Adventure);
                 if (result > 1)
                     XDebug.LogError(
                         $"状态异常!活跃状态: Lost:{LostState != null}, Idle:{Idle?.IsActive}, Adventure:{Adventure != null}");
@@ -53,6 +53,7 @@ namespace _GameClient.Models
                 if (Idle != null) return States.Idle;
                 if (Adventure != null)
                 {
+                    if (Adventure.IsProduction) return States.AdvProduction;
                     return Adventure.State switch
                     {
                         AutoAdventure.States.Progress => States.AdvProgress,
@@ -61,6 +62,7 @@ namespace _GameClient.Models
                         _ => throw new ArgumentOutOfRangeException()
                     };
                 }
+                return States.Idle;
                 throw new NotImplementedException();
                 int CheckNull(object obj) => obj != null ? 1 : 0;
             }
@@ -185,5 +187,12 @@ namespace _GameClient.Models
             Adventure = null;
         }
 
+        public void StopIdleState()
+        {
+            Idle.StopIdleState();
+            Idle = null;
+        }
+
+        public void RegIdleStory(DiziActivityLog log) => Idle.RegStory(log);
     }
 }

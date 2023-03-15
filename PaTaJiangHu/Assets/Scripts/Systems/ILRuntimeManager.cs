@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using _GameClient.Models;
 using ILAdapters;
 using ILRuntime.Mono.Cecil.Pdb;
 using ILRuntime.Runtime.Enviorment;
@@ -71,6 +72,9 @@ namespace Systems
             appdomain.DelegateManager.RegisterFunctionDelegate<IView, ILTypeInstance>();
             appdomain.DelegateManager.RegisterFunctionDelegate<int, View, IView>();
             appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance>();
+
+            //Linq 弟子
+            appdomain.DelegateManager.RegisterFunctionDelegate<Dizi, bool>();
 
             appdomain.DelegateManager.RegisterFunctionDelegate<object>();
             appdomain.DelegateManager.RegisterFunctionDelegate<string>();

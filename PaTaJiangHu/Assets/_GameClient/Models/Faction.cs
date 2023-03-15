@@ -46,7 +46,7 @@ namespace _GameClient.Models
 
         public int ActionLing { get; private set; }
         public int ActionLingMax { get; }
-        public int MaxDizi { get; private set; } = 10;
+        public int MaxDizi => DiziMap.Count;
         /// <summary>
         /// key = dizi.Guid, value = dizi
         /// </summary>

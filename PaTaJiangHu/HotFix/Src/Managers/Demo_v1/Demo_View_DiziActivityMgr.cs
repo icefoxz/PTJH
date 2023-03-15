@@ -16,8 +16,8 @@ namespace HotFix_Project.Managers.Demo_v1
 {
     internal class Demo_View_DiziActivityMgr : MainPageBase
     {
+        private DiziAdvController DiziAdvController { get; }
         private View_DiziActivity View_diziActivity { get; set; }
-        private DiziAdvController DiziAdvController { get; set; }
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
         protected override string ViewName => "demo_view_diziActivity";
         protected override bool IsDynamicPixel => true;
