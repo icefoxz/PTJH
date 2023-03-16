@@ -81,14 +81,58 @@ namespace _GameClient.Models
         private Dizi Dizi { get; }
         private DiziActivityPlayer ActivityPlayer { get; }
         public IReadOnlyList<ActivityFragment> LogHistory => ActivityPlayer.LogHistory;
+
+        public int CurrentMile
+        {
+            get
+            {
+                if (Current == States.AdvProgress)
+                    return Adventure.LastMile;
+                if (Current == States.AdvReturning)
+                    return -1;
+                return 0;
+            }
+        }
+
+        public TimeSpan CurrentProgressTime => Current switch
+        {
+            States.Lost => SysTime.CompareUnixNow(LostState.StartTime),
+            States.Idle => SysTime.CompareUnixNow(Idle.StartTime),
+            States.AdvProgress => SysTime.CompareUnixNow(Adventure.StartTime),
+            States.AdvProduction => SysTime.CompareUnixNow(Adventure.StartTime),
+            States.AdvReturning => SysTime.CompareUnixNow(Adventure.StartTime),
+            States.AdvWaiting => SysTime.CompareUnixNow(Adventure.StartTime),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
         public string CurrentOccasion => Current switch
         {
             States.Lost => "未知",
-            States.Idle => "山门",
+            States.Idle => "山门内",
             States.AdvProgress => Adventure.Occasion,
             States.AdvProduction => Adventure.Occasion,
             States.AdvReturning => "回程中",
             States.AdvWaiting => "山门前",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        public string CurrentMap => Current switch
+        {
+            States.Lost => "未知",
+            States.Idle => "宗门",
+            States.AdvProgress => Adventure.Map.Name,
+            States.AdvProduction => Adventure.Map.Name,
+            States.AdvReturning => $"{Adventure.Map.Name},返程",
+            States.AdvWaiting => "宗门",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        public string StateText => Current switch
+        {
+            States.Lost => "失踪",
+            States.Idle => "闲置",
+            States.AdvProgress => "历练",
+            States.AdvProduction => "生产",
+            States.AdvReturning => "回程",
+            States.AdvWaiting => "等待",
             _ => throw new ArgumentOutOfRangeException()
         };
         /// <summary>
