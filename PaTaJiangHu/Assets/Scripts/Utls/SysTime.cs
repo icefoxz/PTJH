@@ -80,5 +80,11 @@ namespace Utls
         /// <param name="timeSpan"></param>
         /// <returns></returns>
         public static long UnixTicksFromNow(TimeSpan timeSpan) => (long)DateTime.UtcNow.Add(timeSpan).Subtract(Epoch).TotalMilliseconds;
+        /// <summary>
+        /// 跟现在时间比较差值
+        /// </summary>
+        /// <param name="startTime"></param>
+        /// <returns></returns>
+        public static TimeSpan CompareUnixNow(long startTime)=> TimeSpan.FromMilliseconds(UnixNow - startTime);
     }
 }

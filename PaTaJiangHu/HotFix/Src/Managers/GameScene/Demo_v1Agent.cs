@@ -1,7 +1,6 @@
 
 using _GameClient.Models;
 using HotFix_Project.Managers.Demo_v1;
-using HotFix_Project.Src.Managers.Demo_v1;
 using System.Linq;
 using Utls;
 
@@ -67,6 +66,7 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_View_DiziActivityMgr.Set(dizi);
         Demo_View_EquipmentMgr.Set(dizi);
         Demo_Dizi_InfoMgr.Set(dizi);
+        Demo_Game_ViewMgr.Set(dizi);
         Show(new UiManagerBase[]
         {
             Demo_View_ConsumeResMgr,
