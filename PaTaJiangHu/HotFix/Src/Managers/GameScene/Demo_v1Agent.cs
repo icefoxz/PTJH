@@ -40,7 +40,6 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_Win_ItemMgr = new Demo_Win_ItemMgr(this);
     }
     private Dizi SelectedDizi { get; set; }
-
     /// <summary>
     /// 弟子信息(相关板块)显示, 作为主页上整合显示所有板块的方法
     /// </summary>

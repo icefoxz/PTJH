@@ -79,6 +79,16 @@ namespace _GameClient.Models
         /// </summary>
         public IGameReward LastReward { get; private set; }
         private Dizi Dizi { get; }
+        public IReadOnlyList<IGameReward> StateBags
+        {
+            get
+            {
+                if (Current is States.AdvProgress or States.AdvReturning or States.AdvProduction or States.AdvWaiting)
+                    return Adventure.Rewards;
+                return Array.Empty<IGameReward>();
+            }
+        }
+
         private DiziActivityPlayer ActivityPlayer { get; }
         public IReadOnlyList<ActivityFragment> LogHistory => ActivityPlayer.LogHistory;
 

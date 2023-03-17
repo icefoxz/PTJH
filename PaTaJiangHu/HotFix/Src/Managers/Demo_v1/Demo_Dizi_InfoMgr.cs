@@ -1,11 +1,8 @@
-﻿using System.Linq;
-using _GameClient.Models;
+﻿using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
-using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1

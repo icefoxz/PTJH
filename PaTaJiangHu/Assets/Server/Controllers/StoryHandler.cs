@@ -64,6 +64,7 @@ namespace Server.Controllers
 
                 if (CurrentEvent is AdvQuitEventSo q)
                 {
+                    XDebug.Log($"{dizi.Name},历练结束事件: 历练失败:{q.IsAdvFailed}, 强制回程:{q.IsForceQuit}, 是否失踪:{q.IsForceQuit}");
                     IsAdvFailed = q.IsAdvFailed;
                     IsForceQuit = q.IsForceQuit;
                     IsLost = q.IsLost;

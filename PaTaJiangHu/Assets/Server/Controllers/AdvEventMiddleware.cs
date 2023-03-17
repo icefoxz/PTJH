@@ -36,7 +36,7 @@ namespace Server.Controllers
             {
                 case AdvTypes.Option:
                 case AdvTypes.Battle:
-                    throw new NotSupportedException($"历练不支持事件={advEvent.AdvType}!");
+                    throw new NotSupportedException($"历练不支持事件={advEvent.AdvType},弟子:{dizi.Name}, 当前历练[{dizi.Adventure?.Map?.Id}]{dizi.Adventure?.Map?.Name},!");
                 case AdvTypes.Story:
                 case AdvTypes.Dialog:
                 case AdvTypes.Pool:
@@ -52,6 +52,8 @@ namespace Server.Controllers
                     var npc = bs.GetNpc(Simulator);
                     var outcome = Simulator.CountSimulationOutcome(diziSim, npc);
                     var staminaController = Game.Controllers.Get<StaminaController>();
+                    XDebug.Log($"{dizi.Name}与{npc.Name}战斗! ");
+                    XDebug.Log($"{dizi.Name}{(outcome.IsPlayerWin? "胜利":"失败")}! ");
                     if (!outcome.IsPlayerWin)
                     {
                         staminaController.SetStaminaZero(dizi.Guid, true);
