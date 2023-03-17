@@ -28,11 +28,8 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             ConsumeRes = new View_ConsumeResMgr(view,
-                onResourceClick: (guid, res)=> FactionController.ConsumeResourceByStep(guid, res),
-                onSilverAction: () =>
-                {
-                    //todo:自己加
-                } );
+                onResourceClick: (guid, res) => FactionController.ConsumeResourceByStep(guid, res),
+                onSilverAction: (guid, silver) => DiziController.UseSilver(guid, silver));
         }
         protected override void RegEvents()
         {
@@ -56,9 +53,11 @@ namespace HotFix_Project.Managers.Demo_v1
             private Element Injury { get; }
             private Element Inner { get; }
             public View_ConsumeResMgr(IView v,
-                Action<string, IAdjustment.Types> onResourceClick,Action onSilverAction) : base(v, true)
+                Action<string, IAdjustment.Types> onResourceClick,
+                Action<string, int> onSilverAction) : base(v, true)
             {
-                Silver = new Element(v.GetObject<View>("element_silver"), onSilverAction);
+                Silver = new Element(v.GetObject<View>("element_silver"), 
+                    ()=> onSilverAction?.Invoke(SelectedDizi?.Guid, 1));
                 Food = new Element(v.GetObject<View>("element_food"),
                     ()=> onResourceClick?.Invoke(SelectedDizi?.Guid, IAdjustment.Types.Food));
                 Emotion = new Element(v.GetObject<View>("element_emotion"),
@@ -89,7 +88,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 var (emotionText, eColor) = controller.GetEmotionCfg(dizi.Emotion.ValueMaxRatio);
                 var (injuryText, jColor) = controller.GetInjuryCfg(dizi.Injury.ValueMaxRatio);
                 var (innerText, nColor) = controller.GetInnerCfg(dizi.Inner.ValueMaxRatio);
-                Silver.SetElement(100, sColor, silverText);
+                Silver.SetElement(1, sColor, silverText);
                 Silver.SetValue(dizi.Silver.Value, dizi.Silver.Max);
                 Food.SetElement(dizi.Capable.Food, fColor, foodText);
                 Food.SetValue(dizi.Food.Value, dizi.Food.Max);

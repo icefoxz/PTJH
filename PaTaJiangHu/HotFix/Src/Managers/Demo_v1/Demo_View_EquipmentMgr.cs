@@ -34,6 +34,8 @@ namespace HotFix_Project.Managers.Demo_v1
             //{
             //    Equipment.Set(bag);
             //});
+            Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => Equipment.Update(bag.Get<string>(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => Equipment.Update(bag.Get<string>(0)));
         }
         public override void Show() => Equipment.Display(true);
         public override void Hide() => Equipment.Display(false);

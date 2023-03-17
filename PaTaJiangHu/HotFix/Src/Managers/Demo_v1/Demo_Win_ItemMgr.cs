@@ -123,6 +123,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 for(int i = 0; i < ItemView.List.Count; i++)
                 {
                     var ui = ItemView.List[i];
+                    ui.SetEquipped(ui.ItemIndex == -1);
                 }
             }
             public void Set(string diziGuid, int itemType, int slot)
@@ -142,26 +143,26 @@ namespace HotFix_Project.Managers.Demo_v1
             {
                 var faction = Game.World.Faction;
                 var selectedDizi = Game.World.Faction.GetDizi(SelectedDiziGuid);
-                var items = new List<(string name, int factionIndex, int amount, int grade)>();
+                var items = new List<(string name, string info, int factionIndex, int amount, int grade)>();
                 IsDiziEquipped = false;
                 switch (type)
                 {
                     case ItemTypes.Weapon:
                         IsDiziEquipped = selectedDizi.Weapon != null;
-                        if(IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, -1, 1, (int) selectedDizi.Weapon.Grade));
+                        if(IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, selectedDizi.Weapon.About, -1, 1, (int) selectedDizi.Weapon.Grade));
                         for(var i = 0; i < faction.Weapons.Count; i++)
                         {
                             var item = faction.Weapons[i];
-                            items.Add((item.Name, i, 1, (int)item.Grade));
+                            items.Add((item.Name, item.About, i, 1, (int)item.Grade));
                         }
                         break;
                     case ItemTypes.Armor:
                         IsDiziEquipped = selectedDizi.Armor != null;
-                        if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, -1, 1, (int)selectedDizi.Armor.Grade));
+                        if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, selectedDizi.Armor.About, -1, 1, (int)selectedDizi.Armor.Grade));
                         for(var i = 0; i < faction.Armors.Count; i++)
                         {
                             var item = faction.Armors[i];
-                            items.Add((item.Name, i , 1, (int)item.Grade));
+                            items.Add((item.Name, item.About, i , 1, (int)item.Grade));
                         }
                         break;
                     //case ItemTypes.AdvItems:
@@ -183,10 +184,14 @@ namespace HotFix_Project.Managers.Demo_v1
                 {
                     var item = items[i];
                     var index = i;
-                    var ui = ItemView.Instance(v => new Prefab_Item(v));
-                    ui.SetText(item.name, item.amount, string.Empty ,item.grade);
+                    var ui = ItemView.Instance(v => new Prefab_Item(v,
+                        () => OnSelectedItem(index), item.factionIndex));
+                    ui.SetEquipped(IsDiziEquipped && index == 0);
+                    ui.SetText(item.name, item.amount, item.info ,item.grade);
                 }
-                Btn_unequip.interactable = items.Count != 0;
+                SelectedItemIndex = -1;
+                OnSelectedItem(SelectedItemIndex);
+                Btn_unequip.interactable = SelectedItemIndex >= 0;
             }
             private void OnSelectedItem(int index)
             {
@@ -200,24 +205,40 @@ namespace HotFix_Project.Managers.Demo_v1
                         SelectedItemIndex = ui.ItemIndex;
                     }
                 }
+                Btn_equip.interactable = SelectedItemIndex >= 0;
+                Btn_unequip.interactable = SelectedItemIndex < 0;
             }
 
             private class Prefab_Item : UiBase
             {
+                private Image Img_select { get; }
+                private Image Img_equipped { get; }
+                private Button Btn_item { get; }
                 private Image Img_ico { get; }
                 private Text Text_title { get; }
                 private Text Text_value { get; }
                 private Text Text_info { get; }
                 public int ItemIndex { get; }
 
-                public Prefab_Item(IView v) : base(v, true)
+                public Prefab_Item(IView v, Action onClickAction, int itemIndex) : base(v, true)
                 {
+                    ItemIndex = itemIndex;
+                    Img_equipped = v.GetObject<Image>("img_equipped");
+                    Img_select = v.GetObject<Image>("img_select");
+                    Btn_item = v.GetObject<Button>("btn_item");
+                    Btn_item.OnClickAdd(onClickAction);
                     Img_ico = v.GetObject<Image>("img_ico");
                     Text_title = v.GetObject<Text>("text_title");
                     Text_value = v.GetObject<Text>("text_value");
                     Text_info = v.GetObject<Text>("text_info");
+                    SetSelected(false);
                 }
-                public void SetIcon(Sprite img) => Img_ico.sprite = img;
+                public void SetIcon(Sprite ico, Sprite selected)
+                {
+                    Img_ico.sprite = ico;
+                    Img_select.sprite = selected;
+                }
+
                 public void SetText(string name, int amount, string info, int grade)
                 {
                     Text_title.text = name;
@@ -225,11 +246,10 @@ namespace HotFix_Project.Managers.Demo_v1
                     Text_value.text = amount.ToString();
                     Text_value.gameObject.SetActive(amount > 1);
                     Text_info.text = info;
+                    Text_info.gameObject.SetActive(info != null);
                 }
-                public void SetSelected(bool isSelected)
-                {
-                    //Img_selected.interactable = isSelected;
-                }
+                public void SetSelected(bool isSelected) => Img_select.gameObject.SetActive(isSelected);
+                public void SetEquipped(bool isEqquipped) => Img_equipped.gameObject.SetActive(isEqquipped);
             }
         }
     }
