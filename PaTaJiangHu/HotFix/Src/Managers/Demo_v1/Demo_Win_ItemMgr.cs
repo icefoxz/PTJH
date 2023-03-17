@@ -123,6 +123,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 for(int i = 0; i < ItemView.List.Count; i++)
                 {
                     var ui = ItemView.List[i];
+                    ui.SetEquipped(ui.ItemIndex == -1);
                 }
             }
             public void Set(string diziGuid, int itemType, int slot)
@@ -185,6 +186,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     var index = i;
                     var ui = ItemView.Instance(v => new Prefab_Item(v,
                         () => OnSelectedItem(index), item.factionIndex));
+                    ui.SetEquipped(IsDiziEquipped && index == 0);
                     ui.SetText(item.name, item.amount, item.info ,item.grade);
                 }
                 SelectedItemIndex = -1;
@@ -210,6 +212,7 @@ namespace HotFix_Project.Managers.Demo_v1
             private class Prefab_Item : UiBase
             {
                 private Image Img_select { get; }
+                private Image Img_equipped { get; }
                 private Button Btn_item { get; }
                 private Image Img_ico { get; }
                 private Text Text_title { get; }
@@ -220,6 +223,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 public Prefab_Item(IView v, Action onClickAction, int itemIndex) : base(v, true)
                 {
                     ItemIndex = itemIndex;
+                    Img_equipped = v.GetObject<Image>("img_equipped");
                     Img_select = v.GetObject<Image>("img_select");
                     Btn_item = v.GetObject<Button>("btn_item");
                     Btn_item.OnClickAdd(onClickAction);
@@ -245,6 +249,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     Text_info.gameObject.SetActive(info != null);
                 }
                 public void SetSelected(bool isSelected) => Img_select.gameObject.SetActive(isSelected);
+                public void SetEquipped(bool isEqquipped) => Img_equipped.gameObject.SetActive(isEqquipped);
             }
         }
     }
