@@ -26,6 +26,7 @@ namespace HotFix_Project.Managers.Demo_v1
             //{
             //    Dizi_info.SetDizi(bag.Get<string>(0));
             //});
+            Game.MessagingManager.RegEvent(EventString.Dizi_Params_StaminaUpdate, bag => Dizi_info.UpdateDiziStamina(bag.GetString(0)));
         }
 
         public override void Show() => Dizi_info.Display(true);
@@ -66,7 +67,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 SetName(dizi.Name, dizi.Grade);
                 LevelView.SetLevel(dizi.Level);
                 LevelView.SetExp(dizi.Exp.Value, dizi.Exp.Max);
-                StaminaView.SetHour(0);
+                StaminaView.SetHour(dizi.Stamina.SecsPerRecover);
                 UpdateDiziStamina(dizi.Guid);
             }
             public void UpdateDiziStamina(string diziGuid)
