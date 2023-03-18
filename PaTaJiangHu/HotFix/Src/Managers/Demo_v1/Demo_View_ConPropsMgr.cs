@@ -2,6 +2,7 @@
 using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
+using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using UnityEngine.UI;
 using Utls;
@@ -22,12 +23,13 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void RegEvents()
         {
-            //Game.MessagingManager.RegEvent(EventString.Faction_DiziSelected, bag => View_conProps.Update(bag.GetString(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => View_conProps.Update(bag.Get<string>(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => View_conProps.Update(bag.Get<string>(0)));
         }
         public override void Show() => View_conProps.Display(true);
         public override void Hide() => View_conProps.Display(false);
 
-        public void Set(Dizi dizi) => View_conProps.Update(dizi.Guid);
+        public void Set(Dizi dizi) => View_conProps.Set(dizi.Guid);
 
         private class View_ConProps : UiBase
         {
@@ -45,25 +47,28 @@ namespace HotFix_Project.Managers.Demo_v1
             }
 
             private Dizi SelectedDizi { get; set; }
+            public void Set(string guid)
+            {
+                var dizi = Game.World.Faction.GetDizi(guid);
+                SelectedDizi = dizi;
+                Update(SelectedDizi.Guid);
+            }
             public void Update(string guid)
             {
                 if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
                 SetDizi(SelectedDizi);
             }
-            public void InitProp()
-            {
-                SetProps(Props.Strength, 0, 0, 0, 0);
-                SetProps(Props.Agility, 0, 0, 0, 0);
-                SetProps(Props.Hp, 0, 0, 0, 0);
-                SetProps(Props.Mp, 0, 0, 0, 0);
-            }
             private void SetDizi(Dizi dizi)
+            {
+                SetDiziProps(dizi);
+            }
+            private void SetDiziProps(Dizi dizi)
             {
                 var s = Server.Configs.Characters.DiziProps.Strength;
                 var a = Server.Configs.Characters.DiziProps.Agility;
                 var h = Server.Configs.Characters.DiziProps.Hp;
                 var m = Server.Configs.Characters.DiziProps.Mp;
-                SetProps(Props.Strength, dizi.GetLeveledValue(s), 0, dizi.WeaponPower, dizi.GetPropStateAddon(s));
+                SetProps(Props.Strength, dizi.Capable.Strength.Value, 0, dizi.WeaponPower, dizi.GetPropStateAddon(s));
                 SetProps(Props.Agility, dizi.GetLeveledValue(a), 0, 0, dizi.GetPropStateAddon(a));
                 SetProps(Props.Hp, dizi.GetLeveledValue(h), 0, dizi.ArmorPower, dizi.GetPropStateAddon(h));
                 SetProps(Props.Mp, dizi.GetLeveledValue(m), 0, 0, dizi.GetPropStateAddon(m));
