@@ -123,7 +123,7 @@ namespace Server.Configs.Characters
 
             private MinMaxInt Range => 范围;
             private int Percentage => 百分比;
-            public bool IsInRange(int rate) => Range.InMinMaxRange(rate);
+            public bool IsInRange(int rate) => MinMaxExtension.IsInRange(Range, rate);
             public int GetAdjustmentValue(int value) => (int)(value * Percentage * 0.01d);
         }
         private static int ToIntPercentage(double ratio) => (int)(ratio * 100);
