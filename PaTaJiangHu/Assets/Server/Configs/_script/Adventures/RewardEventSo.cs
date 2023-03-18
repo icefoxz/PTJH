@@ -196,7 +196,7 @@ namespace Server.Configs.Adventures
                 public int Value => 数量 < 0 ? throw new InvalidOperationException($"资源数量 = {数量}!") : 数量;
             }
         }
-        [Serializable] private class WeaponItem : GameItem
+        [Serializable] private class WeaponItem : GameItem,IWeapon
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private WeaponFieldSo 武器;
             
@@ -204,14 +204,23 @@ namespace Server.Configs.Adventures
             protected override ScriptableObject So => 武器;
             protected override IGameItem Gi => 武器;
             protected override bool IsSupportSo => true;
+            private  WeaponFieldSo W => So as WeaponFieldSo;
+            public EquipKinds EquipKind => W.EquipKind;
+            public SkillGrades Grade => W.Grade;
+            public WeaponArmed Armed => W.Armed;
+            public int Damage => W.Damage;
         }
-        [Serializable] private class ArmorItem : GameItem
+        [Serializable] private class ArmorItem : GameItem,IArmor
         {
             [ConditionalField(true, nameof(TryUseSo))][SerializeField] private ArmorFieldSo 防具;
             public override Kinds Kind => Kinds.Armor;
             protected override ScriptableObject So => 防具;
             protected override IGameItem Gi => 防具;
             protected override bool IsSupportSo => true;
+            private ArmorFieldSo A => So as ArmorFieldSo;
+            public EquipKinds EquipKind => A.EquipKind;
+            public SkillGrades Grade => A.Grade;
+            public int AddHp => A.AddHp;
         }
         [Serializable] private class MedicineItem : GameItem
         {
