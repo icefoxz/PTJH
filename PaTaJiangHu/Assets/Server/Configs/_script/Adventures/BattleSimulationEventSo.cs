@@ -35,7 +35,12 @@ namespace Server.Configs.Adventures
         public override IAdvEvent[] AllEvents => Battle.GetAllEvents();
         public override AdvTypes AdvType => AdvTypes.Simulation;
 
-        public ISimCombat GetNpc(BattleSimulatorConfigSo so) => Npc.GetSimCombat(so);
+        public ISimCombat GetNpc(BattleSimulatorConfigSo so)
+        {
+            if (Npc == null)
+                throw new NullReferenceException($"{Name}.{name}找不到NPC = null, 请确保npc已配置了!");
+            return Npc.GetSimCombat(so);
+        }
 
         private string[] GetResult(ISimulationOutcome outCome,string diziName,string npcName)
         {
