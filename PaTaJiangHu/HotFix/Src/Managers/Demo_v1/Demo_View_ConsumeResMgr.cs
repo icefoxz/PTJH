@@ -38,7 +38,7 @@ namespace HotFix_Project.Managers.Demo_v1
             //    ConsumeRes.Set(bag);
             //});
             Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => ConsumeRes.Update(bag.GetString(0)));
-
+            Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => ConsumeRes.Update(bag.GetString(0)));
         }
         public override void Show() => ConsumeRes.Display(true);
         public override void Hide() => ConsumeRes.Display(false);
