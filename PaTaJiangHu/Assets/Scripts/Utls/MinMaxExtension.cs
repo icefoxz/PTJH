@@ -34,6 +34,33 @@ namespace Utls
             clauses.All(c => c.InMinMaxRange(value, includedMax));
 
         /// <summary>
+        /// 最基础的是否在范围内的判断
+        /// </summary>
+        /// <param name="clause"></param>
+        /// <param name="value"></param>
+        /// <param name="includedMax"></param>
+        /// <returns></returns>
+        public static bool IsInRange(this MinMaxInt clause, int value, bool includedMax = true)
+        {
+            if(includedMax)
+                return value >= clause.Min && value <= clause.Max;
+            return value >= clause.Min && value < clause.Max;
+        }
+        /// <summary>
+        /// 最基础的是否在范围内的判断
+        /// </summary>
+        /// <param name="clause"></param>
+        /// <param name="value"></param>
+        /// <param name="includedMax"></param>
+        /// <returns></returns>
+        public static bool IsInRange(this IMinMax clause, int value, bool includedMax = true)
+        {
+            if(includedMax)
+                return value >= clause.Min && value <= clause.Max;
+            return value >= clause.Min && value < clause.Max;
+        }
+
+        /// <summary>
         /// 0 为不判断值，直接返(条件)true，<see cref="IMinMax.Max"/>值=-1为判断<see cref="value"/>是否=0，
         /// 一般上都是判断<see cref="value"/>是否在范围内
         /// </summary>
