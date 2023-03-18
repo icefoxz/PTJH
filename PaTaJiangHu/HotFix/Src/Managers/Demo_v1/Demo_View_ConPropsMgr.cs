@@ -25,6 +25,7 @@ namespace HotFix_Project.Managers.Demo_v1
         {
             Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => View_conProps.Update(bag.Get<string>(0)));
             Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => View_conProps.Update(bag.Get<string>(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => View_conProps.Update(bag.Get<string>(0)));
         }
         public override void Show() => View_conProps.Display(true);
         public override void Hide() => View_conProps.Display(false);
