@@ -24,7 +24,7 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             View_pages = new View_Pages(view,
-                onTreasureHouse: ()=> MainUiAgent.Show<TreasureHouseManager>(m=> m.Show()),
+                onTreasureHouse: ()=>  XDebug.LogWarning("打开宝物库页面"),//MainUiAgent.Show<TreasureHouseManager>(m=> m.Show()),
                 onDiziPage: () =>
                 {
                     DemoAgent.SetDiziView();
