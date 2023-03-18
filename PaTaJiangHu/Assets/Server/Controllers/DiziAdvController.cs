@@ -92,19 +92,30 @@ namespace Server.Controllers
         //让弟子回程
         public void AdventureRecall(string guid)
         {
-            var now = SysTime.UnixNow;
             var dizi = Faction.GetDizi(guid);
             if (dizi.State.Current != DiziStateHandler.States.AdvProgress)
-                XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
-            CheckMile(dizi.Adventure.Map.Id, dizi.Guid, arg =>
+                XDebug.LogError($"状态异常!{dizi}不可以召回 : {dizi.State.Current}");
+            CheckMile(dizi.State.Adventure.Map.Id, dizi.Guid, null, () =>
             {
-                var (totalMile, placeName, isAdvEnd) = arg;
-                if (dizi.Adventure.State == AutoAdventure.States.Progress)
-                {
-                    var reachingTime = GetReachingTime(dizi);
-                    DiziRecallStory(dizi, now, totalMile , reachingTime);
-                }
+                if (dizi.State.Adventure.State == AutoAdventure.States.Progress) DirectRecallAdv(guid);
             });
+        }
+
+        //强制弟子历练回程, 不检查间隔里数生成故事
+        public void DirectRecallAdv(string diziGuid)
+        {
+            var now = SysTime.UnixNow;
+            var dizi = Faction.GetDizi(diziGuid);
+            if (dizi.State.Adventure.State != AutoAdventure.States.Progress)
+                throw new InvalidOperationException($"弟子[{dizi.Name}]当前状态[{dizi.State.Current}]不能执行历练回程!");
+            var reachingTime = GetReachingTime(dizi);
+
+            var recallMsg = $"{dizi.Name}回程中...";
+            var totalMile = dizi.State.Adventure.LastMile;
+            var recallLog = new DiziActivityLog(dizi.Guid, now, totalMile);//生成回程活动
+            recallLog.SetMessages(new[] { recallMsg });//回程描述
+            dizi.AdventureStoryLogging(recallLog);//注册活动
+            dizi.AdventureRecall(now, totalMile, reachingTime);//执行回程
         }
 
         /// <summary>
@@ -115,21 +126,12 @@ namespace Server.Controllers
         public long GetReachingTime(Dizi dizi)
         {
             var now = SysTime.UnixNow;
-            var adv = dizi.Adventure;
+            var adv = dizi.State.Adventure;
             var reachingTime = now + adv.Map.ProductionReturnSec * 1000;//转化成milliseconds
             if (!adv.IsProduction && !adv.Map.IsFixReturnTime)
                 reachingTime = now + TimeSpan.FromSeconds(AdventureCfg
-                        .GetSeconds(dizi.Adventure.LastMile) / 2d).Milliseconds;//如果不是生产, 时间将根据当前里数计算回程秒数
+                        .GetSeconds(dizi.State.Adventure.LastMile) / 2d).Milliseconds;//如果不是生产, 时间将根据当前里数计算回程秒数
             return reachingTime;
-        }
-
-        private void DiziRecallStory(Dizi dizi, long now, int totalMile, long reachingTime)
-        {
-            var recallMsg = $"{dizi.Name}回程中...";
-            var recallLog = new DiziActivityLog(dizi.Guid, now, totalMile);
-            recallLog.SetMessages(new[] { recallMsg });
-            dizi.AdventureStoryLogging(recallLog);
-            dizi.AdventureRecall(now, totalMile, reachingTime);
         }
 
         /// <summary>
@@ -142,9 +144,9 @@ namespace Server.Controllers
             if (dizi.State.Current != DiziStateHandler.States.AdvProgress)
                 XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
             if (dizi.State.Adventure.State != AutoAdventure.States.End)
-                XDebug.Log($"操作异常!弟子状态 = {dizi.Adventure?.State}");
+                XDebug.Log($"操作异常!弟子状态 = {dizi.State.Adventure?.State}");
 
-            RewardController.SetRewards(dizi.Adventure.Rewards.ToArray());
+            RewardController.SetRewards(dizi.State.Adventure.Rewards.ToArray());
             dizi.AdventureFinalize();
             dizi.StartIdle(SysTime.UnixNow);
         }
@@ -154,24 +156,27 @@ namespace Server.Controllers
         /// </summary>
         /// <param name="mapId"></param>
         /// <param name="diziGuid"></param>
-        /// <param name="onCallbackAction">回调返回历练总里数,和是否历练继续, true = 冒险结束</param>
+        /// <param name="onEventUpdate">回调返回历练总里数,和是否历练继续, true = 冒险结束</param>
+        /// <param name="onFinishAction">当执行完毕的回调, 这个回调是一定执行.并且确保异步事件结束后会调用</param>
         public async void CheckMile(int mapId, string diziGuid,
-            Action<(int mile, string placeName, bool adventureEnd)> onCallbackAction)
+            Action<(int mile, string placeName, bool adventureEnd)> onEventUpdate,
+            Action onFinishAction = null)
         {
             var dizi = Faction.GetDizi(diziGuid);
-            var lastMile = dizi.Adventure.LastMile;
-            var lastUpdate = dizi.Adventure.LastUpdate;
+            var lastMile = dizi.State.Adventure.LastMile;
+            var lastUpdate = dizi.State.Adventure.LastUpdate;
             var now = SysTime.UnixNow;
             var miles = GetMiles(now, lastUpdate);
-            //如果里数=0表示未去到任何地方, 不执行callback
+
             if (miles == 0)
             {
-                //onCallbackAction?.Invoke((lastMile, string.Empty ,dizi.Stamina.Con.IsExhausted));
-                return; //return lastMile;
+                onFinishAction?.Invoke();
+                return; 
             }
             var totalMiles = lastMile + miles;
             var (stopAdv, placeName) = await OnAdventureProgress(mapId, now, lastMile, totalMiles, diziGuid);
-            onCallbackAction?.Invoke((totalMiles, placeName, stopAdv));
+            onEventUpdate?.Invoke((totalMiles, placeName, stopAdv));
+            onFinishAction?.Invoke();
         }
 
         /// <summary>
@@ -185,7 +190,7 @@ namespace Server.Controllers
         public async Task<(bool stopAdv,string placeName)> OnAdventureProgress(int mapId,long now, int fromMiles, int toMiles, string diziGuid)
         {
             var dizi = Faction.GetDizi(diziGuid);
-            if (dizi.Adventure is not { State: AutoAdventure.States.Progress }) return (true, string.Empty);//返回故事继续
+            if (dizi.State.Adventure is not { State: AutoAdventure.States.Progress }) return (true, string.Empty);//返回故事继续
             var (map, isProduction) = GetMap(mapId);
             var places = map.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
             if (places.Length <= 0) return (true, string.Empty); //返回故事继续
@@ -213,6 +218,7 @@ namespace Server.Controllers
                 if (story.IsAdvFailed) //当历练失败
                 {
                     //执行历练失败的处罚
+                    return (true, place.Name);
                 }
 
                 if (story.IsForceQuit) return (true, place.Name); //结束故事

@@ -248,5 +248,7 @@ namespace _GameClient.Models
         }
 
         public void RegIdleStory(DiziActivityLog log) => Idle.RegStory(log);
+
+        public void RegAutoAdvStory(DiziActivityLog log) => Adventure.RegStory(log);
     }
 }

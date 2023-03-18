@@ -30,8 +30,8 @@ internal class TestAutoAdvManager
                     mile=>
                     {
                         var dizi = Game.World.Faction.GetDizi(DiziGuid);
-                        var lastMile = dizi.Adventure is { State: AutoAdventure.States.Progress }
-                            ? dizi.Adventure.LastMile
+                        var lastMile = dizi.State.Adventure is { State: AutoAdventure.States.Progress }
+                            ? dizi.State.Adventure.LastMile
                             : 0;
                         AdvController.OnAdventureProgress(0,SysTime.UnixNow, lastMile, mile, DiziGuid);
 

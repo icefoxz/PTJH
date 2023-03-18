@@ -74,11 +74,12 @@ namespace HotFix_Project.Managers.Demo_v1
                 if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
                 SetDiziElement(SelectedDizi);
                 var dizi = SelectedDizi;
-                Silver.SetInteraction(dizi.Adventure == null);
-                Food.SetInteraction(dizi.Adventure == null);
-                Emotion.SetInteraction(dizi.Adventure == null);
-                Injury.SetInteraction(dizi.Adventure == null);
-                Inner.SetInteraction(dizi.Adventure == null);
+                var isIdleState = dizi.State.Current == DiziStateHandler.States.Idle;
+                Silver.SetInteraction(isIdleState);
+                Food.SetInteraction(isIdleState);
+                Emotion.SetInteraction(isIdleState);
+                Injury.SetInteraction(isIdleState);
+                Inner.SetInteraction(isIdleState);
             }
             private void SetDiziElement(Dizi dizi)
             {

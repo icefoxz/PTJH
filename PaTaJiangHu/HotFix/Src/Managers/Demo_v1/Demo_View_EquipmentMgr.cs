@@ -60,8 +60,9 @@ namespace HotFix_Project.Managers.Demo_v1
                 if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
                 SetDizi(SelectedDizi);
                 var dizi = SelectedDizi;
-                WeaponElement.SetInteraction(dizi.Adventure == null);
-                ArmorElement.SetInteraction(dizi.Adventure == null);
+                var isIdleState = dizi.State.Current == DiziStateHandler.States.Idle;
+                WeaponElement.SetInteraction(isIdleState);
+                ArmorElement.SetInteraction(isIdleState);
             }
             private void SetDizi(Dizi dizi)
             {

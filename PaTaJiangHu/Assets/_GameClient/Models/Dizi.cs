@@ -300,8 +300,8 @@ namespace _GameClient.Models
     //弟子模型,处理历练事件
     public partial class Dizi
     {
-        public IEnumerable<IStacking<IGameItem>> Items => Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
-        public AutoAdventure Adventure => State.Adventure;
+        public IEnumerable<IStacking<IGameItem>> Items => State.Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
+        //public AutoAdventure Adventure => State.Adventure;
         internal void AdventureStart(IAutoAdvMap map, long startTime, int messageSecs,bool isProduction)
         {
             State.StartAdventure(map, startTime, messageSecs, isProduction);
@@ -312,9 +312,9 @@ namespace _GameClient.Models
 
         internal void AdventureStoryLogging(DiziActivityLog story)
         {
-            if (Adventure.State == AutoAdventure.States.End)
+            if (State.Adventure.State == AutoAdventure.States.End)
                 throw new NotImplementedException();
-            Adventure.RegStory(story);
+            State.RegAutoAdvStory(story);
         }
         internal void AdventureRecall(long now, int lastMile, long reachingTime)
         {

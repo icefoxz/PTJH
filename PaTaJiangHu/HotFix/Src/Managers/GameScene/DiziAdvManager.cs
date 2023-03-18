@@ -152,28 +152,9 @@ internal class DiziAdvManager : MainPageBase
             SetDizi(SelectedDizi);
             SlotUpdate(SelectedDizi?.Guid);
             var dizi = SelectedDizi;
-            ElementMgr.SetInteraction(dizi.Adventure == null);
-            AdvLayoutView.SetInteraction(dizi.Adventure == null);
-            if (dizi.Adventure != null)
-            {
-                switch (dizi.Adventure.State)
-                {
-                    case AutoAdventure.States.Progress:
-                        XDebug.LogWarning(dizi.Name + "正在历练中");
-                        break;
-                    case AutoAdventure.States.Recall:
-                        XDebug.LogWarning(dizi.Name + "正在回门派中");
-                        break;
-                    case AutoAdventure.States.End:
-                        XDebug.LogWarning(dizi.Name + "回到门派等进入");
-                        break;
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            else
-            {
-                //闲置状态
-            }
+            var isIdleState = dizi.State.Current == DiziStateHandler.States.Idle;
+            ElementMgr.SetInteraction(isIdleState);
+            AdvLayoutView.SetInteraction(isIdleState);
         }
         public void SlotUpdate(string diziGuid)
         {
@@ -413,18 +394,16 @@ internal class DiziAdvManager : MainPageBase
                 SelectedDizi = dizi;
                 //LogView.ClearList(ui => ui.Destroy());
                 var mode = Modes.None;
-                if (dizi.Adventure == null)
-                    mode = Modes.Prepare;
-                else
+                mode = dizi.State.Current switch
                 {
-                    mode = dizi.Adventure.State switch
-                    {
-                        AutoAdventure.States.Progress => Modes.Adventure,
-                        AutoAdventure.States.Recall => Modes.Returning,
-                        AutoAdventure.States.End => Modes.Waiting,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                }
+                    DiziStateHandler.States.Lost => Modes.Returning,
+                    DiziStateHandler.States.Idle => Modes.Prepare,
+                    DiziStateHandler.States.AdvProgress => Modes.Adventure,
+                    DiziStateHandler.States.AdvProduction => Modes.Adventure,
+                    DiziStateHandler.States.AdvReturning => Modes.Returning,
+                    DiziStateHandler.States.AdvWaiting => Modes.Waiting,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
                 SetModes(mode);
             }
 
@@ -432,15 +411,23 @@ internal class DiziAdvManager : MainPageBase
             {
                 if (SelectedDizi.Guid != d.Guid) return;
                 var messageCount = 0;
-                if (SelectedDizi.Adventure != null)
-                    messageCount = SelectedDizi.Adventure.StoryLog.Count;
+                var isAdventureMode = SelectedDizi.State is
+                {
+                    Current:
+                    DiziStateHandler.States.AdvProduction or
+                    DiziStateHandler.States.AdvProgress or
+                    DiziStateHandler.States.AdvReturning or
+                    DiziStateHandler.States.AdvWaiting
+                };
+                if (isAdventureMode)
+                    messageCount = SelectedDizi.State.Adventure.StoryLog.Count;
                 Scroll_advLog.SetList(messageCount);
             }
 
             private IView OnLogSet(int index, View view)
             {
                 var log = new LogPrefab(view);
-                var storyLog = SelectedDizi.Adventure.StoryLog;
+                var storyLog = SelectedDizi.State.Adventure.StoryLog;
                 var message = storyLog[storyLog.Count - index - 1];
                 log.Display(true);
                 log.LogMessage(message);
@@ -490,7 +477,7 @@ internal class DiziAdvManager : MainPageBase
                 for (var i = 0; i < d.Capable.Bag; i++)
                 {
 
-                    var item = d.Adventure?.Rewards.Count > i ? d.Adventure.Rewards[i] : null;
+                    var item = d.State.Adventure?.Rewards.Count > i ? d.State.Adventure.Rewards[i] : null;
                     var ui = RewardItemView.Instance(v => new Prefab_rewardItem(v));
                     if (item != null)
                         ui.SetIco(null);

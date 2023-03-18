@@ -58,7 +58,7 @@ namespace Server.Controllers
                 CurrentEvent.OnNextEvent += OnNextEventTrigger;
                 CurrentEvent.OnAdjustmentEvent += OnAdjustEventTrigger;
                 CurrentEvent.OnRewardEvent += OnRewardTrigger;
-                var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.Adventure, dizi: dizi);
+                var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.State.Adventure, dizi: dizi);
                 OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
                 CurrentEvent.EventInvoke(advArg);
 

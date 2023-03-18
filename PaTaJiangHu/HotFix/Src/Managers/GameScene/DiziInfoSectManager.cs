@@ -105,7 +105,7 @@ internal class DiziInfoSectManager : MainPageBase
         {
             if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
             SetDizi(SelectedDizi);
-            CharInfo.SetInteraction(SelectedDizi.Adventure == null);
+            CharInfo.SetInteraction(SelectedDizi.State.Current == DiziStateHandler.States.Idle);
         }
 
         private void UpdateDiziStamina(string diziGuid)

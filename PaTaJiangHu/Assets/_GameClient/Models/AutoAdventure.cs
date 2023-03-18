@@ -83,7 +83,7 @@ namespace _GameClient.Models
                     Occasion = placeName;
                 LastMile = totalMile;
                 if (isAdvEnd && State == States.Progress)
-                    AdvController.AdventureRecall(Dizi.Guid);
+                    AdvController.DirectRecallAdv(Dizi.Guid);
             });
             UpdateStoryService?.Invoke();
         }
@@ -178,7 +178,7 @@ namespace _GameClient.Models
 
             IEnumerator ReturnFromAdventure()
             {
-                yield return new WaitUntil(() => Mode == Modes.Polling && LastUpdate >= reachingTime);
+                yield return new WaitUntil(() => Mode == Modes.Polling && SysTime.UnixNow >= reachingTime);
                 UpdateServiceName("已回到山门.");
                 var advLog = new DiziActivityLog(Dizi.Guid, SysTime.UnixNow, LastMile);
                 advLog.SetMessages(new[] { $"{Dizi.Name}已回到山门!" });
