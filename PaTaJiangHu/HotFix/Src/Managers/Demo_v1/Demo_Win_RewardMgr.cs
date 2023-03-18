@@ -13,7 +13,7 @@ namespace HotFix_Project.Managers.Demo_v1
         private Win_Reward RewardWindow { get; set; } 
         protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
         protected override string ViewName => "demo_win_reward";
-        protected override bool IsDynamicPixel => false;
+        protected override bool IsDynamicPixel => true;
         public Demo_Win_RewardMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {

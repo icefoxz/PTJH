@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Server.Configs.Items
 {
     [CreateAssetMenu(fileName = "weaponSo", menuName = "物件/弟子/武器")]
-    [Serializable] internal class WeaponFieldSo : AutoUnderscoreNamingObject, IEquipment
+    [Serializable] internal class WeaponFieldSo : AutoUnderscoreNamingObject,IWeapon
     {
         private bool GetItem()
         {

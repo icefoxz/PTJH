@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 namespace Server.Configs.Items
 {
     [CreateAssetMenu(fileName = "armorSo",menuName = "物件/弟子/防具")]
-    [Serializable] public class ArmorFieldSo : AutoUnderscoreNamingObject,IGameItem
+    [Serializable] public class ArmorFieldSo : AutoUnderscoreNamingObject,IArmor
     {
         [FormerlySerializedAs("护甲")][SerializeField] private int 加血;
         [SerializeField] private SkillGrades 品级;
@@ -16,6 +16,7 @@ namespace Server.Configs.Items
         [SerializeField][TextArea] private string 说明;
 
         public int AddHp => 加血;
+        public EquipKinds EquipKind => EquipKinds.Armor;
         public SkillGrades Grade => 品级;
         public ItemType Type => ItemType.Equipment;
         public int Price => 价钱;
