@@ -121,8 +121,16 @@ namespace Server.Configs.Adventures
             };
         }
 
-        private bool InConInTerm(IConditionValue con, ConValueSettingField[] clauses) =>
-            clauses.All(c => c.InTerm(con.Value, con.Max));
+        private bool InConInTerm(IConditionValue con, ConValueSettingField[] clauses)
+        {
+            return Mode switch
+            {
+                Modes.And => clauses.All(c => c.InTerm(con.Value, con.Max)),
+                //or条件必须要有内容才行,否则依然返回true
+                Modes.Or => clauses.Any() && clauses.All(c => c.InTerm(con.Value, con.Max)),
+                _ => throw new ArgumentOutOfRangeException(nameof(Mode), Mode, null)
+            };
+        }
 
         //public void ResetDefault() => 状态 = Array.Empty<ConValueSettingField>();
 
