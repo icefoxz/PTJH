@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Random = System.Random;
@@ -47,10 +48,29 @@ namespace Utls
                 loop++;
             }
 
-            Console.WriteLine($"loop = {loop}");
-            return array;
+            return MinValueAligner(array, min, 10);
         }
+        private static int[] MinValueAligner(int[] array, int min, int randomValue)
+        {
+            var ranArray = array.Where(i => i > min).ToList();
+            var max = array.Max();
+            var minArray = array.Where(i => i <= min).ToArray();
+            var alignedValue = 0;
+            for (var i = 0; i < minArray.Length; i++)
+            {
+                alignedValue += randomValue + 1;
+                minArray[i] += Random.Next(0, alignedValue);
+            }
 
+            for (var i = 0; i < ranArray.Count; i++)
+            {
+                if (ranArray[i] == max)
+                    ranArray[i] -= alignedValue;
+            }
+
+            ranArray.AddRange(minArray);
+            return ranArray.ToArray();
+        }
     }
 
     public static class UnityDebugExtension

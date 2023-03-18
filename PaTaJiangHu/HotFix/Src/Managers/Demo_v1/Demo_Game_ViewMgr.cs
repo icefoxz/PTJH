@@ -79,6 +79,7 @@ namespace HotFix_Project.Managers.Demo_v1
             private Text Text_placeTitle { get; }
             private Text Text_mile { get; }
             private View_diziBag DiziBagView { get; }
+            private View_bagCount BagCount { get; }
             private Text Text_status { get; }
             private Text Text_time { get; }
 
@@ -88,6 +89,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 Text_placeTitle = v.GetObject<Text>("text_placeTitle");
                 Text_mile = v.GetObject<Text>("text_mile");
                 DiziBagView = new View_diziBag(v.GetObject<View>("view_diziBag"));
+                BagCount = new View_bagCount(v.GetObject<View>("view_bagCount"));
                 Text_status = v.GetObject<Text>("text_status");
                 Text_time = v.GetObject<Text>("text_time");
             }
@@ -112,6 +114,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     for (; i < reward.Packages.Length; i++) contents.Add(i);
                 }
                 foreach (var itemIndex in contents) DiziBagView.Set(itemIndex, View_diziBag.BagStates.Content);
+                BagCount.Set(contents.Count, dizi.Capable.Bag);
             }
 
             private static int[] GetIndexes(int length)
@@ -306,6 +309,28 @@ namespace HotFix_Project.Managers.Demo_v1
                         Img_content.gameObject.SetActive(state == BagStates.Content);
                         Img_disable.gameObject.SetActive(state == BagStates.Disable);
                     }
+                }
+            }
+            private class View_bagCount : UiBase
+            {
+                private Text Text_bagValue { get; }
+                private Text Text_bagMax { get; }
+
+                public View_bagCount(IView v) : base(v, true)
+                {
+                    Text_bagValue= v.GetObject<Text>("text_bagValue");
+                    Text_bagMax = v.GetObject<Text>("text_bagMax");
+                }
+
+                public void Set(int value, int max)
+                {
+                    if (value <= 0 && max <= 0)
+                    {
+                        Display(false);
+                        return;
+                    }
+                    Text_bagValue.text = value.ToString();
+                    Text_bagMax.text = max.ToString();
                 }
             }
         }
