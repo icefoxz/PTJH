@@ -40,6 +40,11 @@ namespace HotFix_Project.Managers.Demo_v1
 
         protected override void RegEvents()
         {
+            Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
+            {
+                var guid = b.GetString(0);
+                View_diziActivity.Set(guid);
+            });
             Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Message, b =>
             {
                 var guid = b.GetString(0);

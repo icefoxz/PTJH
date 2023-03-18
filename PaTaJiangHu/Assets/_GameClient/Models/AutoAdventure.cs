@@ -186,6 +186,7 @@ namespace _GameClient.Models
                 yield return new WaitForSeconds(1);
                 recallAction?.Invoke();
                 State = States.End;
+                Game.MessagingManager.Send(EventString.Dizi_Params_StateUpdate, Dizi.Guid);
                 Game.MessagingManager.Send(EventString.Dizi_Adv_End, Dizi.Guid);
             }
         }
