@@ -31,7 +31,7 @@ namespace Server.Controllers
 
             if (consume > stock)
             {
-                XDebug.Log($"门派资源: {con}不足! {dizi.Name} 消耗量={consume}, 当前库存={stock}!");
+                XDebug.Log($"门派资源: {resourceType}不足! {dizi.Name} 消耗量={consume}, 当前库存={stock}!");
                 Game.MessagingManager.SendParams(EventString.Win_PopUp, dizi.Guid, "门派资源不足以消费!", stock, consume);
                 return;
             }

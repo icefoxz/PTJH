@@ -43,7 +43,7 @@ namespace HotFix_Project.Managers.Demo_v1
             Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
             {
                 var guid = b.GetString(0);
-                View_diziActivity.Set(guid);
+                View_diziActivity.UpdateActivity(guid);
             });
             Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Message, b =>
             {
@@ -100,7 +100,13 @@ namespace HotFix_Project.Managers.Demo_v1
             {
                 var dizi = Game.World.Faction.GetDizi(diziGuid);
                 SelectedDizi = dizi;
-                var mode = dizi.State.Current switch
+                UpdateActivity(diziGuid);
+            }
+
+            public void UpdateActivity(string guid)
+            {
+                if (SelectedDizi==null || SelectedDizi.Guid != guid) return;
+                var mode = SelectedDizi.State.Current switch
                 {
                     DiziStateHandler.States.Lost => View_Buttons.Modes.Lost,
                     DiziStateHandler.States.Idle => View_Buttons.Modes.Idle,

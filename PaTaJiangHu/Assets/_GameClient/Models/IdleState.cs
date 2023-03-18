@@ -19,6 +19,7 @@ namespace _GameClient.Models
         /// </summary>
         public bool IsActive { get; private set; }
 
+        protected override string CoName => "闲置";
         private readonly List<string> _messages = new List<string>();
         public IReadOnlyList<string> Messages => _messages;
 

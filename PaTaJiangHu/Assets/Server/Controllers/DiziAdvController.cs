@@ -93,7 +93,9 @@ namespace Server.Controllers
         public void AdventureRecall(string guid)
         {
             var dizi = Faction.GetDizi(guid);
-            if (dizi.State.Current != DiziStateHandler.States.AdvProgress)
+            if (dizi.State.Current is not (
+                DiziStateHandler.States.AdvProgress or 
+                DiziStateHandler.States.AdvProduction))
                 XDebug.LogError($"状态异常!{dizi}不可以召回 : {dizi.State.Current}");
             CheckMile(dizi.State.Adventure.Map.Id, dizi.Guid, null, () =>
             {

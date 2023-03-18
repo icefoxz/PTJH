@@ -22,14 +22,16 @@ namespace _GameClient.Models
             OnUpdate = onUpdate;
             OnServiceEnd = onServiceEnd;
         }
+
         /// <summary>
         /// 启动服务
         /// </summary>
         /// <param name="parentName">GameObject父件,如果没有改父件将创建一个</param>
-        public void StartService(string parentName)
+        /// <param name="serviceName"></param>
+        public void StartService(string parentName,string serviceName)
         {
             IsRunning = true;
-            CoInstance = Game.CoService.RunCo(CoUpdate(), OnServiceEnd, parentName);
+            CoInstance = Game.CoService.RunCo(CoUpdate(), OnServiceEnd, parentName, serviceName);
         }
         /// <summary>
         /// 只一次触发有效.

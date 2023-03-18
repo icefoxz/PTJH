@@ -31,7 +31,7 @@ namespace _GameClient.Models
             StartTime = startTime;
             LastUpdate = startTime;
             CoService = new CoPollingInstance(1, UpdateEverySecs);
-            CoService.StartService(diziName);
+            CoService.StartService(diziName, CoName);
             ActivityPlayer = activityPlayer;
         }
 

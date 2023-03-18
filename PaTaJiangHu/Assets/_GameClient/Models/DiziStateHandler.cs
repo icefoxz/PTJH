@@ -53,10 +53,11 @@ namespace _GameClient.Models
                 if (Idle != null) return States.Idle;
                 if (Adventure != null)
                 {
-                    if (Adventure.IsProduction) return States.AdvProduction;
                     return Adventure.State switch
                     {
-                        AutoAdventure.States.Progress => States.AdvProgress,
+                        AutoAdventure.States.Progress => Adventure.IsProduction
+                            ? States.AdvProduction
+                            : States.AdvProgress,
                         AutoAdventure.States.Recall => States.AdvReturning,
                         AutoAdventure.States.End => States.AdvWaiting,
                         _ => throw new ArgumentOutOfRangeException()
