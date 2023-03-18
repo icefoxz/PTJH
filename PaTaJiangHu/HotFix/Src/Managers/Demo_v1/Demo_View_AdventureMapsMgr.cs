@@ -85,9 +85,18 @@ namespace HotFix_Project.Managers.Demo_v1
                 });
                 Btn_cancel = v.GetObject<Button>("btn_cancel");
                 Btn_cancel.OnClickAdd(() => Display(false));
+                SetSelectionIndex();
             }
 
-            private int SelectedIndex { get; set; }
+            //-1 = 没有选择任何东西
+            private int SelectedIndex { get; set; } = -1;
+            //如果选择<=-1将不能按
+            private void SetSelectionIndex(int index = -1)
+            {
+                SelectedIndex = index;
+                Btn_action.interactable = SelectedIndex > -1;
+            }
+
             public void ListMap(IAutoAdvMap[] maps)
             {
                 MapView.ClearList(ui=>ui.Destroy());
@@ -98,6 +107,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     ui.Set(map.Name, map.About, map.ActionLingCost);
                     ui.SetMapImage(map.Image);
                 }
+                SetSelectionIndex();
             }
 
             private void SetSelected(int mapId)
@@ -107,7 +117,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     var ui = MapView.List[i];
                     var selected = ui.Map.Id == mapId;
                     ui.SetSelected(selected);
-                    if (selected) SelectedIndex = mapId;
+                    if (selected) SetSelectionIndex(mapId);
                 }
             }
 
