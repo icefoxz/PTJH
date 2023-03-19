@@ -54,12 +54,18 @@ namespace Server.Controllers
                 //如果强制退出事件
                 IsAdvFailed = dizi.Stamina.Con.IsExhausted && !Story.ContinueOnExhausted;
                 if (IsAdvFailed) break;
+                var lastEvent = CurrentEvent;
                 CurrentEvent.OnLogsTrigger += OnLogsTrigger;
                 CurrentEvent.OnNextEvent += OnNextEventTrigger;
                 CurrentEvent.OnAdjustmentEvent += OnAdjustEventTrigger;
                 CurrentEvent.OnRewardEvent += OnRewardTrigger;
                 var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.State.Adventure, dizi: dizi);
                 OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
+                if (advArg == null)
+                    throw new NullReferenceException("事件中间件 = null!");
+                if (CurrentEvent == null)
+                    throw new NullReferenceException(
+                        $"弟子:{dizi}历练,当前事件为null!请检查故事:{Story.Name}. 上一个事件{lastEvent.name}!");
                 CurrentEvent.EventInvoke(advArg);
 
                 if (CurrentEvent is AdvQuitEventSo q)
