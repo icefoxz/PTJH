@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
+using Server.Controllers;
+using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
@@ -16,7 +16,10 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Top;
         protected override string ViewName => "demo_view_conProps";
         protected override bool IsDynamicPixel => true;
+
         public Demo_View_ConPropsMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
+
+        private static Color GetBuffColor(bool isDebuff)=> Game.Controllers.Get<DiziController>().BuffColor(isDebuff);
         protected override void Build(IView view)
         {
             View_conProps = new View_ConProps(view);
@@ -104,6 +107,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     Text_skillValue.text = SetText(skill);
                     Text_equipmentValue.text = SetText(equip);
                     Text_conValue.text = SetText(condition);
+                    Text_conValue.color = GetBuffColor(condition < 0);
 
                     string SetText(int v, string prefix = "") => v == 0 ? string.Empty : prefix + v;
                 }

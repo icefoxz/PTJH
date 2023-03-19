@@ -13,7 +13,7 @@ namespace Server.Controllers
         private Config.DiziConfig DiziConfig => Game.Config.DiziCfg; 
         private PropStateConfigSo PropStateCfg => Game.Config.DiziCfg.PropState;
         private Faction Faction => Game.World.Faction;
-
+        public Color BuffColor(bool isDebuff = false) => PropStateCfg.GetBuffColor(isDebuff);
         public (string title, Color color) GetSilverCfg(double ratio) => PropStateCfg.GetSilverCfg(ratio);
         public (string title, Color color) GetFoodCfg(double ratio) => PropStateCfg.GetFoodCfg(ratio);
         public (string title, Color color) GetEmotionCfg(double ratio) => PropStateCfg.GetEmotionCfg(ratio);

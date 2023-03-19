@@ -15,13 +15,17 @@ namespace Server.Configs.Characters
         [SerializeField] private PropCfg 敏捷;
         [SerializeField] private PropCfg 血量;
         [SerializeField] private PropCfg 内力;
+        [SerializeField] private Color 增益颜色;
+        [SerializeField] private Color 减益颜色;
 
         public ConfigField Config => 状态属性设定;
         private PropCfg StrengthCfgs => 力量;
         private PropCfg AgilityCfgs => 敏捷;
         private PropCfg HpCfgs => 血量;
         private PropCfg MpCfgs => 内力;
-
+        private Color BuffColor => 增益颜色;
+        private Color DebuffColor => 减益颜色;
+        public Color GetBuffColor(bool isDebuff = false) => isDebuff ? DebuffColor : BuffColor;
         public (string title, Color color) GetFoodCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.FoodMap);
         public (string title, Color color) GetSilverCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.SilverMap);
         public (string title, Color color) GetEmotionCfg(double ratio) => GetPropMapping((int)(ratio * 100), Config.EmotionMap);
