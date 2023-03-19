@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
@@ -25,9 +23,8 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void Build(IView view)
         {
-            DiziList = new View_DiziList(view, diziIndex =>
+            DiziList = new View_DiziList(view, dizi =>
             {
-                var dizi = Game.World.Faction.DiziList[diziIndex];
                 DemoAgent.SetDiziView(dizi.Guid);
             });
         }
@@ -53,10 +50,14 @@ namespace HotFix_Project.Managers.Demo_v1
             private Element Elm_production { get; }
             private Element Elm_adventure { get; }
             private Element Elm_lost { get; }
-            private event Action<int> OnDiziSelected;
+            private event Action<Dizi> OnDiziSelected;
             private string SelectedDiziGuid { get; set; }
             private Element[] AllFilter { get; }
-            public View_DiziList(IView v,Action<int> onDiziClicked) : base(v, true)
+
+            //cache 当前弟子列表
+            private Dizi[] CurrentList { get; set; }
+
+            public View_DiziList(IView v,Action<Dizi> onDiziClicked) : base(v, true)
             {
                 OnDiziSelected = onDiziClicked;
                 Scroll_dizi = v.GetObject<ScrollRect>("scroll_dizi");
@@ -128,11 +129,12 @@ namespace HotFix_Project.Managers.Demo_v1
                 Elm_adventure.SetValue(GetAdventureDizi().Length, faction.MaxDizi);
                 Elm_lost.SetValue(GetLostDizi().Length, faction.MaxDizi);
             }
+
             public void UpdateList(Dizi[] list = null)
             {
                 if(list == null)
                     list = Game.World.Faction.DiziList.ToArray();
-            
+                CurrentList = list;
                 ClearList();
                 for(var i = 0; i< list.Length; i++)
                 {
@@ -141,13 +143,12 @@ namespace HotFix_Project.Managers.Demo_v1
                     var index = i;
                     var ui = DiziList.Instance(v => new DiziPrefab(v, () =>
                     {
-                        OnDiziSelected?.Invoke(index);
+                        OnDiziSelected?.Invoke(CurrentList[index]);
                         SetSelected(guid);
                     }));
                     ui.Init(dizi);
                 }
             }
-
             private void SetSelected(string diziGuid)
             {
                 SelectedDiziGuid = Game.World.Faction.GetDizi(diziGuid)?.Guid 

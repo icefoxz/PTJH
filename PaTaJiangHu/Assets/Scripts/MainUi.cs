@@ -44,6 +44,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     [SerializeField] private RectTransform _midUi;
     [SerializeField] private RectTransform _btmUi;
     [SerializeField] private RectTransform _window;
+    [SerializeField] private Transform _windowPanel;
     [SerializeField] private Image _panel;
     [SerializeField] private MainPageLayout _mainPage;
 
@@ -51,6 +52,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     public RectTransform MidUi => _midUi;
     public RectTransform BtmUi => _btmUi;
     public RectTransform Window => _window;
+    public Transform WindowPanel => _windowPanel;
 
     public Image Panel => _panel;
     public MainPageLayout MainPage => _mainPage;
@@ -98,6 +100,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     public void HideWindows()
     {
         HideLayoutChildren(Window);
+        Display(true, WindowPanel);
         Display(false, Window);
     }
 
