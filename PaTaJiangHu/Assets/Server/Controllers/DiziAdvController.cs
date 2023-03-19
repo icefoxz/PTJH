@@ -195,7 +195,11 @@ namespace Server.Controllers
             if (dizi.State.Adventure is not { State: AutoAdventure.States.Progress }) return (true, string.Empty);//返回故事继续
             var (map, isProduction) = GetMap(mapId);
             var places = map.PickAllTriggerPlaces(fromMiles, toMiles);//根据当前路段找出故事地点
-            if (places.Length <= 0) return (true, string.Empty); //返回故事继续
+            if (places.Length <= 0)
+            {
+                XDebug.Log($"{dizi}当前({fromMiles}~{toMiles}里)已在[{map.Name}]找不到任何可执行的地点~自动返回!");
+                return (true, string.Empty); //结束故事
+            }
             for (var i = 0; i < places.Length; i++) //为每一个故事地点获取一个故事
             {
                 var place = places[i];
@@ -224,6 +228,12 @@ namespace Server.Controllers
                 }
 
                 if (story.IsForceQuit) return (true, place.Name); //结束故事
+            }
+
+            if (map.MaxMiles < toMiles) //如果超过最大里数
+            {
+                XDebug.Log($"{dizi}当前({fromMiles}~{toMiles}里)已超过[{map.Name}]最大里数:[{map.MaxMiles}],历练结束!");
+                return (true, string.Empty);
             }
             return (false, places.Last().Name); //返回故事继续
         }

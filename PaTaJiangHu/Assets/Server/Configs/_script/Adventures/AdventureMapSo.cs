@@ -71,6 +71,8 @@ namespace Server.Configs.Adventures
             }
             return Array.Empty<IAdvPlace>();
         }
+
+        public int MaxMiles => MajorPlace.MaxMiles;
         /// <summary>
         /// 列出所有大故事的里数
         /// </summary>
@@ -92,7 +94,7 @@ namespace Server.Configs.Adventures
         {
             [SerializeField] private MilePlace[] 地点配置;
             private MilePlace[] MilePlaces => 地点配置;
-
+            public int MaxMiles => MilePlaces.Max(m => m.Mile);
             public (int mile, IAdvPlace place)[] GetRandomPlace(int fromMile, int toMiles)
             {
                 return MilePlaces.Where(p => fromMile < p.Mile && p.Mile <= toMiles)
