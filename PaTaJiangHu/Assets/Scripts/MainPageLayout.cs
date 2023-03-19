@@ -8,30 +8,45 @@ public class MainPageLayout : View
     public enum Sections
     {
         Top,
-        Mid,
-        Btm,
-        Page
+        Game,
+        Btm
     }
     [SerializeField] private Section _top;
-    [SerializeField] private Section _mid;
+    [SerializeField] private Transform _game;
     [SerializeField] private Section _btm;
-    [SerializeField] private Section _page;
+    [SerializeField] private Transform _page;
 
     public Transform Top => _top.Tran;
-    public Transform Mid => _mid.Tran;
+    public Transform Game => _game;
     public Transform Btm => _btm.Tran;
-    public Transform Page => _page.Tran;
 
     public void HideAll(Sections section)
     {
-        var sect = GetSect(section);
-        foreach (Transform t in sect.Tran) 
-            t.gameObject.SetActive(sect.Bg == t);//背景会一直显示
+        var tran = GetTran(section);
+        foreach (Transform t in tran)
+        {
+            switch (section)
+            {
+                case Sections.Top:
+                    //背景会一直显示
+                    t.gameObject.SetActive(_top.Bg.transform == t);
+                    break;
+                case Sections.Btm:
+                    //背景会一直显示
+                    t.gameObject.SetActive(_btm.Bg.transform == t);
+                    break;
+                case Sections.Game:
+                    t.gameObject.SetActive(false);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(section), section, null);
+            }
+        }
     }
     public void Set(IView view, Sections section, bool resetPos)
     {
-        var sect = GetSect(section);
-        view.GameObject.transform.SetParent(sect.Tran);
+        var tran = GetTran(section);
+        view.GameObject.transform.SetParent(tran);
         if (resetPos)
         {
             var rect = (RectTransform)view.GameObject.transform;
@@ -42,14 +57,13 @@ public class MainPageLayout : View
         }
     }
 
-    private Section GetSect(Sections section)
+    private Transform GetTran(Sections section)
     {
         var sectionTran = section switch
         {
-            Sections.Top => _top,
-            Sections.Mid => _mid,
-            Sections.Btm => _btm,
-            Sections.Page => _page,
+            Sections.Top => _top.Tran,
+            Sections.Game => _game,
+            Sections.Btm => _btm.Tran,
             _ => throw new ArgumentOutOfRangeException(nameof(section), section, null)
         };
         return sectionTran;

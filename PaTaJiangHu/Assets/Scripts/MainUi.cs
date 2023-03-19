@@ -125,9 +125,12 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     private void ResetAllLayoutChildren()
     {
         HideLayoutChildren(TopUi);
-        HideLayoutChildren(MainPage.Top);//MidUi
-        HideLayoutChildren(MainPage.Mid);//MidUi
-        HideLayoutChildren(MainPage.Btm);//MidUi
+        MainPage.HideAll(MainPageLayout.Sections.Top);
+        MainPage.HideAll(MainPageLayout.Sections.Game);
+        MainPage.HideAll(MainPageLayout.Sections.Btm);
+        //HideLayoutChildren(MainPage.Top);//MidUi
+        //HideLayoutChildren(MainPage.Game);//MidUi
+        //HideLayoutChildren(MainPage.Btm);//MidUi
         HideLayoutChildren(BtmUi);
         HideLayoutChildren(Panel.transform);
     }

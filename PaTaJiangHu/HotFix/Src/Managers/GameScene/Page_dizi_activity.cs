@@ -53,7 +53,7 @@ internal class Page_dizi_activity :MainPageBase
         Rewards.Display(false);
     }
 
-    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Page;
+    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Btm;
 
     private class View_main_diziState : UiBase
     {

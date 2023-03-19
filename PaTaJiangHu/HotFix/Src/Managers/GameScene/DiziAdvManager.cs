@@ -21,7 +21,7 @@ internal class DiziAdvManager : MainPageBase
     private DiziAdvController DiziAdvController { get; set; }
     private FactionController FactionController { get; set; }
 
-    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
+    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Game;
     protected override string ViewName => "view_diziAdv";
     protected override bool IsDynamicPixel => true;
 

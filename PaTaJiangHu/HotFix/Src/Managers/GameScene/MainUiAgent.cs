@@ -157,12 +157,7 @@ internal class MainUiAgent
             var section = Nav[first.Manager];
             foreach (var manager in Data[section])
             {
-                if(maps.Contains(manager))
-                {
-                    manager.Show();
-                    continue;
-                }
-                manager.Hide();
+                if(maps.Contains(manager)) manager.Show();
             }
         }
 

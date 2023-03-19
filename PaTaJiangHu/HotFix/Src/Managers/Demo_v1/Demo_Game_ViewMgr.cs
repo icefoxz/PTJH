@@ -16,7 +16,7 @@ namespace HotFix_Project.Managers.Demo_v1
     internal class Demo_Game_ViewMgr : MainPageBase
     {
         private Game_View GameView { get; set; }
-        protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Mid;
+        protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Game;
         protected override string ViewName => "demo_game_view";
         protected override bool IsDynamicPixel => true;
         public Demo_Game_ViewMgr(MainUiAgent uiAgent) : base(uiAgent) { }
