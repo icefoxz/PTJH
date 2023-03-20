@@ -81,6 +81,8 @@ namespace HotFix_Project.Managers.Demo_v1
                 Emotion.SetInteraction(isIdleState);
                 Injury.SetInteraction(isIdleState);
                 Inner.SetInteraction(isIdleState);
+                if (isIdleState && dizi.Silver.Value == 100) Silver.SetInteraction(false);
+                else Silver.SetInteraction(true);
             }
             private void SetDiziElement(Dizi dizi)
             {
