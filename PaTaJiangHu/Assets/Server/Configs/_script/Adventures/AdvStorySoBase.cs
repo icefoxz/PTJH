@@ -47,7 +47,7 @@ namespace Server.Configs.Adventures
 
     public interface IAdvEvent
     {
-        string name { get; }
+        string Name { get; }
         /// <summary>
         /// 执行事件
         /// </summary>
