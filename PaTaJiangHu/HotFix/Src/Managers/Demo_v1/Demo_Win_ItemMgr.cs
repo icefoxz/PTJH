@@ -95,7 +95,6 @@ namespace HotFix_Project.Managers.Demo_v1
                     if (!IsDiziEquipped) return;
                     onUnequip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
                     ListItems((ItemTypes)SelectedType);
-                    Display(false); //Temporary
                 });
                 Btn_equip = v.GetObject<Button>("btn_equip");
                 Btn_equip.OnClickAdd(() =>
@@ -103,7 +102,6 @@ namespace HotFix_Project.Managers.Demo_v1
                     if (SelectedItemIndex < 0) return;
                     onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
                     ListItems((ItemTypes)SelectedType);
-                    Display(false); //Temporary
                 });
                 Btn_x = v.GetObject<Button>("btn_x");
                 Btn_x.OnClickAdd(() =>
