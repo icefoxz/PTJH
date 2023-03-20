@@ -169,6 +169,17 @@ namespace _GameClient.Models
             _ => throw new ArgumentOutOfRangeException()
         };
 
+        public IRewardHandler RewardHandler => Current switch
+        {
+            States.Lost => null,
+            States.Idle => Idle,
+            States.AdvProgress => Adventure,
+            States.AdvProduction => Adventure,
+            States.AdvReturning => Adventure,
+            States.AdvWaiting => Adventure,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
         public DiziStateHandler(Dizi dizi, UnityAction<string> messageAction, UnityAction<string> adjustAction,
             UnityAction rewardAction)
         {

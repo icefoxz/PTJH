@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Server.Configs.Adventures;
 using Server.Controllers;
 using Utls;
 
@@ -8,7 +9,7 @@ namespace _GameClient.Models
     /// <summary>
     /// 闲置状态
     /// </summary>
-    public class IdleState : AdvPollingHandler
+    public class IdleState : AdvPollingHandler, IRewardHandler
     {
         private Dizi Dizi { get; }
         
@@ -91,6 +92,13 @@ namespace _GameClient.Models
             {
                 CurrentStory = null;//故事结束
             }
+        }
+
+        public void SetReward(IGameReward reward)
+        {
+            var con = Game.Controllers.Get<RewardController>();
+            //不显示奖励品
+            con.SetReward(reward, false);
         }
     }
 }

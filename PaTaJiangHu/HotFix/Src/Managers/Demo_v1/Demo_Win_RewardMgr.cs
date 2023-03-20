@@ -49,7 +49,7 @@ namespace HotFix_Project.Managers.Demo_v1
             public void ShowRewardsContainer()
             {
                 ItemPrefab.ClearList(ui => ui.Destroy());
-                foreach( var rewards in Game.World.RewardContainer.Rewards)
+                foreach( var rewards in Game.World.RewardBoard.Rewards)
                 {
                     foreach (var item in rewards.AllItems)
                         InstancePrefab().Set(item.Item.Name, item.Item.About, item.Amount);

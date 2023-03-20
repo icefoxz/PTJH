@@ -22,12 +22,12 @@ namespace Server.Controllers
 
         public ISimulationOutcome SimOutcome { get; private set; }
         public IAdjustment Adjustment => this;
-        public IRewardHandler Handler { get; }
+        public IRewardHandler RewardHandler { get; }
 
         public AdvArg(Dizi dizi, IRewardHandler handler)
         {
             Term = Dizi = dizi;
-            Handler = handler;
+            RewardHandler = handler;
         }
 
         public void SetSimulationOutcome(ISimulationOutcome simulationOutcome)

@@ -42,7 +42,7 @@ namespace Server.Configs.Adventures
         int InteractionResult { get; }
         ISimulationOutcome SimOutcome { get; }
         IAdjustment Adjustment { get; }
-        IRewardHandler Handler { get; }
+        IRewardHandler RewardHandler { get; }
     }
 
     public interface IAdvEvent

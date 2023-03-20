@@ -13,7 +13,7 @@ public class GameWorld
     /// 玩家门派
     /// </summary>
     public Faction Faction => _faction;
-    public RewardContainer RewardContainer { get; } = new RewardContainer();
+    public RewardBoard RewardBoard { get; } = new RewardBoard();
 
     public void SetFaction(Faction faction)
     {

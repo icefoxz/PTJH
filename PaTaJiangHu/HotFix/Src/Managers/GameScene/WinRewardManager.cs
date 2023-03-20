@@ -63,7 +63,7 @@ internal class WinRewardManager : UiManagerBase
         public void ShowContainer()
         {
             ItemView.ClearList(ui => ui.Destroy());
-            foreach (var reward in Game.World.RewardContainer.Rewards)
+            foreach (var reward in Game.World.RewardBoard.Rewards)
             {
                 foreach (var item in reward.AllItems) 
                     InstancePrefab().Set(item.Item.Name, item.Amount);

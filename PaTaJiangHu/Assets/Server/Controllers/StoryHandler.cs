@@ -59,13 +59,17 @@ namespace Server.Controllers
                 CurrentEvent.OnNextEvent += OnNextEventTrigger;
                 CurrentEvent.OnAdjustmentEvent += OnAdjustEventTrigger;
                 CurrentEvent.OnRewardEvent += OnRewardTrigger;
-                var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.State.Adventure, dizi: dizi);
+                var advArg = EventMiddleware.Invoke(advEvent: CurrentEvent, rewardHandler: dizi.State.RewardHandler, dizi: dizi);
                 OnNextEventTask = new TaskCompletionSource<IAdvEvent>();
                 if (advArg == null)
                     throw new NullReferenceException("事件中间件 = null!");
                 if (CurrentEvent == null)
                     throw new NullReferenceException(
                         $"弟子:{dizi}历练,当前事件为null!请检查故事:{Story.Name}. 上一个事件{lastEvent.name}!");
+                if (advArg.RewardHandler == null)
+                    throw new NullReferenceException(
+                        $"当前奖励处理器为null,请检查状态中是否继承IRewardHandler, state = {dizi.State.Current}!");
+                
                 CurrentEvent.EventInvoke(advArg);
 
                 if (CurrentEvent is AdvQuitEventSo q)

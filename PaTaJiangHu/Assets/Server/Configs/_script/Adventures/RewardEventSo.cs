@@ -60,7 +60,7 @@ namespace Server.Configs.Adventures
             messages.Add(adjustment);
             var eventMsgs = messages.ToArray();
             OnLogsTrigger?.Invoke(eventMsgs);
-            arg.Handler.SetReward(Reward);
+            arg.RewardHandler.SetReward(Reward);
             InvokeAdjustmentEvent(new[] { adjustment });
             InvokeRewardEvent(Reward);
             OnNextEvent?.Invoke(Next);

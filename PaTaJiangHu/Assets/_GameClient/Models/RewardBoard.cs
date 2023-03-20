@@ -10,7 +10,7 @@ namespace _GameClient.Models
     /// <summary>
     /// 奖励栏模型, 用于存放或展示奖励信息
     /// </summary>
-    public class RewardContainer : ModelBase
+    public class RewardBoard : ModelBase
     {
         protected override string LogPrefix => "奖励栏";
 
