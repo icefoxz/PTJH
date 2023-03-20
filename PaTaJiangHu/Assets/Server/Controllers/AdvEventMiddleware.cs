@@ -46,7 +46,7 @@ namespace Server.Controllers
                 case AdvTypes.Reward: break; //其余的直接执行判断
                 case AdvTypes.Simulation: //执行模拟战斗
                     if (advEvent is not BattleSimulationEventSo bs)
-                        throw new NotImplementedException($"{advEvent.name} 事件类型错误!");
+                        throw new NotImplementedException($"{advEvent.Name} 事件类型错误!");
                     var diziSim = Simulator.GetSimulation(simName: dizi.Name, strength: dizi.Strength, agility: dizi.Agility,hp: dizi.Hp,mp: dizi.Mp,
                         weaponDamage: dizi.WeaponPower, armorAddHp: dizi.ArmorPower);
                     var npc = bs.GetNpc(Simulator);
