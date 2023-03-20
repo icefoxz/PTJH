@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using _GameClient.Models;
+using NameM;
 using Server.Configs.Adventures;
 using Utls;
 
@@ -69,8 +70,15 @@ namespace Server.Controllers
                 if (advArg.RewardHandler == null)
                     throw new NullReferenceException(
                         $"当前奖励处理器为null,请检查状态中是否继承IRewardHandler, state = {dizi.State.Current}!");
-                
-                CurrentEvent.EventInvoke(advArg);
+                try
+                {
+                    CurrentEvent.EventInvoke(advArg);
+                }
+                catch (Exception e)
+                {
+                    XDebug.LogError($"[{CurrentEvent?.name}]事件异常!\n{e}");
+                    throw;
+                }
 
                 if (CurrentEvent is AdvQuitEventSo q)
                 {
