@@ -17,8 +17,8 @@ namespace Server.Controllers
     /// </summary>
     internal class StoryHandler
     {
-        private const int RecursiveLimit = 9999;
-        private const int QueueLimit = 100;
+        private const int RecursiveLimit = 999;
+        private const int QueueLimit = 30;
         private int _recursiveIndex = 0;
         private List<string> Messages { get; } = new List<string>();
 
@@ -48,10 +48,10 @@ namespace Server.Controllers
             {
                 if (eventQueue.Count >= QueueLimit)
                     eventQueue.Dequeue();
-                eventQueue.Enqueue(CurrentEvent.name);
+                eventQueue.Enqueue(CurrentEvent.Name);
                 if (_recursiveIndex >= RecursiveLimit)
                     throw new StackOverflowException(
-                        $"故事{Story.Name} 死循环!检查其中事件{CurrentEvent.name}\n事件经过:{string.Join(',', eventQueue)}");
+                        $"故事{Story?.Name} 死循环!检查其中事件{CurrentEvent?.Name}\n事件经过:{string.Join(',', eventQueue)}");
                 //如果强制退出事件
                 IsAdvFailed = dizi.Stamina.Con.IsExhausted && !Story.ContinueOnExhausted;
                 if (IsAdvFailed) break;
@@ -66,7 +66,7 @@ namespace Server.Controllers
                     throw new NullReferenceException("事件中间件 = null!");
                 if (CurrentEvent == null)
                     throw new NullReferenceException(
-                        $"弟子:{dizi}历练,当前事件为null!请检查故事:{Story.Name}. 上一个事件{lastEvent.name}!");
+                        $"弟子:{dizi}历练,当前事件为null!请检查故事:{Story.Name}. 上一个事件{lastEvent?.Name}!");
                 if (advArg.RewardHandler == null)
                     throw new NullReferenceException(
                         $"当前奖励处理器为null,请检查状态中是否继承IRewardHandler, state = {dizi.State.Current}!");
@@ -76,7 +76,7 @@ namespace Server.Controllers
                 }
                 catch (Exception e)
                 {
-                    XDebug.LogError($"[{CurrentEvent?.name}]事件异常!\n{e}");
+                    XDebug.LogError($"[{CurrentEvent?.Name}]事件异常!,上一个事件为[{lastEvent?.Name}]\n{e}");
                     throw;
                 }
 
