@@ -144,7 +144,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     }
                     public void SetTime(int min, int sec)
                     {
-                        Text_Separator.gameObject.SetActive(min + sec <= 0);
+                        Text_Separator.gameObject.SetActive(min + sec >= 0);
                         Text_min.text = EmptyIfZero(min);
                         Text_sec.text = EmptyIfZero(sec);
                     }

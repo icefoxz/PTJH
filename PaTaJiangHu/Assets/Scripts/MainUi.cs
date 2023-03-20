@@ -90,7 +90,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     {
         var view = WindowMap[v];
         HideLayoutChildren(Window);
-        Display(true, Window, view);
+        Display(true, Window, WindowPanel, view);
     }
 
     public void ShowPanel() => Display(true, Panel);

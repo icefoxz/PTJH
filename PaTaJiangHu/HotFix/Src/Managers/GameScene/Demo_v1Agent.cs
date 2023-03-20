@@ -66,6 +66,7 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_View_EquipmentMgr.Set(dizi);
         Demo_Dizi_InfoMgr.Set(dizi);
         Demo_Game_ViewMgr.Set(dizi);
+        Demo_View_AdventureMapsMgr.Hide();
         Show(new UiManagerBase[]
         {
             Demo_View_ConsumeResMgr,
