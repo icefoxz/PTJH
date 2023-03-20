@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Core;
 using HotFix_Project.Managers.GameScene;
@@ -108,7 +108,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 Btn_x = v.GetObject<Button>("btn_x");
                 Btn_x.OnClickAdd(() =>
                 {
-                    Display(false);
+                    Game.MainUi.HideWindows();
                 });
             }
             private string SelectedDiziGuid { get; set; }
