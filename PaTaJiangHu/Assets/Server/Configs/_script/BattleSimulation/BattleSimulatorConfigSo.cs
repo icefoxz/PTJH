@@ -45,36 +45,56 @@ namespace Server.Configs.BattleSimulation
         /// <returns></returns>
         public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
         {
-            var playerHp = player.Defend;
-            var enemyHp = enemy.Defend;
-            var playerAtt = player.Offend <= 0 ? 1 : player.Offend;//攻击最小数为1
-            var enemyAtt = enemy.Offend <= 0 ? 1 : enemy.Offend;
-            var isPlayerWin = false;
-            var round = 1;
-            for (var i = 0; i < RoundLimit; i++)
+            var combatUnits = new List<CombatUnit>();
+            var buffMgr = new BuffManager(combatUnits);
+            var playerCombat = new CombatUnit(0, player.Name, player.Defend, player.Offend, 2, buffMgr);
+            var enemyCombat = new CombatUnit(1, enemy.Name, enemy.Defend, enemy.Offend, 1, buffMgr);
+            combatUnits.Add(playerCombat);
+            combatUnits.Add(enemyCombat);
+            var rounds = new List<RoundInfo>();
+            while (playerCombat.IsAlive && enemyCombat.IsAlive)
             {
-                enemyHp -= playerAtt; //玩家先攻击
-                if (enemyHp <= 0)
-                {
-                    isPlayerWin = true;
-                    break;
-                }
-
-                playerHp -= enemyAtt; //敌人后攻击
-                if (playerHp > 0)
-                {
-                    round++;
-                    continue;
-                }
-
-                break;
+                var r = new Round(combatUnits, buffMgr);
+                rounds.Add(r.Execute());
             }
-
-            var playerHpRatio = playerHp == 0 ? 0 : 1f * playerHp / player.Defend;
-            var messages = BattleMessageSo.GetSimulationMessages(round, isPlayerWin, player, enemy, playerHp);
-            return new Outcome(round, playerHpRatio, isPlayerWin, player.Offend,
-                enemy.Offend, player.Defend, enemy.Defend, playerHp, enemyHp, messages);
+            var isPlayerWin = playerCombat.IsAlive;
+            var roundCount = rounds.Count;
+            var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,isPlayerWin,player,enemy,playerCombat.Hp);
+            return new Outcome(roundCount, isPlayerWin, player.Offend, enemy.Offend, player.Defend, enemy.Defend,
+                playerCombat.Hp, enemyCombat.Hp, combatMessages);
         }
+        //public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
+        //{
+        //    var playerHp = player.Defend;
+        //    var enemyHp = enemy.Defend;
+        //    var playerAtt = player.Offend <= 0 ? 1 : player.Offend;//攻击最小数为1
+        //    var enemyAtt = enemy.Offend <= 0 ? 1 : enemy.Offend;
+        //    var isPlayerWin = false;
+        //    var round = 1;
+        //    for (var i = 0; i < RoundLimit; i++)
+        //    {
+        //        enemyHp -= playerAtt; //玩家先攻击
+        //        if (enemyHp <= 0)
+        //        {
+        //            isPlayerWin = true;
+        //            break;
+        //        }
+
+        //        playerHp -= enemyAtt; //敌人后攻击
+        //        if (playerHp > 0)
+        //        {
+        //            round++;
+        //            continue;
+        //        }
+
+        //        break;
+        //    }
+
+        //    var playerHpRatio = playerHp == 0 ? 0 : 1f * playerHp / player.Defend;
+        //    var messages = BattleMessageSo.GetSimulationMessages(round, isPlayerWin, player, enemy, playerHp);
+        //    return new Outcome(round, playerHpRatio, isPlayerWin, player.Offend,
+        //        enemy.Offend, player.Defend, enemy.Defend, playerHp, enemyHp, messages);
+        //}
         public int GetDeductionValueFromRemaining(int hp)
         {
             if (hp <= 0)
@@ -134,7 +154,6 @@ namespace Server.Configs.BattleSimulation
         public record Outcome : ISimulationOutcome
         {
             public int Rounds { get; }
-            public float RemainingRatio { get; }
             public bool IsPlayerWin { get; }
             public int PlayerOffend { get; }
             public int PlayerDefend { get; }
@@ -144,7 +163,7 @@ namespace Server.Configs.BattleSimulation
             public int EnemyRemaining { get; }
             public string[] CombatMessages { get; }
 
-            public Outcome(int rounds, float remainingRatio, bool isPlayerWin, int playerOffend, int enemyOffend,
+            public Outcome(int rounds, bool isPlayerWin, int playerOffend, int enemyOffend,
                 int playerDefend, int enemyDefend, int playerRemaining, int enemyRemaining, string[] combatMessages)
             {
                 Rounds = rounds;
@@ -153,7 +172,6 @@ namespace Server.Configs.BattleSimulation
                 EnemyOffend = enemyOffend;
                 PlayerDefend = playerDefend;
                 EnemyDefend = enemyDefend;
-                RemainingRatio = remainingRatio;
                 PlayerRemaining = playerRemaining;
                 CombatMessages = combatMessages;
                 EnemyRemaining = enemyRemaining;

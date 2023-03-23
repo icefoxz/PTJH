@@ -46,16 +46,13 @@ namespace Systems
         public void Initialize(UnityAction onCompleteAction, UnityAction<float> onProgressAction)
         {
             var handle = Addressables.InitializeAsync();
+            handle.Completed += _ => onCompleteAction?.Invoke();
             StartCoroutine(AutoReleaseHandleCoroutine());
 
             IEnumerator AutoReleaseHandleCoroutine()
             {
                 onProgressAction?.Invoke(handle.PercentComplete);
-                if (!handle.IsDone)
-                {
-                    yield return handle;
-                }
-                onCompleteAction();
+                yield return handle;
             }
         }
 
