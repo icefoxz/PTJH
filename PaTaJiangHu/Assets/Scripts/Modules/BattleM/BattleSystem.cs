@@ -17,7 +17,6 @@ using System.Linq;
  * CombatUnitInfo : 战斗单位信息, 主要是每次的执行都可能产出不一样的战斗单位状态,
  *      同一个单位有可能多次被攻击, 所以用这个可以更详细的记录到每次执行后的状态.
  */
-
 /// <summary>
 /// 战斗单位,
 /// </summary>
@@ -35,14 +34,11 @@ public class CombatUnit
     //队伍
     public int TeamId { get; }
 
-    private BuffManager _buffManager;
-
-    protected CombatUnit(int teamId, BuffManager buffManager)
+    protected CombatUnit(int teamId)
     {
         TeamId = teamId;
-        _buffManager = buffManager;
     }
-    public CombatUnit(int teamId, string name, int maxHp, int damage, int speed, BuffManager buffManager)
+    public CombatUnit(int teamId, string name, int maxHp, int damage, int speed)
     {
         Name = name;
         MaxHp = maxHp;
@@ -50,17 +46,27 @@ public class CombatUnit
         Damage = damage;
         Speed = speed;
         TeamId = teamId;
-        _buffManager = buffManager;
     }
 
     public void TakeDamage(int damage)
     {
-        Hp -= damage;
+        Hp -= DamageReduction(damage);
         if (Hp < 0)
         {
             Hp = 0;
         }
     }
+
+    /// <summary>
+    /// 伤害减免
+    /// </summary>
+    /// <param name="damage"></param>
+    /// <returns></returns>
+    protected virtual int DamageReduction(int damage)
+    {
+        return damage;
+    }
+
     //是否阵亡
     public bool IsDead => Hp <= 0;
     //是否还活着
@@ -76,100 +82,96 @@ public class CombatUnit
             Hp = MaxHp;
         }
     }
-    //连击, 初始为1, 如果0 将导致没有攻击
-    public virtual int GetCombos() => 1;
-    //暴击率
-    public virtual float CriticalRatio() => 0;
-    //闪避率
-    public virtual float DodgeRatio() => 0;
-    //是否反击
-    public virtual bool CanCounter() => false;
 }
 //回合记录器
-public class RoundInfo
+public class RoundInfo<TUnit,TInfo> where TUnit : CombatUnit where TInfo : CombatPerformInfo<TUnit>
 {
-    private readonly Dictionary<CombatUnit, List<CombatPerformInfo>> _infoMap;
+    private readonly Dictionary<TUnit, List<TInfo>> _infoMap;
     //每个单位在每个回合的战斗活动
-    public IReadOnlyDictionary<CombatUnit, List<CombatPerformInfo>> UnitInfoMap => _infoMap;
+    public IReadOnlyDictionary<TUnit, List<TInfo>> UnitInfoMap => _infoMap;
 
     public RoundInfo()
     {
-        _infoMap = new Dictionary<CombatUnit, List<CombatPerformInfo>>();
+        _infoMap = new Dictionary<TUnit, List<TInfo>>();
     }
 
-    public void AddUnitActionInfo(CombatUnit unit, CombatPerformInfo performInfo)
+    public void AddUnitActionInfo(TUnit unit, TInfo performInfo)
     {
         if (!UnitInfoMap.ContainsKey(key: unit))
         {
-            _infoMap[key: unit] = new List<CombatPerformInfo>();
+            _infoMap[key: unit] = new List<TInfo>();
         }
         _infoMap[key: unit].Add(item: performInfo);
     }
 }
 //战斗回合
-public class Round
+public class Round<TUnit,TInfo> where TUnit : CombatUnit where TInfo : CombatPerformInfo<TUnit>, new()
 {
-    private readonly List<CombatUnit> _combatUnits;
+    private readonly List<TUnit> _combatUnits;
 
     //所有战斗单位,不可移除
-    public IReadOnlyList<CombatUnit> CombatUnits => _combatUnits;
+    public IReadOnlyList<TUnit> CombatUnits => _combatUnits;
     //buff管理器
-    public BuffManager BuffManager { get; }
+    public BuffManager<TUnit> BuffManager { get; }
 
-    public Round(List<CombatUnit> combatUnits,BuffManager buffManager)
+    public Round(List<TUnit> combatUnits, BuffManager<TUnit> buffManager)
     {
         _combatUnits = combatUnits;
         BuffManager = buffManager;
     }
     //执行回合
-    public RoundInfo Execute()
+    public RoundInfo<TUnit, TInfo> Execute()
     {
-        var info = new RoundInfo();
+        var info = new RoundInfo<TUnit, TInfo>();
         var sortedCombatUnits = CombatUnits.Where(c => c.IsAlive).OrderByDescending(keySelector: x => x.Speed);
-        BuffManager.OnRoundStart();//开始回合buff执行
+        BuffManager.OnRoundStart(); //开始回合buff执行
         foreach (var combatUnit in sortedCombatUnits)
         {
-            if (combatUnit.IsDead) break;//如果单位已阵亡
-            BuffManager.OnCombatStart(combatUnit);//当开始战斗时buff调用
-            var combatBehavior = ChooseBehavior(unit: combatUnit);//选择战斗行为
-            var targets = combatBehavior.ChooseTargets(caster: combatUnit, combatUnits: _combatUnits);//选择执行目标
-            var performInfos = combatBehavior.Execute(caster: combatUnit, targets: targets);//执行战斗
+            if (combatUnit.IsDead) break; //如果单位已阵亡
+            BuffManager.OnCombatStart(combatUnit); //当开始战斗时buff调用
+            var combatBehavior = ChooseBehavior(unit: combatUnit); //选择战斗行为
+            var targets = combatBehavior.ChooseTargets(caster: combatUnit, combatUnits: _combatUnits); //选择执行目标
+            var performInfos = combatBehavior.Execute(caster: combatUnit, targets: targets); //执行战斗
             //记录战斗信息
-            foreach (var performInfo in performInfos) info.AddUnitActionInfo(unit: combatUnit, performInfo: performInfo);
+            foreach (var performInfo in performInfos)
+                info.AddUnitActionInfo(unit: combatUnit, performInfo: performInfo);
         }
-        BuffManager.OnRoundEnd();//结束回合buff执行
+
+        BuffManager.OnRoundEnd(); //结束回合buff执行
         return info;
     }
-    protected virtual CombatBehavior ChooseBehavior(CombatUnit unit)
+
+    protected virtual CombatBehavior<TUnit,TInfo> ChooseBehavior(CombatUnit unit)
     {
         // 根据当前状态和其他因素选择适合的CombatBehavior
-        return new AttackBehavior();
+        return new AttackBehavior<TUnit, TInfo>();
     }
 }
 
 /// <summary>
 /// 战斗行为
 /// </summary>
-public abstract class CombatBehavior
+public abstract class CombatBehavior<TUnit,TInfo> where TUnit : CombatUnit where TInfo : CombatPerformInfo<TUnit>, new()
 {
-    private static Random Random { get; } = new Random();
-    public abstract CombatPerformInfo[] Execute(CombatUnit caster, CombatUnit[] targets);
+    protected static Random Random { get; } = new Random();
+    public abstract TInfo[] Execute(TUnit caster, TUnit[] targets);
 
-    public abstract CombatUnit[] ChooseTargets(CombatUnit caster, List<CombatUnit> combatUnits);
+    public abstract TUnit[] ChooseTargets(TUnit caster, List<TUnit> combatUnits);
     protected double GetRandom() => Random.NextDouble();
 }
 
 /// <summary>
 /// 常规攻击行为, 支持反击,连击,并且连击中可反击, 并且反击或是连击都是独立生成闪避率
 /// </summary>
-public class AttackBehavior : CombatBehavior
+public class AttackBehavior<TUnit,TInfo> : CombatBehavior<TUnit,TInfo > where TUnit : CombatUnit where TInfo : CombatPerformInfo<TUnit>, new()
 {
     private float CriticalMultiplier => 1.5f;
+    private int Combos { get; set; } = 1;//注意, 如果设成0会不攻击而一直没有单位离开
 
-    public override CombatPerformInfo[] Execute(CombatUnit caster, CombatUnit[] targets)
+    public override TInfo[] Execute(TUnit caster, TUnit[] targets)
     {
-        var infos = new List<CombatPerformInfo>();
-        var combos = caster.GetCombos();//获取连击信息
+        var infos = new List<TInfo>();
+        var combos = Combos;//获取连击信息
         for (var i = 0; i < combos; i++)//连击次数
         {
             foreach (var target in targets)//对所有执行目标历遍执行
@@ -178,58 +180,55 @@ public class AttackBehavior : CombatBehavior
                 var finalDamage = (int)damage;
 
                 //生成行动记录
-                var perform = new CombatPerformInfo(); 
+                var perform = new TInfo();
                 perform.Set(caster);
 
                 //添加入行动列表
-                infos.Add(item: perform); 
+                infos.Add(item: perform);
                 //设定战斗行动
-                perform.SetCritical(isCritical: isCritical); 
+                perform.SetCritical(isCritical: isCritical);
                 //执行伤害
-                target.TakeDamage(damage: finalDamage); 
-                var isCounter = target.IsAlive && target.CanCounter();
+                target.TakeDamage(damage: finalDamage);
+                var isCounter = target.IsAlive && Random.Next(0,100) < 10;//10%反击
                 if (isCounter) CounterAttack(caster: target, target: caster, perform: perform);//反击执行
                 //生成反馈记录
-                var response = new CombatResponseInfo();
+                var response = new CombatResponseInfo<TUnit>();
                 response.Set(target);
 
                 //添加反馈记录
-                perform.AddResponse(info: response); 
+                perform.AddResponse(info: response);
                 //记录伤害
-                response.RegDamage(damage: finalDamage, isDodge); 
+                response.RegDamage(damage: finalDamage, isDodge);
             }
         }
         return infos.ToArray();
     }
+
     //反击
-    private void CounterAttack(CombatUnit caster, CombatUnit target, CombatPerformInfo perform)
+    private void CounterAttack(TUnit caster, TUnit target, CombatPerformInfo<TUnit> perform)
     {
         var (damage, isDodge, isCritical) = GetDamage(caster, target);
         if (!isDodge) target.TakeDamage(damage: (int)damage);
         perform.SetCounterAttack(damage: caster.Damage, isDodged: isDodge, isCritical); //记录反击伤害
     }
 
-    private (float damage,bool isDodge,bool isCritical) GetDamage(CombatUnit caster, CombatUnit target)
+    private (float damage, bool isDodge, bool isCritical) GetDamage(TUnit caster, TUnit target)
     {
-        var dodgeRatio = target.DodgeRatio();
-        var dodgeRan = GetRandom();
-        var isDodge = dodgeRan < dodgeRatio;
-        var criticalRan = GetRandom();
-        var criticalRatio = caster.CriticalRatio();
-        var isCritical = criticalRan < criticalRatio;
+        var isDodge = Random.Next(0, 100) < 15;//15%闪避
+        var isCritical = Random.Next(0, 100) < 15;//15%暴击
         var damage = isDodge ? 0
             : isCritical ? caster.Damage * CriticalMultiplier
             : caster.Damage;
         return (damage, isDodge, isCritical);
     }
 
-    public override CombatUnit[] ChooseTargets(CombatUnit caster, List<CombatUnit> combatUnits)
+    public override TUnit[] ChooseTargets(TUnit caster, List<TUnit> combatUnits)
     {
         var target = combatUnits.Where(predicate: c => c.TeamId != caster.TeamId)
             .Where(c => c.IsAlive)
             .OrderBy(keySelector: c => c.HpRatio)
             .FirstOrDefault();
-        return target == null ? Array.Empty<CombatUnit>() : new CombatUnit[] { target };
+        return target == null ? Array.Empty<TUnit>() : new TUnit[] { target };
     }
 }
 
@@ -237,10 +236,10 @@ public class AttackBehavior : CombatBehavior
 /// 战斗执行信息, 记录了战斗行为以及对手的反馈.
 /// 目前仅仅是记录攻击方式, 包括暴击, 连击
 /// </summary>
-public record CombatPerformInfo
+public record CombatPerformInfo<TUnit> where TUnit : CombatUnit
 {
-    public CombatUnitInfo Performer { get; set; }
-    public CombatResponseInfo Reponse { get; set; }
+    public CombatUnitInfo<TUnit> Performer { get; set; }
+    public CombatResponseInfo<TUnit> Reponse { get; set; }
     public bool IsCritical { get; set; }
     //补血(吸血)
     public int Heal { get; set; }
@@ -253,15 +252,15 @@ public record CombatPerformInfo
     //反击被闪避
     public bool IsCounterAttackDodged { get; set; }
 
-    public void Set(CombatUnit unit)
+    public void Set(TUnit unit)
     {
-        Performer = new CombatUnitInfo();
+        Performer = new CombatUnitInfo<TUnit>();
         Performer.Set(unit);
     }
 
     public void SetCritical(bool isCritical) => IsCritical = isCritical;
 
-    public void AddResponse(CombatResponseInfo info) => Reponse = info;
+    public void AddResponse(CombatResponseInfo<TUnit> info) => Reponse = info;
 
     public void SetCounterAttack(int damage, bool isDodged, bool isCritical)
     {
@@ -273,7 +272,7 @@ public record CombatPerformInfo
 
 }
 //战斗单位状态
-public record CombatUnitInfo
+public record CombatUnitInfo<TUnit> where TUnit : CombatUnit
 {
     public string Name { get; set; }
     public int Hp { get; set; }
@@ -282,7 +281,7 @@ public record CombatUnitInfo
     public int Speed { get; set; }
     public int TeamId { get; set; }
 
-    public virtual void Set(CombatUnit unit)
+    public virtual void Set(TUnit unit)
     {
         Name = unit.Name;
         Hp = unit.Hp;
@@ -300,9 +299,9 @@ public record CombatUnitInfo
 /// 战斗反馈信息, 记录被攻击单位的反馈信息.
 /// 主要标记是否闪避, 反击, 其中包括反击被(攻击方)闪避, 最终伤害以及补血信息
 /// </summary>
-public record CombatResponseInfo
+public record CombatResponseInfo<TUnit> where TUnit : CombatUnit
 {
-    public CombatUnitInfo Target { get; set; }
+    public CombatUnitInfo<TUnit> Target { get; set; }
     //最终伤害
     public int FinalDamage { get; set; }
     //最终补血
@@ -310,9 +309,9 @@ public record CombatResponseInfo
     //攻击闪避
     public bool IsDodged { get; set; }
 
-    public void Set(CombatUnit unit)
+    public void Set(TUnit unit)
     {
-        Target = new CombatUnitInfo();
+        Target = new CombatUnitInfo<TUnit>();
         Target.Set(unit);
     }
 
@@ -322,14 +321,14 @@ public record CombatResponseInfo
         IsDodged = isDodge;
     }
 
-    public void SetHeal(int heal)=> FinalHeal = heal;
+    public void SetHeal(int heal) => FinalHeal = heal;
 }
 //全局Buff管理器
-public class BuffManager
+public class BuffManager<TUnit> where TUnit : CombatUnit
 {
     private List<BuffCombatMapper> BuffMappers { get; }
-    private List<CombatUnit> AllUnits { get; }
-    public BuffManager(List<CombatUnit> allUnits)
+    private List<TUnit> AllUnits { get; }
+    public BuffManager(List<TUnit> allUnits)
     {
         AllUnits = allUnits;
         BuffMappers = new List<BuffCombatMapper>();
@@ -338,7 +337,7 @@ public class BuffManager
     private int BuffInstanceSeed { get; set; }
     public int GetBuffInstanceId() => ++BuffInstanceSeed;
 
-    public void AddBuff(Buff buff, CombatUnit owner)
+    public void AddBuff(Buff<TUnit> buff, TUnit owner)
     {
         var mapper = BuffMappers.SingleOrDefault(b => b.Buff.InstanceId == buff.InstanceId);
         if (mapper == null)
@@ -351,7 +350,7 @@ public class BuffManager
         mapper.Buff.AddStack();
     }
 
-    public void RemoveBuff(Buff buff)
+    public void RemoveBuff(Buff<TUnit> buff)
     {
         var mapper = BuffMappers.SingleOrDefault(b => b.Buff.InstanceId == buff.InstanceId);
         if (mapper == null)
@@ -359,9 +358,9 @@ public class BuffManager
         BuffMappers.Remove(mapper);
     }
 
-    public IReadOnlyList<Buff> GetBuffs(CombatUnit owner) => BuffMappers.Where(predicate: b => b.Owner == owner).Select(b => b.Buff).ToList();
+    public IReadOnlyList<Buff<TUnit>> GetBuffs(TUnit owner) => BuffMappers.Where(predicate: b => b.Owner == owner).Select(b => b.Buff).ToList();
 
-    public IReadOnlyList<Buff> GetAllBuffs() => BuffMappers.Select(b => b.Buff).ToList();
+    public IReadOnlyList<Buff<TUnit>> GetAllBuffs() => BuffMappers.Select(b => b.Buff).ToList();
 
     public void OnRoundStart()
     {
@@ -373,15 +372,15 @@ public class BuffManager
     }
     public void OnCombatStart(CombatUnit unit)
     {
-        foreach (var map in BuffMappers.Where(b=>b.Owner == unit).ToArray()) map.Buff.OnCombatStart(unit, AllUnits);
+        foreach (var map in BuffMappers.Where(b => b.Owner == unit).ToArray()) map.Buff.OnCombatStart(unit, AllUnits);
     }
     //buff与战斗单位的映射关系
     private class BuffCombatMapper : IEquatable<BuffCombatMapper>
     {
-        public Buff Buff { get; }
-        public CombatUnit Owner { get; }
+        public Buff<TUnit> Buff { get; }
+        public TUnit Owner { get; }
 
-        public BuffCombatMapper(Buff buff, CombatUnit owner)
+        public BuffCombatMapper(Buff<TUnit> buff, TUnit owner)
         {
             Buff = buff;
             Owner = owner;
@@ -412,25 +411,25 @@ public class BuffManager
         #endregion
     }
 }
-public abstract class Buff
+public abstract class Buff<TUnit> where TUnit : CombatUnit
 {
-    protected BuffManager _buffManager;
+    protected BuffManager<TUnit> _buffManager;
     public int Stacks { get; private set; }
     //buff唯一Id
     public int InstanceId { get; }
 
-    public Buff(BuffManager buffManager, int stacks = 1)
+    public Buff(BuffManager<TUnit> buffManager, int stacks = 1)
     {
         _buffManager = buffManager;
         InstanceId = buffManager.GetBuffInstanceId();
         Stacks = stacks;
     }
 
-    public abstract void OnRoundStart(CombatUnit owner, List<CombatUnit> units);
+    public abstract void OnRoundStart(CombatUnit owner, List<TUnit> units);
 
-    public abstract void OnRoundEnd(CombatUnit owner, List<CombatUnit> units);
+    public abstract void OnRoundEnd(CombatUnit owner, List<TUnit> units);
 
-    public abstract void OnCombatStart(CombatUnit owner, List<CombatUnit> units);
+    public abstract void OnCombatStart(CombatUnit owner, List<TUnit> units);
 
     public void AddStack()
     {

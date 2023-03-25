@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using NameM;
 using Server.Configs.SoUtls;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -17,9 +15,6 @@ namespace Server.Configs.BattleSimulation
         int PlayerDefend { get; }//玩家血量
         int EnemyOffend { get; }//敌人攻击
         int EnemyDefend { get; }//敌人血量
-        /// <summary>
-        /// 配置结果, -1为战斗失败, 正数为扣除的体力值
-        /// </summary>
         int PlayerRemaining { get; }//玩家战后血量
         int EnemyRemaining { get; }//敌人战后血量
         string[] CombatMessages { get; }//战斗文本
@@ -45,22 +40,12 @@ namespace Server.Configs.BattleSimulation
         /// <returns></returns>
         public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
         {
-            var combatUnits = new List<CombatUnit>();
-            var buffMgr = new BuffManager(combatUnits);
-            var playerCombat = new CombatUnit(0, player.Name, player.Defend, player.Offend, 2, buffMgr);
-            var enemyCombat = new CombatUnit(1, enemy.Name, enemy.Defend, enemy.Offend, 1, buffMgr);
-            combatUnits.Add(playerCombat);
-            combatUnits.Add(enemyCombat);
-            var rounds = new List<RoundInfo>();
-            while (playerCombat.IsAlive && enemyCombat.IsAlive)
-            {
-                var r = new Round(combatUnits, buffMgr);
-                rounds.Add(r.Execute());
-            }
-            var isPlayerWin = playerCombat.IsAlive;
-            var roundCount = rounds.Count;
-            var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,isPlayerWin,player,enemy,playerCombat.Hp);
-            return new Outcome(roundCount, isPlayerWin, player.Offend, enemy.Offend, player.Defend, enemy.Defend,
+            var playerCombat = new DiziCombatUnit(0, player);
+            var enemyCombat = new DiziCombatUnit(1, enemy);
+            var battle = DiziBattle.Start(playerCombat, enemyCombat, RoundLimit);
+            var roundCount = battle.Rounds.Count;
+            var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,battle.IsPlayerWin,player,enemy,playerCombat.Hp);
+            return new Outcome(roundCount, battle.IsPlayerWin, player.Offend, enemy.Offend, player.Defend, enemy.Defend,
                 playerCombat.Hp, enemyCombat.Hp, combatMessages);
         }
         //public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)

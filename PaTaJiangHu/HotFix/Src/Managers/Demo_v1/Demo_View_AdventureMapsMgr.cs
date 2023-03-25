@@ -86,13 +86,13 @@ namespace HotFix_Project.Managers.Demo_v1
                 SetSelectionIndex();
             }
 
-            //-1 = 没有选择任何东西
-            private int SelectedIndex { get; set; } = -1;
+            //-99 = 没有选择任何东西
+            private int SelectedIndex { get; set; } = -99;
             //如果选择<=-1将不能按
-            private void SetSelectionIndex(int index = -1)
+            private void SetSelectionIndex(int index = -99)
             {
                 SelectedIndex = index;
-                Btn_action.interactable = SelectedIndex > -1;
+                Btn_action.interactable = SelectedIndex > -99;
             }
 
             public void ListMap(IAutoAdvMap[] maps)

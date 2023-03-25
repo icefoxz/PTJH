@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
+using Server.Configs.ChallengeStages;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
 using Server.Configs.Items;
@@ -75,6 +76,14 @@ internal class Configure : MonoBehaviour
         internal AdventureConfigSo AdventureCfg => GetSo(历练配置);
     }
 
+    [SerializeField] private ChallengeStageCfg 挑战关卡配置;
+    internal ChallengeStageCfg ChallengeCfg => 挑战关卡配置;
+
+    [Serializable]internal class ChallengeStageCfg
+    {
+        [SerializeField] private ChallengeStageSo 挑战;
+        internal ChallengeStageSo Challenge => 挑战;
+    }
     //[SerializeField] private FactionConfig 门派配置;
     //public FactionConfig FactionCfg => 门派配置;
     //[Serializable] internal class FactionConfig

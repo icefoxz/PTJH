@@ -66,6 +66,8 @@ public class MainPageLayout : View
             Sections.Btm => _btm.Tran,
             _ => throw new ArgumentOutOfRangeException(nameof(section), section, null)
         };
+        if (!sectionTran)
+            throw new NullReferenceException($"{nameof(MainPageLayout)}.Section[{section}] is Null!");
         return sectionTran;
     }
 
