@@ -74,31 +74,32 @@ internal class MainUiAgent
         mainPage.Set(view, section, isFixPixel);
     }
 
-    public void Show<T>(Action<T> mgrAction) where T : UiManagerBase
+    public void Show<T>(Action<T> mgrAction,bool hideSameSection) where T : UiManagerBase
     {
         var type = typeof(T);
         var map = UiMappers.First(m => m.Key == type.Name);
         mgrAction?.Invoke((T)map.Manager);
-        OnShowUi(map.Section,map);
+        OnShowUi(map.Section, hideSameSection, map);
     }
-    public void Show(UiManagerBase manager)
+    public void Show(UiManagerBase manager,bool hideSameSection)
     {
         var map = UiMappers.FirstOrDefault(m => m.Manager == manager);
-        OnShowUi(map.Section, map);
+        OnShowUi(map.Section, hideSameSection, map);
     }
-    public void Show(UiManagerBase[] managers)
+    public void Show(UiManagerBase[] managers, bool hideSameSection )
     {
         var maps = UiMappers.Where(m => managers.Contains(m.Manager)).ToArray();
         var section = maps.First().Section;
-        OnShowUi(section, maps);
-    }
-    public void Show(Type type)
-    {
-        var map = UiMappers.FirstOrDefault(m => m.Key == type.Name);
-        OnShowUi(map.Section, map);
+        OnShowUi(section, hideSameSection, maps);
     }
 
-    private void OnShowUi(Sections section, params UiMapper[] maps)
+    public void Show(Type type, bool hideSameSection)
+    {
+        var map = UiMappers.FirstOrDefault(m => m.Key == type.Name);
+        OnShowUi(map.Section, hideSameSection, map);
+    }
+
+    private void OnShowUi(Sections section, bool hideSameSection, params UiMapper[] maps)
     {
         switch (section)
         {
@@ -107,12 +108,12 @@ internal class MainUiAgent
             case Sections.Panel:
             case Sections.Window:
             case Sections.Page:
-                CloseAllUi(maps, section);
+                if (hideSameSection) CloseAllUi(maps, section);
                 MainUi.HideMainPage();
                 foreach (var mapper in maps) mapper.Manager.Show();
                 break;
             case Sections.MainPage:
-                CloseAllUi(maps, Sections.Page);
+                if (hideSameSection) CloseAllUi(maps, Sections.Page);
                 MainUi.ShowMainPage();
                 MainPageMgr.Show(maps);
                 break; //MainPage

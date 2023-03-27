@@ -9,11 +9,20 @@ using UnityEngine;
 
 namespace Server.Configs.ChallengeStages
 {
-    public interface IChallengeStage
+    public interface IChallengeStageNpc
     {
         IGameReward Reward{get;}
+        IDiziReward DiziReward { get; }
         bool IsBoss { get; }
+        string NpcName { get; }
+        string Faction { get; }
+        int Level { get; }
         DiziCombatUnit GetNpc();
+    }
+
+    public interface IDiziReward
+    {
+        int Exp { get; }
     }
 
     [CreateAssetMenu(fileName = "id_奖励件名", menuName = "挑战关卡/关卡")]
@@ -29,17 +38,17 @@ namespace Server.Configs.ChallengeStages
         [SerializeField] private ChallengeField[] 挑战;
         private int RoundLimit => 回合限制 = 20;
 
-        public IChallengeStage[] Challenges => 挑战;
+        public IChallengeStageNpc[] Npcs => 挑战;
 
         public DiziBattle Challenge(int challengeIndex, Dizi dizi)
         {
-            var challenge = Challenges[challengeIndex];
+            var challenge = Npcs[challengeIndex];
             var diziCombat = new DiziCombatUnit(0, dizi);
             var npcCombat = challenge.GetNpc();
             return DiziBattle.Start(diziCombat, npcCombat, RoundLimit);
         }
 
-        [Serializable] private class ChallengeField : IChallengeStage
+        [Serializable] private class ChallengeField : IChallengeStageNpc
         {
             #region ChangeName
             private bool ChangeElementName()
@@ -57,15 +66,25 @@ namespace Server.Configs.ChallengeStages
             [SerializeField] private int 等级 = 1;
             [SerializeField] private string 所属势力;
             [SerializeField] private RewardField 奖励;
+            [SerializeField] private DiziRewardField 弟子奖励;
 
             public IGameReward Reward => 奖励;
-            public bool IsBoss => Boss;
-            public int Level => 等级;
+            public IDiziReward DiziReward => 弟子奖励;
 
+            public bool IsBoss => Boss;
+            public string NpcName => _npc.Name;
+            public int Level => 等级;
             public string Faction => 所属势力;
 
             private CombatNpcSo Npc => _npc;
             public DiziCombatUnit GetNpc() => new DiziCombatUnit(1, Npc);
+
+            [Serializable] private class DiziRewardField : IDiziReward
+            {
+                [SerializeField] private int 经验;
+
+                public int Exp => 经验;
+            }
         }
     }
 }

@@ -28,7 +28,7 @@ internal class TreasureHouseManager : UiManagerBase
     {
         Game.MessagingManager.RegEvent(EventString.Page_TreasureHouse, bag =>
         {
-            MainUiAgent.Show(this);
+            MainUiAgent.Show(this, true);
         });
     }
 

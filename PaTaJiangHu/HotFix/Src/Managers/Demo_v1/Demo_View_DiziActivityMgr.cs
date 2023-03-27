@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
 using Server.Configs.Adventures;
 using Server.Controllers;
 using Systems.Messaging;
-using UnityEngine;
 using UnityEngine.UI;
 using Utls;
 using Views;
@@ -31,10 +29,11 @@ namespace HotFix_Project.Managers.Demo_v1
         {
             View_diziActivity = new View_DiziActivity(v: view,
                 onRecallAction: guid => DiziAdvController.AdventureRecall(guid),
-                onMapListAction: (guid,mapType) => Agent.MapSelection(guid,mapType),
+                onMapListAction: (guid, mapType) => Agent.AdvMapSelection(guid, mapType),
                 onDiziForgetAction: guid => XDebug.LogWarning("当前弟子遗忘互动"),
                 onDiziBuyBackAction: guid => XDebug.LogWarning("当前弟子买回互动"),
-                onDiziReturnAction: guid => DiziAdvController.AdventureFinalize(guid)
+                onDiziReturnAction: guid => DiziAdvController.AdventureFinalize(guid),
+                onChallengeAction: () => Agent.ShowChallengeState()
             );
         }
 
@@ -77,7 +76,8 @@ namespace HotFix_Project.Managers.Demo_v1
                     Action<string,int> onMapListAction,
                     Action<string> onDiziForgetAction,
                     Action<string> onDiziBuyBackAction,
-                    Action<string> onDiziReturnAction
+                    Action<string> onDiziReturnAction,
+                    Action onChallengeAction
                 ) : base(v, true)
             {
                 Scroll_advLog = v.GetObject<ScrollContentAligner>("scroll_advLog");
@@ -91,7 +91,8 @@ namespace HotFix_Project.Managers.Demo_v1
                     () => onMapListAction(SelectedDizi.Guid, 1),
                     () => onDiziForgetAction(SelectedDizi.Guid),
                     () => onDiziBuyBackAction(SelectedDizi.Guid),
-                    () => onDiziReturnAction(SelectedDizi.Guid)
+                    () => onDiziReturnAction(SelectedDizi.Guid),
+                    () => onChallengeAction?.Invoke()
                 );
                 ButtonsView.SetMode(View_Buttons.Modes.Idle);
             }
@@ -158,13 +159,15 @@ namespace HotFix_Project.Managers.Demo_v1
                 private Button Btn_forgetDizi { get; }
                 private Button Btn_buybackDizi { get; }
                 private Button Btn_returnDizi { get; }
+                private Button Btn_challenge { get; }
                 public View_Buttons(IView v,
                     Action onRecallAction,
                     Action onAdvMapAction,
                     Action onProductionMapAction,
                     Action onDiziForgetAction,
                     Action onDiziBuyBackAction,
-                    Action onDiziReturnAction) : base(v, true)
+                    Action onDiziReturnAction,
+                    Action onChallengeAction) : base(v, true)
                 {
                     Btn_callback = v.GetObject<Button>("btn_callback");
                     Btn_callback.OnClickAdd(() =>
@@ -182,6 +185,8 @@ namespace HotFix_Project.Managers.Demo_v1
                     Btn_buybackDizi.OnClickAdd(onDiziBuyBackAction);
                     Btn_returnDizi = v.GetObject<Button>("btn_returnDizi");
                     Btn_returnDizi.OnClickAdd(onDiziReturnAction);
+                    Btn_challenge = v.GetObject<Button>("btn_challenge");
+                    Btn_challenge.OnClickAdd(onChallengeAction);
                 }
 
                 public void SetMode(Modes mode)
@@ -189,6 +194,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     DisplayButton(Btn_callback, mode == Modes.Adventure);
                     DisplayButton(Btn_selectAdvMap, mode == Modes.Idle);
                     DisplayButton(Btn_selectProMap, mode == Modes.Idle);
+                    DisplayButton(Btn_challenge, mode == Modes.Idle);
                     DisplayButton(Btn_forgetDizi, mode == Modes.Lost);
                     DisplayButton(Btn_buybackDizi, mode == Modes.Lost);
                     DisplayButton(Btn_returnDizi, mode == Modes.Waiting);

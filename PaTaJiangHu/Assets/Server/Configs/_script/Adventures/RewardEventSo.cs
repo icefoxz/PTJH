@@ -40,8 +40,8 @@ namespace Server.Configs.Adventures
     {
         [SerializeField] private string 事件名 = "奖励";
         [SerializeField] private AdvEventSoBase 下个事件;
-        [SerializeField] private RewardField 奖励;
         [SerializeField] private int 弟子经验;
+        [SerializeField] private RewardField 奖励;
         private RewardField GameReward => 奖励;
 
         private int Exp => 弟子经验;
