@@ -35,7 +35,7 @@ internal class DiziAdvManager : MainPageBase
     protected override void Build(IView view)
     {
         DiziAdv = new View_diziAdv(v: view, DiziAdvController,
-            onItemSelectAction: (guid, itemType) => MainUiAgent.Show<WinEquipmentManager>(mgr=>mgr.Set(guid,itemType,0)),
+            onItemSelectAction: (guid, itemType) => MainUiAgent.Show<WinEquipmentManager>(mgr=>mgr.Set(guid,itemType,0),true),
             onAdvStartAction: (guid, index) => DiziAdvController.AdventureStart(guid, index),
             onAdvRecallAction: guid => DiziAdvController.AdventureRecall(guid),
             onDiziFinalizeAction: guid => DiziAdvController.AdventureFinalize(guid),
@@ -71,7 +71,7 @@ internal class DiziAdvManager : MainPageBase
         Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag =>
         {
             //MainUi.MainPage.HideAll(MainPageLayout.Sections.Mid);
-            MainUiAgent.Show(this);
+            MainUiAgent.Show(this, true);
         });
         Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => DiziAdv.Update(bag.GetString(0)));
         Game.MessagingManager.RegEvent(EventString.Dizi_Adv_SlotUpdate, bag => DiziAdv.SlotUpdate(bag.Get<string>(0)));

@@ -37,7 +37,7 @@ internal class DiziListViewManager : MainPageBase
     {
         Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag => DiziList.UpdateList());
         Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, bag => DiziList.UpdateDiziState());
-        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => MainUiAgent.Show(this));
+        Game.MessagingManager.RegEvent(EventString.Page_DiziList, bag => MainUiAgent.Show(this, true));
     }
 
     public override void Show() => DiziList.Display(true);

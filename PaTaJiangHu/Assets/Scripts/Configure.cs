@@ -82,7 +82,7 @@ internal class Configure : MonoBehaviour
     [Serializable]internal class ChallengeStageCfg
     {
         [SerializeField] private ChallengeStageSo[] 挑战;
-        internal ChallengeStageSo[] Challenges => 挑战;
+        internal ChallengeStageSo[] Stages => 挑战;
     }
     //[SerializeField] private FactionConfig 门派配置;
     //public FactionConfig FactionCfg => 门派配置;

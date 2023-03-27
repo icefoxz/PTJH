@@ -81,6 +81,7 @@ public class EventString
     public const string Faction_AdvItemsUpdate = "Faction_AdvItemsUpdate";//门派历练道具更新
     public const string Faction_AdvPackageUpdate = "Faction_AdvPackageUpdate";//门派包裹更新
     public const string Faction_BookUpdate = "Faction_BookUpdate";//门派书籍更新
+    public const string Faction_Challenge_Update = "Faction_Challenge_Update";//门派挑战进度更新
 
     //窗口
     public const string Win_PopUp = "Win_PopUp";//弹窗ui

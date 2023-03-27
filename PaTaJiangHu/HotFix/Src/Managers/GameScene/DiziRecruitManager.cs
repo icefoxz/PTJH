@@ -40,7 +40,7 @@ internal class DiziRecruitManager : UiManagerBase
         Game.MessagingManager.RegEvent(EventString.Page_DiziRecruit, bag =>
         {
             Game.MainUi.MainPage.HideAll(MainPageLayout.Sections.Game);
-            MainUiAgent.Show(this);
+            MainUiAgent.Show(this, true);
         });
     }
 

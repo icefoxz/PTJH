@@ -2,6 +2,7 @@
 using _GameClient.Models;
 using HotFix_Project.Managers.Demo_v1;
 using System.Linq;
+using Server.Controllers;
 using Utls;
 
 namespace HotFix_Project.Managers.GameScene;
@@ -22,6 +23,10 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_View_EquipmentMgr Demo_View_EquipmentMgr { get; }
     private Demo_View_AdventureMapsMgr Demo_View_AdventureMapsMgr { get; }
     private Demo_Game_ViewMgr Demo_Game_ViewMgr { get; }
+    private Demo_View_ChallengeStageSelectorMgr Demo_View_ChallengeStageSelectorMgr { get; }
+
+    private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
+
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
@@ -35,9 +40,12 @@ internal class Demo_v1Agent : MainUiAgent
         DiziRecruitManager = new DiziRecruitManager(this);
         Demo_View_AdventureMapsMgr = new Demo_View_AdventureMapsMgr(this);
         Demo_Game_ViewMgr = new Demo_Game_ViewMgr(this);
+
+        Demo_View_ChallengeStageSelectorMgr = new Demo_View_ChallengeStageSelectorMgr(this);
         //窗口 Windows
         Demo_Win_RewardMgr = new Demo_Win_RewardMgr(this);
         Demo_Win_ItemMgr = new Demo_Win_ItemMgr(this);
+        
     }
     private Dizi SelectedDizi { get; set; }
     /// <summary>
@@ -74,12 +82,36 @@ internal class Demo_v1Agent : MainUiAgent
             Demo_View_DiziActivityMgr,
             Demo_View_EquipmentMgr,
             Demo_Dizi_InfoMgr,
-        });
+        }, true);
     }
 
-    public void MapSelection(string guid,int mapType)
+    /// <summary>
+    /// 历练地图选择
+    /// </summary>
+    /// <param name="guid"></param>
+    /// <param name="mapType"></param>
+    internal void AdvMapSelection(string guid,int mapType)
     {
         Demo_View_AdventureMapsMgr.Set(guid, mapType);
         Demo_View_AdventureMapsMgr.Show();
+    }
+
+    /// <summary>
+    /// 获取挑战关卡并打开选择窗口
+    /// </summary>
+    internal void ShowChallengeState()
+    {
+        Show(Demo_View_ChallengeStageSelectorMgr, false);
+        var challenges = ChallengeController.GetChallenges();
+        Demo_View_ChallengeStageSelectorMgr.SetChallenges(challenges);
+    }
+
+    /// <summary>
+    /// 开始关卡挑战
+    /// </summary>
+    /// <param name="challengeIndex"></param>
+    internal void StartChallenge(int challengeIndex)
+    {
+        ChallengeController.StartChallenge(SelectedDizi.Guid, challengeIndex);
     }
 }
