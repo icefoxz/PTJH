@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
 using Utls;
 
 /// <summary>
@@ -10,19 +9,43 @@ using Utls;
 /// </summary>
 public class DiziBattle
 {
-    public bool IsPlayerWin { get; }
+    public bool IsPlayerWin { get; private set; }
     public List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>> Rounds { get; }
+    public BuffManager<DiziCombatUnit> BuffManager { get; private set; }
     public DiziCombatUnit[] Fighters { get; }
-
-    private DiziBattle(bool isPlayerWin, List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>> rounds,
+    public bool IsFinalized { get; private set; }
+    private static int CombatUnitSeed { get; set; }
+    private DiziBattle(List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>> rounds,
         params DiziCombatUnit[] combats)
     {
-        IsPlayerWin = isPlayerWin;
+        foreach (var unit in combats) unit.SetInstanceId(++CombatUnitSeed);
+        BuffManager = new BuffManager<DiziCombatUnit>(combats.ToList());
         Rounds = rounds;
         Fighters = combats;
     }
 
-    public static DiziBattle Start(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
+    public void Finalize(bool isPlayerWin)
+    {
+        IsPlayerWin = isPlayerWin;
+        IsFinalized = true;
+    }
+
+    public RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> ExecuteRound()
+    {
+        var round = new DiziCombatRound(Fighters.ToList(), BuffManager);
+        var info = round.Execute();
+        Rounds.Add(info);
+        if (Fighters.GroupBy(f => f.TeamId, f => f).Count() > 1) return info;
+        var aliveTeam = Fighters.FirstOrDefault(f => f.IsAlive)?.TeamId ?? -1;
+        if (aliveTeam == -1) throw new NotImplementedException("没有活着的单位!");
+        Finalize(aliveTeam == 0);//玩家单位是0
+        return info;
+    }
+
+    public static DiziBattle Instance(DiziCombatUnit[] units) =>
+        new(new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>>(), units);
+
+    public static DiziBattle StartAuto(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
     {
         var combatUnits = new List<DiziCombatUnit>();
         var buffMgr = new BuffManager<DiziCombatUnit>(combatUnits);
@@ -41,8 +64,8 @@ public class DiziBattle
             var r = new DiziCombatRound(combatUnits, buffMgr);
             rounds.Add(r.Execute());
         }
-
-        var battle = new DiziBattle(isPlayerWin, rounds, playerCombat, enemyCombat);
+        var battle = new DiziBattle(rounds, playerCombat, enemyCombat);
+        battle.Finalize(isPlayerWin);
 #if UNITY_EDITOR
         PrintLog(battle);
 #endif

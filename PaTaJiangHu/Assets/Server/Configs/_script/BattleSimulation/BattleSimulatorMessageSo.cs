@@ -187,16 +187,16 @@ namespace Server.Configs.BattleSimulation
                         diff = GetDiff(tar.Power, op.Power);
                         break;
                     case CompareTypes.OffGreater:
-                        diff = GetDiff(op.Offend, tar.Offend);
+                        diff = GetDiff(op.Damage, tar.Damage);
                         break;
                     case CompareTypes.OffLesser:
-                        diff = GetDiff(tar.Offend, op.Offend);
+                        diff = GetDiff(tar.Damage, op.Damage);
                         break;
                     case CompareTypes.DefGreater:
-                        diff = GetDiff(op.Defend, tar.Defend);
+                        diff = GetDiff(op.MaxHp, tar.MaxHp);
                         break;
                     case CompareTypes.DefLesser:
-                        diff = GetDiff(tar.Defend, op.Defend);
+                        diff = GetDiff(tar.MaxHp, op.MaxHp);
                         break;
                     case CompareTypes.StrGreater:
                         diff = GetDiff((int)op.Strength, (int)tar.Strength);

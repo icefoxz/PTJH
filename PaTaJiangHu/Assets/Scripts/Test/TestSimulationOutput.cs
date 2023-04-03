@@ -14,15 +14,15 @@ public class TestSimulationOutput : MonoBehaviour
 
     private (ISimCombat player,ISimCombat enemy)GetCombatUnit()
     {
-        var p = GetSimulation(Player);
+        var p = GetSimulation(0, Player);
         PrintCombat(p);
-        var e = GetSimulation(Enemy);
+        var e = GetSimulation(1, Enemy);
         PrintCombat(e);
         return (p, e);
     }
 
     private static void PrintCombat(ISimCombat com) =>
-        print($"设定完毕!,名字={com.Name},战力[{com.Power}],攻击力[{com.Offend}],抗击力[{com.Defend}]");
+        print($"设定完毕!,名字={com.Name},战力[{com.Power}],攻击力[{com.Damage}],抗击力[{com.MaxHp}]");
 
     public void StartBattle()
     {
@@ -36,8 +36,9 @@ public class TestSimulationOutput : MonoBehaviour
         print(outcome.IsPlayerWin ? $"{player.Name}获胜!" : $"{enemy.Name}获胜!");
         print($"战斗结束!总: 回={outcome.Rounds}, 玩家战后血量 = {outcome.PlayerRemaining}, 敌人战后血量 = {outcome.EnemyRemaining}");
     }
-    private ISimCombat GetSimulation(Unit unit) =>
-        SimSo.GetSimulation(unit.Name, unit.Strength, unit.Agility, unit.Hp, unit.Mp, unit.WeaponDamage,
+
+    private ISimCombat GetSimulation(int teamId, Unit unit) =>
+        SimSo.GetSimulation(teamId, unit.Name, unit.Strength, unit.Agility, unit.Hp, unit.Mp, unit.WeaponDamage,
             unit.ArmorAddHp);
 
     [Serializable]private class Unit

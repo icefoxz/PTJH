@@ -27,8 +27,7 @@ namespace Server.Configs.Battles
 
         public ISimCombat GetSimCombat(BattleSimulatorConfigSo cfg)
         {
-
-            return cfg.GetSimulation(Name, Strength, Agility, Hp, Mp,
+            return cfg.GetSimulation(1, Name, Strength, Agility, Hp, Mp,
                 Weapon != null ? Weapon.Damage : 0,
                 Armor != null ? Armor.AddHp : 0);
         } }

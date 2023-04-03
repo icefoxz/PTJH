@@ -40,12 +40,12 @@ namespace Server.Configs.BattleSimulation
         /// <returns></returns>
         public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
         {
-            var playerCombat = new DiziCombatUnit(0, player);
-            var enemyCombat = new DiziCombatUnit(1, enemy);
-            var battle = DiziBattle.Start(playerCombat, enemyCombat, RoundLimit);
+            var playerCombat = new DiziCombatUnit(player);
+            var enemyCombat = new DiziCombatUnit(enemy);
+            var battle = DiziBattle.StartAuto(playerCombat, enemyCombat, RoundLimit);
             var roundCount = battle.Rounds.Count;
             var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,battle.IsPlayerWin,player,enemy,playerCombat.Hp);
-            return new Outcome(roundCount, battle.IsPlayerWin, player.Offend, enemy.Offend, player.Defend, enemy.Defend,
+            return new Outcome(roundCount, battle.IsPlayerWin, player.Damage, enemy.Damage, player.MaxHp, enemy.MaxHp,
                 playerCombat.Hp, enemyCombat.Hp, combatMessages);
         }
         //public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
@@ -95,14 +95,15 @@ namespace Server.Configs.BattleSimulation
         public int GetPower(int strength, int agility, int hp, int mp, int weaponDamage = 0,
             int armorAddHp = 0) => (strength + agility) * (hp + mp) / 1000;
 
-        public ISimCombat GetSimulation(string simName, int strength, int agility, int hp, int mp, int weaponDamage,
-            int armorAddHp) => new SimCombat(name: simName,
+        public ISimCombat GetSimulation(int teamId, string simName, int strength, int agility, int hp, int mp,
+            int weaponDamage,
+            int armorAddHp) => new SimCombat(teamId, name: simName,
             power: GetPower(strength, agility, hp, mp, weaponDamage, armorAddHp),
             strength: strength, agility: agility, hp: hp, mp: mp, weaponDamage, armorAddHp);
 
         private record SimCombat : ISimCombat
         {
-            public SimCombat(string name,int power, int strength, int agility, int hp, int mp, int weapon, int armor)
+            public SimCombat(int teamId,string name, int power, int strength, int agility, int hp, int mp, int weapon, int armor)
             {
                 Name = name;
                 Power = power;
@@ -110,30 +111,24 @@ namespace Server.Configs.BattleSimulation
                 Agility = agility;
                 Weapon = weapon;
                 Armor = armor;
+                TeamId = teamId;
                 Hp = hp;
                 Mp = mp;
             }
 
+            public int InstanceId { get; }//SimCombat不需要InstanceId
             public string Name { get; }
             public int Power { get; }
-            public int Offend => Strength + Agility + Weapon;
-            public int Defend => Hp + Mp + Armor;
+            public int Damage => Strength + Agility + Weapon;
+            public int MaxHp => Hp + Mp + Armor;
             public int Strength { get; }
             public int Agility { get; }
             public int Hp { get; }
+            public int Speed => Agility;
+            public int TeamId { get; }
             public int Mp { get; }
             public int Weapon { get; }
             public int Armor { get; }
-
-            public void Deconstruct(out string Name, out int Power, out float Strength, out float Agility, out float Weapon, out float Armor)
-            {
-                Name = this.Name;
-                Power = this.Power;
-                Strength = this.Strength;
-                Agility = this.Agility;
-                Weapon = this.Weapon;
-                Armor = this.Armor;
-            }
         }
 
         public record Outcome : ISimulationOutcome

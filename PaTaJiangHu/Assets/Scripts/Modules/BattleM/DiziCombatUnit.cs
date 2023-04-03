@@ -5,11 +5,13 @@ using System.Linq;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 
+
 /// <summary>
 /// 弟子战斗单位
 /// </summary>
 public class DiziCombatUnit : CombatUnit
 {
+    
     public int Mp { get; private set; }
     public int MaxMp { get; private set; }
     public int Agility { get; private set; }
@@ -30,7 +32,8 @@ public class DiziCombatUnit : CombatUnit
         Agility = npc.Agility;
     }
 
-    internal DiziCombatUnit(int teamId, ISimCombat dizi) : base(teamId, dizi.Name, dizi.Hp, dizi.Strength, dizi.Agility)
+    internal DiziCombatUnit(ICombatUnit unit) : base(unit){}
+    internal DiziCombatUnit(ISimCombat dizi) : base(dizi)
     {
         Mp = dizi.Mp;
         MaxMp = dizi.Mp;
@@ -127,7 +130,7 @@ public class DiziCombatRound : Round<DiziCombatUnit, DiziCombatPerformInfo>
     {
     }
 
-    protected override CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo> ChooseBehavior(CombatUnit unit) => new DiziAttackBehavior();
+    protected override CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo> ChooseBehavior(DiziCombatUnit unit) => new DiziAttackBehavior();
 }
 
 public record DiziCombatPerformInfo :CombatPerformInfo<DiziCombatUnit>

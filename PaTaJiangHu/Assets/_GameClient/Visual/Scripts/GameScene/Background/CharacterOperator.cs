@@ -78,11 +78,11 @@ public class CharacterOperator : MonoBehaviour
     public IEnumerator AttackMove(float currentPoint,float targetPoint)
     {
         SetAnim(Anims.MoveStep);
-        yield return MoveTo(targetPoint, _offend);
+        yield return OffendMove(targetPoint);
         SetAnim(Anims.Attack);
         yield return new WaitForSeconds(0.1f);
         SetAnim(Anims.AttackReturn);
-        yield return MoveTo(currentPoint, _offendReturn);
+        yield return OffendReturnMove(currentPoint);
     }
 
     public IEnumerator Dodge(float delay = 0.3f)
@@ -98,7 +98,7 @@ public class CharacterOperator : MonoBehaviour
         SetAnim(Anims.Idle);
     }
 
-    public void SetAnim(Anims anim)
+    public void SetAnim(Anims anim, Action callback = null)
     {
         var trigger = anim switch
         {
@@ -113,12 +113,20 @@ public class CharacterOperator : MonoBehaviour
             Anims.Run => "run",
             _ => throw new ArgumentOutOfRangeException(nameof(anim), anim, null)
         };
-        _anim.SetTrigger(trigger);
+        StartCoroutine(PlayAnim());
+
+        IEnumerator PlayAnim()
+        {
+            _anim.SetTrigger(trigger);
+            yield return _anim;
+            callback?.Invoke();
+        }
     }
 
+    public IEnumerator OffendMove(float targetPoint) => MoveTo(targetPoint, _offend);
+    public IEnumerator OffendReturnMove(float targetPoint) => MoveTo(targetPoint, _offendReturn);
     private IEnumerator MoveTo(float targetPoint, BasicAnimConfig cfg)
     {
-        print($"Move = {targetPoint}");
         var elapsedTime = 0f;
         var startPos = transform.position;
         var distance = targetPoint - startPos.x;
@@ -130,9 +138,7 @@ public class CharacterOperator : MonoBehaviour
             var curveValue = cfg.Evaluate(t);
             var xPosition = startPos.x + distance * curveValue;
             var translation = new Vector3(xPosition - transform.position.x, 0, 0);
-            print($"Curve Value = {curveValue},{translation}, xPos = {xPosition}, distance*curve = {targetPoint * curveValue}");
             transform.Translate(translation,Space.Self);
-            //transform.Translate(translation, Space.Self);
 
             yield return null;
         }
