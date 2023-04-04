@@ -27,8 +27,6 @@ public class CharacterOperator : MonoBehaviour
     }
     [SerializeField] private Transform _character;
     [SerializeField] private Animator _anim;
-    [SerializeField] private BasicAnimConfig _offend;
-    [SerializeField] private BasicAnimConfig _offendReturn;
     [SerializeField] private SpriteRenderer[] _renderers;
     private Dictionary<SpriteRenderer,Color> ColorMapping { get; set; }
 
@@ -70,19 +68,21 @@ public class CharacterOperator : MonoBehaviour
         FaceTo(facing);
     }
 
-    public void AttackMove(float x)
+    internal void AttackMove(float x, DiziCombatConfigSo.BasicAnimConfig offendMoveCurve,
+        DiziCombatConfigSo.BasicAnimConfig offendReturnCurve)
     {
         var currentPoint = transform.localPosition.x;
-        StartCoroutine(AttackMove(currentPoint, x));
+        StartCoroutine(AttackMove(currentPoint, x, offendMoveCurve, offendReturnCurve));
     }
-    public IEnumerator AttackMove(float currentPoint,float targetPoint)
+
+    internal IEnumerator AttackMove(float currentPoint,float targetPoint, DiziCombatConfigSo.BasicAnimConfig offendMoveCurve,DiziCombatConfigSo.BasicAnimConfig offendReturnCurve)
     {
         SetAnim(Anims.MoveStep);
-        yield return OffendMove(targetPoint);
+        yield return OffendMove(targetPoint, offendMoveCurve);
         SetAnim(Anims.Attack);
         yield return new WaitForSeconds(0.1f);
         SetAnim(Anims.AttackReturn);
-        yield return OffendReturnMove(currentPoint);
+        yield return OffendReturnMove(currentPoint, offendReturnCurve);
     }
 
     public IEnumerator Dodge(float delay = 0.3f)
@@ -123,9 +123,9 @@ public class CharacterOperator : MonoBehaviour
         }
     }
 
-    public IEnumerator OffendMove(float targetPoint) => MoveTo(targetPoint, _offend);
-    public IEnumerator OffendReturnMove(float targetPoint) => MoveTo(targetPoint, _offendReturn);
-    private IEnumerator MoveTo(float targetPoint, BasicAnimConfig cfg)
+    internal IEnumerator OffendMove(float targetPoint, DiziCombatConfigSo.BasicAnimConfig cfg) => MoveTo(targetPoint, cfg);
+    internal IEnumerator OffendReturnMove(float targetPoint, DiziCombatConfigSo.BasicAnimConfig cfg) => MoveTo(targetPoint, cfg);
+    private IEnumerator MoveTo(float targetPoint, DiziCombatConfigSo.BasicAnimConfig cfg)
     {
         var elapsedTime = 0f;
         var startPos = transform.position;
@@ -147,12 +147,5 @@ public class CharacterOperator : MonoBehaviour
         transform.position = tarPos;
     }
 
-    [Serializable] private class BasicAnimConfig
-    {
-        [SerializeField] private AnimationCurve 曲线;
-        [SerializeField] private float 耗时;
-        public float Evaluate(float elapsedTime) => 曲线.Evaluate(elapsedTime);
-        public float Duration => 耗时;
-    }
 
 }

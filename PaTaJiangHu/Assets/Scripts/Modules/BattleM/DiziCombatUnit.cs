@@ -46,6 +46,8 @@ public class DiziCombatUnit : CombatUnit
         Mp -= offset;
         return finalDamage;
     }
+
+    public override string ToString() => $"{Name}[{Hp}/{MaxHp}],[{Mp}/{MaxMp}]";
 }
 
 /// <summary>
