@@ -53,6 +53,7 @@ public class DiziBattle
         combatUnits.Add(enemyCombat);
         var rounds = new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>>();
         var isPlayerWin = false;
+        var battle = new DiziBattle(rounds, playerCombat, enemyCombat);
         for (var i = 0; i < roundLimit; i++)
         {
             if (enemyCombat.IsDead || playerCombat.IsDead)
@@ -60,11 +61,8 @@ public class DiziBattle
                 isPlayerWin = playerCombat.IsAlive;
                 break;
             }
-
-            var r = new DiziCombatRound(combatUnits, buffMgr);
-            rounds.Add(r.Execute());
+            rounds.Add(battle.ExecuteRound());
         }
-        var battle = new DiziBattle(rounds, playerCombat, enemyCombat);
         battle.Finalize(isPlayerWin);
 #if UNITY_EDITOR
         PrintLog(battle);
@@ -95,7 +93,7 @@ public class DiziBattle
 
     private static string GetPerformText(DiziCombatPerformInfo perform)
     {
-        var response = perform.Reponse;
+        var response = perform.Response;
         var target = response.Target;
         var performSb = new StringBuilder("攻击");
         performSb.Append(target.Name);

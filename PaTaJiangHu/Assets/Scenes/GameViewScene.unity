@@ -1939,6 +1939,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a0ed7f08c6fb00408dae262791c9a4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _parallaxBgController: {fileID: 0}
+  _battleStage: {fileID: 0}
 --- !u!1 &598575365
 GameObject:
   m_ObjectHideFlags: 0
@@ -7058,6 +7060,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 765483707}
+  - component: {fileID: 765483708}
   m_Layer: 0
   m_Name: 2D
   m_TagString: Untagged
@@ -7084,6 +7087,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &765483708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765483706}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a0ed7f08c6fb00408dae262791c9a4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _parallaxBgController: {fileID: 973344645}
+  _battleStage: {fileID: 2077254407}
 --- !u!1 &822504660
 GameObject:
   m_ObjectHideFlags: 0
@@ -8558,7 +8575,7 @@ MonoBehaviour:
     "\u8840\u91CF": 120
     "\u4F24\u5BB3": 13
     "\u901F\u5EA6": 13
-  _charAnimSo: {fileID: 11400000, guid: 34dfd6f7dc5bfb54f899ef925fe3cf50, type: 2}
+  _combatCfg: {fileID: 11400000, guid: a96cd23fc00784748948985d2e2768bd, type: 2}
 --- !u!1 &1354173898
 GameObject:
   m_ObjectHideFlags: 0
@@ -9946,6 +9963,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2077254406}
+  - component: {fileID: 2077254407}
   m_Layer: 0
   m_Name: UnitLand
   m_TagString: Untagged
@@ -9974,6 +9992,19 @@ Transform:
   m_Father: {fileID: 765483707}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2077254407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077254405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a866f427766153b44a281805861dd706, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _startingXPoint: 6
 --- !u!1 &2132891275
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,10 +27,11 @@ public class AppLunch : UnitySingleton<AppLunch>
     private static Res Res { get; set; }
     private static AppDomain _appDomain;
     //************场景引用**************//
-    [SerializeField] private MainUi _mainUi;
-    [SerializeField] private Canvas _sceneCanvas;
-    [SerializeField] private ConfigureSo _configureSo;
-    [SerializeField] private Preloader _preloader;
+    [SerializeField] private Canvas _sceneCanvas;//游戏画布
+    [SerializeField] private MainUi _mainUi;//游戏Ui
+    [SerializeField] private Game2DLand _game2DLand;//游戏场景
+    [SerializeField] private ConfigureSo _configureSo;//游戏配置
+    [SerializeField] private Preloader _preloader;//预读
     [Header("填入所启动的UI代理器")]
     [SerializeField] private string _uiAgent;
     public static string UiAgent { get; private set; }
@@ -95,7 +96,7 @@ public class AppLunch : UnitySingleton<AppLunch>
         var ilService = new IlService(_appDomain);
         //实例+初始化游戏控件
         var game = Instance.gameObject.AddComponent<Game>();
-        game.Init(Res, ilService, _mainUi, _configureSo.Config);
+        game.Init(Res, ilService, _mainUi, _game2DLand, _configureSo.Config);
         //调用热更逻辑来启动游戏
         switch (_mode)
         {

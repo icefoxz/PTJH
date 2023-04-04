@@ -271,7 +271,7 @@ public class AttackBehavior<TUnit,TInfo> : CombatBehavior<TUnit,TInfo > where TU
 public record CombatPerformInfo<TUnit> where TUnit : ICombatUnit
 {
     public CombatUnitInfo<TUnit> Performer { get; set; }
-    public CombatResponseInfo<TUnit> Reponse { get; set; }
+    public CombatResponseInfo<TUnit> Response { get; set; }
     public bool IsCritical { get; set; }
     //补血(吸血)
     public int Heal { get; set; }
@@ -292,7 +292,7 @@ public record CombatPerformInfo<TUnit> where TUnit : ICombatUnit
 
     public void SetCritical(bool isCritical) => IsCritical = isCritical;
 
-    public void AddResponse(CombatResponseInfo<TUnit> info) => Reponse = info;
+    public void AddResponse(CombatResponseInfo<TUnit> info) => Response = info;
 
     public void SetCounterAttack(int damage, bool isDodged, bool isCritical)
     {

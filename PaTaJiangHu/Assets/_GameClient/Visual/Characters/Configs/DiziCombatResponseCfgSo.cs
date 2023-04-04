@@ -8,8 +8,8 @@ public interface ICombatEffect
     GameObject Invoke(GameObject parent);
 }
 
-[CreateAssetMenu(fileName = "角色战斗反馈配置", menuName = "角色/战斗反馈")]
-public class CharAnimSo : ScriptableObject
+[CreateAssetMenu(fileName = "战斗反馈配置", menuName = "战斗单位/战斗反馈")]
+public class DiziCombatResponseCfgSo : ScriptableObject
 {
     public enum Responses
     {

@@ -8,12 +8,13 @@ namespace Systems.Coroutines
     {
         void StopCo();
         int GetInstanceID();
+        Coroutine Instance { get; }
         string name { get; set; }
     }
 
     public class CoroutineInstance : MonoBehaviour, ICoroutineInstance
     {
-        internal Coroutine Coroutine { get; set; }
+        private Coroutine Coroutine { get; set; }
         private event UnityAction OnStopAction;
 
         public void StartCo(IEnumerator enumerator, UnityAction callBackAction, UnityAction onStopAction)
@@ -33,5 +34,7 @@ namespace Systems.Coroutines
             StopCoroutine(Coroutine);
             OnStopAction?.Invoke();
         }
+
+        public Coroutine Instance => Coroutine;
     }
 }

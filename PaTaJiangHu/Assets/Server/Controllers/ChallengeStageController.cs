@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using _GameClient.Models;
 using Server.Configs.ChallengeStages;
 
@@ -14,12 +15,16 @@ namespace Server.Controllers
         public void StartChallenge(string guid, int npcIndex)
         {
             var dizi = Faction.GetDizi(guid);
-            var result = ChallengeCfg.Stages[ProgressIndex].Challenge(npcIndex, dizi);
-            if (result.IsPlayerWin)
+            var battle = ChallengeCfg.Stages[ProgressIndex].Challenge(npcIndex, dizi);
+            var gameLand = Game.Game2DLand;
+            gameLand.PlayBattle(battle, () =>
             {
-                ProgressIndex++;
-                Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);
-            }
+                if (battle.IsPlayerWin)
+                {
+                    ProgressIndex++;
+                    Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);
+                }
+            });
         }
     }
 }

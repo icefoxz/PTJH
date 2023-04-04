@@ -44,10 +44,11 @@ public class Game : UnitySingleton<Game>
     }
 
     public static MainUi MainUi { get; private set; }
+    public static IGame2DLand Game2DLand { get; private set; }
     public static GameWorld World { get; private set; }
     internal static Config Config { get; set; }
     public static bool IsInit { get; private set; }
-    internal void Init(Res res, IlService ilService, MainUi mainUi, Config config)
+    internal void Init(Res res, IlService ilService, MainUi mainUi, Game2DLand game2DLand, Config config)
     {
         if (IsInit) throw new InvalidOperationException("Double Init!");
         IsInit = true;
@@ -63,6 +64,7 @@ public class Game : UnitySingleton<Game>
         MainUi.Init();
         Config = config;
         World = new GameWorld();//Init World Model
+        Game2DLand = game2DLand;
         //SceneCanvas = sceneCanvas;
         InitControllers();
     }

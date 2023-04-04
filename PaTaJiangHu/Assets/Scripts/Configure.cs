@@ -76,6 +76,17 @@ internal class Configure : MonoBehaviour
         internal AdventureConfigSo AdventureCfg => GetSo(历练配置);
     }
 
+    [SerializeField] private GameAnimConfig 游戏演示配置;
+    internal GameAnimConfig GameAnimCfg => 游戏演示配置;
+    //游戏演示配置
+    [Serializable] internal class GameAnimConfig
+    {
+        [SerializeField] private CharacterOperator 角色预设;
+        internal CharacterOperator CharacterOpPrefab => 角色预设;
+        [SerializeField] private DiziCombatConfigSo 弟子战斗配置;
+        internal DiziCombatConfigSo DiziCombatCfg => 弟子战斗配置;
+    }
+
     [SerializeField] private ChallengeStageCfg 挑战关卡配置;
     internal ChallengeStageCfg ChallengeCfg => 挑战关卡配置;
 
