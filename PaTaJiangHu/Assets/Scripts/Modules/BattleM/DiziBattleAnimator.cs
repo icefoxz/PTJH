@@ -6,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// 弟子战斗演示器
 /// </summary>
-public class DiziBattleAnimator
+internal class DiziBattleAnimator
 {
     private DiziCombatConfigSo CombatCfg { get; }
     private Dictionary<int, CharacterOperator> OpMap { get; }
@@ -38,9 +38,8 @@ public class DiziBattleAnimator
                 Mono.StartCoroutine(PlayTargetResponse(response, targetOp)); //response
 
                 yield return new WaitForSeconds(0.2f);
-                CombatCfg.PlayOffendReturn(performOp); //move return
                 SetOpPos(targetOp.transform, targetPos); //align target position
-                yield return performOp.OffendReturnMove(performPos);
+                yield return CombatCfg.PlayOffendReturn(performPos,performOp); //move return
             }
         }
 

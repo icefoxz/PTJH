@@ -5,11 +5,13 @@ using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "战斗攻击配置", menuName = "战斗单位/攻击配置")]
-public class DiziCombatConfigSo : ScriptableObject
+internal class DiziCombatConfigSo : ScriptableObject
 {
     [SerializeField] private DiziCombatResponseCfgSo 反馈配置;
+    [SerializeField] private DiziCombatConfig 弟子攻击配置;
 
     private DiziCombatResponseCfgSo CombatResponseSo => 反馈配置;
+    private DiziCombatConfig CombatConfig => 弟子攻击配置;
 
     public void PlayResponse(CombatResponseInfo<DiziCombatUnit> response, CharacterOperator tarOp)
     {
@@ -36,9 +38,10 @@ public class DiziCombatConfigSo : ScriptableObject
         performOp.SetAnim(CharacterOperator.Anims.Attack);//attack
     }
 
-    public void PlayOffendReturn(CharacterOperator performOp)
+    public IEnumerator PlayOffendReturn(float targetPoint,CharacterOperator performOp)
     {
         performOp.SetAnim(CharacterOperator.Anims.AttackReturn);//move return
+        yield return performOp.OffendReturnMove(targetPoint, CombatConfig.OffendReturnCurve);
     }
 
     public IEnumerator PlayResponseEffects(CombatResponseInfo<DiziCombatUnit> response, CharacterOperator tarOp)
@@ -66,7 +69,7 @@ public class DiziCombatConfigSo : ScriptableObject
     public IEnumerator PlayOffendMove(DiziCombatPerformInfo info, CharacterOperator op, float targetPos)
     {
         op.SetAnim(CharacterOperator.Anims.MoveStep);
-        yield return op.OffendMove(targetPos);
+        yield return op.OffendMove(targetPos, CombatConfig.OffendMovingCurve);
     }
     //获取反馈
     private static DiziCombatResponseCfgSo.Responses GetResponseAction(CombatResponseInfo<DiziCombatUnit> response)
@@ -79,8 +82,19 @@ public class DiziCombatConfigSo : ScriptableObject
     /// 弟子战斗攻击配置
     /// </summary>
     [Serializable]
-    public class DiziCombatConfig
+    private class DiziCombatConfig
     {
-
+        [SerializeField] private BasicAnimConfig 战斗移动配置;
+        [SerializeField] private BasicAnimConfig 战斗返回配置;
+        internal BasicAnimConfig OffendMovingCurve => 战斗移动配置;
+        internal BasicAnimConfig OffendReturnCurve => 战斗返回配置;
+    }
+    [Serializable]
+    internal class BasicAnimConfig
+    {
+        [SerializeField] private AnimationCurve 曲线;
+        [SerializeField] private float 耗时;
+        public float Evaluate(float elapsedTime) => 曲线.Evaluate(elapsedTime);
+        public float Duration => 耗时;
     }
 }

@@ -15,16 +15,15 @@ public class DiziBattle
     public DiziCombatUnit[] Fighters { get; }
     public bool IsFinalized { get; private set; }
     private static int CombatUnitSeed { get; set; }
-    private DiziBattle(List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>> rounds,
-        params DiziCombatUnit[] combats)
+    private DiziBattle(params DiziCombatUnit[] combats)
     {
         foreach (var unit in combats) unit.SetInstanceId(++CombatUnitSeed);
         BuffManager = new BuffManager<DiziCombatUnit>(combats.ToList());
-        Rounds = rounds;
+        Rounds = new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>>();
         Fighters = combats;
     }
 
-    public void Finalize(bool isPlayerWin)
+    private void Finalize(bool isPlayerWin)
     {
         IsPlayerWin = isPlayerWin;
         IsFinalized = true;
@@ -35,35 +34,27 @@ public class DiziBattle
         var round = new DiziCombatRound(Fighters.ToList(), BuffManager);
         var info = round.Execute();
         Rounds.Add(info);
-        if (Fighters.GroupBy(f => f.TeamId, f => f).Count() > 1) return info;
+        if (Fighters.Where(f => f.IsAlive).GroupBy(f => f.TeamId, f => f).Count() > 1) return info;
         var aliveTeam = Fighters.FirstOrDefault(f => f.IsAlive)?.TeamId ?? -1;
         if (aliveTeam == -1) throw new NotImplementedException("没有活着的单位!");
         Finalize(aliveTeam == 0);//玩家单位是0
         return info;
     }
 
-    public static DiziBattle Instance(DiziCombatUnit[] units) =>
-        new(new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>>(), units);
+    public static DiziBattle Instance(DiziCombatUnit[] units) => new(units);
 
     public static DiziBattle StartAuto(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
     {
-        var combatUnits = new List<DiziCombatUnit>();
-        var buffMgr = new BuffManager<DiziCombatUnit>(combatUnits);
-        combatUnits.Add(playerCombat);
-        combatUnits.Add(enemyCombat);
-        var rounds = new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>>();
-        var isPlayerWin = false;
-        var battle = new DiziBattle(rounds, playerCombat, enemyCombat);
+        var battle = new DiziBattle(playerCombat, enemyCombat);
         for (var i = 0; i < roundLimit; i++)
         {
-            if (enemyCombat.IsDead || playerCombat.IsDead)
-            {
-                isPlayerWin = playerCombat.IsAlive;
-                break;
-            }
-            rounds.Add(battle.ExecuteRound());
+            if (battle.IsFinalized) break;
+            battle.ExecuteRound();
         }
-        battle.Finalize(isPlayerWin);
+
+        if (!battle.IsFinalized)//根据队伍的平均血量比率判断获胜
+            battle.Finalize(battle.Fighters.Where(f => f.TeamId == 0).Average(f => f.HpRatio) >
+                            battle.Fighters.Where(f => f.TeamId == 1).Average(f => f.HpRatio));
 #if UNITY_EDITOR
         PrintLog(battle);
 #endif
