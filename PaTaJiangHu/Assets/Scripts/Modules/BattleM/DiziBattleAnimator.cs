@@ -22,7 +22,7 @@ internal class DiziBattleAnimator
     public void PlayRound(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> roundInfo, Action callbackAction) =>
         Mono.StartCoroutine(PlayRoundCo(roundInfo, callbackAction));
 
-    private IEnumerator PlayRoundCo(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> roundInfo, Action callback)
+    public IEnumerator PlayRoundCo(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> roundInfo, Action callback)
     {
         foreach (var (pfm, performInfos) in roundInfo.UnitInfoMap)
         {
@@ -33,9 +33,11 @@ internal class DiziBattleAnimator
                 var response = info.Response;
                 var targetOp = OpMap[response.Target.InstanceId];
                 var targetPos = GetLocationPoint(targetOp);
+                EventSend(EventString.Battle_Performer_update, info.Performer);
                 yield return CombatCfg.PlayOffendMove(info, performOp, targetPos); //move
                 CombatCfg.PlayPerform(info, performOp); //perform
                 Mono.StartCoroutine(PlayTargetResponse(response, targetOp)); //response
+                EventSend(EventString.Battle_Reponser_Update, response.Target);
 
                 yield return new WaitForSeconds(0.2f);
                 SetOpPos(targetOp.transform, targetPos); //align target position
@@ -54,6 +56,9 @@ internal class DiziBattleAnimator
             return CombatCfg.PlayResponseEffects(response, targetOp);
         }
     }
+
+    private void EventSend(string eventString, params object[] response) =>
+        Game.MessagingManager.SendParams(eventString, response);
 
     private float GetLocationPoint(CharacterOperator op) => op.transform.localPosition.x;
 

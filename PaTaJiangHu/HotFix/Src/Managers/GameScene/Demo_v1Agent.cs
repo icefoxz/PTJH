@@ -25,6 +25,7 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_Game_ViewMgr Demo_Game_ViewMgr { get; }
     private Demo_View_ChallengeStageSelectorMgr Demo_View_ChallengeStageSelectorMgr { get; }
 
+
     private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
 
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)

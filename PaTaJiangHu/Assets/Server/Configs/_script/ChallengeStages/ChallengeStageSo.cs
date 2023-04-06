@@ -40,12 +40,12 @@ namespace Server.Configs.ChallengeStages
 
         public IChallengeStageNpc[] Npcs => 挑战;
 
-        public DiziBattle Challenge(int challengeIndex, Dizi dizi)
+        public DiziBattle Instance(int challengeIndex, Dizi dizi)
         {
             var challenge = Npcs[challengeIndex];
             var diziCombat = new DiziCombatUnit(0, dizi);
             var npcCombat = challenge.GetNpc();
-            return DiziBattle.StartAuto(diziCombat, npcCombat, RoundLimit);
+            return DiziBattle.Instance(new[] { diziCombat, npcCombat }, RoundLimit);
         }
 
         [Serializable] private class ChallengeField : IChallengeStageNpc

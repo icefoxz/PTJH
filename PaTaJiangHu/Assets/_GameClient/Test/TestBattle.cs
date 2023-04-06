@@ -6,10 +6,31 @@ public class TestBattle : MonoBehaviour
 {
     [SerializeField] private CombatChar[] _combatChars;
     [SerializeField] private DiziCombatConfigSo _combatCfg;
+    [SerializeField] private Game2DLand _game2DLand;
+    [SerializeField] private CharacterUiSyncHandler _characterUiSyncHandler;
+    [SerializeField] private CharacterOperator _testSceneObj;
+    [SerializeField] private Camera _mainCamera;
+    [SerializeField] private Canvas _sceneCanvas;
 
     private CombatChar[] CombatChars => _combatChars;
     private DiziBattle Battle { get; set; }
     private DiziBattleAnimator BattleAnim { get; set; }
+
+    private Game2DLand Game2DLand => _game2DLand;
+    private CharacterUiSyncHandler CharacterUiSyncHandler => _characterUiSyncHandler;
+
+    private ISceneObj TestSceneObj => _testSceneObj;
+
+    private void Start()
+    {
+        _game2DLand.Init();
+        CharacterUiSyncHandler.Init(_game2DLand, _sceneCanvas, _mainCamera);
+    }
+
+    public void InstanceUiToTestObj()
+    {
+        CharacterUiSyncHandler.AssignObjToUi(TestSceneObj);
+    }
 
     public void StartBattle()
     {

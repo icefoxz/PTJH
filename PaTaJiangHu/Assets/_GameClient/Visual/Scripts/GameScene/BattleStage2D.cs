@@ -12,29 +12,20 @@ public class BattleStage2D : MonoBehaviour
     private DiziBattleAnimator CurrentBattleAnim { get; set; }
     private bool IsBusy => CurrentBattleAnim != null;
 
-    public void PlayAutoBattle(DiziBattle battle, Action callback)
+    public void InitBattle(DiziBattle battle)
     {
         if (IsBusy) throw new NotImplementedException($"{name} is busy!");
         var opMap = SetBattleStage(battle);
         CurrentBattleAnim = new DiziBattleAnimator(AnimConfig.DiziCombatCfg, opMap, this);
-        StartCoroutine(PlayRound());
-
-        IEnumerator PlayRound()
-        {
-            var round = 0;
-            foreach (var info in battle.Rounds)
-            {
-                var temp = round;
-                CurrentBattleAnim.PlayRound(info, () => round++);
-                yield return new WaitUntil(() => round > temp);
-            }
-
-            FinalizeBattle();
-            callback?.Invoke();
-        }
     }
 
-    private void FinalizeBattle()
+    public IEnumerator PlayRound(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> info)
+    {
+        if (IsBusy) throw new NotImplementedException($"{name} is busy!");
+        return CurrentBattleAnim.PlayRoundCo(info, null);
+    }
+
+    public void FinalizeBattle()
     {
         CurrentBattleAnim = null;
     }

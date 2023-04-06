@@ -83,6 +83,10 @@ public class EventString
     public const string Faction_BookUpdate = "Faction_BookUpdate";//门派书籍更新
     public const string Faction_Challenge_Update = "Faction_Challenge_Update";//门派挑战进度更新
 
+    //战斗演示
+    public const string Battle_Performer_update = "Battle_Performer_update";//进攻者信息更新
+    public const string Battle_Reponser_Update = "Battle_Reponse_Update";//反馈者信息更新
+
     //窗口
     public const string Win_PopUp = "Win_PopUp";//弹窗ui
 }

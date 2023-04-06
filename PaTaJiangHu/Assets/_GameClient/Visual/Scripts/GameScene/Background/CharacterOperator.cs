@@ -7,7 +7,7 @@ using UnityEngine;
 /// <summary>
 /// 角色处理器,主要处理角色动画与装备物件
 /// </summary>
-public class CharacterOperator : MonoBehaviour
+public class CharacterOperator : MonoBehaviour,ISceneObj
 {
     public enum Facing
     {
@@ -27,7 +27,9 @@ public class CharacterOperator : MonoBehaviour
     }
     [SerializeField] private Transform _character;
     [SerializeField] private Animator _anim;
+    [SerializeField] private Collider2D _collider;
     [SerializeField] private SpriteRenderer[] _renderers;
+    public Collider2D Collider => _collider;
     private Dictionary<SpriteRenderer,Color> ColorMapping { get; set; }
 
     public void Init()
@@ -146,6 +148,4 @@ public class CharacterOperator : MonoBehaviour
         // Ensure the object reaches the target position
         transform.position = tarPos;
     }
-
-
 }
