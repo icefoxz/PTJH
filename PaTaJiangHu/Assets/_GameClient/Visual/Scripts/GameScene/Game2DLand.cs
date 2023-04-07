@@ -7,9 +7,11 @@ using UnityEngine;
 /// </summary>
 public interface IGame2DLand
 {
+    CharacterUiSyncHandler CharacterUiSyncHandler { get; }
     void InitBattle(DiziBattle battle);
-    IEnumerator PlayRound(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> info);
+    IEnumerator PlayRound(DiziRoundInfo info);
     Vector2 ConvertWorldPosToCanvasPos(RectTransform mainCanvasRect, RectTransform targetParent, Vector3 objWorldPos);
+    void FinalizeBattle();
 }
 
 /// <summary>
@@ -22,17 +24,18 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     [SerializeField] private CharacterUiSyncHandler _characterUiSyncHandler;
     private BattleStage2D BattleStage => _battleStage;
     private ParallaxBackgroundController ParallaxBgController => _parallaxBgController;
-    private CharacterUiSyncHandler CharacterUiSyncHandler => _characterUiSyncHandler;
+    public CharacterUiSyncHandler CharacterUiSyncHandler => _characterUiSyncHandler;
     private Canvas MainCanvas => Game.SceneCanvas;
     private RectTransform MainCanvasRect { get; set; }
 
     public void Init()
     {
         MainCanvasRect = MainCanvas.transform as RectTransform;
+        CharacterUiSyncHandler.Init(this, MainCanvas, Camera.main);
     }
 
     public void InitBattle(DiziBattle battle) => BattleStage.InitBattle(battle);
-    public IEnumerator PlayRound(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> info) => BattleStage.PlayRound(info);
+    public IEnumerator PlayRound(DiziRoundInfo info) => BattleStage.PlayRound(info);
 
     public Vector2 ConvertWorldPosToCanvasPos(RectTransform mainCanvasRect,RectTransform targetParent,Vector3 objWorldPos)
     {
@@ -44,4 +47,6 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
         Vector2 localPositionInParent = targetParent.InverseTransformPoint(mainCanvasRect.TransformPoint(canvasPos));
         return localPositionInParent;
     }
+
+    public void FinalizeBattle() => BattleStage.FinalizeBattle();
 }

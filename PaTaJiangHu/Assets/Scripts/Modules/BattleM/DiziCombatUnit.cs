@@ -11,7 +11,7 @@ using Server.Configs.BattleSimulation;
 /// </summary>
 public class DiziCombatUnit : CombatUnit
 {
-    
+    public string Guid { get; private set; }
     public int Mp { get; private set; }
     public int MaxMp { get; private set; }
     public int Agility { get; private set; }
@@ -19,6 +19,7 @@ public class DiziCombatUnit : CombatUnit
     internal DiziCombatUnit(int teamId, Dizi dizi) 
         : base(teamId, dizi.Name, dizi.Hp, dizi.Strength, dizi.Agility)
     {
+        Guid = dizi.Guid;
         Mp = dizi.Mp;
         MaxMp = dizi.Mp;
         Agility = dizi.Agility;
@@ -33,17 +34,17 @@ public class DiziCombatUnit : CombatUnit
     }
 
     internal DiziCombatUnit(ICombatUnit unit) : base(unit){}
-    internal DiziCombatUnit(ISimCombat dizi) : base(dizi)
+    internal DiziCombatUnit(ISimCombat s,int teamId) : base(teamId,s.Name,s.MaxHp,s.Damage,s.Agility)
     {
-        Mp = dizi.Mp;
-        MaxMp = dizi.Mp;
-        Agility = dizi.Agility;
+        Mp = s.Mp;
+        MaxMp = s.Mp;
+        Agility = s.Agility;
     }
     //伤害减免
     protected override int DamageReduction(int damage)
     {
-        var (finalDamage, offset) = CombatFormula.DamageReduction(damage, Mp, MaxMp);
-        Mp -= offset;
+        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage, Mp, MaxMp);
+        Mp -= mpConsume;
         return finalDamage;
     }
 
@@ -53,7 +54,7 @@ public class DiziCombatUnit : CombatUnit
 /// <summary>
 /// 弟子攻击行为, 处理各种攻击逻辑
 /// </summary>
-public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo>
+public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>
 {
     private int Combo { get; } = 1;
 
@@ -66,8 +67,8 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         {
             foreach (var target in targets)//对所有执行目标历遍执行
             {
-                var (damage, isDodge, isHard) = GetDamage(caster: caster, target: target);//获取伤害
-                var finalDamage = (int)damage;
+                var (dmg, isDodge, isHard) = GetDamage(caster: caster, target: target);//获取伤害
+                var damage = (int)dmg;
 
                 //生成行动记录
                 var perform = new DiziCombatPerformInfo();
@@ -78,13 +79,12 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
                 //设定战斗行动
                 perform.SetHard(isHard);
                 //执行伤害
-                target.TakeDamage(damage: finalDamage);
+                var finalDamage = target.TakeDamage(damage: damage);
                 var canCounter = CounterJudgment(target);
                 if (canCounter) CounterAttack(caster: target, target: caster, perform: perform);//反击执行
                 //生成反馈记录
-                var response = new CombatResponseInfo<DiziCombatUnit>();
+                var response = new CombatResponseInfo<DiziCombatUnit, DiziCombatInfo>();
                 response.Set(target);
-
                 //添加反馈记录
                 perform.AddResponse(info: response);
                 //记录伤害
@@ -98,7 +98,7 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
     protected virtual bool CounterJudgment(DiziCombatUnit tar) => tar.IsAlive && false;//暂时不支持Counter
 
     //反击
-    private void CounterAttack(DiziCombatUnit caster, DiziCombatUnit target, CombatPerformInfo<DiziCombatUnit> perform)
+    private void CounterAttack(DiziCombatUnit caster, DiziCombatUnit target, CombatPerformInfo<DiziCombatUnit, DiziCombatInfo> perform)
     {
         var (damage, isDodge, isCritical) = GetDamage(caster, target);
         if (!isDodge) target.TakeDamage(damage: (int)damage);
@@ -126,17 +126,38 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
     }
 }
 
-public class DiziCombatRound : Round<DiziCombatUnit, DiziCombatPerformInfo>
+public class DiziCombatRound : Round<DiziCombatUnit, DiziRoundInfo, DiziCombatPerformInfo, DiziCombatInfo>
 {
-    public DiziCombatRound(List<DiziCombatUnit> combatUnits, BuffManager<DiziCombatUnit> buffManager) : base(combatUnits, buffManager)
+    public DiziCombatRound(List<DiziCombatUnit> combatUnits, BuffManager<DiziCombatUnit> buffManager) : base(
+        combatUnits, buffManager)
     {
     }
 
-    protected override CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo> ChooseBehavior(DiziCombatUnit unit) => new DiziAttackBehavior();
+    protected override CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>
+        ChooseBehavior(DiziCombatUnit unit) => new DiziAttackBehavior();
 }
 
-public record DiziCombatPerformInfo :CombatPerformInfo<DiziCombatUnit>
+public record DiziCombatPerformInfo :CombatPerformInfo<DiziCombatUnit, DiziCombatInfo>
 {
     public bool IsHard { get; set; }
     public void SetHard(bool isHard) => IsHard = isHard;
+}
+
+public record DiziCombatInfo : CombatUnitInfo<DiziCombatUnit>
+{
+    public int Mp { get; set; }
+    public int MaxMp { get; set; }
+
+    public override void Set(DiziCombatUnit unit)
+    {
+        Mp = unit.Mp;
+        MaxMp = unit.MaxMp;
+        base.Set(unit);
+    }
+}
+
+
+public class DiziRoundInfo : RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>
+{
+
 }

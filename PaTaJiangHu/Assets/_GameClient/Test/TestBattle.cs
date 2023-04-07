@@ -37,7 +37,8 @@ public class TestBattle : MonoBehaviour
         var fighters = CombatChars.Select(c => new { op = c.Op, combat = c.GetCombatUnit() }).ToArray();
         Battle = DiziBattle.Instance(fighters.Select(f => f.combat).ToArray());
         BattleAnim =
-            new DiziBattleAnimator(_combatCfg, fighters.ToDictionary(c => c.combat.InstanceId, c => c.op), this);
+            new DiziBattleAnimator(_combatCfg, fighters.ToDictionary(c => c.combat.InstanceId, c => c.op),
+                CharacterUiSyncHandler, this);
         StartRound();
     }
 
@@ -68,13 +69,18 @@ public class TestBattle : MonoBehaviour
         [SerializeField] private int 速度;
         public CharacterOperator Op => _op;
 
-        public int InstanceId { get; }
+        public int InstanceId { get; private set; }
         public string Name => 名字;
         public int Hp => 血量;
         public int MaxHp => 血量;
         public int Damage => 伤害;
         public int Speed => 速度;
         public int TeamId => 玩家 ? 0 : 1;
+        public void SetInstanceId(int instanceId)
+        {
+            InstanceId = instanceId;
+        }
+
         public DiziCombatUnit GetCombatUnit() => new(this);
     }
 }

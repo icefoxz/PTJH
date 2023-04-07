@@ -1,11 +1,14 @@
-
-using _GameClient.Models;
-using HotFix_Project.Managers.Demo_v1;
+using System;
 using System.Linq;
+using _GameClient.Models;
+using HotFix_Project.Managers.GameScene;
+using HotFix_Project.UiEffects;
 using Server.Controllers;
+using UnityEngine;
 using Utls;
+using Views;
 
-namespace HotFix_Project.Managers.GameScene;
+namespace HotFix_Project.Managers.Demo_v1;
 
 //Demo_v1 的Ui代理
 internal class Demo_v1Agent : MainUiAgent
@@ -24,12 +27,15 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_View_AdventureMapsMgr Demo_View_AdventureMapsMgr { get; }
     private Demo_Game_ViewMgr Demo_Game_ViewMgr { get; }
     private Demo_View_ChallengeStageSelectorMgr Demo_View_ChallengeStageSelectorMgr { get; }
-
+    private Demo_Game_BattleBannerMgr Demo_Game_BattleBannerMgr { get; }
 
     private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
 
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
+        //注册战斗事件,实现战斗特效生成
+        EffectView.OnInvoke += OnEffectInvoke;
+        //窗口管理器
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
         Demo_View_Faction_InfoMgr = new Demo_View_Faction_InfoMgr(this);
         Demo_Dizi_InfoMgr = new Demo_Dizi_InfoMgr(this);
@@ -41,6 +47,7 @@ internal class Demo_v1Agent : MainUiAgent
         DiziRecruitManager = new DiziRecruitManager(this);
         Demo_View_AdventureMapsMgr = new Demo_View_AdventureMapsMgr(this);
         Demo_Game_ViewMgr = new Demo_Game_ViewMgr(this);
+        Demo_Game_BattleBannerMgr = new Demo_Game_BattleBannerMgr(this);
 
         Demo_View_ChallengeStageSelectorMgr = new Demo_View_ChallengeStageSelectorMgr(this);
         //窗口 Windows
@@ -48,6 +55,19 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_Win_ItemMgr = new Demo_Win_ItemMgr(this);
         
     }
+
+    private void OnEffectInvoke((int instanceId, int performIndex, EffectView view, RectTransform tran) arg)
+    {
+        var (instanceId, performIndex, view, tran) = arg;
+        switch (view.name)
+        {
+            case "demo_game_charPopValue":
+                new Demo_game_charPopValue(instanceId, performIndex, view, tran);
+                break;
+            default: throw new ArgumentException($"找不到特效的控制类! view = {view.name}");
+        }
+    }
+
     private Dizi SelectedDizi { get; set; }
     /// <summary>
     /// 弟子信息(相关板块)显示, 作为主页上整合显示所有板块的方法
@@ -114,5 +134,11 @@ internal class Demo_v1Agent : MainUiAgent
     internal void StartChallenge(int challengeIndex)
     {
         ChallengeController.StartChallenge(SelectedDizi.Guid, challengeIndex);
+    }
+
+    public void SetBattleFinalize()
+    {
+        ChallengeController.FinalizeBattle();
+        Demo_Game_BattleBannerMgr.Reset();
     }
 }

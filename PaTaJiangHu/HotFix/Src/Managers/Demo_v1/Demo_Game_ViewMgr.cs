@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;

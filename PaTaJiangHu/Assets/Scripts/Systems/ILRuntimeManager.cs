@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using _GameClient.Models;
 using ILAdapters;
 using ILRuntime.Mono.Cecil.Pdb;
-using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
 using ILRuntimeDemo;
 using Newtonsoft.Json.Linq;
@@ -82,7 +81,7 @@ namespace Systems
             appdomain.DelegateManager.RegisterFunctionDelegate<bool>();
             appdomain.DelegateManager.RegisterFunctionDelegate<int>();
             appdomain.DelegateManager.RegisterFunctionDelegate<int, ValueTuple<string, Action>>();
-            
+
             appdomain.DelegateManager.RegisterMethodDelegate<HttpResponseMessage>();
             appdomain.DelegateManager.RegisterMethodDelegate<object>();
             appdomain.DelegateManager.RegisterMethodDelegate<float>();
@@ -97,6 +96,9 @@ namespace Systems
             appdomain.DelegateManager.RegisterMethodDelegate<ILTypeInstance>();
             appdomain.DelegateManager.RegisterMethodDelegate<ObjectBag>();
             appdomain.DelegateManager.RegisterMethodDelegate<int, IView>();
+            appdomain.DelegateManager.RegisterMethodDelegate<EffectView, RectTransform>();
+            appdomain.DelegateManager.RegisterMethodDelegate<int, int, EffectView, RectTransform>();
+            appdomain.DelegateManager.RegisterMethodDelegate<ValueTuple<int, int, EffectView, RectTransform>>();
 
 
             appdomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());

@@ -28,11 +28,12 @@ public static class CombatFormula
 
     public static int Attack(DiziCombatUnit unit) => unit.Damage + MpDamage(unit);
 
-    public static (int damage,int offset) DamageReduction(int damage, int mp, int maxMp)
+    public static (int damage, int mpConsume) DamageReduction(int damage, int mp, int maxMp)
     {
         var halfDamage = damage / 2;
-        var offset = (int)(maxMp * 0.1f);//10%
+        var mpOffset = (int)(maxMp * 0.1f);//10%
+        var offset = Math.Min(mp, mpOffset);
         var finalDamage = Math.Max(halfDamage - offset, 0) + halfDamage;
-        return mp < offset ? (finalDamage, 0) : (finalDamage, offset);
+        return (finalDamage, offset);
     }
 }

@@ -2,30 +2,34 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-public interface ICombatEffect
+/// <summary>
+/// 战斗效果接口,主要用于2d游戏物件,Ui不适用
+/// </summary>
+public interface ICombat2DEffect
 {
+    /// <summary>
+    /// 战斗效果停留的时长,(常规处理会自动销毁)
+    /// </summary>
     float LastingSecs { get; }
+    /// <summary>
+    /// 战斗效果, 当战斗事件触发的时候, 会调用这个方法, 生成一个效果, 并返回这个效果的GameObject
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <returns></returns>
     GameObject Invoke(GameObject parent);
 }
 
 [CreateAssetMenu(fileName = "战斗反馈配置", menuName = "战斗单位/战斗反馈")]
-public class DiziCombatResponseCfgSo : ScriptableObject
+internal class DiziCombatResponseCfgSo : ScriptableObject
 {
-    public enum Responses
-    {
-        Suffer,
-        Dodge,
-        Defeat
-    }
-
     [SerializeField] private BasicEffect[] _suffer;
     [SerializeField] private BasicEffect[] _dodge;
     [SerializeField] private BasicEffect[] _defeat;
-    public ICombatEffect[] GetResponseEffect(Responses response) => response switch
+    public ICombat2DEffect[] GetResponseEffect(DiziBattle.Responses response) => response switch
     {
-        Responses.Suffer => _suffer,
-        Responses.Dodge => _dodge,
-        Responses.Defeat => _defeat,
+        DiziBattle.Responses.Suffer => _suffer,
+        DiziBattle.Responses.Dodge => _dodge,
+        DiziBattle.Responses.Defeat => _defeat,
         _ => throw new ArgumentOutOfRangeException(nameof(response), response, null)
     };
 
@@ -46,7 +50,7 @@ public class DiziCombatResponseCfgSo : ScriptableObject
 }
 
 [Serializable]
-public abstract class CombatEffect : ICombatEffect
+public abstract class CombatEffect : ICombat2DEffect
 {
     public abstract GameObject Obj { get; }
     public abstract float LastingSecs { get; }

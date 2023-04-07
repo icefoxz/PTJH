@@ -85,7 +85,10 @@ public class EventString
 
     //战斗演示
     public const string Battle_Performer_update = "Battle_Performer_update";//进攻者信息更新
-    public const string Battle_Reponser_Update = "Battle_Reponse_Update";//反馈者信息更新
+    public const string Battle_Reponder_Update = "Battle_Reponder_Update";//反馈者信息更新
+    public const string Battle_Init = "Battle_Init";//战斗开始
+    public const string Battle_RoundUpdate = "Battle_RoundUpdate";//战斗回合更新
+    public const string Battle_End = "Battle_Reset";//战斗场地清除
 
     //窗口
     public const string Win_PopUp = "Win_PopUp";//弹窗ui

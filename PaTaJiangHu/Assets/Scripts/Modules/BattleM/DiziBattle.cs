@@ -5,12 +5,49 @@ using System.Text;
 using Utls;
 
 /// <summary>
+/// 战斗缓存, 用于存储战斗信息, 用于战斗回放
+/// </summary>
+public class BattleCache
+{
+    private DiziBattle Battle { get; set; }
+
+    public void SetBattle(DiziBattle battle)=> Battle = battle;
+
+    public CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> GetLastResponse(int performerId,int performIndex)
+    {
+        var infos = Battle.Rounds.Last();
+        var performInfos = infos.UnitInfoMap.First(x => x.Key.InstanceId == performerId).Value;
+        var perform = performInfos[performIndex];
+        return perform.Response;
+    }
+}
+/// <summary>
 /// 弟子战斗器, 轮询回合, 不牵涉核心战斗逻辑
 /// </summary>
 public class DiziBattle
 {
+    /// <summary>
+    /// 战斗事件, 用于定义战斗配置
+    /// </summary>
+    public enum Events
+    {
+        Perform,
+        Response,
+        RoundEnd,
+        BattleEnd,
+    }
+    /// <summary>
+    /// 战斗反馈, 用于定义战斗配置
+    /// </summary>
+    public enum Responses
+    {
+        Suffer,
+        Dodge,
+        Defeat
+    }
+
     public bool IsPlayerWin { get; private set; }
-    public List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>> Rounds { get; }
+    public List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>> Rounds { get; }
     public BuffManager<DiziCombatUnit> BuffManager { get; private set; }
     public DiziCombatUnit[] Fighters { get; }
     public bool IsFinalized { get; private set; }
@@ -22,7 +59,7 @@ public class DiziBattle
         RoundLimit = roundLimit;
         foreach (var unit in combats) unit.SetInstanceId(++CombatUnitSeed);
         BuffManager = new BuffManager<DiziCombatUnit>(combats.ToList());
-        Rounds = new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo>>();
+        Rounds = new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>>();
         Fighters = combats;
     }
 
@@ -32,7 +69,7 @@ public class DiziBattle
         IsFinalized = true;
     }
 
-    public RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> ExecuteRound()
+    public DiziRoundInfo ExecuteRound()
     {
         var round = new DiziCombatRound(Fighters.ToList(), BuffManager);
         var info = round.Execute();
@@ -87,7 +124,7 @@ public class DiziBattle
         Log($"战斗结束! {(battle.IsPlayerWin ? "玩家获胜!" : "玩家战败!")}");
     }
 
-    private static void RoundLog(int roundNum, RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> round)
+    private static void RoundLog(int roundNum, RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo> round)
     {
         XDebug.Log($"[回合({roundNum})]");
         foreach (var (unit, performs) in round.UnitInfoMap)
@@ -109,7 +146,7 @@ public class DiziBattle
         return performSb.ToString();
     }
 
-    private static string GetResponseText(CombatResponseInfo<DiziCombatUnit> response)
+    private static string GetResponseText(CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response)
     {
         var target = response.Target.Name + GetStateText(response.Target);
         var finalDmg = response.FinalDamage;

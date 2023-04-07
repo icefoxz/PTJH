@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using Views;
+using Object = UnityEngine.Object;
 
 /// <summary>
 /// 弟子战斗演示器
@@ -11,37 +14,44 @@ internal class DiziBattleAnimator
     private DiziCombatConfigSo CombatCfg { get; }
     private Dictionary<int, CharacterOperator> OpMap { get; }
     private MonoBehaviour Mono { get; }
-    public DiziBattleAnimator(DiziCombatConfigSo combatCfg, Dictionary<int, CharacterOperator> opMap,
+    private CharacterUiSyncHandler UiHandler { get; set; }
+    public DiziBattleAnimator(DiziCombatConfigSo combatCfg, 
+        Dictionary<int, CharacterOperator> opMap,
+        CharacterUiSyncHandler uiHandler,
         MonoBehaviour mono)
     {
         CombatCfg = combatCfg;
         OpMap = opMap;
         Mono = mono;
+        UiHandler = uiHandler;
+        foreach (var op in OpMap.Values) UiHandler.AssignObjToUi(op);
     }
 
-    public void PlayRound(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> roundInfo, Action callbackAction) =>
+    public void PlayRound(DiziRoundInfo roundInfo, Action callbackAction) =>
         Mono.StartCoroutine(PlayRoundCo(roundInfo, callbackAction));
 
-    public IEnumerator PlayRoundCo(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> roundInfo, Action callback)
+    public IEnumerator PlayRoundCo(DiziRoundInfo roundInfo, Action callback)
     {
         foreach (var (pfm, performInfos) in roundInfo.UnitInfoMap)
         {
             var performOp = OpMap[pfm.InstanceId];
             var performPos = GetLocationPoint(performOp);
-            foreach (var info in performInfos)
+            for (var index = 0; index < performInfos.Count; index++)
             {
+                var info = performInfos[index];
                 var response = info.Response;
                 var targetOp = OpMap[response.Target.InstanceId];
                 var targetPos = GetLocationPoint(targetOp);
                 EventSend(EventString.Battle_Performer_update, info.Performer);
                 yield return CombatCfg.PlayOffendMove(info, performOp, targetPos); //move
-                CombatCfg.PlayPerform(info, performOp); //perform
-                Mono.StartCoroutine(PlayTargetResponse(response, targetOp)); //response
-                EventSend(EventString.Battle_Reponser_Update, response.Target);
+                Mono.StartCoroutine(PlayTargetResponse(pfm.InstanceId, index, response, targetOp)); //response
+                var tran = UiHandler.GetObjRect(performOp);
+                CombatCfg.PlayPerformAnim(index, info, performOp, tran); //perform
+                EventSend(EventString.Battle_Reponder_Update, response.Target);
 
                 yield return new WaitForSeconds(0.2f);
                 SetOpPos(targetOp.transform, targetPos); //align target position
-                yield return CombatCfg.PlayOffendReturn(performPos,performOp); //move return
+                yield return CombatCfg.PlayOffendReturn(performPos, performOp); //move return
             }
         }
 
@@ -50,10 +60,11 @@ internal class DiziBattleAnimator
 
         void SetOpPos(Transform tran, float pos) => tran.transform.SetX(pos);
 
-        IEnumerator PlayTargetResponse(CombatResponseInfo<DiziCombatUnit> response, CharacterOperator targetOp)
+        IEnumerator PlayTargetResponse(int performerId,int performIndex,CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response, CharacterOperator targetOp)
         {
-            CombatCfg.PlayResponse(response, targetOp);
-            return CombatCfg.PlayResponseEffects(response, targetOp);
+            var tran = UiHandler.GetObjRect(targetOp);
+            CombatCfg.PlayResponseAnim(performerId, performIndex, response, targetOp, tran);
+            return CombatCfg.PlayResponse2DEffects(response, targetOp);
         }
     }
 
@@ -62,4 +73,14 @@ internal class DiziBattleAnimator
 
     private float GetLocationPoint(CharacterOperator op) => op.transform.localPosition.x;
 
+    public void Reset()
+    {
+        UiHandler.ClearAll();
+        foreach (var instanceId in OpMap.Keys.ToArray())
+        {
+            var op = OpMap[instanceId];
+            OpMap.Remove(instanceId);
+            Object.Destroy(op.gameObject);
+        }
+    }
 }

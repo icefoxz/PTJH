@@ -40,8 +40,8 @@ namespace Server.Configs.BattleSimulation
         /// <returns></returns>
         public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
         {
-            var playerCombat = new DiziCombatUnit(player);
-            var enemyCombat = new DiziCombatUnit(enemy);
+            var playerCombat = new DiziCombatUnit(player, 0);
+            var enemyCombat = new DiziCombatUnit(enemy, 1);
             var battle = DiziBattle.StartAuto(playerCombat, enemyCombat, RoundLimit);
             var roundCount = battle.Rounds.Count;
             var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,battle.IsPlayerWin,player,enemy,playerCombat.Hp);
@@ -116,7 +116,6 @@ namespace Server.Configs.BattleSimulation
                 Mp = mp;
             }
 
-            public int InstanceId { get; }//SimCombat不需要InstanceId
             public string Name { get; }
             public int Power { get; }
             public int Damage => Strength + Agility + Weapon;

@@ -1,6 +1,6 @@
 ﻿namespace Server.Configs.BattleSimulation
 {
-    public interface ISimCombat : ICombatUnit
+    public interface ISimCombat 
     {
         string Name { get; }
         int Power { get; }

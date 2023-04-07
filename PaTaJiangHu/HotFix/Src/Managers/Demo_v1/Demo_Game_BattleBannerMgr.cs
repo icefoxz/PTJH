@@ -1,4 +1,5 @@
-﻿using HotFix_Project.Managers.GameScene;
+﻿using _GameClient.Models;
+using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using UnityEngine;
@@ -7,7 +8,7 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1;
 
-internal class Demo_Game_BattleBannerMgr : UiManagerBase
+internal class Demo_Game_BattleBannerMgr : MainPageBase
 {
     private Game_BattleBanner View_BattleBanner { get; set; }
     private Demo_v1Agent UiAgent { get; }
@@ -16,25 +17,42 @@ internal class Demo_Game_BattleBannerMgr : UiManagerBase
         UiAgent = uiAgent;
     }
 
-    protected override MainUiAgent.Sections Section { get; }
-    protected override string ViewName { get; } = "demo_game_battleBanner";
-    protected override bool IsDynamicPixel { get; } = true;
+    protected override string ViewName => "demo_game_battleBanner";
+    protected override bool IsDynamicPixel => true;
     protected override void Build(IView view) => View_BattleBanner = new Game_BattleBanner(view);
+    protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Game;
 
     protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Battle_Performer_update, bag =>
         {
-            var info = bag.Get<CombatUnitInfo<DiziCombatUnit>>(0);
+            var info = bag.Get<DiziCombatInfo>(0);
             View_BattleBanner.UpdateInfo(info);
         });
 
-        Game.MessagingManager.RegEvent(EventString.Battle_Reponser_Update, bag =>
+        Game.MessagingManager.RegEvent(EventString.Battle_Reponder_Update, bag =>
         {
-            var info = bag.Get<CombatUnitInfo<DiziCombatUnit>>(0);
+            var info = bag.Get<DiziCombatInfo>(0);
             View_BattleBanner.UpdateInfo(info);
         });
+
+        Game.MessagingManager.RegEvent(EventString.Battle_Init, bag =>
+        {
+            var guid = bag.GetString(0);
+            var diziInstanceId = bag.GetInt(1);
+            var maxRound = bag.GetInt(2);
+            View_BattleBanner.InitBattle(guid, diziInstanceId, maxRound);
+        });
+
+        Game.MessagingManager.RegEvent(EventString.Battle_RoundUpdate, bag =>
+        {
+            var round = bag.GetInt(0);
+            var maxRound = bag.GetInt(1);
+            View_BattleBanner.SetRound(round, maxRound);
+        });
     }
+
+    public void Reset() => View_BattleBanner.Reset();
 
     public override void Show() => View_BattleBanner.Display(true);
 
@@ -50,7 +68,7 @@ internal class Demo_Game_BattleBannerMgr : UiManagerBase
         private Element_Prop element_prop_strength { get; }
         private Element_Prop element_prop_agility { get; }
         private View_RoundInfo view_roundInfo { get; }
-        public Game_BattleBanner(IView v) : base(v, true)
+        public Game_BattleBanner(IView v) : base(v, false)
         {
             view_avatar = new View_Avatar(v.GetObject<View>("view_avatar"));
             scrbar_statusHp = v.GetObject<Scrollbar>("scrbar_statusHp");
@@ -62,27 +80,63 @@ internal class Demo_Game_BattleBannerMgr : UiManagerBase
             view_roundInfo = new View_RoundInfo(v.GetObject<View>("view_roundInfo"));
         }
 
-        public void SetInfo(string name,Sprite avatar = null)
+        private int CurrentDiziInstanceId { get; set; } = -1;
+        private Dizi CurrentDizi { get; set; }
+        public void InitBattle(string guid, int diziInstanceId,int maxRound)
+        {
+            CurrentDizi = Game.World.Faction.GetDizi(guid);
+            CurrentDiziInstanceId = diziInstanceId;
+            SetInfo(CurrentDizi.Name);
+            SetRound(0, maxRound);
+            SetProp(CurrentDizi.Strength, CurrentDizi.Agility);
+            UpdateHp(CurrentDizi.Hp, CurrentDizi.Hp);
+            UpdateMp(CurrentDizi.Mp, CurrentDizi.Mp);
+            Display(true);
+        }
+
+        public void Reset()
+        {
+            CurrentDizi = null;
+            CurrentDiziInstanceId = -1;
+            element_statusHp.Reset();
+            element_statusMp.Reset();
+            scrbar_statusHp.size = 1;
+            scrbar_statusMp.size = 1;
+            SetInfo(string.Empty);
+            SetRound(0, 0);
+            SetProp(0, 0);
+            Display(false);
+        }
+
+        public void UpdateInfo(DiziCombatInfo info)
+        {
+            if (CurrentDiziInstanceId != info.InstanceId) return;
+            UpdateHp(info.Hp, info.MaxHp);
+            UpdateMp(info.Mp, info.MaxMp);
+        }
+
+        private void SetInfo(string name,Sprite avatar = null)
         {
             view_avatar.SetName(name);
             if (avatar != null) view_avatar.SetAvatar(avatar);
         }
         public void SetRound(int round, int maxRound) => view_roundInfo.Set(round, maxRound);
-        public void UpdateHp(int hp,int max)
+        private void UpdateHp(int hp,int max)
         {
             element_statusHp.Set(hp, max);
-            scrbar_statusHp.value = 1f * hp / max;
+            scrbar_statusHp.size = 1f * hp / max;
         }
-        public void UpdateMp(int mp, int max)
+        private void UpdateMp(int mp, int max)
         {
             element_statusMp.Set(mp, max);
-            scrbar_statusMp.value = 1f * mp / max;
+            scrbar_statusMp.size = 1f * mp / max;
         }
-        public void SetProp(int strength, int agility)
+        private void SetProp(int strength, int agility)
         {
             element_prop_strength.Set(strength);
             element_prop_agility.Set(agility);
         }
+
         private class View_Avatar : UiBase
     {
         private Image img_avatar { get; }
@@ -112,6 +166,8 @@ internal class Demo_Game_BattleBannerMgr : UiManagerBase
                 text_statusValue.text = value.ToString();
                 text_statusMax.text = max.ToString();
             }
+
+            public void Reset() => Set(0,0);
         }
         private class Element_Prop : UiBase
         {
@@ -138,12 +194,6 @@ internal class Demo_Game_BattleBannerMgr : UiManagerBase
                 text_value.text = value.ToString();
                 text_max.text = max.ToString();
             }
-        }
-
-        public void UpdateInfo(CombatUnitInfo<DiziCombatUnit> info)
-        {
-            UpdateHp(info.Hp,info.MaxHp);
-            //UpdateMp(info.mp);
         }
     }
 }

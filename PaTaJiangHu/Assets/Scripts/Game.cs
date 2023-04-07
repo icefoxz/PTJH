@@ -48,6 +48,9 @@ public class Game : UnitySingleton<Game>
     public static GameWorld World { get; private set; }
     internal static Config Config { get; set; }
     public static bool IsInit { get; private set; }
+    public static BattleCache BattleCache { get; private set; } = new BattleCache();
+    internal static void CacheBattle(DiziBattle battle) => BattleCache.SetBattle(battle);
+
     internal void Init(Res res, IlService ilService, MainUi mainUi, Game2DLand game2DLand, Config config)
     {
         if (IsInit) throw new InvalidOperationException("Double Init!");

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -31,6 +32,8 @@ public class CharacterUiSyncHandler : MonoBehaviour
         _uiMap.Add(obj, uiRect);
     }
 
+    public RectTransform GetObjRect(ISceneObj obj) => _uiMap[obj];
+
     private RectTransform InstanceUiObj(ISceneObj obj)
     {
         var colliderSize = obj.Collider.bounds.size;
@@ -47,9 +50,8 @@ public class CharacterUiSyncHandler : MonoBehaviour
         var uiRect = Instantiate(prefab, SceneCanvas.transform);
         uiRect.pivot = new Vector2(0.5f, 0.5f);
         uiRect.sizeDelta = screenSpaceSize;
-        var canvasPos = uiRect.transform.position;
         uiRect.SetParent(_targetTransform, true);
-        //uiRect.transform.position = canvasPos;
+        uiRect.gameObject.SetActive(true);
         return uiRect;
     }
 
@@ -64,8 +66,9 @@ public class CharacterUiSyncHandler : MonoBehaviour
 
     public void ClearAll()
     {
-        foreach (var (obj, uiRect) in _uiMap)
+        foreach (var obj in _uiMap.Keys.ToArray())
         {
+            var uiRect = _uiMap[obj];
             _uiMap.Remove(obj);
             Destroy(uiRect.gameObject);
         }

@@ -2,11 +2,9 @@
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
 using Server.Configs.ChallengeStages;
-using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
@@ -27,12 +25,14 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             ChallengeStageSelector = new View_ChallengeStageSelector(view,
-                onChallengeAction: challengeIndex => UiAgent.StartChallenge(challengeIndex));
+                onChallengeAction: challengeIndex => UiAgent.StartChallenge(challengeIndex),
+                onBattleFinalized: ()=> UiAgent.SetBattleFinalize());
         }
 
         protected override void RegEvents()
         {
             Game.MessagingManager.RegEvent(EventString.Faction_Challenge_Update, b => UiAgent.ShowChallengeState());
+            Game.MessagingManager.RegEvent(EventString.Battle_End, b => ChallengeStageSelector.SetFinalize(b.GetBool(0)));
         }
 
         public override void Show() => ChallengeStageSelector.Display(true);
@@ -42,18 +42,20 @@ namespace HotFix_Project.Managers.Demo_v1
 
         private class View_ChallengeStageSelector : UiBase
         {
-            private ScrollRect Scroll_challenge { get; }
+            private ScrollRect scroll_challenge { get; }
             private ListViewUi<ChallengePrefab> ChallengeList { get; }
-            private Button Btn_challenge { get; }
-            private Button Btn_cancel { get; }
-            public View_ChallengeStageSelector(IView v, Action<int> onChallengeAction) : base(v, false)
+            private Button btn_challenge { get; }
+            private Button btn_cancel { get; }
+            private View_BattleFinalize view_battleFinalize { get; }
+            public View_ChallengeStageSelector(IView v, Action<int> onChallengeAction,Action onBattleFinalized) : base(v, false)
             {
-                Scroll_challenge = v.GetObject<ScrollRect>("scroll_challenge");
-                ChallengeList = new ListViewUi<ChallengePrefab>(v.GetObject<View>("prefab_challenge"), Scroll_challenge);
-                Btn_challenge = v.GetObject<Button>("btn_challenge");
-                Btn_challenge.OnClickAdd(()=>onChallengeAction?.Invoke(SelectedNpcIndex));
-                Btn_cancel = v.GetObject<Button>("btn_cancel");
-                Btn_cancel.OnClickAdd(() => Display(false));
+                scroll_challenge = v.GetObject<ScrollRect>("scroll_challenge");
+                ChallengeList = new ListViewUi<ChallengePrefab>(v.GetObject<View>("prefab_challenge"), scroll_challenge);
+                btn_challenge = v.GetObject<Button>("btn_challenge");
+                btn_challenge.OnClickAdd(()=>onChallengeAction?.Invoke(SelectedNpcIndex));
+                btn_cancel = v.GetObject<Button>("btn_cancel");
+                btn_cancel.OnClickAdd(() => Display(false));
+                view_battleFinalize = new View_BattleFinalize(v.GetObject<View>("view_battleFinalize"), onBattleFinalized);
             }
 
             private int SelectedNpcIndex { get; set; }
@@ -85,6 +87,8 @@ namespace HotFix_Project.Managers.Demo_v1
                 }
             }
 
+            public void SetFinalize(bool isWin) => view_battleFinalize.Set(isWin);
+
             private class ChallengePrefab : UiBase
             {
                 private Image Img_select { get; }
@@ -115,6 +119,29 @@ namespace HotFix_Project.Managers.Demo_v1
                     Text_npcLevel.text = level.ToString();
                     Img_IsBoss.gameObject.SetActive(isBoss);
                     Img_select.gameObject.SetActive(false);
+                }
+            }
+            private class View_BattleFinalize : UiBase
+            {
+                private Button btn_battleFinalize { get; }
+                private Text text_win { get; }
+                private Text text_lose { get; }
+                public View_BattleFinalize(IView v,Action onclickAction) : base(v, false)
+                {
+                    btn_battleFinalize = v.GetObject<Button>("btn_battleFinalize");
+                    text_win = v.GetObject<Text>("text_win");
+                    text_lose = v.GetObject<Text>("text_lose");
+                    btn_battleFinalize.OnClickAdd(() =>
+                    {
+                        onclickAction?.Invoke();
+                        Display(false);
+                    });
+                }
+                public void Set(bool win)
+                {
+                    text_win.gameObject.SetActive(win);
+                    text_lose.gameObject.SetActive(!win);
+                    Display(true);
                 }
             }
         }

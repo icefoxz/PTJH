@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 216314815751971298}
   - component: {fileID: 721349720136448278}
   m_Layer: 5
-  m_Name: text_popValue
+  m_Name: text_pop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 1462916360384470779}
   - component: {fileID: 7248049193691295118}
   m_Layer: 5
-  m_Name: anim_blinkValue
+  m_Name: anim_blink
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -163,7 +163,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 821431178579604790}
-  - component: {fileID: 6827789861775624129}
+  - component: {fileID: 6270954976412595461}
   m_Layer: 5
   m_Name: demo_game_charPopValue
   m_TagString: Untagged
@@ -193,7 +193,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &6827789861775624129
+--- !u!114 &6270954976412595461
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -202,11 +202,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 7545236638761233206}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8cd45c7a12e43084fb9c427e1249d4ea, type: 3}
+  m_Script: {fileID: 11500000, guid: f002139973adcfa4c8a1942fbab24370, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _components:
   - {fileID: 8755961623720572407}
+  - {fileID: 2594510593896348464}
   - {fileID: 2416419005679713132}
   - {fileID: 9088350948717191984}
 --- !u!1 &8755961623720572407
@@ -279,7 +280,7 @@ GameObject:
   - component: {fileID: 4077424028058143053}
   - component: {fileID: 7083253000077349970}
   m_Layer: 5
-  m_Name: text_blickValue
+  m_Name: text_blink
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

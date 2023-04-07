@@ -16,17 +16,19 @@ public class BattleStage2D : MonoBehaviour
     {
         if (IsBusy) throw new NotImplementedException($"{name} is busy!");
         var opMap = SetBattleStage(battle);
-        CurrentBattleAnim = new DiziBattleAnimator(AnimConfig.DiziCombatCfg, opMap, this);
+        CurrentBattleAnim =
+            new DiziBattleAnimator(AnimConfig.DiziCombatCfg, opMap, Game.Game2DLand.CharacterUiSyncHandler, this);
     }
 
-    public IEnumerator PlayRound(RoundInfo<DiziCombatUnit, DiziCombatPerformInfo> info)
+    public IEnumerator PlayRound(DiziRoundInfo info)
     {
-        if (IsBusy) throw new NotImplementedException($"{name} is busy!");
+        if (CurrentBattleAnim == null) throw new NotImplementedException($"{name} Animator is not set !");
         return CurrentBattleAnim.PlayRoundCo(info, null);
     }
 
     public void FinalizeBattle()
     {
+        CurrentBattleAnim.Reset();
         CurrentBattleAnim = null;
     }
 
