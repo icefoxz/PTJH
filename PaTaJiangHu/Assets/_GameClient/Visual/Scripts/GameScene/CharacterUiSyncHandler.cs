@@ -36,11 +36,11 @@ public class CharacterUiSyncHandler : MonoBehaviour
 
     private RectTransform InstanceUiObj(ISceneObj obj)
     {
-        var colliderSize = obj.Collider.bounds.size;
-        var colliderScale = obj.Collider.transform.lossyScale;
-
-        var worldWidth = Mathf.Abs(colliderSize.x * colliderScale.x);
-        var worldHeight = Mathf.Abs(colliderSize.y * colliderScale.y);
+        var colliderSize = obj.OriginRenderer.bounds.size;
+        var colliderScale = Vector3.one; //obj.OriginRenderer.transform.lossyScale;
+        var scaleFactor = SceneCanvas.scaleFactor;
+        var worldWidth = Mathf.Abs(colliderSize.x * colliderScale.x / scaleFactor);
+        var worldHeight = Mathf.Abs(colliderSize.y * colliderScale.y / scaleFactor);
 
         // Convert world space size to screen space size
         var screenSpaceSize =
@@ -77,7 +77,12 @@ public class CharacterUiSyncHandler : MonoBehaviour
     void Update()
     {
         foreach (var (obj, ui) in _uiMap)
+        {
+            var pos = obj.Collider.transform.position;
+            var offset = obj.Collider.offset;
             ui.transform.localPosition =
-                GameLand.ConvertWorldPosToCanvasPos(SceneCanvasRect, TargetRect, obj.Collider.transform.position);
+                GameLand.ConvertWorldPosToCanvasPos(SceneCanvasRect, TargetRect,
+                    new Vector3(pos.x + offset.x, pos.y + offset.y, pos.z));
+        }
     }
 }

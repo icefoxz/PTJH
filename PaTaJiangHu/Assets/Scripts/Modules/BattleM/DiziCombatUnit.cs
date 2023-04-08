@@ -14,6 +14,7 @@ public class DiziCombatUnit : CombatUnit
     public string Guid { get; private set; }
     public int Mp { get; private set; }
     public int MaxMp { get; private set; }
+    public int Strength { get; private set; }
     public int Agility { get; private set; }
 
     internal DiziCombatUnit(int teamId, Dizi dizi) 
@@ -23,6 +24,7 @@ public class DiziCombatUnit : CombatUnit
         Mp = dizi.Mp;
         MaxMp = dizi.Mp;
         Agility = dizi.Agility;
+        Strength = dizi.Strength;
     }
 
     internal DiziCombatUnit(int teamId, CombatNpcSo npc) 
@@ -31,15 +33,19 @@ public class DiziCombatUnit : CombatUnit
         Mp = npc.Mp;
         MaxMp = npc.Mp;
         Agility = npc.Agility;
+        Strength = npc.Strength;
     }
 
     internal DiziCombatUnit(ICombatUnit unit) : base(unit){}
-    internal DiziCombatUnit(ISimCombat s,int teamId) : base(teamId,s.Name,s.MaxHp,s.Damage,s.Agility)
+
+    internal DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name, s.MaxHp, s.Damage, s.Agility)
     {
         Mp = s.Mp;
         MaxMp = s.Mp;
         Agility = s.Agility;
+        Strength = s.Strength;
     }
+
     //伤害减免
     protected override int DamageReduction(int damage)
     {

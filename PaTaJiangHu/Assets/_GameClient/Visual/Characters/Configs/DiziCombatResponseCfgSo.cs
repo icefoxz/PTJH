@@ -16,7 +16,7 @@ public interface ICombat2DEffect
     /// </summary>
     /// <param name="parent"></param>
     /// <returns></returns>
-    GameObject Invoke(GameObject parent);
+    GameObject Invoke(Transform parent);
 }
 
 [CreateAssetMenu(fileName = "战斗反馈配置", menuName = "战斗单位/战斗反馈")]
@@ -40,9 +40,9 @@ internal class DiziCombatResponseCfgSo : ScriptableObject
 
         public override GameObject Obj => _obj;
         public override float LastingSecs => 时长;
-        public override GameObject Invoke(GameObject parent)
+        public override GameObject Invoke(Transform parent)
         {
-            var effect = Instantiate(_obj, parent.transform);
+            var effect = Instantiate(_obj, parent);
             effect.SetActive(true);
             return effect;
         }
@@ -54,5 +54,5 @@ public abstract class CombatEffect : ICombat2DEffect
 {
     public abstract GameObject Obj { get; }
     public abstract float LastingSecs { get; }
-    public abstract GameObject Invoke(GameObject parent);
+    public abstract GameObject Invoke(Transform parent);
 }

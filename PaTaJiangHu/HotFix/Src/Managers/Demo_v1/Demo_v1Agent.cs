@@ -60,8 +60,7 @@ internal class Demo_v1Agent : MainUiAgent
     {
         switch (view.name)
         {
-            case "demo_game_charPopValue":
-                var c = new Demo_game_charPopValue(view);
+            case "demo_game_charPopValue": new Demo_game_charPopValue(view);
                 break;
             default: throw new ArgumentException($"找不到特效的控制类! view = {view.name}");
         }
@@ -133,11 +132,14 @@ internal class Demo_v1Agent : MainUiAgent
     internal void StartChallenge(int challengeIndex)
     {
         ChallengeController.StartChallenge(SelectedDizi.Guid, challengeIndex);
+        Demo_Game_ViewMgr.Hide();
     }
 
     public void SetBattleFinalize()
     {
         ChallengeController.FinalizeBattle();
+        Demo_Game_ViewMgr.Show();
+        Demo_Game_ViewMgr.Set(SelectedDizi);
         Demo_Game_BattleBannerMgr.Reset();
     }
 }

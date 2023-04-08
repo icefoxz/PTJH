@@ -37,8 +37,6 @@ public class BattleStage2D : MonoBehaviour
         var map = battle.Fighters.Select(f =>
         {
             var op = Instantiate(AnimConfig.CharacterOpPrefab, transform);
-            op.transform.localPosition = Vector3.zero;
-            op.transform.localScale = Vector3.one;
             return new { f, op };
         }).ToDictionary(f => f.f, f => f.op);
         PlaceOperators(map);
@@ -52,11 +50,12 @@ public class BattleStage2D : MonoBehaviour
         foreach (var kv in map)
         {
             var op = kv.Value;
+            var scaleX = op.transform.localScale.x;
             var isPlayer = kv.Key.TeamId == 0;//玩家固定teamId = 0
             var queue = isPlayer ? playerTeamIndex : enemyTeamIndex;//递进排队值
-            var align = isPlayer ? -1 : 1;//玩家与敌人站位修正
-            var xPos = _startingXPoint * align + queue;//计算站位
-            op.transform.SetLocalScaleX(align * -1);
+            var alignPos = isPlayer ? -1 : 1;//玩家与敌人站位修正
+            var xPos = _startingXPoint * alignPos + queue;//计算站位
+            op.transform.SetLocalScaleX(alignPos * scaleX);
             op.transform.SetLocalX(xPos);//设置站位
             if (isPlayer) playerTeamIndex++;//玩家递进:-6,-5,-4
             else enemyTeamIndex--;//敌人递进:6,5,4

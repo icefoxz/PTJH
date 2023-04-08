@@ -89,7 +89,7 @@ internal class DiziCombatAnimator
         var effects = CombatResponseSo.GetResponseEffect(reAct);
 
         var list = new List<(float, GameObject)>();
-        foreach (var effect in effects) list.Add((effect.LastingSecs, effect.Invoke(tarOp.gameObject)));
+        foreach (var effect in effects) list.Add((effect.LastingSecs, effect.Invoke(tarOp.transform)));
         var uSec = 0.1f;
         var secsElapse = 0f;
         while (list.Count > 0)

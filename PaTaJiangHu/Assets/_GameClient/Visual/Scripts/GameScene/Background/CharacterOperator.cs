@@ -26,10 +26,12 @@ public class CharacterOperator : MonoBehaviour,ISceneObj
         Run,
     }
     [SerializeField] private Transform _character;
+    [SerializeField] private SpriteRenderer _originRenderer;
     [SerializeField] private Animator _anim;
     [SerializeField] private Collider2D _collider;
     [SerializeField] private SpriteRenderer[] _renderers;
     public Collider2D Collider => _collider;
+    public SpriteRenderer OriginRenderer => _originRenderer;
     private Dictionary<SpriteRenderer,Color> ColorMapping { get; set; }
 
     public void Init()

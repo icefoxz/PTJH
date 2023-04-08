@@ -1,4 +1,6 @@
-﻿using _GameClient.Models;
+﻿using System;
+using System.Linq;
+using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
@@ -60,37 +62,30 @@ internal class Demo_Game_BattleBannerMgr : MainPageBase
 
     private class Game_BattleBanner : UiBase
     {
-        private View_Avatar view_avatar { get; }
-        private Scrollbar scrbar_statusHp { get; }
-        private Scrollbar scrbar_statusMp { get; }
-        private Element_Status element_statusHp { get; }
-        private Element_Status element_statusMp { get; }
-        private Element_Prop element_prop_strength { get; }
-        private Element_Prop element_prop_agility { get; }
         private View_RoundInfo view_roundInfo { get; }
+        private Element_CombatState element_combatStateLeft { get; }
+        private Element_CombatState element_combatStateRight { get; }
         public Game_BattleBanner(IView v) : base(v, false)
         {
-            view_avatar = new View_Avatar(v.GetObject<View>("view_avatar"));
-            scrbar_statusHp = v.GetObject<Scrollbar>("scrbar_statusHp");
-            scrbar_statusMp = v.GetObject<Scrollbar>("scrbar_statusMp");
-            element_statusHp = new Element_Status(v.GetObject<View>("element_statusHp"));
-            element_statusMp = new Element_Status(v.GetObject<View>("element_statusMp"));
-            element_prop_strength = new Element_Prop(v.GetObject<View>("element_prop_strength"));
-            element_prop_agility = new Element_Prop(v.GetObject<View>("element_prop_agility"));
             view_roundInfo = new View_RoundInfo(v.GetObject<View>("view_roundInfo"));
+            element_combatStateLeft = new Element_CombatState(v.GetObject<View>("element_combatStateLeft"));
+            element_combatStateRight = new Element_CombatState(v.GetObject<View>("element_combatStateRight"));
         }
 
         private int CurrentDiziInstanceId { get; set; } = -1;
+        private int NpcInstanceId { get; set; } = -1;
         private Dizi CurrentDizi { get; set; }
         public void InitBattle(string guid, int diziInstanceId,int maxRound)
         {
             CurrentDizi = Game.World.Faction.GetDizi(guid);
+            var dizi = Game.BattleCache.GetDizi(guid);
+            var npc = Game.BattleCache.GetFighters(1).FirstOrDefault();
+            if (npc == null) throw new NullReferenceException("BattleCache 找不到 npc : teamId = 1");
             CurrentDiziInstanceId = diziInstanceId;
-            SetInfo(CurrentDizi.Name);
+            NpcInstanceId = npc.InstanceId;
             SetRound(0, maxRound);
-            SetProp(CurrentDizi.Strength, CurrentDizi.Agility);
-            UpdateHp(CurrentDizi.Hp, CurrentDizi.Hp);
-            UpdateMp(CurrentDizi.Mp, CurrentDizi.Mp);
+            element_combatStateLeft.InitBattle(dizi);
+            element_combatStateRight.InitBattle(npc);
             Display(true);
         }
 
@@ -98,45 +93,89 @@ internal class Demo_Game_BattleBannerMgr : MainPageBase
         {
             CurrentDizi = null;
             CurrentDiziInstanceId = -1;
-            element_statusHp.Reset();
-            element_statusMp.Reset();
-            scrbar_statusHp.size = 1;
-            scrbar_statusMp.size = 1;
-            SetInfo(string.Empty);
+            NpcInstanceId = -1;
+            element_combatStateLeft.Reset();
+            element_combatStateRight.Reset();
             SetRound(0, 0);
-            SetProp(0, 0);
             Display(false);
         }
 
         public void UpdateInfo(DiziCombatInfo info)
         {
-            if (CurrentDiziInstanceId != info.InstanceId) return;
-            UpdateHp(info.Hp, info.MaxHp);
-            UpdateMp(info.Mp, info.MaxMp);
-        }
-
-        private void SetInfo(string name,Sprite avatar = null)
-        {
-            view_avatar.SetName(name);
-            if (avatar != null) view_avatar.SetAvatar(avatar);
+            if (CurrentDiziInstanceId != info.InstanceId || NpcInstanceId != info.InstanceId) return;
+            if (info.TeamId == 0)
+                element_combatStateLeft.UpdateInfo(info);
+            else
+                element_combatStateRight.UpdateInfo(info);
         }
         public void SetRound(int round, int maxRound) => view_roundInfo.Set(round, maxRound);
-        private void UpdateHp(int hp,int max)
-        {
-            element_statusHp.Set(hp, max);
-            scrbar_statusHp.size = 1f * hp / max;
-        }
-        private void UpdateMp(int mp, int max)
-        {
-            element_statusMp.Set(mp, max);
-            scrbar_statusMp.size = 1f * mp / max;
-        }
-        private void SetProp(int strength, int agility)
-        {
-            element_prop_strength.Set(strength);
-            element_prop_agility.Set(agility);
-        }
 
+        private class Element_CombatState : UiBase
+        {
+            private View_Avatar view_avatar { get; }
+            private Scrollbar scrbar_statusHp { get; }
+            private Scrollbar scrbar_statusMp { get; }
+            private Element_Status element_statusHp { get; }
+            private Element_Status element_statusMp { get; }
+            private Element_Prop element_prop_strength { get; }
+            private Element_Prop element_prop_agility { get; }
+
+            public Element_CombatState(IView v) : base(v, true)
+            {
+                view_avatar = new View_Avatar(v.GetObject<View>("view_avatar"));
+                scrbar_statusHp = v.GetObject<Scrollbar>("scrbar_statusHp");
+                scrbar_statusMp = v.GetObject<Scrollbar>("scrbar_statusMp");
+                element_statusHp = new Element_Status(v.GetObject<View>("element_statusHp"));
+                element_statusMp = new Element_Status(v.GetObject<View>("element_statusMp"));
+                element_prop_strength = new Element_Prop(v.GetObject<View>("element_prop_strength"));
+                element_prop_agility = new Element_Prop(v.GetObject<View>("element_prop_agility"));
+            }
+
+            private void SetInfo(string name, Sprite avatar = null)
+            {
+                view_avatar.SetName(name);
+                if (avatar != null) view_avatar.SetAvatar(avatar);
+            }
+            private void UpdateHp(int hp, int max)
+            {
+                element_statusHp.Set(hp, max);
+                scrbar_statusHp.size = 1f * hp / max;
+            }
+            private void UpdateMp(int mp, int max)
+            {
+                element_statusMp.Set(mp, max);
+                scrbar_statusMp.size = 1f * mp / max;
+            }
+            private void SetProp(int strength, int agility)
+            {
+                element_prop_strength.Set(strength);
+                element_prop_agility.Set(agility);
+            }
+
+            public void Reset()
+            {
+                element_statusHp.Reset();
+                element_statusMp.Reset();
+                scrbar_statusHp.size = 1;
+                scrbar_statusMp.size = 1;
+                SetInfo(string.Empty);
+                SetProp(0, 0);
+            }
+
+            public void InitBattle(DiziCombatUnit dizi)
+            {
+                SetInfo(dizi.Name);
+                SetProp(dizi.Strength, dizi.Agility);
+                UpdateHp(dizi.Hp, dizi.Hp);
+                UpdateMp(dizi.Mp, dizi.Mp);
+            }
+
+            public void UpdateInfo(DiziCombatInfo info)
+            {
+                UpdateHp(info.Hp, info.MaxHp);
+                UpdateMp(info.Mp, info.MaxMp);
+            }
+        }
         private class View_Avatar : UiBase
     {
         private Image img_avatar { get; }

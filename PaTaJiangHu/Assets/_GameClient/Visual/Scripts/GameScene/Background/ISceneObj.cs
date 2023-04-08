@@ -9,4 +9,5 @@ public interface ISceneObj
     /// 物件主要碰撞器
     /// </summary>
     Collider2D Collider { get; }
+    SpriteRenderer OriginRenderer { get; }
 }

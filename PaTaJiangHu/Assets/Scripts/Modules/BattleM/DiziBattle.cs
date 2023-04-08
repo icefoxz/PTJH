@@ -20,6 +20,9 @@ public class BattleCache
         var perform = performInfos[performIndex];
         return perform.Response;
     }
+
+    public DiziCombatUnit[] GetFighters(int teamId) => Battle.Fighters.Where(f => f.TeamId == teamId).ToArray();
+    public DiziCombatUnit GetDizi(string guid) => Battle.Fighters.SingleOrDefault(f => f.Guid == guid);
 }
 /// <summary>
 /// 弟子战斗器, 轮询回合, 不牵涉核心战斗逻辑
