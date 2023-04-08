@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
@@ -47,12 +46,14 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     [SerializeField] private Transform _windowPanel;
     [SerializeField] private Image _panel;
     [SerializeField] private MainPageLayout _mainPage;
+    [SerializeField] private GameObject _pool;
 
     public RectTransform TopUi => _topUi;
     public RectTransform MidUi => _midUi;
     public RectTransform BtmUi => _btmUi;
     public RectTransform Window => _window;
     public Transform WindowPanel => _windowPanel;
+    public GameObject Pool => _pool;
 
     public Image Panel => _panel;
     public MainPageLayout MainPage => _mainPage;

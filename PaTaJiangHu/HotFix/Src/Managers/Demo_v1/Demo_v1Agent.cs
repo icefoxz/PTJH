@@ -34,7 +34,7 @@ internal class Demo_v1Agent : MainUiAgent
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
         //注册战斗事件,实现战斗特效生成
-        EffectView.OnInvoke += OnEffectInvoke;
+        EffectView.OnInstance += OnEffectInstance;
         //窗口管理器
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
         Demo_View_Faction_InfoMgr = new Demo_View_Faction_InfoMgr(this);
@@ -56,13 +56,12 @@ internal class Demo_v1Agent : MainUiAgent
         
     }
 
-    private void OnEffectInvoke((int instanceId, int performIndex, EffectView view, RectTransform tran) arg)
+    private void OnEffectInstance(IEffectView view)
     {
-        var (instanceId, performIndex, view, tran) = arg;
         switch (view.name)
         {
             case "demo_game_charPopValue":
-                new Demo_game_charPopValue(instanceId, performIndex, view, tran);
+                var c = new Demo_game_charPopValue(view);
                 break;
             default: throw new ArgumentException($"找不到特效的控制类! view = {view.name}");
         }

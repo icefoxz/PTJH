@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Views;
 using Object = UnityEngine.Object;
 
 /// <summary>
@@ -11,7 +10,7 @@ using Object = UnityEngine.Object;
 /// </summary>
 internal class DiziBattleAnimator
 {
-    private DiziCombatConfigSo CombatCfg { get; }
+    private DiziCombatAnimator CombatAnimator { get; }
     private Dictionary<int, CharacterOperator> OpMap { get; }
     private MonoBehaviour Mono { get; }
     private CharacterUiSyncHandler UiHandler { get; set; }
@@ -20,7 +19,7 @@ internal class DiziBattleAnimator
         CharacterUiSyncHandler uiHandler,
         MonoBehaviour mono)
     {
-        CombatCfg = combatCfg;
+        CombatAnimator = new DiziCombatAnimator(combatCfg);
         OpMap = opMap;
         Mono = mono;
         UiHandler = uiHandler;
@@ -43,15 +42,15 @@ internal class DiziBattleAnimator
                 var targetOp = OpMap[response.Target.InstanceId];
                 var targetPos = GetLocationPoint(targetOp);
                 EventSend(EventString.Battle_Performer_update, info.Performer);
-                yield return CombatCfg.PlayOffendMove(info, performOp, targetPos); //move
+                yield return CombatAnimator.PlayOffendMove(info, performOp, targetPos); //move
                 Mono.StartCoroutine(PlayTargetResponse(pfm.InstanceId, index, response, targetOp)); //response
                 var tran = UiHandler.GetObjRect(performOp);
-                CombatCfg.PlayPerformAnim(index, info, performOp, tran); //perform
+                CombatAnimator.PlayPerformAnim(index, info, performOp, tran); //perform
                 EventSend(EventString.Battle_Reponder_Update, response.Target);
 
                 yield return new WaitForSeconds(0.2f);
                 SetOpPos(targetOp.transform, targetPos); //align target position
-                yield return CombatCfg.PlayOffendReturn(performPos, performOp); //move return
+                yield return CombatAnimator.PlayOffendReturn(performPos, performOp); //move return
             }
         }
 
@@ -63,8 +62,8 @@ internal class DiziBattleAnimator
         IEnumerator PlayTargetResponse(int performerId,int performIndex,CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response, CharacterOperator targetOp)
         {
             var tran = UiHandler.GetObjRect(targetOp);
-            CombatCfg.PlayResponseAnim(performerId, performIndex, response, targetOp, tran);
-            return CombatCfg.PlayResponse2DEffects(response, targetOp);
+            CombatAnimator.PlayResponseAnim(performerId, performIndex, response, targetOp, tran);
+            return CombatAnimator.PlayResponse2DEffects(response, targetOp);
         }
     }
 

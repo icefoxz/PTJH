@@ -39,7 +39,6 @@ namespace Views
         [SerializeField] private GameObject[] _components;
         private RectTransform _rectTransform;
         public event Action OnDisableEvent;
-        public event Action<IView> OnResetUi;
         public RectTransform RectTransform
         {
             get

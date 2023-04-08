@@ -99,7 +99,8 @@ namespace Systems
             appdomain.DelegateManager.RegisterMethodDelegate<EffectView, RectTransform>();
             appdomain.DelegateManager.RegisterMethodDelegate<int, int, EffectView, RectTransform>();
             appdomain.DelegateManager.RegisterMethodDelegate<ValueTuple<int, int, EffectView, RectTransform>>();
-
+            appdomain.DelegateManager.RegisterMethodDelegate<ValueTuple<int, int, RectTransform>>();
+            appdomain.DelegateManager.RegisterMethodDelegate<IEffectView>();
 
             appdomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appdomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
