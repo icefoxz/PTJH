@@ -6,7 +6,7 @@ namespace _GameClient.Models
     /// <summary>
     /// 事件框架下的轮询处理器
     /// </summary>
-    public abstract class AdvPollingHandler
+    public abstract class AdvEventPollingHandler
     {
         protected enum Modes
         {
@@ -26,7 +26,7 @@ namespace _GameClient.Models
         /// </summary>
         public long LastUpdate { get; private set; }
         private DiziActivityPlayer ActivityPlayer { get; }
-        protected AdvPollingHandler(long startTime,string diziName, DiziActivityPlayer activityPlayer)
+        protected AdvEventPollingHandler(long startTime,string diziName, DiziActivityPlayer activityPlayer)
         {
             StartTime = startTime;
             LastUpdate = startTime;

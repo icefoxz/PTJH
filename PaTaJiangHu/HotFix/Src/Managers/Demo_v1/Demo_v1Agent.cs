@@ -30,6 +30,7 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_Game_BattleBannerMgr Demo_Game_BattleBannerMgr { get; }
 
     private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
+    private IGame2DLand Game2DLand => Game.Game2DLand;
 
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
@@ -87,6 +88,9 @@ internal class Demo_v1Agent : MainUiAgent
                 return;
             }
         }
+
+        Game2DLand.SelectDizi(guid);
+        
         Demo_View_ConsumeResMgr.Set(dizi);
         Demo_View_ConPropsMgr.Set(dizi);
         Demo_View_DiziActivityMgr.Set(dizi);

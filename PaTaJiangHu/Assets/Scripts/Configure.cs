@@ -8,6 +8,7 @@ using Server.Configs.Factions;
 using Server.Configs.Items;
 using UnityEngine;
 using Utls;
+using Object = UnityEngine.Object;
 
 /// <summary>
 /// 游戏配置
@@ -85,6 +86,8 @@ internal class Configure : MonoBehaviour
         internal CharacterOperator CharacterOpPrefab => 角色预设;
         [SerializeField] private DiziCombatConfigSo 弟子战斗配置;
         internal DiziCombatConfigSo DiziCombatCfg => 弟子战斗配置;
+
+        public CharacterOperator InstanceCharacterOp(Transform parent) => Object.Instantiate(CharacterOpPrefab, parent);
     }
 
     [SerializeField] private ChallengeStageCfg 挑战关卡配置;

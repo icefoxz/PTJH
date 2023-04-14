@@ -14,14 +14,53 @@ namespace _GameClient.Models
     /// <summary>
     /// (自动)挂机历练模型
     /// </summary>
-    public class AutoAdventure : AdvPollingHandler, IRewardHandler
+    public class AutoAdventure : AdvEventPollingHandler, IRewardHandler,IDiziState
     {
+        public enum AdvTypes
+        {
+            Adventure,
+            Production,
+        }
         public enum States
         {
             Progress,
             Recall,
             End,
         }
+        public string ShortTitle => AdvType switch
+        {
+            AdvTypes.Adventure => State switch
+            {
+                States.Progress => "历",
+                States.Recall => "回",
+                States.End => "待",
+                _ => throw new ArgumentOutOfRangeException()
+            },
+            AdvTypes.Production => "产",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        public string Description => AdvType switch
+        {
+            AdvTypes.Adventure => State switch {
+                States.Progress => "历练中...",
+                States.Recall => "回程中...",
+                States.End => "宗门等待...",
+                _ => throw new ArgumentOutOfRangeException()
+            } ,
+            AdvTypes.Production => "生产中...",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        public string StateLabel => AdvType switch
+        {
+            AdvTypes.Adventure => "历练",
+            AdvTypes.Production => "生产",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        public string CurrentOccasion => Occasion;
+        public string CurrentMapName => Map.Name;
+        public TimeSpan CurrentProgressTime => SysTime.CompareUnixNow(LastUpdate);
+        public AdvTypes AdvType { get; private set; }
 
         /// <summary>
         /// 当前状态
@@ -31,7 +70,7 @@ namespace _GameClient.Models
         /// 当前里数
         /// </summary>
         public int LastMile { get; private set; }
-        public string Occasion { get; private set; }
+        private string Occasion { get; set; }
         private int MessageSecs { get; } //文本展示间隔(秒)
         //private ICoroutineInstance ServiceCo { get; set; }
         private Dizi Dizi { get; }
@@ -162,7 +201,7 @@ namespace _GameClient.Models
             _stories.Add(story);
         }
 
-        internal void Recall(long now, int lastMile, long reachingTime, Action recallAction)
+        internal void Recall(long now, int lastMile, long reachingTime)
         {
             const string RecallText = "回程中";
             if (Mode == Modes.Story)
@@ -184,7 +223,6 @@ namespace _GameClient.Models
                 advLog.SetMessages(new[] { $"{Dizi.Name}已回到山门!" });
                 RegStory(advLog);
                 yield return new WaitForSeconds(1);
-                recallAction?.Invoke();
                 State = States.End;
                 Game.MessagingManager.Send(EventString.Dizi_Params_StateUpdate, Dizi.Guid);
                 Game.MessagingManager.Send(EventString.Dizi_Adv_End, Dizi.Guid);

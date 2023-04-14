@@ -9,10 +9,16 @@ namespace _GameClient.Models
     /// <summary>
     /// 闲置状态
     /// </summary>
-    public class IdleState : AdvPollingHandler, IRewardHandler
+    public class IdleState : AdvEventPollingHandler, IRewardHandler,IDiziState
     {
         private Dizi Dizi { get; }
-        
+        public string ShortTitle => "闲";
+        public string Description => "闲置中...";
+        public string CurrentMapName => "宗门";
+        public string CurrentOccasion => "山门内";
+        public string StateLabel => "闲置";
+        public TimeSpan CurrentProgressTime => SysTime.CompareUnixNow(LastUpdate);
+
         public DiziActivityLog CurrentStory { get; private set; }
         public int MessageIndex { get; private set; }
         /// <summary>
