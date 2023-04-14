@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using _GameClient.Models;
 using UnityEngine;
 
 /// <summary>
@@ -12,6 +13,7 @@ public interface IGame2DLand
     IEnumerator PlayRound(DiziRoundInfo info);
     Vector2 ConvertWorldPosToCanvasPos(RectTransform mainCanvasRect, RectTransform targetParent, Vector3 objWorldPos);
     void FinalizeBattle();
+    void SelectDizi(string guid);
 }
 
 /// <summary>
@@ -27,6 +29,9 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     public CharacterUiSyncHandler CharacterUiSyncHandler => _characterUiSyncHandler;
     private Canvas MainCanvas => Game.SceneCanvas;
     private RectTransform MainCanvasRect { get; set; }
+
+    private Faction Faction => Game.World.Faction;
+    private Dizi CurrentDizi { get; set; }
 
     public void Init()
     {
@@ -49,4 +54,29 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     }
 
     public void FinalizeBattle() => BattleStage.FinalizeBattle();
+    public void SelectDizi(string guid)
+    {
+        CurrentDizi = Faction.GetDizi(guid);
+
+        switch (CurrentDizi.State.Current)
+        {
+            case DiziStateHandler.States.Lost:
+                break;
+            case DiziStateHandler.States.Idle:
+                break;
+            case DiziStateHandler.States.AdvProgress:
+                break;
+            case DiziStateHandler.States.AdvProduction:
+                break;
+            case DiziStateHandler.States.AdvReturning:
+                break;
+            case DiziStateHandler.States.AdvWaiting:
+                break;
+            case DiziStateHandler.States.Battle:
+                throw new InvalidOperationException("当前战斗未完成,不允许")
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
 }
