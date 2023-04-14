@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Server.Configs.Adventures;
 using Server.Controllers;
@@ -50,6 +50,10 @@ namespace _GameClient.Models
         public enum States
         {
             /// <summary>
+            /// 未知状态，一般上都是初始的时候才会有的状态
+            /// </summary>
+            Unknown,
+            /// <summary>
             /// 失踪状态
             /// </summary>
             Lost,
@@ -76,7 +80,7 @@ namespace _GameClient.Models
             /// <summary>
             /// 战斗中
             /// </summary>
-            Battle
+            Battle,
         }
         
         public States Current
@@ -101,7 +105,7 @@ namespace _GameClient.Models
                 }
                 if (DiziState is LostState) return States.Lost;
                 if (DiziState is BattleState) return States.Battle;
-                throw new NotImplementedException();
+                return States.Unknown;
             }
         }
         public IdleState Idle { get; private set; }
@@ -151,20 +155,6 @@ namespace _GameClient.Models
         /// 上一个状态开始时间
         /// </summary>
         public long LastStateTick { get; private set; }
-        /// <summary>
-        /// 是否可能失踪
-        /// </summary>
-        public bool IsPossibleLost => Current switch
-        {
-            States.Lost => true,
-            States.Idle => false,
-            States.AdvProgress => Adventure.Map.PossibleLost(Dizi),
-            States.AdvProduction => Adventure.Map.PossibleLost(Dizi),
-            States.AdvReturning => Adventure.Map.PossibleLost(Dizi),
-            States.AdvWaiting => Adventure.Map.PossibleLost(Dizi),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
         public IRewardHandler RewardHandler => Current switch
         {
             States.Lost => null,

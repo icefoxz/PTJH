@@ -36,7 +36,7 @@ public class BattleStage2D : MonoBehaviour
     {
         var map = battle.Fighters.Select(f =>
         {
-            var op = Instantiate(AnimConfig.CharacterOpPrefab, transform);
+            var op = AnimConfig.InstanceCharacterOp(transform);
             return new { f, op };
         }).ToDictionary(f => f.f, f => f.op);
         PlaceOperators(map);

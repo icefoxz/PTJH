@@ -42,13 +42,13 @@ namespace HotFix_Project.Managers.Demo_v1
         {
             if (SelectedDizi == null) return;
             var state = dizi.State;
-            var map = state.CurrentMap;
-            var stateText = state.StateText;
+            var map = state.DiziState.CurrentMapName;
+            var stateText = state.DiziState.StateLabel;
             var mile = state.CurrentMile == 0 ? string.Empty
                 : state.CurrentMile == -1 ? "未知"
                 : state.CurrentMile.ToString();
-            var occasion = dizi.State.CurrentOccasion;
-            GameView.Set(map, occasion, mile, stateText, GetTimeText(state.CurrentProgressTime));
+            var occasion = dizi.State.DiziState.CurrentOccasion;
+            GameView.Set(map, occasion, mile, stateText, GetTimeText(state.DiziState.CurrentProgressTime));
             GameView.UpdateBag(dizi);
         }
 

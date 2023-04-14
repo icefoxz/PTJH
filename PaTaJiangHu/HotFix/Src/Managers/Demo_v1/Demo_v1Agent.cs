@@ -89,7 +89,7 @@ internal class Demo_v1Agent : MainUiAgent
             }
         }
 
-        Game2DLand.SetDizi(guid);
+        Game2DLand.SelectDizi(guid);
         
         Demo_View_ConsumeResMgr.Set(dizi);
         Demo_View_ConPropsMgr.Set(dizi);

@@ -9,6 +9,7 @@ using UnityEngine;
 public interface IGame2DLand
 {
     CharacterUiSyncHandler CharacterUiSyncHandler { get; }
+    Transform Transform { get; }
     void InitBattle(DiziBattle battle);
     IEnumerator PlayRound(DiziRoundInfo info);
     Vector2 ConvertWorldPosToCanvasPos(RectTransform mainCanvasRect, RectTransform targetParent, Vector3 objWorldPos);
@@ -27,16 +28,19 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     private BattleStage2D BattleStage => _battleStage;
     private ParallaxBackgroundController ParallaxBgController => _parallaxBgController;
     public CharacterUiSyncHandler CharacterUiSyncHandler => _characterUiSyncHandler;
+    public Transform Transform => transform;
     private Canvas MainCanvas => Game.SceneCanvas;
     private RectTransform MainCanvasRect { get; set; }
 
     private Faction Faction => Game.World.Faction;
+    private UnitLand2dHandler UnitLandHandler { get; set; }
     private Dizi CurrentDizi { get; set; }
 
     public void Init()
     {
         MainCanvasRect = MainCanvas.transform as RectTransform;
         CharacterUiSyncHandler.Init(this, MainCanvas, Camera.main);
+        UnitLandHandler = new UnitLand2dHandler(CharacterUiSyncHandler, Game.Config.GameAnimCfg, ParallaxBgController);
     }
 
     public void InitBattle(DiziBattle battle) => BattleStage.InitBattle(battle);
@@ -54,29 +58,12 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     }
 
     public void FinalizeBattle() => BattleStage.FinalizeBattle();
+
     public void SelectDizi(string guid)
     {
         CurrentDizi = Faction.GetDizi(guid);
-
-        switch (CurrentDizi.State.Current)
-        {
-            case DiziStateHandler.States.Lost:
-                break;
-            case DiziStateHandler.States.Idle:
-                break;
-            case DiziStateHandler.States.AdvProgress:
-                break;
-            case DiziStateHandler.States.AdvProduction:
-                break;
-            case DiziStateHandler.States.AdvReturning:
-                break;
-            case DiziStateHandler.States.AdvWaiting:
-                break;
-            case DiziStateHandler.States.Battle:
-                throw new InvalidOperationException("当前战斗未完成,不允许")
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        if (CurrentDizi.State.Current == DiziStateHandler.States.Battle)
+            throw new InvalidOperationException("当前战斗未完成,不允许切换弟子！");
+        UnitLandHandler.PlayDizi(CurrentDizi);
     }
 }
