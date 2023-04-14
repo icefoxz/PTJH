@@ -19,7 +19,7 @@ namespace Server.Controllers
             var dizi = Faction.GetDizi(guid);
             var battle = ChallengeCfg.Stages[ChallengeProgressIndex].Instance(npcIndex, dizi);
             Game.CacheBattle(battle);
-            GameLand.InitBattle(battle);
+            GameLand.InitBattle(guid,battle);
             var diziFighter = battle.Fighters.First(f => f.Guid == guid);
             Game.MessagingManager.SendParams(EventString.Battle_Init, guid, diziFighter.InstanceId, battle.RoundLimit);
             var co = Game.CoService.RunCo(RunBattle(battle), null, nameof(ChallengeStageController));

@@ -2,7 +2,7 @@
 using Server.Controllers;
 using Utls;
 
-namespace _GameClient.Models
+namespace _GameClient.Models.States
 {
     /// <summary>
     /// 失踪状态
@@ -19,13 +19,15 @@ namespace _GameClient.Models
         public string CurrentMapName => "未知";
         public string StateLabel => "失踪";
         public TimeSpan CurrentProgressTime => SysTime.CompareUnixNow(LastUpdate);
+        public DiziStateHandler Handler { get; }
 
-        public LostState(Dizi dizi, long startTime, DiziActivityLog lastActivityLog)
+        public LostState(Dizi dizi, long startTime, DiziActivityLog lastActivityLog, DiziStateHandler handler)
         {
             StartTime = startTime;
             LastUpdate = startTime;
             Props = new DiziDynamicProps(dizi);
             LastActivityLog = lastActivityLog;
+            Handler = handler;
         }
     }
 }

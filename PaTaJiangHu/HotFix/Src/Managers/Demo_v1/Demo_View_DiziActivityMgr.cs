@@ -111,10 +111,12 @@ namespace HotFix_Project.Managers.Demo_v1
                 {
                     DiziStateHandler.States.Lost => View_Buttons.Modes.Lost,
                     DiziStateHandler.States.Idle => View_Buttons.Modes.Idle,
+                    DiziStateHandler.States.Auto => View_Buttons.Modes.Idle,
                     DiziStateHandler.States.AdvProgress => View_Buttons.Modes.Adventure,
                     DiziStateHandler.States.AdvProduction => View_Buttons.Modes.Adventure,
                     DiziStateHandler.States.AdvReturning => View_Buttons.Modes.Returning,
                     DiziStateHandler.States.AdvWaiting => View_Buttons.Modes.Waiting,
+                    DiziStateHandler.States.Battle => throw new InvalidOperationException("弟子在战斗中,不允许执行其它指令!"),
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 ButtonsView.SetMode(mode);

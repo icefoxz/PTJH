@@ -1,7 +1,7 @@
 ﻿using System;
 using Utls;
 
-namespace _GameClient.Models
+namespace _GameClient.Models.States
 {
     /// <summary>
     /// 战斗事件
@@ -16,13 +16,15 @@ namespace _GameClient.Models
         public string CurrentMapName { get; }
         public string StateLabel { get; }
         public TimeSpan CurrentProgressTime => SysTime.CompareUnixNow(LastUpdate);
+        public DiziStateHandler Handler { get; }
 
-        public BattleState(long startTime, string currentOccasion, string currentMapName)
+        public BattleState(long startTime, string currentOccasion, string currentMapName, DiziStateHandler handler)
         {
             StartTime = startTime;
             LastUpdate = startTime;
             CurrentOccasion = currentOccasion;
             CurrentMapName = currentMapName;
+            Handler = handler;
             StateLabel = currentOccasion;
         }
     }

@@ -87,9 +87,10 @@ internal class Demo_v1Agent : MainUiAgent
                 XDebug.LogWarning("当前门派并没有弟子!");
                 return;
             }
+            guid = dizi.Guid;
         }
 
-        Game2DLand.SelectDizi(guid);
+        Game2DLand.PlayDizi(dizi.Guid);
         
         Demo_View_ConsumeResMgr.Set(dizi);
         Demo_View_ConPropsMgr.Set(dizi);

@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Utls;
 
-namespace _GameClient.Models
+namespace _GameClient.Models.States
 {
     /// <summary>
     /// (自动)挂机历练模型
@@ -60,6 +60,7 @@ namespace _GameClient.Models
         public string CurrentOccasion => Occasion;
         public string CurrentMapName => Map.Name;
         public TimeSpan CurrentProgressTime => SysTime.CompareUnixNow(LastUpdate);
+        public DiziStateHandler Handler { get; }
         public AdvTypes AdvType { get; private set; }
 
         /// <summary>
@@ -82,7 +83,6 @@ namespace _GameClient.Models
         private readonly List<IGameReward> _rewards = new List<IGameReward>();
         private List<string> _storyLog = new List<string>();
         public IReadOnlyList<string> StoryLog => _storyLog;
-        public bool IsProduction { get; }
         private IReadOnlyList<DiziActivityLog> Stories => _stories;
 
         private Queue<string> MessageQueue { get; set; }
@@ -90,14 +90,15 @@ namespace _GameClient.Models
         private List<DiziActivityLog> _stories = new List<DiziActivityLog>();
         private int _storyIndex;
 
-        public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi, bool isProduction,DiziActivityPlayer activityPlayer)
+        public AutoAdventure(IAutoAdvMap map, long startTime, int messageSecs, Dizi dizi, bool isProduction,DiziActivityPlayer activityPlayer, DiziStateHandler handler)
             : base(startTime, dizi.Name, activityPlayer)
         {
             Map = map;
             MessageSecs = messageSecs;
             Dizi = dizi;
             State = States.Progress;
-            IsProduction = isProduction;
+            AdvType = isProduction ? AdvTypes.Production : AdvTypes.Adventure;
+            Handler = handler;
             Occasion = map.Name;
         }
 

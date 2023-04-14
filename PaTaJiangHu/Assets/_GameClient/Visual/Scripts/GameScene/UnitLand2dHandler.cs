@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using _GameClient.Models;
 using UnityEngine;
 
@@ -28,38 +29,61 @@ public class UnitLand2dHandler
         ParallaxBackgroundController = backgroundController;
     }
 
-    public void PlayDizi(Dizi dizi)
+    private Action<Dizi> BouncingAction { get; set; }
+    private bool isWaitingForBouncing { get; set; }
+    public async void PlayDizi(Dizi dizi)
+    {
+        //抖动行动,为了确保多次请求,只有最后一次有效
+        BouncingAction = SetDiziAction;
+        if(isWaitingForBouncing)
+            return;
+        isWaitingForBouncing = true;
+        await Task.Delay(50); //wait 50ms for bouncing
+        BouncingAction?.Invoke(dizi);
+        BouncingAction = null;
+        isWaitingForBouncing = false;
+    }
+
+    private void SetDiziAction(Dizi dizi)
     {
         var op = CurrentOp;
         var facing = Facing.Right;
+        var anim = CharacterOperator.Anims.Idle;
         switch (dizi.State.Current)
         {
-            case DiziStateHandler.States.Lost:
-                op.SetAnim(CharacterOperator.Anims.Defeat);
+            case DiziStateHandler.States.Idle:
+            case DiziStateHandler.States.Auto:
                 ParallaxBackgroundController.StopAll();
                 break;
-            case DiziStateHandler.States.Idle:
+            case DiziStateHandler.States.Lost:
+                anim = CharacterOperator.Anims.Defeat;
+                ParallaxBackgroundController.StopAll();
+                break;
             case DiziStateHandler.States.AdvWaiting:
-                op.SetAnim(CharacterOperator.Anims.Idle);
+                anim = CharacterOperator.Anims.Idle;
+                facing = Facing.Left;
                 ParallaxBackgroundController.StopAll();
                 break;
             case DiziStateHandler.States.AdvProgress:
-                op.SetAnim(CharacterOperator.Anims.Run);
-                ParallaxBackgroundController.Move(false);
+                anim = CharacterOperator.Anims.Run;
+                ParallaxBackgroundController.Move(true, 2);
                 break;
             case DiziStateHandler.States.AdvProduction:
-                op.SetAnim(CharacterOperator.Anims.Walk);
-                ParallaxBackgroundController.Move(false, 0.5f);
+                anim = CharacterOperator.Anims.Walk;
+                ParallaxBackgroundController.Move(true);
                 break;
             case DiziStateHandler.States.AdvReturning:
                 facing = Facing.Left;
-                op.SetAnim(CharacterOperator.Anims.Run);
-                ParallaxBackgroundController.Move(true);
+                anim = CharacterOperator.Anims.Run;
+                ParallaxBackgroundController.Move(false, 1.5f);
                 break;
             case DiziStateHandler.States.Battle:
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        op.SetAnim(anim);
+        op.transform.localPosition = Vector3.zero;
         SetFacing(op, facing);
     }
 
@@ -74,4 +98,8 @@ public class UnitLand2dHandler
         };
         if (changeFacing) op.transform.SetLocalScaleX(-1 * scale);
     }
+
+    public void HideOperator() => CurrentOp.gameObject.SetActive(false);
+
+    public void ShowOperator() => CurrentOp.gameObject.SetActive(true);
 }

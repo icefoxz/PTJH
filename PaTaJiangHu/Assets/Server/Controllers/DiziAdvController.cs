@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using _GameClient.Models.States;
 using Utls;
 
 namespace Server.Controllers
@@ -130,9 +131,9 @@ namespace Server.Controllers
             var now = SysTime.UnixNow;
             var adv = dizi.State.Adventure;
             var reachingTime = now + adv.Map.ProductionReturnSec * 1000;//转化成milliseconds
-            if (!adv.IsProduction && !adv.Map.IsFixReturnTime)
+            if (adv.AdvType == AutoAdventure.AdvTypes.Adventure && !adv.Map.IsFixReturnTime)
                 reachingTime = now + TimeSpan.FromSeconds(AdventureCfg
-                        .GetSeconds(dizi.State.Adventure.LastMile) / 2d).Milliseconds;//如果不是生产, 时间将根据当前里数计算回程秒数
+                        .GetSeconds(dizi.State.Adventure.LastMile) / 2d).Milliseconds;//如果是历练, 时间将根据当前里数计算回程秒数
             return reachingTime;
         }
 

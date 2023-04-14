@@ -102,7 +102,7 @@ internal class Demo_Game_BattleBannerMgr : MainPageBase
 
         public void UpdateInfo(DiziCombatInfo info)
         {
-            if (CurrentDiziInstanceId != info.InstanceId || NpcInstanceId != info.InstanceId) return;
+            if (CurrentDiziInstanceId != info.InstanceId && NpcInstanceId != info.InstanceId) return;
             if (info.TeamId == 0)
                 element_combatStateLeft.UpdateInfo(info);
             else

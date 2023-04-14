@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using _GameClient.Models.States;
 using Core;
 using DiziM;
 using Server.Configs.Adventures;
@@ -10,6 +11,7 @@ using Server.Configs.Characters;
 using Server.Controllers;
 using UnityEngine;
 using UnityEngine.Analytics;
+using Utls;
 
 namespace _GameClient.Models
 {
@@ -379,7 +381,7 @@ namespace _GameClient.Models
 
         internal void RestoreFromLost()
         {
-            State.RestoreFromLost();
+            State.StartIdle(SysTime.UnixNow);
             SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
             SendEvent(EventString.Dizi_Lost_End, Guid);
         }

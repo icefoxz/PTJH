@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using _GameClient.Models.States;
 using Server.Configs.Adventures;
 using Server.Controllers;
 using UnityEngine.Events;
@@ -41,6 +42,7 @@ namespace _GameClient.Models
         /// 事件经过时间
         /// </summary>
         TimeSpan CurrentProgressTime { get; }
+        DiziStateHandler Handler { get; }
     }
     /// <summary>
     /// 弟子状态处理器
@@ -50,9 +52,9 @@ namespace _GameClient.Models
         public enum States
         {
             /// <summary>
-            /// 未知状态，一般上都是初始的时候才会有的状态
+            /// 自动状态，初始状态, 并且会自动转换发呆状态
             /// </summary>
-            Unknown,
+            Auto,
             /// <summary>
             /// 失踪状态
             /// </summary>
@@ -105,13 +107,19 @@ namespace _GameClient.Models
                 }
                 if (DiziState is LostState) return States.Lost;
                 if (DiziState is BattleState) return States.Battle;
-                return States.Unknown;
+                return States.Auto;
             }
         }
+        /// <summary>
+        /// 当前的闲置状态,如果没有会返回null
+        /// </summary>
         public IdleState Idle { get; private set; }
-        public LostState LostState { get; private set; }
+        /// <summary>
+        /// 当前历练状态(如果没有会返回null)
+        /// </summary>
         public AutoAdventure Adventure { get; private set; }
-        public IDiziState DiziState { get; private set; }
+        
+        public IDiziState DiziState { get; private set; } 
 
         public string ShortTitle => DiziState.ShortTitle;
         public string Description => DiziState.Description;
@@ -125,7 +133,7 @@ namespace _GameClient.Models
         {
             get
             {
-                if (Current is States.AdvProgress or States.AdvReturning or States.AdvProduction or States.AdvWaiting)
+                if (DiziState is AutoAdventure)
                     return Adventure.Rewards;
                 return Array.Empty<IGameReward>();
             }
@@ -155,16 +163,18 @@ namespace _GameClient.Models
         /// 上一个状态开始时间
         /// </summary>
         public long LastStateTick { get; private set; }
-        public IRewardHandler RewardHandler => Current switch
+
+        public string DiziName => Dizi.Name;
+
+        public IRewardHandler RewardHandler
         {
-            States.Lost => null,
-            States.Idle => Idle,
-            States.AdvProgress => Adventure,
-            States.AdvProduction => Adventure,
-            States.AdvReturning => Adventure,
-            States.AdvWaiting => Adventure,
-            _ => throw new ArgumentOutOfRangeException()
-        };
+            get
+            {
+                if(DiziState is AutoAdventure)return Adventure;
+                if(DiziState is IdleState)return Idle;
+                return null;
+            }
+        }
 
         public DiziStateHandler(Dizi dizi, UnityAction<string> messageAction, UnityAction<string> adjustAction,
             UnityAction rewardAction)
@@ -178,6 +188,7 @@ namespace _GameClient.Models
                 RewardMethod(r);
                 rewardAction?.Invoke();
             };
+            DiziState = new AutoState(this);
         }
         private void RewardMethod(IGameReward reward) => LastReward = reward;
 
@@ -186,18 +197,14 @@ namespace _GameClient.Models
         public void StartIdle(long startTime)
         {
             LastStateTick = startTime;
-            Idle = new IdleState(Dizi, startTime, ActivityPlayer);
+            Idle = new IdleState(Dizi, startTime, ActivityPlayer, this);
+            DiziState = Idle;
         }
 
         public void StartLost(Dizi dizi, long startTime, DiziActivityLog lastActivityLog)
         {
             LastStateTick = startTime;
-            LostState = new LostState(dizi, startTime, lastActivityLog);
-        }
-
-        public void RestoreFromLost()
-        {
-            LostState = null;
+            DiziState = new LostState(dizi, startTime, lastActivityLog, this);
         }
 
         public void RecallFromAdventure(long now, int lastMile,long reachingTime)
@@ -208,13 +215,15 @@ namespace _GameClient.Models
         public void StartAdventure(IAutoAdvMap map, long startTime, int messageSecs, bool isProduction)
         {
             LastStateTick = startTime;
-            Adventure = new AutoAdventure(map, startTime, messageSecs, Dizi, isProduction, ActivityPlayer);
+            Adventure = new AutoAdventure(map, startTime, messageSecs, Dizi, isProduction, ActivityPlayer, this);
+            DiziState = Adventure;
         }
 
         public void FinalizeAdventure()
         {
             Adventure.UpdateStoryService.RemoveAllListeners();
             Adventure = null;
+            DiziState = null;
         }
 
         public void Terminate(long terminateTime,int lastMile)
@@ -222,12 +231,14 @@ namespace _GameClient.Models
             Adventure.UpdateStoryService.RemoveAllListeners();
             Adventure.Terminate(terminateTime, lastMile);
             Adventure = null;
+            DiziState = null;
         }
 
         public void StopIdleState()
         {
             Idle.StopIdleState();
             Idle = null;
+            DiziState = null;
         }
 
         public void RegIdleStory(DiziActivityLog log) => Idle.RegStory(log);

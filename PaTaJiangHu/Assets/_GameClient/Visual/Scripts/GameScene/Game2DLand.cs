@@ -10,11 +10,11 @@ public interface IGame2DLand
 {
     CharacterUiSyncHandler CharacterUiSyncHandler { get; }
     Transform Transform { get; }
-    void InitBattle(DiziBattle battle);
+    void InitBattle(string guid, DiziBattle battle);
     IEnumerator PlayRound(DiziRoundInfo info);
     Vector2 ConvertWorldPosToCanvasPos(RectTransform mainCanvasRect, RectTransform targetParent, Vector3 objWorldPos);
     void FinalizeBattle();
-    void SelectDizi(string guid);
+    void PlayDizi(string guid);
 }
 
 /// <summary>
@@ -28,7 +28,7 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     private BattleStage2D BattleStage => _battleStage;
     private ParallaxBackgroundController ParallaxBgController => _parallaxBgController;
     public CharacterUiSyncHandler CharacterUiSyncHandler => _characterUiSyncHandler;
-    public Transform Transform => transform;
+    public Transform Transform => _battleStage.transform;
     private Canvas MainCanvas => Game.SceneCanvas;
     private RectTransform MainCanvasRect { get; set; }
 
@@ -41,9 +41,21 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
         MainCanvasRect = MainCanvas.transform as RectTransform;
         CharacterUiSyncHandler.Init(this, MainCanvas, Camera.main);
         UnitLandHandler = new UnitLand2dHandler(CharacterUiSyncHandler, Game.Config.GameAnimCfg, ParallaxBgController);
+        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
+        {
+            var dizi = Faction.GetDizi(b.GetString(0));
+            if (dizi == CurrentDizi)
+                PlayDizi(dizi.Guid);
+        });
     }
 
-    public void InitBattle(DiziBattle battle) => BattleStage.InitBattle(battle);
+    public void InitBattle(string guid, DiziBattle battle)
+    {
+        CurrentDizi = Faction.GetDizi(guid);
+        BattleStage.InitBattle(battle);
+        UnitLandHandler.HideOperator();
+    }
+
     public IEnumerator PlayRound(DiziRoundInfo info) => BattleStage.PlayRound(info);
 
     public Vector2 ConvertWorldPosToCanvasPos(RectTransform mainCanvasRect,RectTransform targetParent,Vector3 objWorldPos)
@@ -57,9 +69,13 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
         return localPositionInParent;
     }
 
-    public void FinalizeBattle() => BattleStage.FinalizeBattle();
+    public void FinalizeBattle()
+    {
+        BattleStage.FinalizeBattle();
+        UnitLandHandler.ShowOperator();
+    }
 
-    public void SelectDizi(string guid)
+    public void PlayDizi(string guid)
     {
         CurrentDizi = Faction.GetDizi(guid);
         if (CurrentDizi.State.Current == DiziStateHandler.States.Battle)

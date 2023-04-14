@@ -17,6 +17,7 @@ namespace Server.Controllers
         public async void QueryIdleStory(string guid)
         {
             var dizi = Faction.GetDizi(guid);
+            if (dizi.State.Current != DiziStateHandler.States.Idle) return;
             var lostStrategy = IdleCfg.IdleMapSo.LostStrategy;
             var lastUpdate = dizi.State.Idle.LastUpdate;
             var now = SysTime.UnixNow;

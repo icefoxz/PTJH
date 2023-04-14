@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Linq;
 using _GameClient.Models;
+using _GameClient.Models.States;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Configs;

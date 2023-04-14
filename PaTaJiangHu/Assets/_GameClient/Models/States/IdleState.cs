@@ -4,7 +4,7 @@ using Server.Configs.Adventures;
 using Server.Controllers;
 using Utls;
 
-namespace _GameClient.Models
+namespace _GameClient.Models.States
 {
     /// <summary>
     /// 闲置状态
@@ -18,6 +18,7 @@ namespace _GameClient.Models
         public string CurrentOccasion => "山门内";
         public string StateLabel => "闲置";
         public TimeSpan CurrentProgressTime => SysTime.CompareUnixNow(LastUpdate);
+        public DiziStateHandler Handler { get; }
 
         public DiziActivityLog CurrentStory { get; private set; }
         public int MessageIndex { get; private set; }
@@ -33,10 +34,11 @@ namespace _GameClient.Models
         private DiziIdleController IdleController => Game.Controllers.Get<DiziIdleController>();
         private int MessageUpdateSecs => Game.Config.Idle.MessageUpdateSecs;
 
-        public IdleState(Dizi dizi, long startTime, DiziActivityPlayer activityPlayer) : base(startTime, dizi.Name,
+        public IdleState(Dizi dizi, long startTime, DiziActivityPlayer activityPlayer, DiziStateHandler handler) : base(startTime, dizi.Name,
             activityPlayer)
         {
             Dizi = dizi;
+            Handler = handler;
             IsActive = true;
         }
 
