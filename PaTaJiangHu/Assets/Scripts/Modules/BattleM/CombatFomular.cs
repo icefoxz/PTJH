@@ -5,35 +5,62 @@ using Random = UnityEngine.Random;
 
 public static class CombatFormula
 {
-    public static (bool isHardDamage, double rate, int ran) HardJudgment(DiziCombatUnit op, DiziCombatUnit tar, double hardFactor)
+    private const float DodgeRatioMax = 0.9f;
+    private const int HardDamageMultiply = 3;
+
+    public static (bool isHardDamage, double rate, int ran) HardJudgment(CombatArgs arg, double hardFactor)
     {
-        var hardRate = (op.Agility - tar.Agility) / hardFactor;
+        var hardRate = (arg.Caster.Agility - arg.Target.Agility) / hardFactor;
+        hardRate += arg.Caster.Combat?.GetHardRatio(arg) ?? 0;
         var ran = Random.Range(0, 100);
-        return (ran <= hardRate, hardRate, ran);
+        var isHard = ran <= hardRate;
+        return (isHard, hardRate, ran);
     }
 
-    public static (bool isDodged, double rate, int ran) DodgeJudgment(DiziCombatUnit op, DiziCombatUnit tar, double dodgeFactor)
+    public static (bool isDodged, double rate, int ran) DodgeJudgment(CombatArgs arg, double dodgeFactor)
     {
-        var dodgeRate = (op.Agility - tar.Agility) / dodgeFactor;
+        var dodgeRate = (arg.Caster.Agility - arg.Target.Agility) / dodgeFactor;
+        dodgeRate += arg.Caster.Dodge?.GetDodgeRatio(arg) ?? 0;
+        dodgeRate = Math.Min(dodgeRate, DodgeRatioMax);
         var ran = Random.Range(0, 100);
         return (ran <= dodgeRate, dodgeRate, ran);
     }
-    public static int HardDamage(DiziCombatUnit unit) => unit.Damage * 2;
-    public static int MpDamage(DiziCombatUnit unit)
+    /// <summary>
+    /// 重击, 重击伤害=伤害+内力伤害*3(内力不足，会抽取仅剩内力)
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    public static int HardDamage(CombatArgs arg)
     {
-        var mp = (int)(unit.MaxMp * 0.1);
-        if (unit.Mp > mp) return mp;
+        var damage = 0f;
+        for (var i = 0; i < HardDamageMultiply; i++) damage += MpDamage(arg);
+        return (int)damage;
+    }
+    public static int MpDamage(CombatArgs arg)
+    {
+        var mp = (int)(arg.Caster.MaxMp * 0.1);
+        if (arg.Caster.Mp > mp)
+        {
+            arg.Caster.AddMp(-mp);
+            return mp;
+        }
         return 0;
     }
+    /// <summary>
+    /// Damage+MpDamage
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    public static int GeneralDamage(CombatArgs arg) => arg.Caster.Damage + MpDamage(arg);
 
-    public static int Attack(DiziCombatUnit unit) => unit.Damage + MpDamage(unit);
-
-    public static (int damage, int mpConsume) DamageReduction(int damage, int mp, int maxMp)
+    public static (int damage, int mpConsume) DamageReduction(int damage, DiziCombatUnit target)
     {
+        var mp = target.Mp;
+        var maxMp = target.MaxMp;
         var halfDamage = damage / 2;
         var mpOffset = (int)(maxMp * 0.1f);//10%
-        var offset = Math.Min(mp, mpOffset);
-        var finalDamage = Math.Max(halfDamage - offset, 0) + halfDamage;
-        return (finalDamage, offset);
+        var mpConsume = Math.Min(mp, mpOffset);
+        var finalDamage = Math.Max(halfDamage - mpConsume, 0) + halfDamage;
+        return (finalDamage, mpConsume);
     }
 }

@@ -48,9 +48,9 @@ public class DiziBattle
     public int RoundLimit { get; private set; }
 
     // 使用Action<>定义事件
-    public event Action OnRoundStart;
-    public event Action OnRoundEnd;
-    public event Action OnBattleEnd;
+    //public event Action OnRoundStart;
+    //public event Action OnRoundEnd;
+    //public event Action OnBattleEnd;
 
     private DiziBattle(int roundLimit, params DiziCombatUnit[] combats)
     {
@@ -70,20 +70,20 @@ public class DiziBattle
     public DiziRoundInfo ExecuteRound()
     {
         // 触发回合开始事件
-        OnRoundStart?.Invoke();
+        //OnRoundStart?.Invoke();
 
         var round = new DiziCombatRound(Fighters.ToList(), BuffManager);
         var info = round.Execute();
         Rounds.Add(info);
 
         // 触发回合结束事件
-        OnRoundEnd?.Invoke();
+        //OnRoundEnd?.Invoke();
 
         if (Rounds.Count >= RoundLimit)
         {
             Finalize(AverageHpHigherWin(Fighters));
             // 触发战斗结束事件
-            OnBattleEnd?.Invoke();
+            //OnBattleEnd?.Invoke();
             return info;
         }
 
@@ -95,7 +95,7 @@ public class DiziBattle
         Finalize(aliveTeam == 0);//玩家单位是0
 
         // 触发战斗结束事件
-        OnBattleEnd?.Invoke();
+        //OnBattleEnd?.Invoke();
 
         return info;
     }

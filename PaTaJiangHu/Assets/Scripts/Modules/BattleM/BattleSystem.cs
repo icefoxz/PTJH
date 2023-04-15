@@ -87,25 +87,11 @@ public class CombatUnit : ICombatUnit
 
     public void SetInstanceId(int instanceId) => InstanceId = instanceId;
 
-    public int TakeDamage(int damage)
+    public int AddHp(int hp)
     {
-        var finalDamage = DamageReduction(damage);
-        Hp -= finalDamage;
-        if (Hp < 0)
-        {
-            Hp = 0;
-        }
-        return finalDamage;
-    }
-
-    /// <summary>
-    /// 伤害减免
-    /// </summary>
-    /// <param name="damage"></param>
-    /// <returns></returns>
-    protected virtual int DamageReduction(int damage)
-    {
-        return damage;
+        Hp += hp;
+        Math.Clamp(Hp, 0, MaxHp);
+        return hp;
     }
 
     //是否阵亡
@@ -118,10 +104,7 @@ public class CombatUnit : ICombatUnit
     public void Heal(int amount)
     {
         Hp += amount;
-        if (Hp > MaxHp)
-        {
-            Hp = MaxHp;
-        }
+        Math.Clamp(Hp, 0, MaxHp);
     }
 }
 //回合记录器
@@ -245,7 +228,7 @@ public class AttackBehavior<TUnit,TInfo,TUnitInfo> : CombatBehavior<TUnit, TInfo
                 //设定战斗行动
                 perform.SetCritical(isCritical: isCritical);
                 //执行伤害
-                target.TakeDamage(damage: finalDamage);
+                target.AddHp(-finalDamage);
                 var isCounter = target.IsAlive && Random.Next(0, 100) < 10; //10%反击
                 if (isCounter) CounterAttack(caster: target, target: caster, perform: perform); //反击执行
                 //生成反馈记录
@@ -267,7 +250,7 @@ public class AttackBehavior<TUnit,TInfo,TUnitInfo> : CombatBehavior<TUnit, TInfo
     private void CounterAttack(TUnit caster, TUnit target, CombatPerformInfo<TUnit, TUnitInfo> perform)
     {
         var (damage, isDodge, isCritical) = GetDamage(caster, target);
-        if (!isDodge) target.TakeDamage(damage: (int)damage);
+        if (!isDodge) target.AddHp((int)-damage);
         perform.SetCounterAttack(damage: caster.Damage, isDodged: isDodge, isCritical); //记录反击伤害
     }
 
