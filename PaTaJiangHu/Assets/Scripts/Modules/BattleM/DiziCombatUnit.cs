@@ -5,7 +5,6 @@ using System.Linq;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 
-
 /// <summary>
 /// 弟子战斗单位
 /// </summary>

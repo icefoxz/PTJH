@@ -4,26 +4,16 @@ using System.Linq;
 using System.Text;
 using Utls;
 
-/// <summary>
-/// 战斗缓存, 用于存储战斗信息, 用于战斗回放
-/// </summary>
-public class BattleCache
-{
-    private DiziBattle Battle { get; set; }
-
-    public void SetBattle(DiziBattle battle)=> Battle = battle;
-
-    public CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> GetLastResponse(int performerId,int performIndex)
-    {
-        var infos = Battle.Rounds.Last();
-        var performInfos = infos.UnitInfoMap.First(x => x.Key.InstanceId == performerId).Value;
-        var perform = performInfos[performIndex];
-        return perform.Response;
-    }
-
-    public DiziCombatUnit[] GetFighters(int teamId) => Battle.Fighters.Where(f => f.TeamId == teamId).ToArray();
-    public DiziCombatUnit GetDizi(string guid) => Battle.Fighters.SingleOrDefault(f => f.Guid == guid);
-}
+/**
+ * DiziBattle 类：它管理弟子单位之间的战斗。该类有如下属性：IsPlayerWin（是否玩家胜利）、Rounds（回合信息列表）、BuffManager（Buff管理器）、Fighters（战斗单位列表）、IsFinalized（是否结束）等。
+ * 此外，它还有一些方法，如 ExecuteRound（执行回合）、Finalize（结束战斗）等。
+ * Events 枚举：表示战斗事件，用于定义战斗配置。包括 Perform（执行）、Response（反馈）、RoundEnd（回合结束）和 BattleEnd（战斗结束）。
+ * Responses 枚举：表示战斗反馈，用于定义战斗配置。包括 Suffer（受击）、Dodge（闪避）和 Defeat（击败）。
+ * ExecuteRound 方法：执行一个回合的战斗。创建一个 DiziCombatRound 对象，根据战斗结果更新回合信息列表，并根据条件判断战斗是否结束。
+ * Instance 静态方法：创建一个新的 DiziBattle 实例。
+ * StartAuto 静态方法：自动开始并执行战斗。创建一个新的 DiziBattle 实例，并在回合限制内执行战斗回合。根据队伍的平均血量比率判断获胜。
+ * PrintLog 静态方法：打印战斗日志。输出战斗开始、回合执行和战斗结束的信息。
+ */
 /// <summary>
 /// 弟子战斗器, 轮询回合, 不牵涉核心战斗逻辑
 /// </summary>
@@ -57,6 +47,11 @@ public class DiziBattle
     private static int CombatUnitSeed { get; set; }
     public int RoundLimit { get; private set; }
 
+    // 使用Action<>定义事件
+    public event Action OnRoundStart;
+    public event Action OnRoundEnd;
+    public event Action OnBattleEnd;
+
     private DiziBattle(int roundLimit, params DiziCombatUnit[] combats)
     {
         RoundLimit = roundLimit;
@@ -71,21 +66,37 @@ public class DiziBattle
         IsPlayerWin = isPlayerWin;
         IsFinalized = true;
     }
-
+    
     public DiziRoundInfo ExecuteRound()
     {
+        // 触发回合开始事件
+        OnRoundStart?.Invoke();
+
         var round = new DiziCombatRound(Fighters.ToList(), BuffManager);
         var info = round.Execute();
         Rounds.Add(info);
+
+        // 触发回合结束事件
+        OnRoundEnd?.Invoke();
+
         if (Rounds.Count >= RoundLimit)
         {
             Finalize(AverageHpHigherWin(Fighters));
+            // 触发战斗结束事件
+            OnBattleEnd?.Invoke();
             return info;
         }
+
         if (Fighters.Where(f => f.IsAlive).GroupBy(f => f.TeamId, f => f).Count() > 1) return info;
+
         var aliveTeam = Fighters.FirstOrDefault(f => f.IsAlive)?.TeamId ?? -1;
-        if (aliveTeam == -1) throw new NotImplementedException("没有活着的单位!");
+        if (aliveTeam == -1)
+            throw new InvalidOperationException("没有活着的单位!");
         Finalize(aliveTeam == 0);//玩家单位是0
+
+        // 触发战斗结束事件
+        OnBattleEnd?.Invoke();
+
         return info;
     }
 
