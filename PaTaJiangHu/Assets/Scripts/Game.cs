@@ -68,7 +68,7 @@ public class Game : UnitySingleton<Game>
         Config = config;
         World = new GameWorld();//Init World Model
         Game2DLand = game2DLand;
-        game2DLand.Init();
+        game2DLand.Init(config.GameAnimCfg);
         //SceneCanvas = sceneCanvas;
         InitControllers();
     }

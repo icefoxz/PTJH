@@ -14,10 +14,12 @@ internal class DiziCombatAnimator
     private DiziCombatConfigSo CombatConfig { get; }
     private DiziCombatResponseCfgSo CombatResponseSo => CombatConfig.CombatResponseSo;
     private EffectViewsPool EffectViewsPool { get; } = new EffectViewsPool();
+    private Transform PoolTransform { get; }
 
-    public DiziCombatAnimator(DiziCombatConfigSo combatConfig)
+    public DiziCombatAnimator(DiziCombatConfigSo combatConfig, Transform poolTransform)
     {
         CombatConfig = combatConfig;
+        PoolTransform = poolTransform;
     }
 
     /// <summary>
@@ -149,7 +151,7 @@ internal class DiziCombatAnimator
 
         void ResetEffectView()
         {
-            e.transform.SetParent(Game.MainUi.Pool.transform);
+            e.transform.SetParent(PoolTransform);
             EffectViewsPool.ReturnEffectView(e);
         }
     }

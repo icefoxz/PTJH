@@ -36,12 +36,12 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     private UnitLand2dHandler UnitLandHandler { get; set; }
     private Dizi CurrentDizi { get; set; }
 
-    public void Init()
+    internal void Init(Config.GameAnimConfig animConfig)
     {
         MainCanvasRect = MainCanvas.transform as RectTransform;
         CharacterUiSyncHandler.Init(this, MainCanvas, Camera.main);
-        UnitLandHandler = new UnitLand2dHandler(CharacterUiSyncHandler, Game.Config.GameAnimCfg, ParallaxBgController);
-        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
+        UnitLandHandler = new UnitLand2dHandler(CharacterUiSyncHandler, animConfig, ParallaxBgController);
+        Game.MessagingManager?.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
         {
             var dizi = Faction.GetDizi(b.GetString(0));
             if (dizi == CurrentDizi)

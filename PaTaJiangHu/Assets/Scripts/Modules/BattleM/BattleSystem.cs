@@ -242,7 +242,6 @@ public class AttackBehavior<TUnit,TInfo,TUnitInfo> : CombatBehavior<TUnit, TInfo
 
             }
         }
-
         return infos.ToArray();
     }
 
@@ -282,6 +281,9 @@ public record CombatPerformInfo<TUnit,TUnitInfo> where TUnit : ICombatUnit where
 {
     public TUnitInfo Performer { get; set; }
     public CombatResponseInfo<TUnit,TUnitInfo> Response { get; set; }
+    //是否重击
+    public bool IsHardAttack { get; set; }
+    //是否会心
     public bool IsCritical { get; set; }
     //补血(吸血)
     public int Heal { get; set; }
@@ -304,14 +306,13 @@ public record CombatPerformInfo<TUnit,TUnitInfo> where TUnit : ICombatUnit where
 
     public void AddResponse(CombatResponseInfo<TUnit,TUnitInfo> info) => Response = info;
 
-    public void SetCounterAttack(int damage, bool isDodged, bool isCritical)
+    public void SetCounterAttack(int damage, bool isDodged ,bool isCritical)
     {
         IsCounterAttack = true;
         CounterAttackDamage = damage;
         IsCounterAttackDodged = isDodged;
         IsCounterAttackCritical = isCritical;
     }
-
 }
 
 public interface ICombatUnitInfo<in TUnit> where TUnit : ICombatUnit

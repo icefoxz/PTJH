@@ -17,9 +17,10 @@ internal class DiziBattleAnimator
     public DiziBattleAnimator(DiziCombatConfigSo combatCfg, 
         Dictionary<int, CharacterOperator> opMap,
         CharacterUiSyncHandler uiHandler,
-        MonoBehaviour mono)
+        MonoBehaviour mono,
+        Transform poolTransform)
     {
-        CombatAnimator = new DiziCombatAnimator(combatCfg);
+        CombatAnimator = new DiziCombatAnimator(combatCfg, poolTransform);
         OpMap = opMap;
         Mono = mono;
         UiHandler = uiHandler;
@@ -68,7 +69,7 @@ internal class DiziBattleAnimator
     }
 
     private void EventSend(string eventString, params object[] response) =>
-        Game.MessagingManager.SendParams(eventString, response);
+        Game.MessagingManager?.SendParams(eventString, response);
 
     private float GetLocationPoint(CharacterOperator op) => op.transform.localPosition.x;
 
