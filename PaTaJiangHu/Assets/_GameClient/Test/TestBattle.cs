@@ -60,7 +60,7 @@ public class TestBattle : MonoBehaviour
     }
 
     [Serializable]
-    private class CombatChar : IDiziCombatUnit
+    private class CombatChar : IDiziCombatUnit, IBattle
     {
         [SerializeField] private CharacterOperator _op;
         [SerializeField] private bool 玩家;
@@ -90,35 +90,47 @@ public class TestBattle : MonoBehaviour
         public int MaxMp => 内力;
         public int Strength => 力量;
         public int Agility => 敏捷;
+        public IBattle Battle => this;
         public ICombat Combat => 武功;
         public IForce Force => 内功;
         public IDodge Dodge => 轻功;
-
+        public float GetHardRate(CombatArgs arg)=> Combat.GetHardRate(arg);
+        public float GetHardDamageRatio(CombatArgs arg)=> Combat.GetHardDamageRatio(arg);
+        public float GetCriticalRate(CombatArgs arg)=> Force.GetCriticalRate(arg);
+        public float GetMpDamage(CombatArgs arg)=> Force.GetMpDamage(arg);
+        public float GetMpCounteract(CombatArgs arg)=> Force.GetMpCounteract(arg);
+        public float GetDodgeRate(CombatArgs arg)=> Dodge.GetDodgeRate(arg);
         public void SetInstanceId(int instanceId)
         {
             InstanceId = instanceId;
         }
 
         public DiziCombatUnit GetCombatUnit() => new(this);
-        [Serializable]private class CombatSkill : ICombat
+
+        [Serializable]
+        private class CombatSkill : ICombat
         {
-            [SerializeField]private float 重击率;
-            [SerializeField]private float 会心率;
-            [Range(0,3)][SerializeField]private float 重击伤害倍数;
+            [SerializeField] private float 重击率;
+            [Range(0, 3)] [SerializeField] private float 重击伤害倍数;
             public float GetHardRate(CombatArgs arg) => 重击率;
             public float GetHardDamageRatio(CombatArgs arg) => 重击伤害倍数;
+        }
+
+        [Serializable]
+        private class ForceSkill : IForce
+        {
+            [SerializeField] private float 伤害内力;
+            [SerializeField] private float 抵消内力;
+            [SerializeField] private float 会心率;
             public float GetCriticalRate(CombatArgs arg) => 会心率;
+            public float GetMpDamage(CombatArgs arg) => 伤害内力;
+            public float GetMpCounteract(CombatArgs arg) => 抵消内力;
         }
-        [Serializable]private class ForceSkill : IForce
+
+        [Serializable]
+        private class DodgeSkill : IDodge
         {
-            [SerializeField]private float 伤害内力;
-            [SerializeField]private float 抵消内力;
-            public float GetMpDamage(CombatArgs arg)=> 伤害内力;
-            public float GetMpCounteract(CombatArgs arg)=> 抵消内力;
-        }
-        [Serializable]private class DodgeSkill : IDodge
-        {
-            [SerializeField]private float 闪避率;
+            [SerializeField] private float 闪避率;
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
         }
     }

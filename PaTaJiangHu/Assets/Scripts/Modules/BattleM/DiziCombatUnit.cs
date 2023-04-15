@@ -5,6 +5,19 @@ using System.Linq;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 
+public interface IBattle
+{
+    ICombat Combat { get; }
+    IForce Force { get; }
+    IDodge Dodge { get; }
+
+    float GetHardRate(CombatArgs arg);
+    float GetHardDamageRatio(CombatArgs arg);
+    float GetCriticalRate(CombatArgs arg);
+    float GetMpDamage(CombatArgs arg);
+    float GetMpCounteract(CombatArgs arg);
+    float GetDodgeRate(CombatArgs arg);
+}
 /// <summary>
 /// 战斗的技能信息与高级属性的实现接口.
 /// </summary>
@@ -12,7 +25,6 @@ public interface ICombat
 {
     float GetHardRate(CombatArgs arg);
     float GetHardDamageRatio(CombatArgs arg);
-    float GetCriticalRate(CombatArgs arg);
     //float GetCounterRatio(DiziCombatUnit tar);
     //float GetCounterDamageRatio(DiziCombatUnit tar);
 }
@@ -23,6 +35,7 @@ public interface IForce
 {
     float GetMpDamage(CombatArgs arg);
     float GetMpCounteract(CombatArgs arg);
+    float GetCriticalRate(CombatArgs arg);
 }
 /// <summary>
 /// 身法技能信息与高级属性的实现接口
@@ -39,9 +52,7 @@ public interface IDiziCombatUnit : ICombatUnit
     int MaxMp { get; }
     int Strength { get; }
     int Agility { get; }
-    ICombat Combat { get; }
-    IForce Force { get; }
-    IDodge Dodge { get; }
+    IBattle Battle { get; }
 }
 
 /// <summary>
@@ -54,9 +65,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public int MaxMp { get; private set; }
     public int Strength { get; private set; }
     public int Agility { get; private set; }
-    public ICombat Combat { get; private set; }
-    public IForce Force { get; private set; }
-    public IDodge Dodge { get; private set; }
+    public IBattle Battle { get; }
 
     internal DiziCombatUnit(int teamId, Dizi dizi) 
         : base(teamId, dizi.Name, dizi.Hp, dizi.Strength, dizi.Agility)
@@ -89,9 +98,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         MaxMp = unit.Mp;
         Agility = unit.Agility;
         Strength = unit.Strength;
-        Combat = unit.Combat;
-        Force = unit.Force;
-        Dodge = unit.Dodge;
+        Battle = unit.Battle;
     }
 
     internal DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name, s.MaxHp, s.Damage, s.Agility)
@@ -103,9 +110,9 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     }
     
     //伤害减免
-    public int TakeReductionDamage(int damage)
+    public int TakeReductionDamage(int damage,CombatArgs arg)
     {
-        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage, this);
+        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage, arg);
         AddMp(-mpConsume);
         AddHp(-finalDamage);
         return finalDamage;
@@ -136,7 +143,8 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         {
             foreach (var target in targets)//对所有执行目标历遍执行
             {
-                var (dmg, isDodge, isHard, isCritical) = GetDamage(new CombatArgs(caster, target));//获取伤害
+                var arg = new CombatArgs(caster, target);
+                var (dmg, isDodge, isHard, isCritical) = GetDamage(arg);//获取伤害
                 var damage = (int)dmg;
 
                 //生成行动记录
@@ -150,7 +158,7 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
                 pfmInfo.SetCritical(isCritical);
 
                 //执行伤害
-                var finalDamage = target.TakeReductionDamage(damage);//有计算减免的伤害
+                var finalDamage = target.TakeReductionDamage(damage, arg);//有计算减免的伤害
                 var canCounter = CounterJudgment(target);
                 if (canCounter) CounterAttack(new CombatArgs(target, caster), pfmInfo);//反击执行
                 //生成反馈记录
@@ -172,7 +180,7 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
     private void CounterAttack(CombatArgs arg, DiziCombatPerformInfo perform)
     {
         var (damage, isDodge, isHard ,isCritical) = GetDamage(arg);
-        if (!isDodge) arg.Target.TakeReductionDamage((int)damage);
+        if (!isDodge) arg.Target.TakeReductionDamage((int)damage, arg);
         perform.SetCounterAttack(damage: arg.Caster.Damage, isDodged: isDodge, isCritical); //记录反击伤害
         perform.SetHard(isHard);
     }
