@@ -1,9 +1,10 @@
 using MyBox;
+using Server.Configs.Battles;
 using Server.Configs.Items;
 using Server.Controllers;
 using UnityEngine;
 
-namespace Server.Configs.Battles
+namespace Server.Configs.Skills
 {
     public interface ISkill
     {

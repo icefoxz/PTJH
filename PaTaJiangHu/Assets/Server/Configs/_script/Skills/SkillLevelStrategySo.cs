@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using MyBox;
+using Server.Configs.Battles;
 using Server.Configs.Items;
 using UnityEngine;
 
-namespace Server.Configs.Battles
+namespace Server.Configs.Skills
 {
     [CreateAssetMenu(fileName = "levelStrSo", menuName = "战斗/武学/等级策略")]
-    internal class SkillLevelStrategySo : AutoAtNamingObject
+    public class SkillLevelStrategySo : AutoAtNamingObject
     {
         #region ReferenceSo
         private bool ReferenceSo()

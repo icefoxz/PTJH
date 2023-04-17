@@ -1,10 +1,10 @@
-using MyBox;
 using System;
 using System.Linq;
+using MyBox;
 using Server.Configs.Items;
 using UnityEngine;
 
-namespace Server.Configs.Battles
+namespace Server.Configs.Skills
 {
     public interface ISkillLevelMap
     {

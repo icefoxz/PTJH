@@ -1537,6 +1537,51 @@ Transform:
   m_Father: {fileID: 574818343}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &607671660
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 607671661}
+  - component: {fileID: 607671662}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &607671661
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 607671660}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &607671662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 607671660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca355ce0da3938141b2951bea22daf02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LevelStrategy: {fileID: 11400000, guid: 67f8cbf86d817e0439fdad40e5b8837b, type: 2}
 --- !u!1 &640795154
 GameObject:
   m_ObjectHideFlags: 0
@@ -7981,11 +8026,11 @@ MonoBehaviour:
     "\u654F\u6377": 20
     "\u6B66\u529F":
       "\u91CD\u51FB\u7387": 100
-      "\u4F1A\u5FC3\u7387": 0
       "\u91CD\u51FB\u4F24\u5BB3\u500D\u6570": 1.5
     "\u5185\u529F":
       "\u4F24\u5BB3\u5185\u529B": 5
       "\u62B5\u6D88\u5185\u529B": 10
+      "\u4F1A\u5FC3\u7387": 0
     "\u8F7B\u529F":
       "\u95EA\u907F\u7387": 10
   - _op: {fileID: 315526830702742801}
@@ -7999,11 +8044,11 @@ MonoBehaviour:
     "\u654F\u6377": 13
     "\u6B66\u529F":
       "\u91CD\u51FB\u7387": 0
-      "\u4F1A\u5FC3\u7387": 100
       "\u91CD\u51FB\u4F24\u5BB3\u500D\u6570": 0
     "\u5185\u529F":
       "\u4F24\u5BB3\u5185\u529B": 10
       "\u62B5\u6D88\u5185\u529B": 10
+      "\u4F1A\u5FC3\u7387": 0
     "\u8F7B\u529F":
       "\u95EA\u907F\u7387": 20
   _animConfig:
