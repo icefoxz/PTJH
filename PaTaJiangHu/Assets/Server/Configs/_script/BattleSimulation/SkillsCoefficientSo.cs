@@ -33,7 +33,7 @@ namespace Server.Configs.BattleSimulation
             return true;
         }
 
-        public int GetCoefficient(int level, SkillGrades grade)
+        public int GetCoefficient(int level, DiziGrades grade)
         {
             if (level == 0) return 0;
             var index = level - 1;
@@ -41,12 +41,12 @@ namespace Server.Configs.BattleSimulation
             var cfg = Levels[index];
             return grade switch
             {
-                SkillGrades.E => cfg.E,
-                SkillGrades.D => cfg.D,
-                SkillGrades.C => cfg.C,
-                SkillGrades.B => cfg.B,
-                SkillGrades.A => cfg.A,
-                SkillGrades.S => cfg.S,
+                DiziGrades.E => cfg.E,
+                DiziGrades.D => cfg.D,
+                DiziGrades.C => cfg.C,
+                DiziGrades.B => cfg.B,
+                DiziGrades.A => cfg.A,
+                DiziGrades.S => cfg.S,
                 _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
             };
         }
@@ -55,7 +55,7 @@ namespace Server.Configs.BattleSimulation
         {
             Offend,Defend
         }
-        private int GetSubCoefficient(int level, SkillGrades grade,Sub sub)
+        private int GetSubCoefficient(int level, DiziGrades grade,Sub sub)
         {
             var co = CoefficientRate;
             if (co.OffendRate is < 0 or > 100 || co.DefendRate is < 0 or > 100)
@@ -70,8 +70,8 @@ namespace Server.Configs.BattleSimulation
                 _ => throw new ArgumentOutOfRangeException(nameof(sub), sub, null)
             };
         }
-        public int GetOffendCoefficient(int level, SkillGrades grade) => GetSubCoefficient(level, grade, Sub.Offend);
-        public int GetDefendCoefficient(int level, SkillGrades grade) => GetSubCoefficient(level, grade, Sub.Defend);
+        public int GetOffendCoefficient(int level, DiziGrades grade) => GetSubCoefficient(level, grade, Sub.Offend);
+        public int GetDefendCoefficient(int level, DiziGrades grade) => GetSubCoefficient(level, grade, Sub.Defend);
 
         [Serializable] private class LevelConfig
         {

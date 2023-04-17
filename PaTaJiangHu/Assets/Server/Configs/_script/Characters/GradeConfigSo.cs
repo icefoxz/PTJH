@@ -15,25 +15,16 @@ namespace Server.Configs.Characters
     [CreateAssetMenu(fileName = "GradeConfig", menuName = "资质/弟子生成配置")]
     internal class GradeConfigSo : ScriptableObject
     {
-        internal enum Grades
+        
+        public static string GetColorTitle(ColorGrade grade) => grade switch
         {
-            [InspectorName("白")]F,
-            [InspectorName("绿")]E,
-            [InspectorName("篮")]D,
-            [InspectorName("紫")]C,
-            [InspectorName("橙")]B,
-            [InspectorName("红")]A,
-            [InspectorName("金")]S,
-        }
-        public static string GetColorTitle(Grades grade) => grade switch
-        {
-            Grades.F => "白",
-            Grades.E => "绿",
-            Grades.D => "篮",
-            Grades.C => "紫",
-            Grades.B => "橙",
-            Grades.A => "红",
-            Grades.S => "金",
+            ColorGrade.F => "白",
+            ColorGrade.E => "绿",
+            ColorGrade.D => "篮",
+            ColorGrade.C => "紫",
+            ColorGrade.B => "橙",
+            ColorGrade.A => "红",
+            ColorGrade.S => "金",
             _ => throw new ArgumentOutOfRangeException(nameof(grade), grade, null)
         };
 
@@ -44,9 +35,9 @@ namespace Server.Configs.Characters
         }
 
         [SerializeField] private GradeConfig[] _gradeConfigs;
-        private Dictionary<Grades, GradeConfig> _configsCache;
+        private Dictionary<ColorGrade, GradeConfig> _configsCache;
 
-        private GradeConfig GradeConfigs(Grades grade)
+        private GradeConfig GradeConfigs(ColorGrade grade)
         {
             _configsCache ??= _gradeConfigs.ToDictionary(g => g.Grade, g => g);
             return _configsCache[grade];
@@ -58,7 +49,7 @@ namespace Server.Configs.Characters
         public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int Stamina, int bagSlot)
             GenerateFromGrade(int grade)
         {
-            return GeneratePops(GradeConfigs((Grades)grade));
+            return GeneratePops(GradeConfigs((ColorGrade)grade));
 
             (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int Stamina, int bagSlot) GeneratePops(
                 GradeConfig config)
@@ -70,10 +61,10 @@ namespace Server.Configs.Characters
             }
         }
 
-        public int GetRestoreCost(Grades grade) => GradeConfigs(grade).RestoreCost;
+        public int GetRestoreCost(ColorGrade grade) => GradeConfigs(grade).RestoreCost;
         public (ConsumeResources, int)[] GetRandomConsumeResource(int grade)
         {
-            return GradeConfigs((Grades)grade).ConsumeResourcesSo.GetRandomElements()
+            return GradeConfigs((ColorGrade)grade).ConsumeResourcesSo.GetRandomElements()
                 .Select((value, index) => ((ConsumeResources)index, value)).ToArray();
         }
 
@@ -84,13 +75,13 @@ namespace Server.Configs.Characters
             {
                 var gradeText = Grade switch
                 {
-                    Grades.F => "白",
-                    Grades.E => "绿",
-                    Grades.D => "篮",
-                    Grades.C => "紫",
-                    Grades.B => "橙",
-                    Grades.A => "红",
-                    Grades.S => "金",
+                    ColorGrade.F => "白",
+                    ColorGrade.E => "绿",
+                    ColorGrade.D => "篮",
+                    ColorGrade.C => "紫",
+                    ColorGrade.B => "橙",
+                    ColorGrade.A => "红",
+                    ColorGrade.S => "金",
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 var combatText = CombatSkillGradeSo == null ? "武功缺失!" : string.Empty;
@@ -100,7 +91,7 @@ namespace Server.Configs.Characters
                 return true;
             }
             [ConditionalField(true, nameof(RenameElement))][SerializeField][ReadOnly] private string _name;
-            [SerializeField] public Grades Grade;
+            [SerializeField] public ColorGrade Grade;
             [SerializeField] private MinMaxVectorInt 体力;
             [SerializeField] private MinMaxVectorInt 背包格;
             [SerializeField] private ConsumeResourcesConfigSo 消耗资源策略;
@@ -153,7 +144,7 @@ namespace Server.Configs.Characters
                     );
             }
 
-            private GradeValue<int> InstanceValueGrade((int value, SkillGrades grade) t) => new(t.value, (int)t.grade);
+            private GradeValue<int> InstanceValueGrade((int value, DiziGrades grade) t) => new(t.value, (int)t.grade);
         }
 
         [Serializable]
@@ -166,7 +157,7 @@ namespace Server.Configs.Characters
 
             private PentagonGradeSo[] Ran => new []{ 随1, 随2, 随3, 随4 };
 
-            public (PentagonGradeSo.Elements element, int value, SkillGrades grade)[] Generate(IEnumerable<PentagonGradeSo.Elements> array) =>
+            public (PentagonGradeSo.Elements element, int value, DiziGrades grade)[] Generate(IEnumerable<PentagonGradeSo.Elements> array) =>
                 array.Select((e, i) =>
                 {
                     var r = Ran[i].GenerateProp(e);

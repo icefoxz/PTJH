@@ -58,7 +58,7 @@ namespace Server.Controllers
         public void RestoreDizi(string guid)
         {
             var dizi = Faction.GetDizi(guid);
-            var restoreCost = RecruitCfg.GradeCfg.GetRestoreCost((GradeConfigSo.Grades)dizi.Capable.Grade);
+            var restoreCost = RecruitCfg.GradeCfg.GetRestoreCost((ColorGrade)dizi.Capable.Grade);
             if (Faction.YuanBao < restoreCost)
             {
                 XDebug.Log($"门派元宝:{Faction.YuanBao}, 不足!需要支付{restoreCost}以召唤回{dizi}.");

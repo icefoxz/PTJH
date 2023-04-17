@@ -154,7 +154,7 @@ namespace Server.Configs.Fields
         protected override bool IsSupportSo => true;
         private WeaponFieldSo W => So as WeaponFieldSo;
         public EquipKinds EquipKind => W.EquipKind;
-        public SkillGrades Grade => W.Grade;
+        public DiziGrades Grade => W.Grade;
         public WeaponArmed Armed => W.Armed;
         public int Damage => W.Damage;
     }
@@ -172,7 +172,7 @@ namespace Server.Configs.Fields
         protected override bool IsSupportSo => true;
         private ArmorFieldSo A => So as ArmorFieldSo;
         public EquipKinds EquipKind => A.EquipKind;
-        public SkillGrades Grade => A.Grade;
+        public DiziGrades Grade => A.Grade;
         public int AddHp => A.AddHp;
     }
 

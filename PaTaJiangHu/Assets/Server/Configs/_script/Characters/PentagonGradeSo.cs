@@ -15,7 +15,7 @@ namespace Server.Configs.Characters
             Mp,
         }
 
-        [SerializeField] private SkillGrades _grade;
+        [SerializeField] private DiziGrades _grade;
         [SerializeField] private MinMaxVectorInt 血;
         [SerializeField] private MinMaxVectorInt 内;
         [SerializeField] private MinMaxVectorInt 力量;
@@ -24,8 +24,8 @@ namespace Server.Configs.Characters
         private MinMaxVectorInt Agility => 敏捷;
         private MinMaxVectorInt Hp => 血;
         private MinMaxVectorInt Mp => 内;
-        private SkillGrades Grade => _grade;
-        public (int, SkillGrades) GenerateProp(Elements element)
+        private DiziGrades Grade => _grade;
+        public (int, DiziGrades) GenerateProp(Elements element)
         {
             return element switch
             {

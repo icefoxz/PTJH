@@ -25,7 +25,7 @@ namespace Server.Configs.Battles
     public interface IEquipment : IGameItem
     {
         EquipKinds EquipKind { get; }
-        SkillGrades Grade { get; }
+        DiziGrades Grade { get; }
     }
 
     public interface IArmor : IEquipment

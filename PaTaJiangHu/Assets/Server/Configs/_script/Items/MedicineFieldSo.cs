@@ -49,7 +49,7 @@ namespace Server.Configs.Items
         private MedicineFieldSo So;
 
         [SerializeField] private MedicineKinds 类型;
-        [SerializeField] private SkillGrades 品级;
+        [SerializeField] private DiziGrades 品级;
         [SerializeField] private int 价钱;
         [SerializeField] private TreatmentMap[] 药效;
         [SerializeField][TextArea] private string 说明;

@@ -3,13 +3,15 @@ using System.Linq;
 using Core;
 using Data;
 using MyBox;
+using Server.Configs.Battles;
 using UnityEngine;
+using static Server.Configs.TestControllers.AdvMapController;
 
 namespace Server.Configs.Items
 {
     public interface IBook : IGameItem
     {
-        int GetUpgradeRate(int currentLevel);
+        ISkillLevelMap GetLevelMap(int nextLevel);
     }
 
     [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "物件/弟子/秘籍")]
@@ -24,49 +26,30 @@ namespace Server.Configs.Items
         [SerializeField] private string _name;
         [SerializeField] private int id;
         [SerializeField] private int 价钱;
-        [SerializeField] private LevelMap[] _levelMap;
+        [SerializeField] private SkillFieldSo 武学;
+        [SerializeField]private SkillLevelingSo 等级策略;
+        
         [SerializeField][TextArea] private string 说明;
-        [ConditionalField(true,nameof(CountMaxLevel))][ReadOnly] [SerializeField] private int 最高等级;
         public override int Id => id;
         public override string Name => _name;
-
         public override string About => 说明;
-
         public override int Price => 价钱;
-        public bool CountMaxLevel()
-        {
-            if (_levelMap == null) return false;
-            var needUpdate = _levelMap.Any(l => !l.HasName || l.Cache != l.Rate);
-            if(needUpdate)
-                for (var i = 0; i < _levelMap.Length; i++)
-                {
-                    var map = _levelMap[i];
-                    map.SetName($"升等[{i + 2}]={map.Rate}%");
-                }
-            最高等级 = _levelMap.Length + 1;
-            return true;
-        }
+        public SkillFieldSo SkillFieldSo => 武学;
+        private SkillLevelingSo SkillLeveling => 等级策略;
 
-        public override int GetUpgradeRate(int currentLevel)
+        /// <summary>
+        /// 获取升级概率, -1表示无法升级
+        /// </summary>
+        /// <param name="nextLevel"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public override ISkillLevelMap GetLevelMap(int nextLevel)
         {
-            if (currentLevel == 0)
-                throw new NotImplementedException("等级不可为0");
-            if (_levelMap.Length > currentLevel) return _levelMap[currentLevel].Rate;
-            return 0;
-        }
-
-        [Serializable]private class LevelMap
-        {
-            [HideInInspector][SerializeField]private string _name;
-            [SerializeField]private int 概率;
-            public int Cache { get; set; }
-            public int Rate => 概率;
-            public bool HasName => !string.IsNullOrWhiteSpace(_name);
-            public void SetName(string title)
-            {
-                _name = title;
-                Cache = Rate;
-            }
+            if (nextLevel <= 1)
+                throw new NotImplementedException("等级不可为<=1");
+            if (nextLevel > SkillFieldSo.MaxLevel())
+                throw new NotImplementedException("等级不可超过最大等级");
+            return SkillLeveling.GetLevelMap(nextLevel);
         }
     }
 
@@ -77,6 +60,6 @@ namespace Server.Configs.Items
         public abstract string About { get; }
         public ItemType Type => ItemType.Book;
         public abstract int Price { get; }
-        public abstract int GetUpgradeRate(int currentLevel);
+        public abstract ISkillLevelMap GetLevelMap(int nextLevel);
     }
 }

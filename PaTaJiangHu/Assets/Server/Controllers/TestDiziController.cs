@@ -76,7 +76,7 @@ namespace Server.Controllers
                 mp: mp, 
                 level: 1, 
                 stamina: sta,
-                gradeTitle: GradeConfigSo.GetColorTitle((GradeConfigSo.Grades)grade),
+                gradeTitle: GradeConfigSo.GetColorTitle((ColorGrade)grade),
                 capable: cap, condition: new Dictionary<int, int>());
         }
         private string GenerateName()

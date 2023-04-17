@@ -19,7 +19,7 @@ namespace Server.Configs.Items
         [ConditionalField(true,nameof(GetItem))][ReadOnly][SerializeField] private WeaponFieldSo So;
         [SerializeField] private WeaponArmed 类型;
         [SerializeField] private int 力量加成;
-        [SerializeField] private SkillGrades 品级;
+        [SerializeField] private DiziGrades 品级;
         [SerializeField] private int 价钱;
         [SerializeField][TextArea] private string 说明;
 
@@ -29,7 +29,7 @@ namespace Server.Configs.Items
         public int Price => 价钱;
         public WeaponArmed Armed => 类型;
         public int Damage => 力量加成;
-        public SkillGrades Grade => 品级;
+        public DiziGrades Grade => 品级;
         public EquipKinds EquipKind => EquipKinds.Weapon;
         public IWeapon Instance() => new WeaponField(Id, Name, Armed, Damage, Grade, Price, About);
         private class WeaponField : IWeapon
@@ -42,9 +42,9 @@ namespace Server.Configs.Items
             public WeaponArmed Armed { get; }
             public EquipKinds EquipKind => EquipKinds.Weapon;
             public int Damage { get; }
-            public SkillGrades Grade { get; }
+            public DiziGrades Grade { get; }
 
-            public WeaponField(int id, string name, WeaponArmed armed,int damage, SkillGrades grade, int price, string about)
+            public WeaponField(int id, string name, WeaponArmed armed,int damage, DiziGrades grade, int price, string about)
             {
                 Id = id;
                 Name = name;

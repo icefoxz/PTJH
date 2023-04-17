@@ -11,13 +11,13 @@ namespace Server.Configs.Items
     [Serializable] public class ArmorFieldSo : AutoUnderscoreNamingObject,IArmor
     {
         [FormerlySerializedAs("护甲")][SerializeField] private int 加血;
-        [SerializeField] private SkillGrades 品级;
+        [SerializeField] private DiziGrades 品级;
         [SerializeField] private int 价钱;
         [SerializeField][TextArea] private string 说明;
 
         public int AddHp => 加血;
         public EquipKinds EquipKind => EquipKinds.Armor;
-        public SkillGrades Grade => 品级;
+        public DiziGrades Grade => 品级;
         public ItemType Type => ItemType.Equipment;
         public int Price => 价钱;
         public string About => 说明;
@@ -31,10 +31,10 @@ namespace Server.Configs.Items
             public ItemType Type => ItemType.Equipment;
             public int AddHp { get; }
             public EquipKinds EquipKind => EquipKinds.Armor;
-            public SkillGrades Grade { get; }
+            public DiziGrades Grade { get; }
             public int Price { get; }
 
-            public ArmorField(int id, string name, int addHp, SkillGrades grade, int price, string about)
+            public ArmorField(int id, string name, int addHp, DiziGrades grade, int price, string about)
             {
                 Id = id;
                 Name = name;

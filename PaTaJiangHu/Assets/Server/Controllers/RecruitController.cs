@@ -35,7 +35,7 @@ namespace Server.Controllers
             Faction.AddYuanBao(-yuanBaoCost);
 
             var (name, gender) = NameGen.GenNameWithGender();
-            var allGrades = Enum.GetValues(typeof(GradeConfigSo.Grades)).Cast<int>().ToArray();
+            var allGrades = Enum.GetValues(typeof(ColorGrade)).Cast<int>().ToArray();
             var randomGrade = Sys.Random.Next(allGrades.Length);
             var (strength, agility, hp, mp, stamina, bag) = GradeConfig.GenerateFromGrade(randomGrade);
             var cr = GradeConfig.GetRandomConsumeResource(randomGrade).ToDictionary(r=>r.Item1,r=>r.Item2);
