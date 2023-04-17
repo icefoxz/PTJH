@@ -33,11 +33,11 @@ namespace Server.Configs.Battles
         [Serializable]
         private class LevelingField
         {
-            [SerializeField] private CombatField[] 叠加属性;
+            [SerializeField] private CombatField[] 属性;
             [SerializeField] private CombatDifferentialStrategy[] 差值配置;
 
             private CombatDifferentialStrategy[] DifferentialStrategies => 差值配置;
-            private CombatField[] Fields => 叠加属性;
+            private CombatField[] Fields => 属性;
             public ICombatSet GetCombat()
             {
                 var hardRate = 0f;
@@ -107,6 +107,11 @@ namespace Server.Configs.Battles
 
             [Serializable] private class CombatDifferentialStrategy
             {
+                public enum Calculate
+                {
+                    [InspectorName("除")]Divide,
+                    [InspectorName("乘")]Multiply,
+                }
                 public enum Compares
                 {
                     [InspectorName("力")] Strength,
@@ -143,7 +148,17 @@ namespace Server.Configs.Battles
                         Compares.MpMax => "内上限",
                         _ => throw new ArgumentOutOfRangeException()
                     };
-                    _name = $"[{text}]-{compare}: 系数({Factor})";
+                    var cal = Cal switch
+                    {
+                        Calculate.Multiply => "乘",
+                        Calculate.Divide => "除",
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                    var offsetText = Offset == 0 ? string.Empty
+                        : Offset > 0 ? $"+{Offset}"
+                        : $"{Offset}";
+
+                    _name = $"[{text}]{compare}差{offsetText}: ({cal})系数({Factor})";
                     return true;
                 }
 
@@ -153,18 +168,39 @@ namespace Server.Configs.Battles
 
                 [SerializeField] private Settings _set;
                 [SerializeField] private Compares 差值;
+                [SerializeField] private float 校正;
+                [SerializeField] private Calculate 计算;
                 [SerializeField] private float 系数;
 
                 public Settings Set => _set;
                 public Compares Compare => 差值;
+                public Calculate Cal => 计算;
                 public float Factor => 系数;
+                public float Offset => 校正;
 
                 #region Calculate
-                private float DivideFactor(CombatArgs arg)
+                private float Calculation(CombatArgs arg)
                 {
-                    var caster = GetCombatValue(arg.Caster);
-                    var target = GetCombatValue(arg.Target);
-                    return (caster - target) / Factor;
+                    return Cal switch
+                    {
+                        Calculate.Divide => DivideFactor(arg),
+                        Calculate.Multiply => MultiplyFactor(arg),
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+
+                    float DivideFactor(CombatArgs a)
+                    {
+                        var caster = GetCombatValue(a.Caster);
+                        var target = GetCombatValue(a.Target);
+                        return (caster - target + Offset) / Factor;
+                    }
+
+                    float MultiplyFactor(CombatArgs a)
+                    {
+                        var caster = GetCombatValue(a.Caster);
+                        var target = GetCombatValue(a.Target);
+                        return (caster - target + Offset) * Factor;
+                    }
                 }
 
                 private float GetCombatValue(DiziCombatUnit dizi) =>
@@ -180,13 +216,10 @@ namespace Server.Configs.Battles
                     };
                 #endregion
 
-                public float GetHardRate(CombatArgs arg) => DivideFactor(arg);
-
-                public float GetHardDamageRatio(CombatArgs arg) => DivideFactor(arg);
-
-                public float GetCriticalRate(CombatArgs arg) => DivideFactor(arg);
-
-                public float GetDodgeRate(CombatArgs arg) => DivideFactor(arg);
+                public float GetHardRate(CombatArgs arg) => Calculation(arg);
+                public float GetHardDamageRatio(CombatArgs arg) => Calculation(arg);
+                public float GetCriticalRate(CombatArgs arg) => Calculation(arg);
+                public float GetDodgeRate(CombatArgs arg) => Calculation(arg);
             }
         }
 
