@@ -24,7 +24,7 @@ namespace HotFix_Project.Views.Bases
 
         protected UiBase(IView v, bool display)
         {
-            View = v;
+            View = v ?? throw new ArgumentNullException($"{GetType().Name}: view = null!");
             gameObject = v.GameObject;
             Display(display);
         }
