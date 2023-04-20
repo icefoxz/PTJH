@@ -1,4 +1,6 @@
-﻿namespace _GameClient.Models
+﻿using Models;
+
+namespace _GameClient.Models
 {
     /// <summary>
     /// 弟子动态属性

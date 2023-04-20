@@ -9,12 +9,6 @@ namespace Server.Configs.Adventures
     [CreateAssetMenu(fileName = "id_闲置映像表", menuName = "闲置/闲置地图")]
     internal class IdleMapSo : AutoHashNamingObject
     {
-        protected bool GetItem()
-        {
-            if (So == null) So = this;
-            return true;
-        }
-        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private IdleMapSo So;
         [SerializeField] private LostStrategySo 失踪策略;
         [SerializeField] private MappingField 映像配置;
 

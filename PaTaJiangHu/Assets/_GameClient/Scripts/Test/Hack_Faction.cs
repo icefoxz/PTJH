@@ -6,6 +6,7 @@ using Server.Configs.Items;
 using UnityEditor;
 using UnityEngine;
 using Utls;
+using Dizi = Models.Dizi;
 
 namespace Test
 {

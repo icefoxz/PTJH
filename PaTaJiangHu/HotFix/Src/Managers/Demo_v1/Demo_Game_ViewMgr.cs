@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
+using Models;
 using Systems.Coroutines;
 using UnityEngine;
 using UnityEngine.UI;

@@ -5,6 +5,7 @@ using _GameClient.Models;
 using NameM;
 using Server.Configs.Adventures;
 using Utls;
+using Dizi = Models.Dizi;
 
 namespace Server.Controllers
 {

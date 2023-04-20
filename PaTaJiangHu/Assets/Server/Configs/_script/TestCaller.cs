@@ -1,7 +1,7 @@
 using System;
 using _GameClient.Models;
 using DiziM;
-using Server.Configs.Adventures;
+using Models;
 using Server.Configs.Battles;
 using Server.Configs.Skills;
 using Server.Configs.TestControllers;

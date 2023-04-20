@@ -520,7 +520,8 @@ public class DiziTestManager
             public void SetSelected(bool selected) => Img_selected.gameObject.SetActive(selected);
         }
     }
-    internal class Dizi
+
+    private class Dizi
     {
         public string Name { get; private set; }
         public int Strength { get; private set; }

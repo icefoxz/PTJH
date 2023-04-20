@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Models;
 using Server.Configs.Adventures;
 using Server.Controllers;
 using Utls;

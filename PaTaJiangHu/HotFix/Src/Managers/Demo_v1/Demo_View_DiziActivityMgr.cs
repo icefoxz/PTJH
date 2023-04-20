@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
+using Models;
 using Server.Configs.Adventures;
 using Server.Controllers;
 using Systems.Messaging;

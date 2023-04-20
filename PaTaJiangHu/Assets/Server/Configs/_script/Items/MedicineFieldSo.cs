@@ -39,15 +39,6 @@ namespace Server.Configs.Items
     [CreateAssetMenu(fileName = "id_medicine", menuName = "物件/弟子/药品")]
     internal class MedicineFieldSo : AutoUnderscoreNamingObject, IMedicine
     {
-        private bool GetItem()
-        {
-            if (So == null) So = this;
-            return true;
-        }
-
-        [ConditionalField(true, nameof(GetItem))] [ReadOnly] [SerializeField]
-        private MedicineFieldSo So;
-
         [SerializeField] private MedicineKinds 类型;
         [SerializeField] private DiziGrades 品级;
         [SerializeField] private int 价钱;

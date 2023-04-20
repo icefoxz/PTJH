@@ -3,6 +3,7 @@ using _GameClient.Models;
 using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
 using Utls;
+using Dizi = Models.Dizi;
 
 namespace Server.Controllers
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using _GameClient.Models;
 using HotFix_Project.Views.Bases;
+using Models;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine.UI;

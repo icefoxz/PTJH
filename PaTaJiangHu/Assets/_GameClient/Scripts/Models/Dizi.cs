@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using _GameClient.Models.States;
+using _GameClient.Models;
 using Core;
 using DiziM;
 using Server.Configs.Adventures;
-using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Server.Controllers;
 using UnityEngine;
 using UnityEngine.Analytics;
-using Utls;
 
-namespace _GameClient.Models
+namespace Models
 {
     /// <summary>
     /// 弟子模型
@@ -63,7 +60,6 @@ namespace _GameClient.Models
         private ConValue _inner;
         private AdvItemModel[] _advItems = new AdvItemModel[3];
 
-        //public Skills Skill { get; set; }
         public Capable Capable { get; private set; }
 
         public AdvItemModel[] AdvItems => _advItems;
@@ -73,7 +69,6 @@ namespace _GameClient.Models
         public IConditionValue Emotion => _emotion;
         public IConditionValue Injury => _injury;
         public IConditionValue Inner => _inner;
-
 
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
@@ -184,32 +179,6 @@ namespace _GameClient.Models
             Log($"经验设置 = {_exp}");
         }
 
-        //弟子技能栏
-        //public class Skills
-        //{
-        //    public IDodgeSkill[] DodgeSkills { get; private set; }
-        //    public ICombatSkill[] CombatSkills { get; private set; }
-        //    public IForceSkill[] ForceSkills { get; private set; }
-
-        //    public Skills()
-        //    {
-                
-        //    }
-        //    public Skills(ICombatSkill[] combatSlot, IForceSkill[] forceSkill, IDodgeSkill[] dodgeSlot)
-        //    {
-        //        DodgeSkills = dodgeSlot;
-        //        CombatSkills = combatSlot;
-        //        ForceSkills = forceSkill;
-        //    }
-
-        //    public Skills(int combatSlot, int forceSkill, int dodgeSlot)
-        //    {
-        //        DodgeSkills = new IDodgeSkill[dodgeSlot];
-        //        CombatSkills = new ICombatSkill[combatSlot];
-        //        ForceSkills = new IForceSkill[forceSkill];
-        //    }
-        //}
-
         internal void ConAdd(IAdjustment.Types type, int value)
         {
             var con = type switch
@@ -244,155 +213,5 @@ namespace _GameClient.Models
         }
 
         public override string ToString() => Name;
-    }
-
-    /// <summary>
-    /// 历练道具模型
-    /// </summary>
-    public class AdvItemModel : ModelBase
-    {
-        public enum Kinds
-        {
-            Medicine,
-            StoryProp,
-            Horse
-        }
-        protected override string LogPrefix => "历练道具";
-        public IGameItem Item { get; private set; }
-        public Kinds Kind { get; private set; }
-
-        internal AdvItemModel(IGameItem item)
-        {
-            Kind = item.Type switch
-            {
-                ItemType.Medicine => Kinds.Medicine,
-                ItemType.StoryProps => Kinds.StoryProp,
-                ItemType.AdvProps => Kinds.Horse,
-                _ => throw new ArgumentOutOfRangeException($"物品{item.Type}不支持! ")
-            };
-            Item = item;
-        }
-    }
-
-    //弟子模型,处理战斗相关
-    public partial class Dizi
-    {
-        public IWeapon Weapon { get; private set; }
-        public IArmor Armor { get; private set; }
-        internal void SetWeapon(IWeapon weapon)
-        {
-            Log(weapon == null ? $"卸下{Weapon.Name}" : $"装备{weapon.Name}!");
-            Weapon = weapon;
-        }
-        internal void SetArmor(IArmor armor)
-        {
-            Log(armor == null ? $"卸下{Armor.Name}" : $"装备{armor.Name}!");
-            Armor = armor;
-        }
-        internal ICombatSet GetBattle() => throw new NotImplementedException("未实现弟子战斗转化!");
-    }
-
-    //弟子模型,处理状态
-    public partial class Dizi
-    {
-        /// <summary>
-        /// 状态信息, 提供当前状态的描述,与时长
-        /// </summary>
-        public DiziStateHandler State { get; }
-        
-        //下列事件将在构造函数中注册
-        #region StateHandler
-        private void OnRewardAction() => SendEvent(EventString.Dizi_Activity_Reward, Guid);
-        private void OnAdjustAction(string adjust) => SendEvent(EventString.Dizi_Activity_Adjust, Guid, adjust);
-        private void OnMessageAction(string message) => SendEvent(EventString.Dizi_Activity_Message, Guid, message);
-        #endregion
-    }
-
-    //弟子模型,处理历练事件
-    public partial class Dizi
-    {
-        public IEnumerable<IStacking<IGameItem>> Items => State.Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
-        //public AutoAdventure Adventure => State.Adventure;
-        internal void AdventureStart(IAutoAdvMap map, long startTime, int messageSecs,bool isProduction)
-        {
-            State.StartAdventure(map, startTime, messageSecs, isProduction);
-            Log("开始历练.");
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Adv_Start, Guid);
-        }
-
-        internal void AdventureStoryLogging(DiziActivityLog story)
-        {
-            if (State.Adventure.State == AutoAdventure.States.End)
-                throw new NotImplementedException();
-            State.RegAutoAdvStory(story);
-        }
-        internal void AdventureRecall(long now, int lastMile, long reachingTime)
-        {
-            State.RecallFromAdventure(now, lastMile, reachingTime);
-            Log($"停止历练, 里数: {lastMile}, 将{TimeSpan.FromMilliseconds(reachingTime - now).TotalSeconds}秒后到达宗门!");
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Adv_Recall, Guid);
-        }
-        internal void AdventureFinalize()
-        {
-            State.FinalizeAdventure();
-            Log("历练结束!");
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Adv_Finalize, Guid);
-        }
-
-        public void AdventureTerminate(long terminateTime,int lastMile)
-        {
-            Log("历练中断!");
-            State.Terminate(terminateTime, lastMile);
-            SendEvent(EventString.Dizi_Adv_Terminate, Guid);
-        }
-    }
-
-    //弟子模型, 处理闲置事件
-    public partial class Dizi
-    {
-        //闲置状态
-        //public IdleState Idle => State.Idle;
-
-        internal void StartIdle(long startTime)
-        {
-            State.StartIdle(startTime);
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Idle_Start, Guid);
-        }
-
-        internal void StopIdle()
-        {
-            State.StopIdleState();
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Idle_Stop, Guid);
-        }
-
-        internal void RegIdleStory(DiziActivityLog log)
-        {
-            State.RegIdleStory(log);
-        }
-    }
-
-    //处理失踪事件
-    public partial class Dizi
-    {
-        //public LostState LostState => State.LostState;
-
-        internal void StartLostState(long startTime, DiziActivityLog lastActivityLog)
-        {
-            State.StartLost(this, startTime, lastActivityLog);
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Lost_Start, Guid);
-        }
-
-        internal void RestoreFromLost()
-        {
-            State.StartIdle(SysTime.UnixNow);
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Lost_End, Guid);
-        }
     }
 }

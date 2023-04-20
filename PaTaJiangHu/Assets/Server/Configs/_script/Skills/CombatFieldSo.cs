@@ -6,6 +6,10 @@ using UnityEngine;
 
 namespace Server.Configs.Skills
 {
+    public interface ICombatSkill : ISkill
+    {
+        WeaponArmed Armed { get; }
+    }
     public interface ISkill
     {
         SkillType SkillType { get; }
@@ -24,7 +28,7 @@ namespace Server.Configs.Skills
     }
      
     [CreateAssetMenu(fileName = "combatSo", menuName = "战斗/武学/武功")]
-    internal class CombatFieldSo : SkillFieldSo //,ILeveling<ICombatSkill>
+    internal class CombatFieldSo : SkillFieldSo ,ICombatSkill
     {
         [SerializeField] private WeaponArmed 类型;
         public WeaponArmed Armed => 类型;
@@ -33,9 +37,6 @@ namespace Server.Configs.Skills
 
     internal abstract class SkillFieldSo : AutoDashNamingObject,ISkill
     {
-        #region ReferenceSo
-        [ConditionalField(true, nameof(ReferenceSo))][ReadOnly][SerializeField] private ScriptableObject _so;
-        #endregion
         [SerializeField] private ColorGrade 品级;
         [SerializeField] private Sprite 图标;
         [SerializeField] private SkillLevelStrategySo 等级策略;
@@ -45,13 +46,6 @@ namespace Server.Configs.Skills
         public Sprite Icon => 图标;
         public string About => 描述;
         private SkillLevelStrategySo LevelStrategy => 等级策略;
-
-        protected bool ReferenceSo()
-        {
-            _so = this;
-            return true;
-        }
-
         public ICombatSet GetCombatSet(int level) => LevelStrategy.GetCombatSet(level - 1);
         public int MaxLevel() => LevelStrategy.MaxLevel();
     }

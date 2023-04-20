@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
+using Dizi = Models.Dizi;
 
 public interface IDiziCombatUnit : ICombatUnit
 {
@@ -45,7 +46,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         MaxMp = npc.Mp;
         Agility = npc.Agility;
         Strength = npc.Strength;
-        //Battle = npc.GetBattle();
+        Combat = npc.GetCombatSet();
     }
 
     internal DiziCombatUnit(IDiziCombatUnit unit) : base(unit)

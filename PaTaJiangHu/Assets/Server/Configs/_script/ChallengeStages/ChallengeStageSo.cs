@@ -6,6 +6,7 @@ using Server.Configs.Battles;
 using Server.Configs.Fields;
 using Server.Configs.Items;
 using UnityEngine;
+using Dizi = Models.Dizi;
 
 namespace Server.Configs.ChallengeStages
 {
@@ -28,12 +29,6 @@ namespace Server.Configs.ChallengeStages
     [CreateAssetMenu(fileName = "id_奖励件名", menuName = "挑战关卡/关卡")]
     internal class ChallengeStageSo : AutoAtNamingObject
     {
-        private bool GetItem()
-        {
-            if (So == null) So = this;
-            return true;
-        }
-        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private ChallengeStageSo So;
         [SerializeField] private int 回合限制 = 20;
         [SerializeField] private ChallengeField[] 挑战;
         private int RoundLimit => 回合限制 = 20;

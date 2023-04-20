@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using _GameClient.Models;
+using Models;
 using NameM;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
 using Utls;
+using Dizi = Models.Dizi;
 
 namespace Server.Controllers
 {
@@ -51,6 +53,10 @@ namespace Server.Controllers
             var guid = Guid.NewGuid().ToString();
             var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,
                 capable: capable);
+            dizi.SetSkill(DiziSkill.Instance(
+                (GradeConfig.GenerateCombatSkill(randomGrade), 1),
+                (GradeConfig.GenerateForceSkill(randomGrade), 1),
+                (GradeConfig.GenerateDodgeSkill(randomGrade), 1)));
             TempDiziList.Add(dizi);
             var list = new List<int> { diziIndex };
             Game.MessagingManager.Send(EventString.Recruit_DiziGenerated, dizi.Name);

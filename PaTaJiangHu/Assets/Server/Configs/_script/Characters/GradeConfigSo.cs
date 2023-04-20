@@ -15,7 +15,6 @@ namespace Server.Configs.Characters
     [CreateAssetMenu(fileName = "GradeConfig", menuName = "资质/弟子生成配置")]
     internal class GradeConfigSo : ScriptableObject
     {
-        
         public static string GetColorTitle(ColorGrade grade) => grade switch
         {
             ColorGrade.F => "白",
@@ -42,9 +41,9 @@ namespace Server.Configs.Characters
             _configsCache ??= _gradeConfigs.ToDictionary(g => g.Grade, g => g);
             return _configsCache[grade];
         }
-        //public CombatFieldSo GenerateCombatSkill(int grade) => GradeConfigs((Grades)grade).GenerateCombatSkill();
-        //public ForceFieldSo GenerateForceSkill(int grade) => GradeConfigs((Grades)grade).GenerateForceSkill();
-        //public DodgeFieldSo GenerateDodgeSkill(int grade) => GradeConfigs((Grades)grade).GenerateDodgeSkill();
+        public ICombatSkill GenerateCombatSkill(int grade) => GradeConfigs((ColorGrade)grade).GenerateCombatSkill();
+        public ISkill GenerateForceSkill(int grade) => GradeConfigs((ColorGrade)grade).GenerateForceSkill();
+        public ISkill GenerateDodgeSkill(int grade) => GradeConfigs((ColorGrade)grade).GenerateDodgeSkill();
 
         public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int Stamina, int bagSlot)
             GenerateFromGrade(int grade)
@@ -128,9 +127,9 @@ namespace Server.Configs.Characters
                 PentagonGradeSo.Elements.Mp,
             };
 
-            //public CombatFieldSo GenerateCombatSkill() => CombatSkillGradeSo.PickSkill();
-            //public ForceFieldSo GenerateForceSkill() => ForceSkillGradeSo.PickSkill();
-            //public DodgeFieldSo GenerateDodgeSkill() => DodgeSkillGradeSo.PickSkill();
+            public CombatFieldSo GenerateCombatSkill() => CombatSkillGradeSo.PickSkill();
+            public ForceFieldSo GenerateForceSkill() => ForceSkillGradeSo.PickSkill();
+            public DodgeFieldSo GenerateDodgeSkill() => DodgeSkillGradeSo.PickSkill();
             
             public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp) GeneratePentagon()
             {

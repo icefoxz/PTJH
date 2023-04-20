@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5daf8a5f7abccb94983691b3d91985ac, type: 3}
   m_Name: "-1-\u6218\u6597NPC"
   m_EditorClassIdentifier: 
+  So: {fileID: 11400000}
   _name: "\u6218\u6597NPC"
   id: -1
   "\u6027\u522B": 0
@@ -19,5 +20,30 @@ MonoBehaviour:
   "\u654F": 20
   _hp: 100
   _mp: 100
-  "\u6B66\u5668": {fileID: 0}
-  "\u9632\u5177": {fileID: 0}
+  "\u6B66\u5668": {fileID: 11400000, guid: 58bd16bfa7fabf949ae54a9995507f23, type: 2}
+  "\u9632\u5177": {fileID: 11400000, guid: c7ba0af2fc019ce4ebe55bc093bb1aba, type: 2}
+  "\u6280\u80FD":
+  - _name: "\u516B\u4ED9\u68CD\u6CD5\u30103\u3011"
+    "\u7B49\u7EA7": 3
+    "\u7C7B\u578B": 0
+    "\u6B66\u529F": {fileID: 11400000, guid: 524518a7bd74edd468dcda69eaf5e934, type: 2}
+    "\u5185\u529F": {fileID: 11400000, guid: 7668ab41705e65b49a5d76d02e2a29cd, type: 2}
+    "\u8F7B\u529F": {fileID: 11400000, guid: d67a84ac1dadb7a47b9b3ab81eeab851, type: 2}
+  - _name: "\u9189\u516B\u4ED9\u30104\u3011"
+    "\u7B49\u7EA7": 4
+    "\u7C7B\u578B": 0
+    "\u6B66\u529F": {fileID: 11400000, guid: 8402c15f4e08a8b4489751248e62f2de, type: 2}
+    "\u5185\u529F": {fileID: 0}
+    "\u8F7B\u529F": {fileID: 0}
+  - _name: "\u6CF0\u5C71\u5185\u529F\u30102\u3011"
+    "\u7B49\u7EA7": 2
+    "\u7C7B\u578B": 1
+    "\u6B66\u529F": {fileID: 11400000, guid: 8402c15f4e08a8b4489751248e62f2de, type: 2}
+    "\u5185\u529F": {fileID: 11400000, guid: 7668ab41705e65b49a5d76d02e2a29cd, type: 2}
+    "\u8F7B\u529F": {fileID: 0}
+  - _name: "\u7D2B\u70DF\u884C\u30101\u3011"
+    "\u7B49\u7EA7": 1
+    "\u7C7B\u578B": 2
+    "\u6B66\u529F": {fileID: 11400000, guid: 8402c15f4e08a8b4489751248e62f2de, type: 2}
+    "\u5185\u529F": {fileID: 11400000, guid: 7668ab41705e65b49a5d76d02e2a29cd, type: 2}
+    "\u8F7B\u529F": {fileID: 11400000, guid: d67a84ac1dadb7a47b9b3ab81eeab851, type: 2}

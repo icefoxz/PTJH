@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using _GameClient.Models.States;
 using Utls;
+using Dizi = Models.Dizi;
 
 namespace Server.Controllers
 {

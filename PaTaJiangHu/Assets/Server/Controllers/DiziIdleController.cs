@@ -1,7 +1,6 @@
 ﻿using System;
 using _GameClient.Models;
 using Server.Configs.BattleSimulation;
-using Server.Configs.Characters;
 using Utls;
 
 namespace Server.Controllers

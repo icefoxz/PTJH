@@ -17,16 +17,6 @@ namespace Server.Configs.Skills
     [CreateAssetMenu(fileName = "levelingStrSo", menuName = "战斗/武学/领悟策略")]
     internal class SkillLevelingSo : AutoBacktickNamingObject
     {
-        #region ReferenceSo
-        private bool ReferenceSo()
-        {
-            _so = this;
-            return true;
-        }
-
-        [ConditionalField(true, nameof(ReferenceSo))][ReadOnly][SerializeField] private ScriptableObject _so;
-        #endregion
-
         [SerializeField] private LevelMap[] _levelMap;
         [Serializable] private class LevelMap : ISkillLevelMap
         {

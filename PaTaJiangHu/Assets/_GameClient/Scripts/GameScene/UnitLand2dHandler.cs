@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using _GameClient.Models;
 using UnityEngine;
+using Dizi = Models.Dizi;
 
 /// <summary>
 /// 演示场景(非战斗演示)

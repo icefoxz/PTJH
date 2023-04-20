@@ -58,6 +58,9 @@ namespace HotFix_Project.Views.Bases
             Display(false);
             Object.Destroy(gameObject);
         }
+        public Coroutine StartCoroutine(IEnumerator enumerator) => View.StartCo(enumerator);
+        public void StopCoroutine(IEnumerator coroutine) => View.StopCo(coroutine);
+        public void StopAllCoroutines() => View.StopAllCo();
     }
 
     internal class ListViewUi<T> : UiBase

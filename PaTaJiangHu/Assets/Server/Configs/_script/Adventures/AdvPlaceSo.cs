@@ -22,13 +22,6 @@ namespace Server.Configs.Adventures
     [CreateAssetMenu(fileName = "id_地点名",menuName = "历练/地点")]
     internal class AdvPlaceSo : AutoAtNamingObject, IAdvPlace
     {
-        private bool GetItem()
-        {
-            if (So == null) So = this;
-            return true;
-        }
-        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdvPlaceSo So;
-
         [SerializeField] private AdvStoryWeight[] 故事;
 
         private AdvStoryWeight[] AdvStories

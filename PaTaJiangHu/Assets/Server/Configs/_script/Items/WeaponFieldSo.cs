@@ -10,13 +10,6 @@ namespace Server.Configs.Items
     [CreateAssetMenu(fileName = "weaponSo", menuName = "物件/弟子/武器")]
     [Serializable] internal class WeaponFieldSo : AutoUnderscoreNamingObject,IWeapon
     {
-        private bool GetItem()
-        {
-            if (So == null) So = this;
-            return true;
-        }
-
-        [ConditionalField(true,nameof(GetItem))][ReadOnly][SerializeField] private WeaponFieldSo So;
         [SerializeField] private WeaponArmed 类型;
         [SerializeField] private int 力量加成;
         [SerializeField] private DiziGrades 品级;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using _GameClient.Models.States;
+using Models;
 using Server.Configs.Adventures;
 using Server.Controllers;
 using UnityEngine.Events;

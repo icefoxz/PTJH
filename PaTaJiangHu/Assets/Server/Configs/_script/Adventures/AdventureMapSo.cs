@@ -23,13 +23,6 @@ namespace Server.Configs.Adventures
     [CreateAssetMenu(fileName = "id_历练地图名", menuName = "历练/历练地图")]
     internal class AdventureMapSo : AutoHashNamingObject, IAutoAdvMap
     {
-        private bool GetItem()
-        {
-            if (So == null) So = this;
-            return true;
-        }
-        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdventureMapSo So;
-
         [SerializeField] private int 执行令消耗;
         [SerializeField] private LostStrategySo 失踪策略;
         [SerializeField] private MajorPlaceConfig 固定里数触发配置;

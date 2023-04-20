@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using _GameClient.Models;
 using UnityEngine;
+using Dizi = Models.Dizi;
 
 /// <summary>
 /// 游戏场景实现接口

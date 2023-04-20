@@ -16,6 +16,8 @@ using Utls;
 using Views;
 using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
 using Application = UnityEngine.Application;
+using Dizi = Models.Dizi;
+
 namespace Systems
 {
     /// <summary>

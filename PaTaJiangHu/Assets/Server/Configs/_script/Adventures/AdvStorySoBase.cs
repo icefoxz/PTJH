@@ -87,13 +87,6 @@ namespace Server.Configs.Adventures
 
     internal abstract class AdvStorySoBase : AutoDashNamingObject
     {
-        protected bool GetItem()
-        {
-            if (So == null) So = this;
-            return true;
-        }
-        [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdvStorySoBase So;
-
         public IAdvEvent[] AllEvents => _allEvents;
         [Header("下列事件自动生成，别自行添加")][ReadOnly][SerializeField] private AdvEventSoBase[] _allEvents;
         private const int RecursiveLimit = 9999;

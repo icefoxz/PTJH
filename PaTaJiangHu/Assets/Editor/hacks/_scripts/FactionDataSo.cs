@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using _GameClient.Models;
 using Server.Configs.Battles;
 using UnityEngine;
+using Dizi = Models.Dizi;
 
 // 门派数据So
 internal class FactionDataSo : ScriptableObject, IFaction

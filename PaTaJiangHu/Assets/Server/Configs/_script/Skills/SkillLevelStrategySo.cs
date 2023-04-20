@@ -10,16 +10,6 @@ namespace Server.Configs.Skills
     [CreateAssetMenu(fileName = "levelStrSo", menuName = "战斗/武学/等级策略")]
     public class SkillLevelStrategySo : AutoAtNamingObject
     {
-        #region ReferenceSo
-        private bool ReferenceSo()
-        {
-            _so = this;
-            return true;
-        }
-
-        [ConditionalField(true, nameof(ReferenceSo))] [ReadOnly] [SerializeField] private ScriptableObject _so;
-        #endregion
-
         [SerializeField]private LevelingField[] 等级;
         private LevelingField[] LevelingFields => 等级;
 
