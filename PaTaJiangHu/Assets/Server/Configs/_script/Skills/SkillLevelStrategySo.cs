@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MyBox;
 using Server.Configs.Battles;
 using Server.Configs.Items;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Server.Configs.Skills
 {
@@ -23,16 +25,34 @@ namespace Server.Configs.Skills
         public int MaxLevel() => LevelingFields.Length;
         [Serializable] private class LevelingField
         {
-            [SerializeField] private CombatField[] 属性;
-            [SerializeField] private CombatDifferentialStrategy[] 差值配置;
+            private bool SetName()
+            {
+                var propText = string.Empty;
+                if (Fields?.Length > 0)
+                    propText = string.Join(',', Fields.Select(f => f.Name));
+                var diffText = string.Empty;
+                diffText = DifferentialStrategies.Any(s => s == null) ? "文件异常!请检查空文件!" : string.Join(',', DifferentialStrategies.Select(f => f.name));
+                _name = $"等级【{Level}】{propText}|{diffText}";
+                return true;
+            }
 
-            private CombatDifferentialStrategy[] DifferentialStrategies => 差值配置;
+            private string SetSpecial() => "特殊招式未支持";
+
+            [ConditionalField(true, nameof(SetName))][SerializeField][ReadOnly] private string _name;
+            [SerializeField] [Min(1)] private int 等级 = 1;
+            [SerializeField] private CombatField[] 属性;
+            [SerializeField] private CombatDifferentialStrategySo[] 差值配置;
+
+            private CombatDifferentialStrategySo[] DifferentialStrategies => 差值配置;
             private CombatField[] Fields => 属性;
+            private int Level => 等级;
+
             public ICombatSet GetCombat()
             {
                 var hardRate = 0f;
                 var hardDamageRatio = 1f;
                 var criticalRate = 0f;
+                var criticalMultiplier = 0f;
                 var mpDamage = 0f;
                 var mpCounteract = 0f;
                 var dodgeRate = 0f;
@@ -41,6 +61,7 @@ namespace Server.Configs.Skills
                     hardRate += field.HardRate;
                     hardDamageRatio += field.HardDamageRateAddOn * 0.01f;
                     criticalRate += field.CriticalRate;
+                    criticalMultiplier += field.CriticalMultiplier;
                     mpDamage += field.MpDamage;
                     mpCounteract += field.MpCounteract;
                     dodgeRate += field.DodgeRate;
@@ -49,6 +70,7 @@ namespace Server.Configs.Skills
                 var hardRateList = new List<Func<CombatArgs, float>>();
                 var hardDamageRatioList = new List<Func<CombatArgs, float>>();
                 var criticalRateList = new List<Func<CombatArgs, float>>();
+                var criticalMultiplierList = new List<Func<CombatArgs, float>>();
                 var mpDamageList = new List<Func<CombatArgs, float>>();
                 var mpCounteractList = new List<Func<CombatArgs, float>>();
                 var dodgeRateList = new List<Func<CombatArgs, float>>();
@@ -59,6 +81,7 @@ namespace Server.Configs.Skills
                     hardRateList.Add(_ => field.HardRate);
                     hardDamageRatioList.Add(_ => field.HardDamageRateAddOn);
                     criticalRateList.Add(_ => field.CriticalRate);
+                    criticalMultiplierList.Add(_ => field.CriticalMultiplier);
                     dodgeRateList.Add(_ => field.DodgeRate);
                     mpDamageList.Add(_ => field.MpDamage);
                     mpCounteractList.Add(_ => field.MpCounteract);
@@ -69,16 +92,16 @@ namespace Server.Configs.Skills
                 {
                     switch (strategy.Set)
                     {
-                        case CombatDifferentialStrategy.Settings.HardRate:
+                        case CombatDifferentialStrategySo.Settings.HardRate:
                             hardRateList.Add(strategy.GetHardRate);
                             break;
-                        case CombatDifferentialStrategy.Settings.HardDamageRate:
+                        case CombatDifferentialStrategySo.Settings.HardDamageRate:
                             hardDamageRatioList.Add(strategy.GetHardDamageRatio);
                             break;
-                        case CombatDifferentialStrategy.Settings.CriticalRate:
+                        case CombatDifferentialStrategySo.Settings.CriticalRate:
                             criticalRateList.Add(strategy.GetCriticalRate);
                             break;
-                        case CombatDifferentialStrategy.Settings.DogeRate:
+                        case CombatDifferentialStrategySo.Settings.DogeRate:
                             dodgeRateList.Add(strategy.GetDodgeRate);
                             break;
                         default:
@@ -87,129 +110,13 @@ namespace Server.Configs.Skills
                 }
 
                 return new CombatSet(
-                    hardRateList,
-                    hardDamageRatioList,
-                    criticalRateList,
-                    mpDamageList,
-                    mpCounteractList,
-                    dodgeRateList);
-            }
-
-            [Serializable] private class CombatDifferentialStrategy
-            {
-                public enum Calculate
-                {
-                    [InspectorName("除")]Divide,
-                    [InspectorName("乘")]Multiply,
-                }
-                public enum Compares
-                {
-                    [InspectorName("力")] Strength,
-                    [InspectorName("敏")] Agility,
-                    [InspectorName("血")] Hp,
-                    [InspectorName("血上限")] HpMax,
-                    [InspectorName("内")] Mp,
-                    [InspectorName("内上限")] MpMax,
-                }
-                public enum Settings
-                {
-                    [InspectorName("重击触发")]HardRate,
-                    [InspectorName("重击倍率")]HardDamageRate,
-                    [InspectorName("会心触发")]CriticalRate,
-                    [InspectorName("闪避触发")]DogeRate
-                }
-                private bool SetLevelName()
-                {
-                    var text = _set switch
-                    {
-                        Settings.HardRate => "重击触发",
-                        Settings.HardDamageRate => "重击倍率",
-                        Settings.CriticalRate => "会心触发",
-                        Settings.DogeRate => "闪避触发",
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                    var compare = Compare switch
-                    {
-                        Compares.Strength => "力",
-                        Compares.Agility => "敏",
-                        Compares.Hp => "血",
-                        Compares.HpMax => "血上限",
-                        Compares.Mp => "内",
-                        Compares.MpMax => "内上限",
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                    var cal = Cal switch
-                    {
-                        Calculate.Multiply => "乘",
-                        Calculate.Divide => "除",
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                    var offsetText = Offset == 0 ? string.Empty
-                        : Offset > 0 ? $"+{Offset}"
-                        : $"{Offset}";
-
-                    _name = $"[{text}]{compare}差{offsetText}: ({cal})系数({Factor})";
-                    return true;
-                }
-
-                private string SetSpecial() => "特殊招式未支持";
-
-                [ConditionalField(true, nameof(SetLevelName))] [SerializeField] [ReadOnly] private string _name;
-
-                [SerializeField] private Settings _set;
-                [SerializeField] private Compares 差值;
-                [SerializeField] private float 校正;
-                [SerializeField] private Calculate 计算;
-                [SerializeField] private float 系数;
-
-                public Settings Set => _set;
-                public Compares Compare => 差值;
-                public Calculate Cal => 计算;
-                public float Factor => 系数;
-                public float Offset => 校正;
-
-                #region Calculate
-                private float Calculation(CombatArgs arg)
-                {
-                    return Cal switch
-                    {
-                        Calculate.Divide => DivideFactor(arg),
-                        Calculate.Multiply => MultiplyFactor(arg),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-
-                    float DivideFactor(CombatArgs a)
-                    {
-                        var caster = GetCombatValue(a.Caster);
-                        var target = GetCombatValue(a.Target);
-                        return (caster - target + Offset) / Factor;
-                    }
-
-                    float MultiplyFactor(CombatArgs a)
-                    {
-                        var caster = GetCombatValue(a.Caster);
-                        var target = GetCombatValue(a.Target);
-                        return (caster - target + Offset) * Factor;
-                    }
-                }
-
-                private float GetCombatValue(DiziCombatUnit dizi) =>
-                    Compare switch
-                    {
-                        Compares.Strength => dizi.Strength,
-                        Compares.Agility => dizi.Agility,
-                        Compares.Hp => dizi.Hp,
-                        Compares.HpMax => dizi.MaxHp,
-                        Compares.Mp => dizi.Mp,
-                        Compares.MpMax => dizi.MaxMp,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                #endregion
-
-                public float GetHardRate(CombatArgs arg) => Calculation(arg);
-                public float GetHardDamageRatio(CombatArgs arg) => Calculation(arg);
-                public float GetCriticalRate(CombatArgs arg) => Calculation(arg);
-                public float GetDodgeRate(CombatArgs arg) => Calculation(arg);
+                    hardRate: hardRateList,
+                    hardDamageRatio: hardDamageRatioList,
+                    criticalRate: criticalRateList,
+                    criticalMultiplier: criticalMultiplierList,
+                    mpDamage: mpDamageList,
+                    mpCounteract: mpCounteractList,
+                    dodgeRate: dodgeRateList);
             }
         }
 
@@ -254,7 +161,7 @@ namespace Server.Configs.Skills
 
             [ConditionalField(true, nameof(SetLevelName))] [SerializeField] [ReadOnly]
             private string _name;
-
+            public string Name => _name;
             [SerializeField] private Settings _set;
 
             #region Hard
@@ -263,10 +170,10 @@ namespace Server.Configs.Skills
             private float 重击率;
 
             [ConditionalField(nameof(_set), false, Settings.Hard)] [SerializeField]
-            private float 重击倍率加成 = 25f;
+            private float 重倍加成;
 
             public float HardRate => 重击率;
-            public float HardDamageRateAddOn => 重击倍率加成 * 0.01f;
+            public float HardDamageRateAddOn => 重倍加成 * 0.01f;
             private string SetHardText() => $"触发:{HardRate}%,倍率:{1 + HardDamageRateAddOn}";
 
             #endregion
@@ -303,9 +210,13 @@ namespace Server.Configs.Skills
 
             [ConditionalField(nameof(_set), false, Settings.Critical)] [SerializeField]
             private float 会心率;
+            [ConditionalField(nameof(_set), false, Settings.Critical)] [SerializeField]
+            private float 会心倍率;
 
             public float CriticalRate => 会心率;
-            private string SetCritical() => $"触发:{CriticalRate}%";
+            public float CriticalMultiplier => 会心倍率;
+
+            private string SetCritical() => $"触发:{CriticalRate}%,倍率x{CriticalMultiplier}";
 
             #endregion
         }

@@ -38,14 +38,14 @@ namespace Server.Configs.Items
     {
         protected virtual string Prefix { get; }
         protected virtual string Suffix { get; }
-#if UNITY_EDITOR
-        private bool GetReferenceSo()
+        private bool GetReference()
         {
-            if (So == null) So = this;
+#if UNITY_EDITOR
+            if (_so == null) _so = this;
+#endif
             return true;
         }
-        [ConditionalField(true, nameof(GetReferenceSo))][ReadOnly][SerializeField] private ScriptableObject So;
-#endif
+        [ConditionalField(true, nameof(GetReference))][ReadOnly][SerializeField] private ScriptableObject _so;
         public virtual int Id => id;
         public virtual string Name => _name;
         [SerializeField] protected string _name;
