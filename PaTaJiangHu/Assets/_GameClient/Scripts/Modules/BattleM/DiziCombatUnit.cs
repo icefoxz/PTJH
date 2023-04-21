@@ -148,10 +148,14 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         var (ishard, hardRatio, hardRan) = CombatFormula.HardJudgment(arg, 1000);
         var (isCritical, criticalRatio, criticalRan) = CombatFormula.CriticalJudgment(arg);
 
-        var damage = ishard ? CombatFormula.HardDamage(arg) : CombatFormula.GeneralDamage(arg);
-        if (isCritical) damage += CombatFormula.CriticalAddOn(arg);
+        int damage;
+        if (ishard) damage = CombatFormula.HardDamage(arg);
+        else 
+        if (isCritical) damage = CombatFormula.CriticalDamage(arg);
+        else damage = CombatFormula.GeneralDamage(arg);
         return isDodge ? (0, true, ishard, isCritical) : (damage, false, ishard, isCritical);
     }
+
     //选择目标
     public override DiziCombatUnit[] ChooseTargets(DiziCombatUnit caster, List<DiziCombatUnit> combatUnits)
     {

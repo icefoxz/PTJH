@@ -9,6 +9,7 @@ public interface ICombatSet
     float GetHardRate(CombatArgs arg);
     float GetHardDamageRatio(CombatArgs arg);
     float GetCriticalRate(CombatArgs arg);
+    float GetCriticalMultiplier(CombatArgs arg);
     float GetMpDamage(CombatArgs arg);
     float GetMpCounteract(CombatArgs arg);
     float GetDodgeRate(CombatArgs arg);

@@ -112,6 +112,7 @@ public class TestBattle : MonoBehaviour
         public float GetHardRate(CombatArgs arg)=> Com.GetHardRate(arg);
         public float GetHardDamageRatio(CombatArgs arg)=> Com.GetHardDamageRatio(arg);
         public float GetCriticalRate(CombatArgs arg)=> Force.GetCriticalRate(arg);
+        public float GetCriticalMultiplier(CombatArgs arg) => Force.GetCriticalMultiplier(arg);
         public float GetMpDamage(CombatArgs arg)=> Force.GetMpDamage(arg);
         public float GetMpCounteract(CombatArgs arg)=> Force.GetMpCounteract(arg);
         public float GetDodgeRate(CombatArgs arg)=> Dodge.GetDodgeRate(arg);
@@ -137,9 +138,11 @@ public class TestBattle : MonoBehaviour
             [SerializeField] private float 伤害内力;
             [SerializeField] private float 抵消内力;
             [SerializeField] private float 会心率;
+            [SerializeField] private float 会心倍率 = 3;
             public float GetCriticalRate(CombatArgs arg) => 会心率;
             public float GetMpDamage(CombatArgs arg) => 伤害内力;
             public float GetMpCounteract(CombatArgs arg) => 抵消内力;
+            public float GetCriticalMultiplier(CombatArgs arg) => 会心倍率;
         }
 
         [Serializable]

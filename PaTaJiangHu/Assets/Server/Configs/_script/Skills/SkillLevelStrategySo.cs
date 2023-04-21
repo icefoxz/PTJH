@@ -21,8 +21,7 @@ namespace Server.Configs.Skills
         }
 
         public int MaxLevel() => LevelingFields.Length;
-        [Serializable]
-        private class LevelingField
+        [Serializable] private class LevelingField
         {
             [SerializeField] private CombatField[] 属性;
             [SerializeField] private CombatDifferentialStrategy[] 差值配置;
@@ -289,11 +288,14 @@ namespace Server.Configs.Skills
 
             public float MpDamage => 内力消耗;
 
-            [ConditionalField(nameof(_set), false, Settings.Force)] [SerializeField]
+            [ConditionalField(nameof(_set), false, Settings.Force)] 
+            //[SerializeField]
             private float 内力抵消;
 
             public float MpCounteract => 内力抵消;
-            private string SetForceText() => $"消耗:{MpDamage}, 抵消:{MpCounteract}";
+            private string SetForceText() => $"消耗:{MpDamage}" 
+                                             //+ $", 抵消:{MpCounteract}"
+                                             ;
 
             #endregion
 

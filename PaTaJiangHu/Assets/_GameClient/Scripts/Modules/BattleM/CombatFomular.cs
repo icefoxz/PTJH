@@ -3,8 +3,6 @@ using Random = UnityEngine.Random;
 
 public static class CombatFormula
 {
-    private const int CriticalDamageMultiply = 2;
-
     public static (bool isCritical, double criticalRatio, int criticalRan) CriticalJudgment(CombatArgs arg)
     {
         var criticalRate = arg.Caster.Combat.GetCriticalRate(arg);
@@ -42,14 +40,14 @@ public static class CombatFormula
     }
 
     /// <summary>
-    /// 会心, 会心伤害=伤害*3(内力不足，会抽取仅剩内力)
+    /// 会心, 会心伤害=伤害*倍率(内力不足，会抽取仅剩内力)
     /// </summary>
     /// <param name="arg"></param>
     /// <returns></returns>
-    public static int CriticalAddOn(CombatArgs arg)
+    public static int CriticalDamage(CombatArgs arg)
     {
-        var mpMax = (int)arg.Caster.Combat.GetMpDamage(arg) * CriticalDamageMultiply;
-        var mp = Math.Min(mpMax, arg.Caster.Mp);
+        var mpMax = (int)arg.Caster.Combat.GetMpDamage(arg) * arg.Caster.Combat.GetCriticalMultiplier(arg);
+        var mp = (int)Math.Min(mpMax, arg.Caster.Mp);
         arg.Caster.AddMp(-mp);
         return mp;
     }
