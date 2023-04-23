@@ -1,17 +1,16 @@
 using System;
-using System.Linq;
 using Core;
-using Data;
 using MyBox;
-using Server.Configs.Battles;
 using Server.Configs.Skills;
+using Server.Controllers;
 using UnityEngine;
-using static Server.Configs.TestControllers.AdvMapController;
 
 namespace Server.Configs.Items
 {
     public interface IBook : IGameItem
     {
+        ColorGrade Grade { get; }
+        Sprite Icon { get; }
         ISkillLevelMap GetLevelMap(int nextLevel);
     }
 
@@ -28,13 +27,17 @@ namespace Server.Configs.Items
         [SerializeField] private int id;
         [SerializeField] private int 价钱;
         [SerializeField] private SkillFieldSo 武学;
-        [SerializeField]private SkillLevelingSo 等级策略;
-        
+        [SerializeField] private SkillLevelingSo 等级策略;
+        [SerializeField] private ColorGrade 品级;
+        [SerializeField] private Sprite 图片;
         [SerializeField][TextArea] private string 说明;
         public override int Id => id;
         public override string Name => _name;
         public override string About => 说明;
         public override int Price => 价钱;
+        public override ColorGrade Grade => 品级;
+        public override Sprite Icon => 图片;
+
         public SkillFieldSo SkillFieldSo => 武学;
         private SkillLevelingSo SkillLeveling => 等级策略;
 
@@ -54,13 +57,13 @@ namespace Server.Configs.Items
         }
     }
 
-    public abstract class BookSoBase : ScriptableObject, IBook
+    public abstract class BookSoBase : AutoUnderscoreNamingObject, IBook
     {
-        public abstract int Id { get; }
-        public abstract string Name { get; }
         public abstract string About { get; }
         public ItemType Type => ItemType.Book;
         public abstract int Price { get; }
+        public abstract ColorGrade Grade { get; }
+        public abstract Sprite Icon { get; }
         public abstract ISkillLevelMap GetLevelMap(int nextLevel);
     }
 }
