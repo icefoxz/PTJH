@@ -14,7 +14,7 @@ namespace Server.Configs.Battles
         protected virtual List<Func<CombatArgs, float>> CriticalRate { get; }
         protected virtual List<Func<CombatArgs, float>> CriticalMultiplier { get; }
         protected virtual List<Func<CombatArgs, float>> MpDamage { get; }
-        protected virtual List<Func<CombatArgs,float>> MpCounteract { get; }
+        protected virtual List<Func<CombatArgs, float>> MpCounteract { get; }
         protected virtual List<Func<CombatArgs, float>> DodgeRate { get; }
 
         public CombatSet(
@@ -23,7 +23,7 @@ namespace Server.Configs.Battles
             List<Func<CombatArgs, float>> criticalRate,
             List<Func<CombatArgs, float>> criticalMultiplier,
             List<Func<CombatArgs, float>> mpDamage,
-            List<Func<CombatArgs,float>> mpCounteract,
+            List<Func<CombatArgs, float>> mpCounteract,
             List<Func<CombatArgs, float>> dodgeRate)
         {
             HardRate = hardRate;
@@ -35,12 +35,12 @@ namespace Server.Configs.Battles
             DodgeRate = dodgeRate;
         }
 
-        public virtual float GetHardRate(CombatArgs arg) => HardRate.Sum(f => f.Invoke(arg));
-        public virtual float GetHardDamageRatio(CombatArgs arg) => HardDamageRatio.Sum(f => f.Invoke(arg));
-        public virtual float GetCriticalRate(CombatArgs arg) => CriticalRate.Sum(f => f.Invoke(arg));
-        public virtual float GetCriticalMultiplier(CombatArgs arg)=> CriticalMultiplier.Sum(f => f.Invoke(arg));
-        public virtual float GetMpDamage(CombatArgs arg) => MpDamage.Sum(f => f.Invoke(arg));
-        public virtual float GetMpCounteract(CombatArgs arg) => MpCounteract.Sum(f => f.Invoke(arg));
-        public virtual float GetDodgeRate(CombatArgs arg) => DodgeRate.Sum(f => f.Invoke(arg));
+        public virtual float GetHardRate(CombatArgs arg) => HardRate?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
+        public virtual float GetHardDamageRatio(CombatArgs arg) => HardDamageRatio?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
+        public virtual float GetCriticalRate(CombatArgs arg) => CriticalRate?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
+        public virtual float GetCriticalMultiplier(CombatArgs arg) => CriticalMultiplier?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
+        public virtual float GetMpDamage(CombatArgs arg) => MpDamage?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
+        public virtual float GetMpCounteract(CombatArgs arg) => MpCounteract?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
+        public virtual float GetDodgeRate(CombatArgs arg) => DodgeRate?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
     }
 }

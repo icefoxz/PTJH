@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using MyBox;
 using Server.Configs.Battles;
 using Server.Configs.Items;
@@ -28,14 +30,14 @@ namespace Server.Configs.Skills
     }
      
     [CreateAssetMenu(fileName = "combatSo", menuName = "战斗/武学/武功")]
-    internal class CombatFieldSo : SkillFieldSo ,ICombatSkill
+    public class CombatFieldSo : SkillFieldSo ,ICombatSkill
     {
         [SerializeField] private WeaponArmed 类型;
         public WeaponArmed Armed => 类型;
         public override SkillType SkillType => SkillType.Combat;
     }
 
-    internal abstract class SkillFieldSo : AutoDashNamingObject,ISkill
+    public abstract class SkillFieldSo : AutoDashNamingObject,ISkill
     {
         [SerializeField] private ColorGrade 品级;
         [SerializeField] private Sprite 图标;
@@ -46,8 +48,16 @@ namespace Server.Configs.Skills
         public Sprite Icon => 图标;
         public string About => 描述;
         private SkillLevelStrategySo LevelStrategy => 等级策略;
-        public ICombatSet GetCombatSet(int level) => LevelStrategy.GetCombatSet(level - 1);
+
+        protected virtual IList<ICombatSet> CustomCombatSets() => Array.Empty<ICombatSet>();
+
+        public ICombatSet GetCombatSet(int level)
+        {
+            var list = CustomCombatSets();
+            list.Add(LevelStrategy.GetCombatSet(level - 1));
+            return list.Combine();
+        }
+
         public int MaxLevel() => LevelStrategy.MaxLevel();
     }
-
 }

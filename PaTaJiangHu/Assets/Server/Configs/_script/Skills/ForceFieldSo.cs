@@ -1,12 +1,31 @@
+using System;
+using System.Collections.Generic;
 using Data;
+using Server.Configs.Battles;
 using UnityEngine;
 
 namespace Server.Configs.Skills
 {
     [CreateAssetMenu(fileName = "forceSo", menuName = "战斗/武学/内功")]
-    internal class ForceFieldSo : SkillFieldSo, IDataElement
+    public class ForceFieldSo : SkillFieldSo
     {
+        [SerializeField] private int 内力使用;
         public override SkillType SkillType => SkillType.Force;
+        private int MpUses => 内力使用;
+
+        protected override IList<ICombatSet> CustomCombatSets()
+        {
+            return new List<ICombatSet>
+            {
+                new CombatSet(hardRate: null, 
+                    hardDamageRatio: null, 
+                    criticalRate: null, 
+                    criticalMultiplier: null,
+                    mpDamage: new List<Func<CombatArgs, float>> { _ => MpUses }, 
+                    mpCounteract: null, 
+                    dodgeRate: null)
+            };
+        }
     }
 
 }

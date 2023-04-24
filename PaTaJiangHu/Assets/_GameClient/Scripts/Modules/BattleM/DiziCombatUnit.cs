@@ -58,7 +58,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Combat = unit.Combat;
     }
 
-    internal DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name, s.MaxHp, s.Damage, s.Agility)
+    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name, s.MaxHp, s.Damage, s.Agility)
     {
         Mp = s.Mp;
         MaxMp = s.Mp;
