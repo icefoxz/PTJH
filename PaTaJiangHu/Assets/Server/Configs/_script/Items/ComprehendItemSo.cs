@@ -27,7 +27,7 @@ namespace Server.Configs.Items
         [SerializeField] private ColorGrade 品级;
         [SerializeField] private float 领悟率;
         [SerializeField] private bool 等级限制;
-        [SerializeField] private MinMaxInt 等级范围;
+        [ConditionalField(nameof(等级限制))][SerializeField] private MinMaxInt 等级范围;
 
         public ColorGrade Grade => 品级;
         public float Rate => 领悟率;
