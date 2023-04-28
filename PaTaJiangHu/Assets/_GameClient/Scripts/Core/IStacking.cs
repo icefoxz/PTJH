@@ -1,4 +1,6 @@
 ﻿using Server.Configs.Adventures;
+using Server.Controllers;
+using UnityEngine;
 
 namespace Core
 {
@@ -27,14 +29,18 @@ namespace Core
         /// 历练道具
         /// </summary>
         AdvProps,
+        /// <summary>
+        /// 功能道具
+        /// </summary>
+        FunctionItem,
     }
     public interface IGameItem
     {
-        public int Id { get; }
-        public string Name { get; }
-        public string About { get; }
-        public ItemType Type { get; }
-        public int Price { get; }
+        int Id { get; }
+        Sprite Icon { get; }
+        string Name { get; }
+        string About { get; }
+        ItemType Type { get; }
     }
     /// <summary>
     /// 堆叠

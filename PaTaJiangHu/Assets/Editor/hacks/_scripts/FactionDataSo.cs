@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using _GameClient.Models;
+using Core;
 using Server.Configs.Battles;
 using UnityEngine;
 using Dizi = Models.Dizi;
@@ -22,6 +23,7 @@ internal class FactionDataSo : ScriptableObject, IFaction
     private Dictionary<string, Dizi> DiziMap => 弟子;
     public IReadOnlyList<IWeapon> Weapons => 武器;
     public IReadOnlyList<IArmor> Armors => 防具;
+    public IReadOnlyList<IGameItem> FuncItems { get; }
     public IReadOnlyList<Dizi> DiziList { get; }
 
     public Dizi GetDizi(string guid)

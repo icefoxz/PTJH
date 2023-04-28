@@ -127,10 +127,15 @@ internal class DiziInfoSectManager : MainPageBase
             CharInfo.SetState(dizi.State.ShortTitle, dizi.State.Description, dizi.State.LastUpdate);
             UpdateDiziStamina(dizi.Guid);
 
-            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Strength), 0, dizi.WeaponPower, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Strength));
-            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Agility), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Agility));
-            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Hp), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Hp));
-            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, dizi.GetLeveledValue(Server.Configs.Characters.DiziProps.Mp), 0, 0, dizi.GetPropStateAddon(Server.Configs.Characters.DiziProps.Mp));
+            var s = dizi.StrengthProp;
+            var a = dizi.AgilityProp;
+            var h = dizi.HpProp;
+            var m = dizi.MpProp;
+
+            SetProp(View_diziProps.Props.Strength, c.Strength.Grade, s.LeveledValue, s.SkillBonus(), s.EquipmentBonus(), s.StateBonus());
+            SetProp(View_diziProps.Props.Agility, c.Agility.Grade, a.LeveledValue , a.SkillBonus(), a.EquipmentBonus(), a.StateBonus());
+            SetProp(View_diziProps.Props.Hp, c.Hp.Grade, h.LeveledValue, h.SkillBonus(), h.EquipmentBonus(), h.StateBonus());
+            SetProp(View_diziProps.Props.Mp, c.Mp.Grade, m.LeveledValue, m.SkillBonus(), m.EquipmentBonus(), m.StateBonus());
         }
 
         private void SetPropIcon(View_diziProps.Props prop, Sprite icon) => DiziProps.SetIcon(prop, icon);

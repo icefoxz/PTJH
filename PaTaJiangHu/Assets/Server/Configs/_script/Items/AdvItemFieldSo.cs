@@ -8,19 +8,19 @@ namespace Server.Configs.Items
         int GetValue(int max);
     }
 
-    [CreateAssetMenu(fileName = "id_advItem", menuName = "物件/弟子/历练道具")]
+    [CreateAssetMenu(fileName = "id_advItem", menuName = "物件/历练道具")]
     internal class AdvItemFieldSo : AutoUnderscoreNamingObject, IAdvItem
     {
         [SerializeField] private int 体力恢复;
         [SerializeField] private bool 是百分比;
-        [SerializeField] private int 价钱;
         [SerializeField][TextArea] private string 说明;
+        [SerializeField] private Sprite 图标;
 
         private bool Percentage => 是百分比;
         public int Value => 体力恢复;
+        public Sprite Icon => 图标;
         public string About => 说明;
         public ItemType Type => ItemType.AdvProps;
-        public int Price => 价钱;
 
         public int GetValue(int max)
         {

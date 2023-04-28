@@ -6,7 +6,6 @@ using DiziM;
 using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
-using Server.Controllers;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -17,42 +16,40 @@ namespace Models
     /// </summary>
     public partial class Dizi : ModelBase, ITerm
     {
+        // 属性
         protected override string LogPrefix => Name;
         public string Guid { get; }
         public string Name { get; }
         public Gender Gender { get; }
-
-        public int Strength => GetLeveledValue(DiziProps.Strength) + 
-                               GetPropStateAddon(DiziProps.Strength) +
-                               GetWeaponDamage();
-        public int Agility => GetLeveledValue(DiziProps.Agility) + 
-                              GetPropStateAddon(DiziProps.Agility);
-        public int Hp => GetLeveledValue(DiziProps.Hp) + 
-                         GetPropStateAddon(DiziProps.Hp);
-        public int Mp => GetLeveledValue(DiziProps.Mp) + 
-                         GetPropStateAddon(DiziProps.Mp);
-
         public int Level { get; private set; }
-        public IConditionValue Exp => _exp;
-        private BattleSimulatorConfigSo BattleSimulator => Game.Config.AdvCfg.BattleSimulation;
-
         public int Grade { get; }
+        public IConditionValue Exp => _exp;
+        public Capable Capable { get; private set; }
+        public AdvItemModel[] AdvItems => _advItems;
+        public IConditionValue Silver => _silver;
+        public IConditionValue Food => _food;
+        public IConditionValue Emotion => _emotion;
+        public IConditionValue Injury => _injury;
+        public IConditionValue Inner => _inner;
+
+        // 计算属性
+        public int Strength => StrengthProp.TotalValue;
+        public int Agility => AgilityProp.TotalValue;
+        public int Hp => HpProp.TotalValue;
+        public int Mp => MpProp.TotalValue;
         public int Power => BattleSimulator.GetPower(strength: Strength, agility: Agility, hp: Hp, mp: Mp,
             weaponDamage: WeaponPower, armorAddHp: ArmorPower);
+        public DiziPropValue StrengthProp { get; }
+        public DiziPropValue AgilityProp { get; }
+        public DiziPropValue HpProp { get; }
+        public DiziPropValue MpProp { get; }
 
-        /// <summary>
-        /// 武器战力
-        /// </summary>
         public int WeaponPower => GetWeaponDamage();
-        /// <summary>
-        /// 防具战力
-        /// </summary>
         public int ArmorPower => GetArmorAddHp();
-
+        public IDiziStamina Stamina => StaminaManager.Stamina;
+        public DiziStaminaManager StaminaManager { get; }
+        // 私有字段
         private ConValue _exp;
-
-        public IDiziStamina Stamina => _stamina;
-        private DiziStamina _stamina;
         private ConValue _food;
         private ConValue _emotion;
         private ConValue _silver;
@@ -60,33 +57,26 @@ namespace Models
         private ConValue _inner;
         private AdvItemModel[] _advItems = new AdvItemModel[3];
 
-        public Capable Capable { get; private set; }
-
-        public AdvItemModel[] AdvItems => _advItems;
-
-        public IConditionValue Silver => _silver;
-        public IConditionValue Food => _food;
-        public IConditionValue Emotion => _emotion;
-        public IConditionValue Injury => _injury;
-        public IConditionValue Inner => _inner;
-
+        // 配置
         private LevelConfigSo LevelCfg => Game.Config.DiziCfg.LevelConfigSo;
         private PropStateConfigSo PropState => Game.Config.DiziCfg.PropState;
         private PropStateConfigSo.ConfigField PropStateCfg => PropState.Config;
+        private BattleSimulatorConfigSo BattleSimulator => Game.Config.AdvCfg.BattleSimulation;
 
-        internal Dizi(string guid, string name,
+        // 构造函数
+        public Dizi(string guid, string name,
             Gender gender,
-            int level, 
-            int stamina, 
+            int level,
+            int stamina,
             Capable capable)
         {
+            // 初始化代码
             Guid = guid;
             Name = name;
             Gender = gender;
             Level = level;
             Grade = capable.Grade;
             Capable = capable;
-            _stamina = new DiziStamina(Game.Controllers.Get<StaminaController>(), stamina);
             var maxExp = LevelCfg.GetMaxExp(level);
             _exp = new ConValue(maxExp, maxExp, 0);
             _food = new ConValue(PropStateCfg.FoodDefault.Max, PropStateCfg.FoodDefault.Min);
@@ -94,6 +84,16 @@ namespace Models
             _silver = new ConValue(PropStateCfg.SilverDefault.Max, PropStateCfg.SilverDefault.Min);
             _injury = new ConValue(PropStateCfg.InjuryDefault.Max, PropStateCfg.InjuryDefault.Min);
             _inner = new ConValue(PropStateCfg.InnerDefault.Max, PropStateCfg.InnerDefault.Min);
+
+            StrengthProp = new DiziPropValue(Capable.Strength.Value, () => GetLevelBonus(DiziProps.Strength),
+                () => GetPropStateAddon(DiziProps.Strength), GetWeaponDamage, null);
+            AgilityProp = new DiziPropValue(Capable.Agility.Value, () => GetLevelBonus(DiziProps.Agility),
+                () => GetPropStateAddon(DiziProps.Agility), null, null);
+            HpProp = new DiziPropValue(Capable.Hp.Value, () => GetLevelBonus(DiziProps.Hp),
+                () => GetPropStateAddon(DiziProps.Hp), GetArmorAddHp, null);
+            MpProp = new DiziPropValue(Capable.Mp.Value, () => GetLevelBonus(DiziProps.Mp),
+                () => GetPropStateAddon(DiziProps.Mp), null, null);
+            StaminaManager = new DiziStaminaManager(this, stamina);
             State = new DiziStateHandler(this, OnMessageAction, OnAdjustAction, OnRewardAction);
             StaminaService();
         }
@@ -119,7 +119,7 @@ namespace Models
         /// <returns></returns>
         public int GetPropStateAddon(DiziProps prop)
         {
-            var leveledValue = GetLeveledValue(prop);
+            var leveledValue = GetLevelBonus(prop);
             var value = PropState.GetStateAdjustmentValue(prop,
                 Food.ValueMaxRatio,
                 Emotion.ValueMaxRatio,
@@ -134,7 +134,7 @@ namespace Models
         /// <param name="prop"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public int GetLeveledValue(DiziProps prop)
+        public int GetLevelBonus(DiziProps prop)
         {
             var propValue = prop switch
             {
@@ -144,12 +144,12 @@ namespace Models
                 DiziProps.Mp => Capable.Mp.Value,
                 _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
             };
-            var leveledValue = LevelCfg.GetLeveledValue(prop, propValue, Level);
+            var leveledValue = propValue + LevelCfg.GetLeveledBonus(prop, propValue, Level);
             return leveledValue;
         }
 
         private int GetWeaponDamage() => Weapon?.Damage ?? 0;
-        private int GetArmorAddHp()=> Armor?.AddHp ?? 0;
+        private int GetArmorAddHp() => Armor?.AddHp ?? 0;
 
         #region ITerm
 
@@ -158,11 +158,8 @@ namespace Models
 
         internal void StaminaUpdate(long ticks)
         {
-            var lastValue = _stamina.Con.Value;
-            _stamina.Update(ticks);
-            var updatedValue = _stamina.Con.Value;
-            if (lastValue == updatedValue) return;
-            Log($"体力更新 = {_stamina.Con}");
+            if (!StaminaManager.StaminaUpdate(ticks)) return;
+            Log($"体力更新 = {StaminaManager.Stamina.Con}");
             SendEvent(EventString.Dizi_Params_StaminaUpdate, Guid);
         }
 
@@ -202,7 +199,7 @@ namespace Models
             _advItems[slot] = new AdvItemModel(item);
             Game.MessagingManager.Send(EventString.Dizi_Adv_SlotUpdate, Guid);
             Log("装备" + $"历练道具[{slot}]:" + item?.Name);
-        }        
+        }
         internal IGameItem RemoveAdvItem(int slot)
         {
             var item = _advItems[slot];

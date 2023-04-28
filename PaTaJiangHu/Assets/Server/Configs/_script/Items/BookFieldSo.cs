@@ -1,6 +1,5 @@
 using System;
 using Core;
-using MyBox;
 using Server.Configs.Skills;
 using Server.Controllers;
 using UnityEngine;
@@ -10,14 +9,13 @@ namespace Server.Configs.Items
     public interface IBook : IGameItem
     {
         ColorGrade Grade { get; }
-        Sprite Icon { get; }
         ISkillLevelMap GetLevelMap(int nextLevel);
+        ISkill GetSkill();
     }
 
-    [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "物件/弟子/秘籍")]
+    [CreateAssetMenu(fileName = "id_秘籍名字",menuName = "物件/秘籍")]
     internal class BookFieldSo : BookSoBase
     {
-        [SerializeField] private int 价钱;
         [SerializeField] private SkillFieldSo 武学;
         [SerializeField] private SkillLevelingSo 等级策略;
         [SerializeField] private ColorGrade 品级;
@@ -26,11 +24,10 @@ namespace Server.Configs.Items
         public override int Id => id;
         public override string Name => _name;
         public override string About => 说明;
-        public override int Price => 价钱;
         public override ColorGrade Grade => 品级;
         public override Sprite Icon => 图片;
 
-        public SkillFieldSo SkillFieldSo => 武学;
+        internal SkillFieldSo SkillFieldSo => 武学;
         private SkillLevelingSo SkillLeveling => 等级策略;
 
         /// <summary>
@@ -47,15 +44,17 @@ namespace Server.Configs.Items
                 throw new NotImplementedException("等级不可超过最大等级");
             return SkillLeveling.GetLevelMap(nextLevel);
         }
+
+        public override ISkill GetSkill()=> SkillFieldSo;
     }
 
     public abstract class BookSoBase : AutoUnderscoreNamingObject, IBook
     {
         public abstract string About { get; }
         public ItemType Type => ItemType.Book;
-        public abstract int Price { get; }
         public abstract ColorGrade Grade { get; }
         public abstract Sprite Icon { get; }
         public abstract ISkillLevelMap GetLevelMap(int nextLevel);
+        public abstract ISkill GetSkill();
     }
 }

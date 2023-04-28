@@ -31,25 +31,25 @@ namespace Server.Configs.Characters
             { StrengthGrowingRate.Length, AgilityGrowingRate.Length, HpGrowingRate.Length, MpGrowingRate.Length }.Min();
         public int GetMaxExp(int level) => UpgradeExp[level - 1];
         private int LevelToIndex(int level) => level - 2;
-        public int GetLeveledValue(DiziProps prop, int baseValue, int level)
+        public int GetLeveledBonus(DiziProps prop,int baseValue ,int level)
         {
             if (level <= 0) throw new InvalidOperationException($"{prop}.等级不可以小于1!");
-            if (level == 1) return baseValue;
+            if (level == 1) return 0;
             return prop switch
             {
-                DiziProps.Strength => LevelingFormula(level, baseValue, StrengthGrowingRate),
-                DiziProps.Agility => LevelingFormula(level, baseValue, AgilityGrowingRate),
-                DiziProps.Hp => LevelingFormula(level, baseValue, HpGrowingRate),
-                DiziProps.Mp => LevelingFormula(level, baseValue, MpGrowingRate),
+                DiziProps.Strength => (int)((LevelingRatio(level, StrengthGrowingRate) - 1) * baseValue),
+                DiziProps.Agility => (int)((LevelingRatio(level, AgilityGrowingRate) - 1) * baseValue),
+                DiziProps.Hp => (int)((LevelingRatio(level, HpGrowingRate) - 1) * baseValue),
+                DiziProps.Mp => (int)((LevelingRatio(level, MpGrowingRate) - 1) * baseValue),
                 _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
             };
         }
-        private int LevelingFormula(int level, int baseValue, LevelingConfig[] rates)
+        private float LevelingRatio(int level, LevelingConfig[] rates)
         {
             var index = LevelToIndex(level);
             if (rates.Length <= index)
                 throw new InvalidOperationException($"等级已超过最大限制[{rates.Length + 1}],当前等级{level}！");
-            return (int)(rates[index].Ratio * baseValue);
+            return rates[index].Ratio;
         }
 
         [Serializable]

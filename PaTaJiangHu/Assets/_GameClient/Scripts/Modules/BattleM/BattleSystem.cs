@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 
 
 /// <summary>
@@ -66,14 +67,9 @@ public class CombatUnit : ICombatUnit
         TeamId = teamId;
     }
 
-    public CombatUnit(ICombatUnit u)
+    public CombatUnit(ICombatUnit u):this(teamId: u.TeamId, name: u.Name, maxHp: u.MaxHp, damage: u.Damage, speed: u.Speed)
     {
-        Name = u.Name;
         Hp = u.Hp;
-        MaxHp = u.MaxHp;
-        Damage = u.Damage;
-        Speed = u.Speed;
-        TeamId = u.TeamId;
     }
     public CombatUnit(int teamId, string name, int maxHp, int damage, int speed)
     {

@@ -15,7 +15,8 @@ public class CombatArgs : EventArgs
     }
 
     public static DiziCombatUnit InstanceCombatUnit(string guid, string name, int hp, int mp, int strength, int agility,
-        int teamId, ICombatSet combat) => new(new CombatUnit(guid, name, hp, mp, strength, agility, teamId, combat));
+        int teamId, ICombatSet combat) => new(unit: new CombatUnit(guid: guid, name: name, hp: hp, mp: mp,
+        strength: strength, agility: agility, teamId: teamId, combat: combat));
 
     private class CombatUnit : IDiziCombatUnit
     {

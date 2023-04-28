@@ -16,7 +16,6 @@ namespace HotFix_Project
     /// </summary>
     internal class App 
     {
-        private static TestUiManager TestUiManager { get; set; } = new TestUiManager();
         private static MainUiAgent MainUiAgent { get; set; }
         public void Init()
         {
@@ -38,7 +37,6 @@ namespace HotFix_Project
 
         public void InitTest()
         {
-            TestUiManager.Test();
             //TestAsync();
             //TestCoroutine();
             //TestViewBag();

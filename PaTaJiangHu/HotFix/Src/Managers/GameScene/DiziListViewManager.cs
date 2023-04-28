@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using _GameClient.Models;
 using HotFix_Project.Views.Bases;
 using Models;
 using Server.Controllers;
@@ -55,8 +54,7 @@ internal class DiziListViewManager : MainPageBase
         public DiziListView(IView v, Action<string> onDiziSelectedAction) : base(v.GameObject, true)
         {
             OnDiziSelectedAction = onDiziSelectedAction;
-            DiziList = new ListViewUi<DiziPrefab>(v.GetObject<View>("prefab_dizi"),
-                v.GetObject<ScrollRect>("scroll_diziListView").content.gameObject);
+            DiziList = new ListViewUi<DiziPrefab>(v, "prefab_dizi", "scroll_diziListView");
             TopRight = new TopRightView(v.GetObject<View>("view_topRight"));
             TopRight.Set(0, MaxDizi);
         }

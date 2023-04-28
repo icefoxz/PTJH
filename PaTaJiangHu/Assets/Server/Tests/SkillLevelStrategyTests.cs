@@ -10,7 +10,7 @@ public class SkillLevelStrategyTests : MonoBehaviour
     public void SkillLevelStrategyTestsSimplePasses()
     {
         // Use the Assert class to test conditions
-        var level1CombatSet = LevelStrategy.GetCombatSet(index: 0);
+        var level1CombatSet = LevelStrategy.GetCombatSet(1);
         var com1 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test1", hp: 100, mp: 100, strength: 20, agility: 20, teamId: 0, combat: level1CombatSet);
         var com2 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test2", hp: 100, mp: 100, strength: 30, agility: 30, teamId: 1, combat: level1CombatSet);
         var arg = new CombatArgs(com1, com2);

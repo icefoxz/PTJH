@@ -15,11 +15,28 @@ namespace Server.Configs.Skills
         [SerializeField]private LevelingField[] 等级;
         private LevelingField[] LevelingFields => 等级;
 
-        public ICombatSet GetCombatSet(int index)
+        public ICombatSet GetCombatSet(int level)
         {
+            var index = level - 1;
             if (index < 0 || index >= LevelingFields.Length)
-                throw new ArgumentOutOfRangeException($"找不到等级配置:{name}.等级 = {index + 1}, 索引 = {index}");
+                throw new ArgumentOutOfRangeException($"{nameof(GetCombatSet)}.找不到等级配置:{name}.等级 = {index + 1}, 索引 = {index}");
             return LevelingFields[index].GetCombat();
+        }
+
+        public ISkillAttribute[] GetAttributes(int level)
+        {
+            var index = level - 1;
+            if (index < 0 || index >= LevelingFields.Length)
+                throw new ArgumentOutOfRangeException($"{nameof(GetAttributes)}.找不到等级配置:{name}.等级 = {level}, 索引 = {index}");
+            return LevelingFields[index].GetAttributes();
+        }
+
+        public ISkillProp[] GetProps(int level)
+        {
+            var index = level - 1;
+            if (index < 0 || index >= LevelingFields.Length)
+                throw new ArgumentOutOfRangeException($"{nameof(GetProps)}.找不到等级配置:{name}.等级 = {level}, 索引 = {index}");
+            return LevelingFields[index].GetProps();
         }
 
         public int MaxLevel() => LevelingFields.Length;
@@ -118,6 +135,10 @@ namespace Server.Configs.Skills
                     mpCounteract: mpCounteractList,
                     dodgeRate: dodgeRateList);
             }
+
+            public ISkillAttribute[] GetAttributes() => DifferentialStrategies.Select(d => d.GetCombatAttribute()).ToArray();
+
+            public ISkillProp[] GetProps() => Fields.SelectMany(f => f.GetProps()).ToArray();
         }
 
         [Serializable]
@@ -134,7 +155,15 @@ namespace Server.Configs.Skills
 
             private bool SetLevelName()
             {
-                var text = _set switch
+                var texts = GetSettingTexts();
+                _name = $"[{GetNameText(_set)}]{string.Join(',', texts)}";
+                return true;
+
+            }
+
+            private string[] GetSettingTexts()
+            {
+                return _set switch
                 {
                     Settings.Force => SetForceText(),
                     Settings.Dodge => SetDodgeText(),
@@ -143,25 +172,23 @@ namespace Server.Configs.Skills
                     Settings.Special => SetSpecial(),
                     _ => throw new ArgumentOutOfRangeException()
                 };
-                _name = $"[{GetSettings(_set)}]{text}";
-                return true;
-
-                string GetSettings(Settings set) => set switch
-                {
-                    Settings.Force => "内力",
-                    Settings.Dodge => "闪避",
-                    Settings.Hard => "重击",
-                    Settings.Critical => "会心",
-                    Settings.Special => "特殊",
-                    _ => throw new ArgumentOutOfRangeException(nameof(set), set, null)
-                };
             }
 
-            private string SetSpecial() => "特殊招式未支持";
+            private string GetNameText(Settings set) => set switch
+            {
+                Settings.Force => "内力",
+                Settings.Dodge => "闪避",
+                Settings.Hard => "重击",
+                Settings.Critical => "会心",
+                Settings.Special => "特殊",
+                _ => throw new ArgumentOutOfRangeException(nameof(set), set, null)
+            };
+
+            private string[] SetSpecial() => new[] { "特殊招式未支持" };
 
             [ConditionalField(true, nameof(SetLevelName))] [SerializeField] [ReadOnly]
             private string _name;
-            public string Name => _name;
+
             [SerializeField] private Settings _set;
 
             #region Hard
@@ -174,7 +201,8 @@ namespace Server.Configs.Skills
 
             public float HardRate => 重击率;
             public float HardDamageRateAddOn => 重倍加成 * 0.01f;
-            private string SetHardText() => $"触发:{HardRate}%,倍率:{1 + HardDamageRateAddOn}";
+            private string[] SetHardText() => new []{$"触发:{ResolveSymbol(HardRate)}%" ,
+                                                     $"倍率:{ResolveSymbol(HardDamageRateAddOn)}"};
 
             #endregion
 
@@ -184,7 +212,7 @@ namespace Server.Configs.Skills
             private float 闪避率;
 
             public float DodgeRate => 闪避率;
-            private string SetDodgeText() => $"触发:{DodgeRate}%";
+            private string[] SetDodgeText() => new []{$"触发:{ResolveSymbol(DodgeRate)}%"};
 
             #endregion
 
@@ -200,9 +228,11 @@ namespace Server.Configs.Skills
             private float 内力抵消;
 
             public float MpCounteract => 内力抵消;
-            private string SetForceText() => $"消耗:{MpDamage}" 
-                                             //+ $", 抵消:{MpCounteract}"
-                                             ;
+            private string[] SetForceText() => new[]
+            {
+                $"消耗:{ResolveSymbol(MpDamage)}"
+                //, $"抵消:{MpCounteract}"
+            };
 
             #endregion
 
@@ -215,10 +245,29 @@ namespace Server.Configs.Skills
 
             public float CriticalRate => 会心率;
             public float CriticalMultiplier => 会心倍率;
+            public string Name => _name;
 
-            private string SetCritical() => $"触发:{CriticalRate}%,倍率x{CriticalMultiplier}";
-
+            private string[] SetCritical() => new []{ $"触发:{ResolveSymbol(CriticalRate)}%" ,
+                                                      $"倍率:{ResolveSymbol(CriticalMultiplier)}"};
             #endregion
+            private static string ResolveSymbol(float value)
+            {
+                if (value == 0) return value.ToString();
+                return value > 0 ? $"+{value}" : $"-{value}";
+            }
+
+            public ISkillProp[] GetProps()
+            {
+                var label = GetNameText(_set);
+                var settings = GetSettingTexts();
+                return settings.Select(s => new SkillProp(label, s)).Cast<ISkillProp>().ToArray();
+            }
+
+            private record SkillProp(string Name, string Value) : ISkillProp
+            {
+                public string Name { get; } = Name;
+                public string Value { get; } = Value;
+            }
         }
     }
 }

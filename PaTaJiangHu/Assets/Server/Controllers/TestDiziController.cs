@@ -38,10 +38,10 @@ namespace Server.Controllers
         public void OnDiziLevel(int level)
         {
             var leveling = Config.LevelConfig;
-            var str = leveling.GetLeveledValue(DiziProps.Strength, TestDizi.Strength, level);
-            var agi = leveling.GetLeveledValue(DiziProps.Agility, TestDizi.Agility, level);
-            var hp = leveling.GetLeveledValue(DiziProps.Strength, TestDizi.MaxHp, level);
-            var mp = leveling.GetLeveledValue(DiziProps.Strength, TestDizi.MaxMp, level);
+            var str = TestDizi.Strength + leveling.GetLeveledBonus(DiziProps.Strength, TestDizi.Strength, level);
+            var agi = TestDizi.Agility + leveling.GetLeveledBonus(DiziProps.Agility, TestDizi.Agility, level);
+            var hp = TestDizi.MaxHp + leveling.GetLeveledBonus(DiziProps.Strength, TestDizi.MaxHp, level);
+            var mp = TestDizi.MaxMp + leveling.GetLeveledBonus(DiziProps.Strength, TestDizi.MaxMp, level);
             var dizi = TestDizi.Clone();
             dizi.SetHp(hp);
             dizi.SetMp(mp);

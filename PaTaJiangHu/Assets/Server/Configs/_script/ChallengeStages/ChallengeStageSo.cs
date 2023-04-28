@@ -31,7 +31,7 @@ namespace Server.Configs.ChallengeStages
     {
         [SerializeField] private int 回合限制 = 20;
         [SerializeField] private ChallengeField[] 挑战;
-        private int RoundLimit => 回合限制 = 20;
+        private int RoundLimit => 回合限制;
 
         public IChallengeStageNpc[] Npcs => 挑战;
 

@@ -108,12 +108,12 @@ internal class MainUiAgent
             case Sections.Panel:
             case Sections.Window:
             case Sections.Page:
-                if (hideSameSection) CloseAllUi(maps, section);
+                if (hideSameSection) CloseAllUi(section, maps);
                 MainUi.HideMainPage();
                 foreach (var mapper in maps) mapper.Manager.Show();
                 break;
             case Sections.MainPage:
-                if (hideSameSection) CloseAllUi(maps, Sections.Page);
+                if (hideSameSection) CloseAllUi(Sections.Page, maps);
                 MainUi.ShowMainPage();
                 MainPageMgr.Show(maps);
                 break; //MainPage
@@ -121,11 +121,13 @@ internal class MainUiAgent
                 throw new ArgumentOutOfRangeException();
         }
     }
-    private void CloseAllUi(UiMapper[] maps, Sections section)
+
+    public void CloseAllPages() => CloseAllUi(Sections.Page);
+    private void CloseAllUi(Sections section, params UiMapper[] skipsMaps)
     {
         foreach (var mapper in UiMappers.Where(m => m.Section == section).ToList())
         {
-            if (maps.Contains(mapper)) continue;
+            if (skipsMaps.Contains(mapper)) continue;
             mapper.Manager.Hide();
         }
     }

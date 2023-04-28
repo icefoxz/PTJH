@@ -34,8 +34,9 @@ namespace _GameClient.Models
         private List<IWeapon> _weapons= new List<IWeapon>();
         private List<IArmor> _armors = new List<IArmor>();
         private List<IAdvPackage> _packages = new List<IAdvPackage>();
-        private List<IGameItem> _advProps = new List<IGameItem>();
+        private List<IGameItem> _advItems = new List<IGameItem>();
         private List<Dizi> _diziList = new List<Dizi>();
+        private Dictionary<IFunctionItem,int> _funcItems = new Dictionary<IFunctionItem, int>();
         private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
 
         public int Silver { get; private set; }
@@ -57,7 +58,8 @@ namespace _GameClient.Models
         public IReadOnlyList<Dizi> DiziList => _diziList;
         public IReadOnlyList<IAdvPackage> Packages => _packages;
         public IReadOnlyList<IBook> Books => _books;
-        public IReadOnlyList<IGameItem> AdvProps => _advProps;
+        public IReadOnlyDictionary<IFunctionItem, int> FuncItems => _funcItems;
+        public IReadOnlyList<IGameItem> AdvProps => _advItems;
 
         public IStacking<IGameItem>[] GetAllSupportedAdvItems() => Medicines
             .Where(m => m.Key.Kind == MedicineKinds.StaminaDrug)
@@ -65,6 +67,12 @@ namespace _GameClient.Models
             .Concat(AdvProps.Select(p => new Stacking<IGameItem>(p, 1))).ToArray();
 
         public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
+        public IBook GetBook(int bookId) => Books.FirstOrDefault(b => b.Id == bookId);
+        public IStacking<IComprehendItem>[] GetAllComprehendItems(int supportedLevel) => FuncItems
+            .Where(f => f.Key.FunctionType == FunctionItemType.Comprehend)
+            .Cast<KeyValuePair<IComprehendItem, int>>()
+            .Where(f => f.Key.IsLevelAvailable(supportedLevel))
+            .Select(f => new Stacking<IComprehendItem>(f.Key, f.Value)).ToArray();
 
         internal Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap,
             int food = 0, int wine = 0, int pill = 0, int herb = 0)
@@ -151,26 +159,53 @@ namespace _GameClient.Models
             Log($"移除防具【{armor.Name}】");
         }
 
+        #region Dictionary Items
         internal void AddMedicine(IMedicine med, int amount)
         {
             if(med == null) LogError("med = null!");
-            if (amount == 0) return;
-            if (!Medicines.ContainsKey(med))
-                Medicines.Add(med, 0);
-            Medicines[med] += amount;
-            Log($"添加药品【{med.Name}】x{amount}, 总: {Medicines[med]}");
+            DictionaryAdd(Medicines, med, amount);
+            if(amount > 0) Log($"添加药品【{med.Name}】x{amount}, 总: {Medicines[med]}");
         }
 
         internal void RemoveMedicine(IMedicine med,int amount)
         {
             if (med == null) LogError("med = null!");
-            if (amount == 0) return;
-            if (!Medicines.ContainsKey(med))
-                LogError($"找不到{med.Name},Id = {med.Id}");
-            if (Medicines[med] < amount) LogError($"{med.Name}:{Medicines[med]} < {amount}! ");
-            Medicines[med] -= amount;
-            Log($"移除药品【{med.Name}】");
+            DictionaryRemove(Medicines, med, amount);
+            if(amount > 0) Log($"移除药品【{med.Name}】");
         }
+
+        internal void AddFunctionItem(IFunctionItem item, int amount)
+        {
+            if (item == null) LogError("functionItem = null!");
+            DictionaryAdd(_funcItems, item, amount);
+            SendEvent(EventString.Faction_FunctionItemUpdate, string.Empty);
+            Log($"添加功能道具: {item.Id}.{item.Name}");
+        }
+
+        internal void RemoveFunctionItem(IFunctionItem item, int amount)
+        {
+            if (item == null) LogError("item = null!");
+            DictionaryRemove(_funcItems, item, amount);
+            SendEvent(EventString.Faction_FunctionItemUpdate, string.Empty);
+            Log($"移除功能道具: {item.Id}.{item.Name}");
+        }
+
+        private void DictionaryAdd<T>(Dictionary<T, int> dict, T key, int value) where T : IGameItem
+        {
+            if (value == 0) return;
+            dict.TryAdd(key, 0);
+            dict[key] += value;
+        }
+
+        private void DictionaryRemove<T>(Dictionary<T, int> dict, T key, int value) where T : IGameItem
+        {
+            if (value == 0) return;
+            if (!dict.ContainsKey(key))
+                LogError($"找不到{key.Name},Id = {key.Id}");
+            if (dict[key] < value) LogError($"{key.Name}:{dict[key]} < {value}! ");
+            dict[key] -= value;
+        }
+        #endregion
 
         internal void AddConsumeResource(ConsumeResources resource, int value)
         {
@@ -250,6 +285,9 @@ namespace _GameClient.Models
                 case ItemType.AdvProps:
                     AddAdvItem(data.GetAdvProp(gi.Item.Id));
                     break;
+                case ItemType.FunctionItem:
+                    AddFunctionItem(data.GetFunctionItem(gi.Item.Id), gi.Amount);
+                    break;
                 case ItemType.StoryProps:
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -296,6 +334,9 @@ namespace _GameClient.Models
                 case ItemType.AdvProps:
                     RemoveAdvItem(data.GetAdvProp(gi.Id));
                     break;
+                case ItemType.FunctionItem:
+                    RemoveFunctionItem(data.GetFunctionItem(gi.Id), amount);
+                    break;
                 case ItemType.StoryProps:
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -304,8 +345,9 @@ namespace _GameClient.Models
         
         internal void AddAdvItem(IGameItem item)
         {
-            if (item == null) LogError("item = null!");
-            AddGameItem(new Stacking<IGameItem>(item, 1));
+            if (item == null) LogError("gameItem = null!");
+            XDebug.LogError($"添加历练道具方法异常!: {item.Id}.{item.Name}");
+            //AddGameItem(new Stacking<IGameItem>(item, 1));
             SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"添加历练道具: {item.Id}.{item.Name}");
         }
@@ -316,6 +358,7 @@ namespace _GameClient.Models
             SendEvent(EventString.Faction_AdvPackageUpdate, string.Empty);
             Log($"添加包裹x{packages.Count}");
         }
+
         internal void AddBook(IBook book)
         {
             if (book == null) LogError("book = null!");
@@ -323,10 +366,12 @@ namespace _GameClient.Models
             Log($"添加书籍: {book.Id}.{book.Name}");
             SendEvent(EventString.Faction_BookUpdate, string.Empty);
         }
+
         internal void RemoveAdvItem(IGameItem item)
         {
             if (item == null) LogError("item = null!");
-            RemoveGameItem(item, 1);//移除道具将直接执行gameItem移除
+            XDebug.LogError($"移除历练道具方法异常!: {item.Id}.{item.Name}");
+            //RemoveGameItem(item, 1);//移除道具将直接执行gameItem移除
             SendEvent(EventString.Faction_AdvItemsUpdate, string.Empty);
             Log($"移除历练道具: {item.Id}.{item.Name}");
         }

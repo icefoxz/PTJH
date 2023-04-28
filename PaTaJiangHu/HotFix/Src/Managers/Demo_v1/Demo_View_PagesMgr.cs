@@ -24,14 +24,21 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             View_pages = new View_Pages(view,
-                onTreasureHouse: ()=>  XDebug.LogWarning("打开宝物库页面"),//MainUiAgent.Show<TreasureHouseManager>(m=> m.Show()),
+                onTreasureHouse: () =>
+                {
+                    XDebug.LogWarning("打开宝物库页面");
+                }, //MainUiAgent.Show<TreasureHouseManager>(m=> m.Show()),
                 onDiziPage: () =>
                 {
                     DemoAgent.SetDiziView();
                 },
-                onFactionPage: () => XDebug.LogWarning("打开门派页面"),
+                onFactionPage: () =>
+                {
+                    DemoAgent.SetDiziView(null, Demo_v1Agent.Pages.Skills);
+                    XDebug.LogWarning("打开门派页面");
+                },
                 onRecruitPage: () => Game.MessagingManager.Send(EventString.Page_DiziRecruit, null)
-                );
+            );
         }
         protected override void RegEvents()
         {

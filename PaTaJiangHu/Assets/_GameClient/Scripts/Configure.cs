@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
@@ -114,12 +115,15 @@ internal class Configure : MonoBehaviour
         [SerializeField] private MedicineFieldSo[] 药品;
         [SerializeField] private BookFieldSo[] 书籍;
         [SerializeField] private AdvItemFieldSo[] 历练道具;
+        [SerializeField] private ComprehendItemSo[] 功能道具;
 
         public WeaponFieldSo[] Weapons => 武器;
         public ArmorFieldSo[] Armors => 防具;
         public MedicineFieldSo[] Medicines => 药品;
         public BookFieldSo[] Books => 书籍;
         public AdvItemFieldSo[] AdvItems => 历练道具;
+
+        public ComprehendItemSo[] FunctionItems => 功能道具;
     }
 
     private static T GetSo<T>(T so, [CallerMemberName]string method = null) where T : ScriptableObject

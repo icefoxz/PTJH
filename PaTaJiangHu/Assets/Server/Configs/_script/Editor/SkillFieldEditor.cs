@@ -6,10 +6,17 @@ using UnityEditor;
 using UnityEngine;
 
 
-[CustomEditor(typeof(ForceFieldSo))]
-public class SkillFieldSOEditor : Editor
+public abstract class SkillFieldSOEditor : Editor
 {
-    [Min(1)]private int level = 1; // Add a field to store the parameter value
+    [Min(1)]protected int level = 1; // Add a field to store the parameter value
+    [Min(1)]protected int cAgi = 10; // Add a field to store the parameter value
+    [Min(1)]protected int cStr = 10; // Add a field to store the parameter value
+    [Min(1)]protected int tAgi = 10; // Add a field to store the parameter value
+    [Min(1)]protected int tStr = 10; // Add a field to store the parameter value
+    [Min(1)]protected int cHp = 100; // Add a field to store the parameter value
+    [Min(1)]protected int tHp = 100; // Add a field to store the parameter value
+    [Min(1)]protected int cMp = 100; // Add a field to store the parameter value
+    [Min(1)]protected int tMp = 100; // Add a field to store the parameter value
 
     public override void OnInspectorGUI()
     {
@@ -21,10 +28,18 @@ public class SkillFieldSOEditor : Editor
 
         // Create a label and an int field for the parameter
         EditorGUILayout.LabelField("测试 CombatSet 等级", EditorStyles.boldLabel);
-        level = EditorGUILayout.IntField("等级", level);
+        level = EditorGUILayout.IntField("技能等级", level);
+        cStr = EditorGUILayout.IntField("攻力", cStr);
+        tStr = EditorGUILayout.IntField("守力", tStr);
+        cAgi = EditorGUILayout.IntField("攻敏", cAgi);
+        tAgi = EditorGUILayout.IntField("守敏", tAgi);
+        cHp = EditorGUILayout.IntField("攻血", cHp);
+        tHp = EditorGUILayout.IntField("守血", tHp);
+        cMp = EditorGUILayout.IntField("攻内", cMp);
+        tMp = EditorGUILayout.IntField("守内", tMp);
 
         // Create a button that calls the TestFunction method with the parameter when pressed
-        if (GUILayout.Button("配置结果"))
+        if (GUILayout.Button("测试-导出配置结果"))
         {
             var arg = GenSimCombat();
             var set = so.GetCombatSet(level);
@@ -35,35 +50,49 @@ public class SkillFieldSOEditor : Editor
             var mpDmg = set.GetMpDamage(arg);
             var mpCou = set.GetMpCounteract(arg);
             var dodgeRate = set.GetDodgeRate(arg);
-            Debug.Log($"重击率: {hardRate}, 重击倍: {hardMul}, 会心率: {criRate}, 会心倍: {criMul}, 内使用: {mpDmg}, 内抵消: {mpCou}, 闪避率: {dodgeRate}");
+            Debug.Log($"{arg.Caster}, {arg.Target} \n重击率: {hardRate}, 重击倍: {hardMul}, 会心率: {criRate}, 会心倍: {criMul}, 内使用: {mpDmg}, 内抵消: {mpCou}, 闪避率: {dodgeRate}");
         }
     }
 
     private CombatArgs GenSimCombat()
     {
-        ISimCombat sim1 = new SimCombat("测试1");
-        ISimCombat sim2 = new SimCombat("测试2");
+        ISimCombat sim1 = new SimCombat("攻", cStr, cAgi, cHp, cMp);
+        ISimCombat sim2 = new SimCombat("守", tStr, tAgi, tHp, tMp);
         var test1 = new DiziCombatUnit(sim1, 0);
         var test2 = new DiziCombatUnit(sim2, 1);
         return new CombatArgs(test1, test2);
     }
 
-    private class SimCombat : ISimCombat
+    private record SimCombat : ISimCombat
     {
         public string Name { get; }
-        public int Power => 0;
-        public int Damage => 0;
-        public int MaxHp => 0;
-        public int Strength => 10;
-        public int Agility => 10;
-        public int Hp => 100;
-        public int Mp => 100;
-        public int Weapon => 0;
-        public int Armor => 0;
+        public int Power { get; set; }
+        public int Damage { get; set; } = 100;
+        public int MaxHp { get; set; } = 100;
+        public int Strength { get; set; } = 10;
+        public int Agility { get; set; } = 10;
+        public int Hp { get; set; } = 100;
+        public int Mp { get; set; } = 100;
+        public int Weapon { get; set; }
+        public int Armor { get; set; }
 
         public SimCombat(string name)
         {
             Name = name;
+        }
+
+        public SimCombat(string name, int strength, int agility, int hp, int mp)
+        {
+            Name = name;
+            Power = 0;
+            Damage = strength;
+            MaxHp = hp;
+            Strength = strength;
+            Agility = agility;
+            Hp = hp;
+            Mp = mp;
+            Weapon = 0;
+            Armor = 0;
         }
     }
 }

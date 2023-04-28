@@ -1,5 +1,4 @@
 ﻿using System;
-using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
@@ -69,14 +68,14 @@ namespace HotFix_Project.Managers.Demo_v1
             }
             private void SetDiziProps(Dizi dizi)
             {
-                var s = Server.Configs.Characters.DiziProps.Strength;
-                var a = Server.Configs.Characters.DiziProps.Agility;
-                var h = Server.Configs.Characters.DiziProps.Hp;
-                var m = Server.Configs.Characters.DiziProps.Mp;
-                SetProps(Props.Strength, dizi.Capable.Strength.Value, 0, dizi.WeaponPower, dizi.GetPropStateAddon(s));
-                SetProps(Props.Agility, dizi.GetLeveledValue(a), 0, 0, dizi.GetPropStateAddon(a));
-                SetProps(Props.Hp, dizi.GetLeveledValue(h), 0, dizi.ArmorPower, dizi.GetPropStateAddon(h));
-                SetProps(Props.Mp, dizi.GetLeveledValue(m), 0, 0, dizi.GetPropStateAddon(m));
+                var s = dizi.StrengthProp;
+                var a = dizi.AgilityProp;
+                var h = dizi.HpProp;
+                var m = dizi.MpProp;
+                SetProps(Props.Strength, s.LeveledValue, s.SkillBonus(), s.EquipmentBonus(), s.StateBonus());
+                SetProps(Props.Agility, a.LeveledValue, a.SkillBonus(), a.EquipmentBonus(), a.StateBonus());
+                SetProps(Props.Hp, h.LeveledValue, h.SkillBonus(), h.EquipmentBonus(), h.StateBonus());
+                SetProps(Props.Mp, m.LeveledValue, m.SkillBonus(), m.EquipmentBonus(), m.StateBonus());
             }
             //private void SetProp(Props props, int value, int skill, int equip = 0, int condition = 0) => Set(props, value, skill, equip, condition);
             private void SetProps(Props prop, int value, int skill, int equip, int condition) =>

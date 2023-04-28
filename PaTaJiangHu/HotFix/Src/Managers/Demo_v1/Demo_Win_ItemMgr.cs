@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Core;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
-using JetBrains.Annotations;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
-using Utls;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1

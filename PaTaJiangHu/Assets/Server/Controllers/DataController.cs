@@ -24,6 +24,7 @@ namespace Server.Controllers
         public IArmor GetArmor(int id) => GetFromData(id, Data.Armors).Instance();
         public IBook GetBook(int id) => GetFromData(id, Data.Books);
         public IAdvItem GetAdvProp(int id) => GetFromData(id, Data.AdvItems);
+        public IFunctionItem GetFunctionItem(int id) => GetFromData(id, Data.FunctionItems);
         private T GetFromData<T>(int id, ICollection<T> list) where T : IGameItem
         {
             if (id == 0)

@@ -63,45 +63,24 @@ namespace HotFix_Project.Views.Bases
         public void StopAllCoroutines() => View.StopAllCo();
     }
 
-    internal class ListViewUi<T> : UiBase
+    internal class ListBoardUi<T> : UiBase
     {
-        private readonly ScrollRect _scrollRect;
+        internal ListBoardUi(IView v, string prefabName, string contentName, bool hideChildrenViews = true) : this(
+            v.GetObject<View>(prefabName), v.GetObject(contentName), hideChildrenViews)
+        {
+
+        }
+
+        internal ListBoardUi(View prefab, GameObject contentGo, bool hideChildrenViews = true) : base(contentGo, true)
+        {
+            if (hideChildrenViews) HideChildren();
+            Prefab = prefab;
+        }
+
+
         private List<T> _list { get; } = new List<T>();
         public IReadOnlyList<T> List => _list;
-        private View Prefab { get; }
-
-        private ScrollRect ScrollRect
-        {
-            get
-            {
-                if (_scrollRect == null)
-                    throw new InvalidOperationException("如果要调用ScrollRect,请在构造的时候传入scrollrect控件");
-                return _scrollRect;
-            }
-        }
-
-        public ListViewUi(View prefab, GameObject contentGo, bool hideChildrenViews = true) : base(contentGo, true)
-        {
-            Prefab = prefab;
-            if (hideChildrenViews) HideChildren();
-        }
-        public ListViewUi(View prefab, RectTransform transform, bool hideChildrenViews = true) : this(prefab,
-            transform.gameObject, hideChildrenViews)
-        {
-        }
-
-        public ListViewUi(View prefab, ScrollRect scrollRect, bool hideChildrenViews = true) : base(scrollRect.content.gameObject, hideChildrenViews)
-        {
-            Prefab = prefab;
-            if (hideChildrenViews) HideChildren();
-            _scrollRect = scrollRect;
-        }
-
-        public ListViewUi(IView v, string prefabName, string scrollRectName, bool hideChildrenViews = true) : this(
-            v.GetObject<View>(prefabName),
-            v.GetObject<ScrollRect>(scrollRectName), hideChildrenViews)
-        {
-        }
+        protected View Prefab { get; }
 
         public void HideChildren()
         {
@@ -117,6 +96,7 @@ namespace HotFix_Project.Views.Bases
             _list.Add(ui);
             return ui;
         }
+
         public T Instance(Func<View, T> func) => Instance(() => Object.Instantiate(Prefab, gameObject.transform), func);
 
         public void ClearList(Action<T> onRemoveFromList)
@@ -124,7 +104,41 @@ namespace HotFix_Project.Views.Bases
             foreach (var ui in _list) onRemoveFromList(ui);
             _list.Clear();
         }
+
         public void Remove(T obj) => _list.Remove(obj);
+    }
+
+    internal class ListViewUi<T> : ListBoardUi<T>
+    {
+        private readonly ScrollRect _scrollRect;
+
+        private ScrollRect ScrollRect
+        {
+            get
+            {
+                if (_scrollRect == null)
+                    throw new InvalidOperationException("如果要调用ScrollRect,请在构造的时候传入scrollrect控件");
+                return _scrollRect;
+            }
+        }
+
+        public ListViewUi(View prefab, RectTransform transform, bool hideChildrenViews = true) : base(prefab,
+            transform.gameObject, hideChildrenViews)
+        {
+        }
+
+        public ListViewUi(View prefab, ScrollRect scrollRect, bool hideChildrenViews = true) : base(prefab,
+            scrollRect.content.gameObject, hideChildrenViews)
+        {
+            if (hideChildrenViews) HideChildren();
+            _scrollRect = scrollRect;
+        }
+
+        public ListViewUi(IView v, string prefabName, string scrollRectName, bool hideChildrenViews = true) : this(
+            v.GetObject<View>(prefabName),
+            v.GetObject<ScrollRect>(scrollRectName), hideChildrenViews)
+        {
+        }
 
         public void SetVerticalScrollPosition(float value)
         {

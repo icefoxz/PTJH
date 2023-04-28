@@ -24,6 +24,9 @@ namespace Views
         event Action OnDisableEvent;
         string name { get; }
         View GetView();
+        void Show();
+        void Hide();
+        void Display(bool isShow);
     }
 
     public interface IPage : IView
@@ -87,5 +90,8 @@ namespace Views
         public Coroutine StartCo(IEnumerator enumerator) => StartCoroutine(enumerator);
         public void StopCo(IEnumerator enumerator) => StopCoroutine(enumerator);
         public void StopAllCo() => StopAllCoroutines();
+        public void Show() => Display(true);
+        public void Hide() => Display(false);
+        public void Display(bool isShow) => gameObject.SetActive(isShow);
     }
 }

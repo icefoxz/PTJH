@@ -109,6 +109,7 @@ public class Game : UnitySingleton<Game>
         Controllers.Reg(new DiziIdleController());
         Controllers.Reg(new FactionController());
         Controllers.Reg(new ChallengeStageController());
+        Controllers.Reg(new SkillController());
     }
 
     private static void TestFactionInventory()

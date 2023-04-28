@@ -29,7 +29,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public ICombatSet Combat { get; }
 
     internal DiziCombatUnit(int teamId, Dizi dizi) 
-        : base(teamId, dizi.Name, dizi.Hp, dizi.Strength, dizi.Agility)
+        : base(teamId: teamId, name: dizi.Name, maxHp: dizi.Hp, damage: dizi.Strength, speed: dizi.Agility)
     {
         Guid = dizi.Guid;
         Mp = dizi.Mp;
@@ -40,7 +40,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     }
 
     internal DiziCombatUnit(int teamId, CombatNpcSo npc) 
-        : base(teamId, npc.Name, npc.Hp, npc.Strength, npc.Agility)
+        : base(teamId: teamId, name: npc.Name, maxHp: npc.Hp, damage: npc.Strength, speed: npc.Agility)
     {
         Mp = npc.Mp;
         MaxMp = npc.Mp;
@@ -49,7 +49,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Combat = npc.GetCombatSet();
     }
 
-    internal DiziCombatUnit(IDiziCombatUnit unit) : base(unit)
+    internal DiziCombatUnit(IDiziCombatUnit unit) : base(u: unit)
     {
         Mp = unit.Mp;
         MaxMp = unit.Mp;
@@ -58,7 +58,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Combat = unit.Combat;
     }
 
-    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name, s.MaxHp, s.Damage, s.Agility)
+    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId: teamId, name: s.Name, maxHp: s.MaxHp, damage: s.Damage, speed: s.Agility)
     {
         Mp = s.Mp;
         MaxMp = s.Mp;
@@ -69,18 +69,18 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     //伤害减免
     public int TakeReductionDamage(int damage,CombatArgs arg)
     {
-        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage, arg);
-        AddMp(-mpConsume);
-        AddHp(-finalDamage);
+        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage: damage, arg: arg);
+        AddMp(mp: -mpConsume);
+        AddHp(hp: -finalDamage);
         return finalDamage;
     }
 
-    public override string ToString() => $"{Name}[{Hp}/{MaxHp}],[{Mp}/{MaxMp}]";
+    public override string ToString() => $"{Name}:力[{Strength}],敏[{Agility}],血[{Hp}/{MaxMp}],内[{Mp}/{MaxMp}]|伤:{Damage},速:{Speed}";
 
     public void AddMp(int mp)
     {
         Mp += mp;
-        Math.Clamp(Mp, 0, MaxMp);
+        Math.Clamp(value: Mp, min: 0, max: MaxMp);
     }
 }
 

@@ -9,6 +9,7 @@ using Server.Configs.Battles;
 using Server.Configs.Items;
 using Server.Controllers;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Server.Configs.Fields
 {
@@ -148,11 +149,11 @@ namespace Server.Configs.Fields
         [SerializeField]
         private WeaponFieldSo 武器;
 
-        public override Kinds Kind => Kinds.Weapon;
+        public override ItemType Type => ItemType.Equipment;
+        public override Sprite Icon => W.Icon;
         protected override ScriptableObject So => 武器;
         protected override IGameItem Gi => 武器;
-        protected override bool IsSupportSo => true;
-        private WeaponFieldSo W => So as WeaponFieldSo;
+        private WeaponFieldSo W => 武器;
         public EquipKinds EquipKind => W.EquipKind;
         public DiziGrades Grade => W.Grade;
         public WeaponArmed Armed => W.Armed;
@@ -166,11 +167,11 @@ namespace Server.Configs.Fields
         [SerializeField]
         private ArmorFieldSo 防具;
 
-        public override Kinds Kind => Kinds.Armor;
+        public override ItemType Type => ItemType.Equipment;
+        public override Sprite Icon => Gi.Icon;
         protected override ScriptableObject So => 防具;
         protected override IGameItem Gi => 防具;
-        protected override bool IsSupportSo => true;
-        private ArmorFieldSo A => So as ArmorFieldSo;
+        private ArmorFieldSo A => 防具;
         public EquipKinds EquipKind => A.EquipKind;
         public DiziGrades Grade => A.Grade;
         public int AddHp => A.AddHp;
@@ -183,115 +184,66 @@ namespace Server.Configs.Fields
         [SerializeField]
         private MedicineFieldSo 丹药;
 
-        public override Kinds Kind => Kinds.Medicine;
+        public override ItemType Type => ItemType.Medicine;
+        public override Sprite Icon => Gi.Icon;
         protected override ScriptableObject So => 丹药;
         protected override IGameItem Gi => 丹药;
-        protected override bool IsSupportSo => true;
     }
 
     [Serializable]
     internal class BookItem : GameItemField
     {
         [ConditionalField(true, nameof(TryUseSo))]
-        [SerializeField]
-        private BookSoBase 残卷;
+        [FormerlySerializedAs("残卷")][SerializeField]
+        private BookSoBase 书籍;
 
-        public override Kinds Kind => Kinds.Book;
-        protected override ScriptableObject So => 残卷;
-        protected override IGameItem Gi => 残卷;
-        protected override bool IsSupportSo => true;
+        public override ItemType Type => ItemType.Book;
+        public override Sprite Icon => Gi.Icon;
+        protected override ScriptableObject So => 书籍;
+        protected override IGameItem Gi => 书籍;
     }
 
     [Serializable]
     internal class StoryPropItem : GameItemField
     {
-        public override Kinds Kind => Kinds.StoryProp;
+        public override ItemType Type => ItemType.StoryProps;
+        public override Sprite Icon => Gi.Icon;
         protected override ScriptableObject So { get; }
         protected override IGameItem Gi { get; }
-        protected override bool IsSupportSo => false;
     }
 
     [Serializable]
     internal class FunctionPropItem : GameItemField
     {
-        public override Kinds Kind => Kinds.FunctionProp;
+        public override ItemType Type => ItemType.FunctionItem;
+        public override Sprite Icon => Gi.Icon;
         protected override ScriptableObject So { get; }
         protected override IGameItem Gi { get; }
-        protected override bool IsSupportSo => false;
     }
 
     [Serializable]
     internal abstract class GameItemField : IStacking<IGameItem>, IGameItem
     {
-        private const string m_Weapon = "武器";
-        private const string m_Armor = "防具";
-        private const string m_Medicine = "丹药";
-        private const string m_Book = "秘籍";
-        private const string m_StoryProp = "故事道具";
-        private const string m_FunctionProp = "功能道具";
-
-        public enum Kinds
-        {
-            [InspectorName(m_Weapon)] Weapon,
-            [InspectorName(m_Armor)] Armor,
-            [InspectorName(m_Medicine)] Medicine,
-            [InspectorName(m_Book)] Book,
-            [InspectorName(m_StoryProp)] StoryProp,
-            [InspectorName(m_FunctionProp)] FunctionProp
-        }
-
         [HideInInspector][SerializeField] private string _name;
 
-        //[ConditionalField(true, nameof(IsSupportSo))]
-        [ConditionalField(true, nameof(CheckSupport))]
-        [SerializeField]
-        private bool 引用;
-
-        [ConditionalField(true, nameof(TryUseSo), true)]
-        [SerializeField]
-        private int _id;
-
         [SerializeField] private int 数量 = 1;
-        public int Price => Gi.Price;
-        public int Id => UseSo() ? Gi?.Id ?? 0 : _id;
+        public int Id => Gi?.Id ?? 0;
         public string Name => Gi.Name;
         public string About => Gi.About;
 
         public IGameItem Item => this;
         public int Amount => 数量;
 
-        public ItemType Type => Kind switch
-        {
-            Kinds.Weapon => ItemType.Equipment,
-            Kinds.Armor => ItemType.Equipment,
-            Kinds.Medicine => ItemType.Medicine,
-            Kinds.Book => ItemType.Book,
-            Kinds.StoryProp => ItemType.StoryProps,
-            Kinds.FunctionProp => ItemType.StoryProps,
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        public abstract Kinds Kind { get; }
+        public abstract ItemType Type { get; }
+        public abstract Sprite Icon { get; }
         protected abstract ScriptableObject So { get; }
         protected abstract IGameItem Gi { get; }
-        private bool UseSo() => 引用;
-        protected abstract bool IsSupportSo { get; }
 
         protected bool TryUseSo()
         {
-            ScriptableObject so = So;
-            var supported = IsSupportSo;
-            if (!UseSo())
-            {
-                UpdateName(null);
-                return false;
-            }
-
-            UpdateName(so);
-            return supported;
+            UpdateName(So);
+            return true;
         }
-
-        private bool CheckSupport() => IsSupportSo;
 
         private void UpdateName(ScriptableObject so)
         {
@@ -300,25 +252,13 @@ namespace Server.Configs.Fields
             if (so)
             {
                 var d = (IDataElement)so;
-                title = d.Name;
-                id = d.Id;
+                if(Gi!=null)
+                {
+                    title = Gi.Name;
+                    id = Gi.Id;
+                }
             }
-
-            _name = $"{id}.{title}({GetKindName(Kind)}):{Amount}";
-        }
-
-        public static string GetKindName(Kinds kind)
-        {
-            return kind switch
-            {
-                Kinds.Weapon => m_Weapon,
-                Kinds.Armor => m_Armor,
-                Kinds.Medicine => m_Medicine,
-                Kinds.Book => m_Book,
-                Kinds.StoryProp => m_StoryProp,
-                Kinds.FunctionProp => m_FunctionProp,
-                _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
-            };
+            _name = $"{id}.{title}:{Amount}";
         }
     }
 }

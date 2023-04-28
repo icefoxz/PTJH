@@ -7,13 +7,15 @@ using UnityEngine;
 namespace Server.Configs.Skills
 {
     [CreateAssetMenu(fileName = "autoName", menuName = "战斗/武学/差值策略")]
-    [Serializable] internal class CombatDifferentialStrategySo : AutoAtNamingObject
+    [Serializable]
+    internal class CombatDifferentialStrategySo : AutoAtNamingObject, ISkillAttribute
     {
         public enum Calculate
         {
-            [InspectorName("除")]Divide,
-            [InspectorName("乘")]Multiply,
+            [InspectorName("除")] Divide,
+            [InspectorName("乘")] Multiply,
         }
+
         public enum Compares
         {
             [InspectorName("力")] Strength,
@@ -23,12 +25,13 @@ namespace Server.Configs.Skills
             [InspectorName("内")] Mp,
             [InspectorName("内上限")] MpMax,
         }
+
         public enum Settings
         {
-            [InspectorName("重击触发")]HardRate,
-            [InspectorName("重击倍率")]HardDamageRate,
-            [InspectorName("会心触发")]CriticalRate,
-            [InspectorName("闪避触发")]DogeRate
+            [InspectorName("重击触发")] HardRate,
+            [InspectorName("重击倍率")] HardDamageRate,
+            [InspectorName("会心触发")] CriticalRate,
+            [InspectorName("闪避触发")] DogeRate
         }
         //private bool SetLevelName()
         //{
@@ -74,7 +77,7 @@ namespace Server.Configs.Skills
         [SerializeField] private Calculate 计算;
         [SerializeField] private float 系数;
         [SerializeField] private ColorGrade 品级;
-        [SerializeField][TextArea] private string 说明;
+        [SerializeField] [TextArea] private string 说明;
 
         public Settings Set => _set;
         public Compares Compare => 差值;
@@ -85,6 +88,7 @@ namespace Server.Configs.Skills
         public string Intro => 说明;
 
         #region Calculate
+
         private float Calculation(CombatArgs arg)
         {
             return Cal switch
@@ -120,11 +124,14 @@ namespace Server.Configs.Skills
                 Compares.MpMax => dizi.MaxMp,
                 _ => throw new ArgumentOutOfRangeException()
             };
+
         #endregion
 
         public float GetHardRate(CombatArgs arg) => Calculation(arg);
         public float GetHardDamageRatio(CombatArgs arg) => Calculation(arg);
         public float GetCriticalRate(CombatArgs arg) => Calculation(arg);
         public float GetDodgeRate(CombatArgs arg) => Calculation(arg);
+
+        public ISkillAttribute GetCombatAttribute() => this;
     }
 }

@@ -97,7 +97,6 @@ internal class WinEquipmentManager : UiManagerBase
             AdvItems
         }
         private Button Btn_x { get; }
-        private ScrollRect Scroll_items { get; }
         private Button Btn_unequip { get; }
         private Button Btn_equip { get; }
         private Text Text_drop { get; }
@@ -116,8 +115,7 @@ internal class WinEquipmentManager : UiManagerBase
             {
                 Display(false);
             });
-            Scroll_items = v.GetObject<ScrollRect>("scroll_items");
-            ItemView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), Scroll_items.content.gameObject);
+            ItemView = new ListViewUi<Prefab_Item>(v,"prefab_item", "scroll_items");
             Btn_unequip = v.GetObject<Button>("btn_unequip");
             Btn_unequip.OnClickAdd(() =>
             {

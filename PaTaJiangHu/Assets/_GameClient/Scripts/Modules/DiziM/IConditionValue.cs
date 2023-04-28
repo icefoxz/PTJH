@@ -8,8 +8,17 @@ namespace DiziM
         int Max { get; }
         int Value { get; }
         int Fix { get; }
+        /// <summary>
+        /// 上限与固定值的比率
+        /// </summary>
         double MaxRatio { get; }
+        /// <summary>
+        /// 当前与固定值的比率
+        /// </summary>
         double ValueFixRatio { get; }
+        /// <summary>
+        /// 当前与最大值的比率
+        /// </summary>
         double ValueMaxRatio { get; }
     }
 

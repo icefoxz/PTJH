@@ -36,13 +36,13 @@ namespace Server.Configs.Items
         ITreatment[] Treatments { get; }
     }
 
-    [CreateAssetMenu(fileName = "id_medicine", menuName = "物件/弟子/药品")]
+    [CreateAssetMenu(fileName = "id_medicine", menuName = "物件/药品")]
     internal class MedicineFieldSo : AutoUnderscoreNamingObject, IMedicine
     {
         [SerializeField] private MedicineKinds 类型;
         [SerializeField] private DiziGrades 品级;
-        [SerializeField] private int 价钱;
         [SerializeField] private TreatmentMap[] 药效;
+        [SerializeField] private Sprite 图标;
         [SerializeField][TextArea] private string 说明;
 
         protected override string Suffix => Kind switch
@@ -57,11 +57,9 @@ namespace Server.Configs.Items
         public ITreatment[] Treatments => 药效;
         public MedicineKinds Kind => 类型;
         public int Grade => (int)品级;
+        public Sprite Icon => 图标;
         public string About => 说明;
-
         public ItemType Type => ItemType.Medicine;
-
-        public int Price => 价钱;
 
         [Serializable]
         private class TreatmentMap : ITreatment
@@ -110,19 +108,19 @@ namespace Server.Configs.Items
         private class Medicine : IMedicine
         {
             public int Id { get; }
+            public Sprite Icon { get; }
             public string Name { get; }
             public string About { get; }
             public ItemType Type => ItemType.Medicine;
-            public int Price { get; }
             public MedicineKinds Kind { get; }
             public int Grade { get; }
             public ITreatment[] Treatments { get; }
 
-            public Medicine(int id, string name, MedicineKinds kind, int grade, ITreatment[] treatments, int price, string about)
+            public Medicine(int id, string name, MedicineKinds kind, int grade, ITreatment[] treatments, string about, Sprite icon)
             {
                 Treatments = treatments;
-                Price = price;
                 About = about;
+                Icon = icon;
                 Grade = grade;
                 Kind = kind;
                 Id = id;
