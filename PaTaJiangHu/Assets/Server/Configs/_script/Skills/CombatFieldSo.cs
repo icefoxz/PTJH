@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Server.Configs.Battles;
 using Server.Configs.Items;
@@ -80,7 +81,7 @@ namespace Server.Configs.Skills
         public ICombatSet GetCombatSet(int level)
         {
             CheckThis();
-            var list = CustomCombatSets();
+            var list = CustomCombatSets().ToList();
             list.Add(LevelStrategy.GetCombatSet(level));
             return list.Combine();
         }

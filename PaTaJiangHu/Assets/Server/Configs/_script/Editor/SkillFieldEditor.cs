@@ -44,9 +44,9 @@ public abstract class SkillFieldSOEditor : Editor
             var arg = GenSimCombat();
             var set = so.GetCombatSet(level);
             var hardRate = set.GetHardRate(arg);
-            var hardMul = set.GetHardDamageRatio(arg);
+            var hardMul = 1 + set.GetHardDamageRatio(arg);
             var criRate = set.GetCriticalRate(arg);
-            var criMul = set.GetCriticalMultiplier(arg);
+            var criMul = 1 + set.GetCriticalDamageRatio(arg);
             var mpDmg = set.GetMpDamage(arg);
             var mpCou = set.GetMpCounteract(arg);
             var dodgeRate = set.GetDodgeRate(arg);
