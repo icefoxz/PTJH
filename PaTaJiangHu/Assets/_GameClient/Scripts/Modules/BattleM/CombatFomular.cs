@@ -27,26 +27,27 @@ public static class CombatFormula
         return (ran <= dodgeRate, dodgeRate, ran);
     }
     /// <summary>
-    /// 重击, 重击伤害=伤害*重击伤害率 +内力伤害
+    /// 重击, 重击伤害=伤害*(1 + 重击伤害率) + 内力伤害
     /// </summary>
     /// <param name="arg"></param>
     /// <returns></returns>
     public static int HardDamage(CombatArgs arg)
     {
-        var damage = arg.Caster.Damage * arg.Caster.Combat.GetHardDamageRatio(arg);
+        var dmg = arg.Caster.Damage;
+        var damage = dmg * (1 + arg.Caster.Combat.GetHardDamageRatio(arg));
         var mp = MpDamage(arg);
         arg.Caster.AddMp(-mp);
         return (int)(mp + damage);
     }
 
     /// <summary>
-    /// 会心, 会心伤害=伤害*倍率(内力不足，会抽取仅剩内力)
+    /// 会心, 会心伤害=伤害*(1 + 倍率)(内力不足，会抽取仅剩内力)
     /// </summary>
     /// <param name="arg"></param>
     /// <returns></returns>
     public static int CriticalDamage(CombatArgs arg)
     {
-        var mpMax = (int)arg.Caster.Combat.GetMpDamage(arg) * arg.Caster.Combat.GetCriticalMultiplier(arg);
+        var mpMax = (int)arg.Caster.Combat.GetMpDamage(arg) * (1 + arg.Caster.Combat.GetCriticalDamageRatio(arg));
         var mp = (int)Math.Min(mpMax, arg.Caster.Mp);
         arg.Caster.AddMp(-mp);
         return mp;

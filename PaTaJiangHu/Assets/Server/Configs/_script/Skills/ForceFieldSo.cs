@@ -21,7 +21,7 @@ namespace Server.Configs.Skills
                 new CombatSet(hardRate: null, 
                     hardDamageRatio: null, 
                     criticalRate: null, 
-                    criticalMultiplier: null,
+                    criticalDamageRatio: null,
                     mpDamage: new List<Func<CombatArgs, float>> { MpUsesFromCaster }, 
                     mpCounteract: null, 
                     dodgeRate: null)

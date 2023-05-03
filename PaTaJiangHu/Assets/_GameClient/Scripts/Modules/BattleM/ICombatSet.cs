@@ -9,7 +9,7 @@ public interface ICombatSet
     float GetHardRate(CombatArgs arg);
     float GetHardDamageRatio(CombatArgs arg);
     float GetCriticalRate(CombatArgs arg);
-    float GetCriticalMultiplier(CombatArgs arg);
+    float GetCriticalDamageRatio(CombatArgs arg);
     float GetMpDamage(CombatArgs arg);
     float GetMpCounteract(CombatArgs arg);
     float GetDodgeRate(CombatArgs arg);
@@ -36,7 +36,7 @@ public static class CombatExtension
             hardRate.Add(field.GetHardRate);
             hardDamageRatio.Add(field.GetHardDamageRatio);
             criticalRate.Add(field.GetCriticalRate);
-            criticalMultiplier.Add(field.GetCriticalMultiplier);
+            criticalMultiplier.Add(field.GetCriticalDamageRatio);
             mpDamage.Add(field.GetMpDamage);
             mpCounteract.Add(field.GetMpCounteract);
             dodgeRate.Add(field.GetDodgeRate);
@@ -45,7 +45,7 @@ public static class CombatExtension
             hardRate: hardRate, 
             hardDamageRatio: hardDamageRatio, 
             criticalRate: criticalRate,
-            criticalMultiplier: criticalMultiplier,
+            criticalDamageRatio: criticalMultiplier,
             mpDamage: mpDamage, 
             mpCounteract: mpCounteract, 
             dodgeRate: dodgeRate);

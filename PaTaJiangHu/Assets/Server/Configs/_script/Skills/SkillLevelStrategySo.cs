@@ -67,18 +67,18 @@ namespace Server.Configs.Skills
             public ICombatSet GetCombat()
             {
                 var hardRate = 0f;
-                var hardDamageRatio = 1f;
+                var hardDamageRatio = 0f;
                 var criticalRate = 0f;
-                var criticalMultiplier = 0f;
+                var criticalDamageRatio = 0f;
                 var mpDamage = 0f;
                 var mpCounteract = 0f;
                 var dodgeRate = 0f;
                 foreach (var field in Fields)
                 {
                     hardRate += field.HardRate;
-                    hardDamageRatio += field.HardDamageRateAddOn * 0.01f;
+                    hardDamageRatio += field.HardDamageRateAddOn;
                     criticalRate += field.CriticalRate;
-                    criticalMultiplier += field.CriticalMultiplier;
+                    criticalDamageRatio += field.CriticalDamageRateAddOn;
                     mpDamage += field.MpDamage;
                     mpCounteract += field.MpCounteract;
                     dodgeRate += field.DodgeRate;
@@ -87,7 +87,7 @@ namespace Server.Configs.Skills
                 var hardRateList = new List<Func<CombatArgs, float>>();
                 var hardDamageRatioList = new List<Func<CombatArgs, float>>();
                 var criticalRateList = new List<Func<CombatArgs, float>>();
-                var criticalMultiplierList = new List<Func<CombatArgs, float>>();
+                var criticalDamageRatioList = new List<Func<CombatArgs, float>>();
                 var mpDamageList = new List<Func<CombatArgs, float>>();
                 var mpCounteractList = new List<Func<CombatArgs, float>>();
                 var dodgeRateList = new List<Func<CombatArgs, float>>();
@@ -98,7 +98,7 @@ namespace Server.Configs.Skills
                     hardRateList.Add(_ => field.HardRate);
                     hardDamageRatioList.Add(_ => field.HardDamageRateAddOn);
                     criticalRateList.Add(_ => field.CriticalRate);
-                    criticalMultiplierList.Add(_ => field.CriticalMultiplier);
+                    criticalDamageRatioList.Add(_ => field.CriticalDamageRateAddOn);
                     dodgeRateList.Add(_ => field.DodgeRate);
                     mpDamageList.Add(_ => field.MpDamage);
                     mpCounteractList.Add(_ => field.MpCounteract);
@@ -130,7 +130,7 @@ namespace Server.Configs.Skills
                     hardRate: hardRateList,
                     hardDamageRatio: hardDamageRatioList,
                     criticalRate: criticalRateList,
-                    criticalMultiplier: criticalMultiplierList,
+                    criticalDamageRatio: criticalDamageRatioList,
                     mpDamage: mpDamageList,
                     mpCounteract: mpCounteractList,
                     dodgeRate: dodgeRateList);
@@ -244,11 +244,11 @@ namespace Server.Configs.Skills
             private float 会心倍率;
 
             public float CriticalRate => 会心率;
-            public float CriticalMultiplier => 会心倍率;
+            public float CriticalDamageRateAddOn => 会心倍率 * 0.01f;
             public string Name => _name;
 
             private string[] SetCritical() => new []{ $"触发:{ResolveSymbol(CriticalRate)}%" ,
-                                                      $"倍率:{ResolveSymbol(CriticalMultiplier)}"};
+                                                      $"倍率:{ResolveSymbol(CriticalDamageRateAddOn)}"};
             #endregion
             private static string ResolveSymbol(float value)
             {
