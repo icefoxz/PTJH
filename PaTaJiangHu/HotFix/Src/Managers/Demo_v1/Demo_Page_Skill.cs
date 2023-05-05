@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using _GameClient.Models;
@@ -169,7 +170,26 @@ internal class Demo_Page_Skill : UiManagerBase
 
         public void Set(Dizi dizi)
         {
-            
+            var combatSet = dizi.Skill.GetCombatSet();
+            var criDmgRatio = combatSet.GetCriticalDamageRatio(CombatArgs.Instance(dizi, dizi));
+            var criRate = combatSet.GetCriticalRate(CombatArgs.Instance(dizi, dizi));
+            var hrdDmgRatio = combatSet.GetHardDamageRatio(CombatArgs.Instance(dizi, dizi));
+            var hrdRate = combatSet.GetHardRate(CombatArgs.Instance(dizi, dizi));
+            var dodRate = combatSet.GetDodgeRate(CombatArgs.Instance(dizi, dizi));
+            ListViewLeft.ClearList(u => u.Destroy());
+            ListViewMid.ClearList(u => u.Destroy());
+            ListViewRight.ClearList(u => u.Destroy());
+            SetList(ListViewLeft, "重击率", $"{hrdRate:F1}%");
+            SetList(ListViewLeft, "重击伤害倍数", $"{1 + hrdDmgRatio}");
+            SetList(ListViewMid, "会心率", $"{criRate:F1}%");
+            SetList(ListViewMid, "会心伤害倍数", $"{1 + criDmgRatio}");
+            SetList(ListViewRight, "闪避率", $"{dodRate:F1}%");
+        }
+
+        private void SetList(ListBoardUi<Prefab_propInfo> list,string label,string value)
+        {
+            var ui = list.Instance(v => new Prefab_propInfo(v, true));
+            ui.Set(label, value);
         }
 
         private class Prefab_propInfo : UiBase
@@ -451,9 +471,9 @@ internal class Demo_Page_Skill : UiManagerBase
 
             public void SetSkill(ISkill skill, int level)
             {
-                element_levelCurrent.SetSkill(skill, level);
+                element_levelCurrent.SetSkill(skill, level, true);
                 if (skill.MaxLevel() > level)
-                    element_levelNext.SetSkill(skill, level + 1);
+                    element_levelNext.SetSkill(skill, level + 1, false);
                 else element_levelNext.Display(false);
                 Display(true);
             }
@@ -514,11 +534,11 @@ internal class Demo_Page_Skill : UiManagerBase
                     };
                 }
 
-                public void SetSkill(ISkill force, int level)
+                public void SetSkill(ISkill skill, int level, bool setInfo)
                 {
-                    view_skillTitle.Set(force.Name, level);
+                    view_skillTitle.Set(skill.Name, level);
 
-                    var props = force.GetProps(level);
+                    var props = skill.GetProps(level);
                     for (var i = 0; i < Props.Count; i++)
                     {
                         if (i < props.Length)
@@ -529,7 +549,7 @@ internal class Demo_Page_Skill : UiManagerBase
                         else Props[i].Display(false);
                     }
 
-                    var attribs = force.GetAttributes(level);
+                    var attribs = skill.GetAttributes(level);
                     for (var i = 0; i < Attribs.Count; i++)
                     {
                         if (i < attribs.Length)
@@ -540,9 +560,18 @@ internal class Demo_Page_Skill : UiManagerBase
                         else Attribs[i].Display(false);
                     }
 
-                    view_info.Set(force.About);
-                    Display(true);
+                    if (setInfo) view_info.Set(string.Empty, skill.Name, skill.About);
+                    else view_info.Display(false);
+                    Game.CoService.RunCo(RefreshAfterFrame());
+
+                    IEnumerator RefreshAfterFrame()
+                    {
+                        Display(false);
+                        yield return new WaitForEndOfFrame();
+                        Display(true);
+                    }
                 }
+
 
                 private class View_skillTitle : UiBase
                 {
@@ -606,14 +635,24 @@ internal class Demo_Page_Skill : UiManagerBase
 
                 private class View_info : UiBase
                 {
+                    private Text text_label { get; }
                     private Text text_title { get; }
+                    private Text text_about { get; }
 
                     public View_info(IView v, bool display) : base(v, display)
                     {
+                        text_label = v.GetObject<Text>("text_label");
                         text_title = v.GetObject<Text>("text_title");
+                        text_about = v.GetObject<Text>("text_about");
                     }
 
-                    public void Set(string info) => text_title.text = info;
+                    public void Set(string label, string title, string info)
+                    {
+                        text_label.text = label;
+                        text_title.text = title;
+                        text_about.text = info;
+                        Display(true);
+                    }
                 }
             }
         }

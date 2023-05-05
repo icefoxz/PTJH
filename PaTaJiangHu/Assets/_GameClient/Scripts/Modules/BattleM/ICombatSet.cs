@@ -6,13 +6,13 @@ using System.Collections.Generic;
 /// </summary>
 public interface ICombatSet
 {
-    float GetHardRate(CombatArgs arg);
-    float GetHardDamageRatio(CombatArgs arg);
-    float GetCriticalRate(CombatArgs arg);
-    float GetCriticalDamageRatio(CombatArgs arg);
-    float GetMpDamage(CombatArgs arg);
-    float GetMpCounteract(CombatArgs arg);
-    float GetDodgeRate(CombatArgs arg);
+    float GetHardRate(CombatArgs arg);//重击触发率
+    float GetHardDamageRatio(CombatArgs arg);//重击倍率
+    float GetCriticalRate(CombatArgs arg);//会心触发率
+    float GetCriticalDamageRatio(CombatArgs arg);//会心倍率
+    float GetMpDamage(CombatArgs arg);//内力消耗
+    float GetMpCounteract(CombatArgs arg);//内力抵消
+    float GetDodgeRate(CombatArgs arg);//闪避率
 }
 
 public static class CombatExtension

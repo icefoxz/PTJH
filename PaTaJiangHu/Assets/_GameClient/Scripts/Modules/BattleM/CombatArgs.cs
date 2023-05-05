@@ -1,4 +1,7 @@
-﻿using System;
+﻿using NameM;
+using System;
+using Models;
+using UnityEditor;
 
 /// <summary>
 /// 战斗参数
@@ -18,6 +21,14 @@ public class CombatArgs : EventArgs
         int teamId, ICombatSet combat) => new(unit: new CombatUnit(guid: guid, name: name, hp: hp, mp: mp,
         strength: strength, agility: agility, teamId: teamId, combat: combat));
 
+    public static CombatArgs Instance(Dizi a,Dizi b)
+    {
+        var aCombat = InstanceCombatUnit(guid: a.Guid, name: a.Name, hp: a.Hp, mp: a.Mp, strength: a.Strength,
+            agility: a.Agility, teamId: 0, combat: a.GetBattle());
+        var bCombat = InstanceCombatUnit(guid: b.Guid, name: b.Name, hp: b.Hp, mp: b.Mp, strength: b.Strength,
+            agility: b.Agility, teamId: 1, combat: b.GetBattle());
+        return new CombatArgs(caster: aCombat, target: bCombat);
+    }
     private class CombatUnit : IDiziCombatUnit
     {
         public int InstanceId { get; private set; }

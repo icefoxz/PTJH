@@ -135,6 +135,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         //HideLayoutChildren(MainPage.Top);//MidUi
         //HideLayoutChildren(MainPage.Game);//MidUi
         //HideLayoutChildren(MainPage.Btm);//MidUi
+        HideLayoutChildren(MidUi);
         HideLayoutChildren(BtmUi);
         HideLayoutChildren(Panel.transform);
     }
