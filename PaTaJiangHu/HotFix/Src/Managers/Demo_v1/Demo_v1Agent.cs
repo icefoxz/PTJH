@@ -18,6 +18,7 @@ internal class Demo_v1Agent : MainUiAgent
     {
         Main,
         Skills,
+        Faction,
     }
 
     //main
@@ -37,6 +38,7 @@ internal class Demo_v1Agent : MainUiAgent
 
     //page
     private Demo_Page_Skill Demo_Page_Skill { get; }
+    private Demo_Page_Faction Demo_Page_Faction { get; }
 
     //window
     private Demo_Win_RewardMgr Demo_Win_RewardMgr { get; }
@@ -71,6 +73,7 @@ internal class Demo_v1Agent : MainUiAgent
 
         //Page
         Demo_Page_Skill = new Demo_Page_Skill(this);
+        Demo_Page_Faction = new Demo_Page_Faction(this);
         DiziRecruitManager = new DiziRecruitManager(this);
 
         //窗口 Windows
@@ -137,6 +140,7 @@ internal class Demo_v1Agent : MainUiAgent
         ShowPage(page);
     }
 
+    internal void OpenFactionPage() => ShowPage(Pages.Faction);
     private void ShowPage(Pages page)
     {
         switch (page)
@@ -155,6 +159,12 @@ internal class Demo_v1Agent : MainUiAgent
                 Show(new UiManagerBase[]
                 {
                     Demo_Page_Skill,
+                }, true);
+                break;
+            case Pages.Faction:
+                Show(new UiManagerBase[]
+                {
+                    Demo_Page_Faction,
                 }, true);
                 break;
             default:
