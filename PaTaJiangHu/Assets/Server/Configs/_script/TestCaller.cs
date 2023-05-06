@@ -65,7 +65,8 @@ namespace Server.Configs
             Hack_Faction.TestFaction();
             var faction = Game.World.Faction;
             var p = AutoAdventureCfg.Player;
-            var capable = new Capable(grade: 0, dodgeSlot: 1, combatSlot: 1, bag: 5, strength: new GradeValue<int>(value: p.Strength, grade: 0),
+            var capable = new Capable(grade: 0, combatSlot: 1, forceSlot: 1, dodgeSlot: 1, bag: 5,
+                strength: new GradeValue<int>(value: p.Strength, grade: 0),
                 agility: new GradeValue<int>(value: p.Agility, grade: 0),
                 hp: new GradeValue<int>(value: p.Hp, grade: 0), mp: new GradeValue<int>(value: p.Mp, grade: 0),
                 food: 50, wine: 50, herb: 50, pill: 50);

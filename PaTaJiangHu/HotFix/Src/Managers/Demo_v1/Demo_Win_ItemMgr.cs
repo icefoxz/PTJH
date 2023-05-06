@@ -19,17 +19,19 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
         protected override string ViewName => "demo_win_item";
         protected override bool IsDynamicPixel => true;
+        private Demo_v1Agent Agent { get; }
         public Demo_Win_ItemMgr(Demo_v1Agent uiAgent) : base(uiAgent)
         {
             DiziController = Game.Controllers.Get<DiziController>();
             DiziAdvController = Game.Controllers.Get<DiziAdvController>();
+            Agent = uiAgent;
         }
         protected override void Build(IView view)
         {
             ItemWindow = new Win_Item(view,
                 (guid, index, itemType, slot) =>
                 {
-                    if(itemType == 2)
+                    if (itemType == 2)
                         DiziAdvController.SetDiziAdvItem(guid, index, slot);
                     else
                         DiziController.DiziEquip(guid, index, itemType);
@@ -40,8 +42,7 @@ namespace HotFix_Project.Managers.Demo_v1
                         DiziAdvController.RemoveDiziAdvItem(guid, index, slot);
                     else
                         DiziController.DiziUnEquipItem(guid, itemType);
-                }
-                );
+                }, Hide);
         }
         protected override void RegEvents()
         {
@@ -67,7 +68,12 @@ namespace HotFix_Project.Managers.Demo_v1
             Game.MainUi.ShowWindow(ItemWindow.View);
         }
         public override void Show() => ItemWindow.Display(true);
-        public override void Hide() => ItemWindow.Display(false);
+        public override void Hide()
+        {
+            ItemWindow.Display(false);
+            Agent.HideWindows();
+        }
+
         private class Win_Item : UiBase
         {
             private enum ItemTypes
@@ -82,7 +88,8 @@ namespace HotFix_Project.Managers.Demo_v1
             private Button Btn_x { get; }
             public Win_Item(IView v, 
                 Action<string, int, int, int> onEquip, 
-                Action<string, int, int, int> onUnequip) : base(v, false)
+                Action<string, int, int, int> onUnequip,
+                Action onCloseAction) : base(v, false)
             {
                 Scroll_item = v.GetObject<ScrollRect>("scroll_item");
                 ItemView = new ListViewUi<Prefab_Item>(v.GetObject<View>("prefab_item"), Scroll_item);
@@ -101,10 +108,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     ListItems((ItemTypes)SelectedType);
                 });
                 Btn_x = v.GetObject<Button>("btn_x");
-                Btn_x.OnClickAdd(() =>
-                {
-                    Game.MainUi.HideWindows();
-                });
+                Btn_x.OnClickAdd(onCloseAction);
             }
             private string SelectedDiziGuid { get; set; }
             private int SelectedItemIndex { get; set; }

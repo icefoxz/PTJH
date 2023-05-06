@@ -45,7 +45,12 @@ namespace Server.Configs.Battles
             var f = Skills.First(s => s.SkillType == SkillType.Force);
             var d = Skills.First(s => s.SkillType == SkillType.Dodge);
             var c = Skills.First(s => s.SkillType == SkillType.Combat && s.Combat.Armed == Armed);
-            return DiziSkill.Instance((c.Combat, c.Level), (f.Force, f.Level), (d.Dodge, d.Level)).GetCombatSet();
+            return new[]
+            {
+                c.Combat.GetCombatSet(c.Level),
+                f.Force.GetCombatSet(f.Level),
+                d.Dodge.GetCombatSet(d.Level)
+            }.Combine();
         }
 
         [Serializable]private class SkillField

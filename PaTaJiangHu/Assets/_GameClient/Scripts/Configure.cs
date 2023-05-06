@@ -7,6 +7,7 @@ using Server.Configs.ChallengeStages;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
 using Server.Configs.Items;
+using Server.Controllers;
 using UnityEngine;
 using Utls;
 using Object = UnityEngine.Object;
@@ -51,9 +52,11 @@ internal class Configure : MonoBehaviour
         [SerializeField] private StaminaConfigSo 体力配置;
         [SerializeField] private LevelConfigSo 升级配置;
         [SerializeField] private PropStateConfigSo 属性状态配置;
+        [SerializeField] private SkillConfigSo 技能配置;
         internal StaminaConfigSo StaminaCfg => GetSo(体力配置);
         internal LevelConfigSo LevelConfigSo => GetSo(升级配置);
         internal PropStateConfigSo PropState => GetSo(属性状态配置);
+        internal SkillConfigSo SkillCfg => GetSo(技能配置);
     }
 
     //弟子闲置配置

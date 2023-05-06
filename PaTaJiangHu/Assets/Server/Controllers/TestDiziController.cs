@@ -64,9 +64,9 @@ namespace Server.Controllers
             var name = GenerateName();
             var (str, agi, hp, mp, sta, inv) = Config.GradeConfigSo.GenerateFromGrade(grade: grade);
             var cr = Config.GradeConfigSo.GetRandomConsumeResource(grade).ToDictionary(r => r.Item1, r => r.Item2);
-            var cap = new Capable(grade: grade, dodgeSlot: 3, combatSlot: 5, bag: inv, 
-                strength: str, agility: agi, hp: hp, mp: mp, 
-                food: cr[ConsumeResources.Food], wine: cr[ConsumeResources.Wine], 
+            var cap = new Capable(grade: grade, combatSlot: 5, forceSlot: 2, dodgeSlot: 3, bag: inv,
+                strength: str, agility: agi, hp: hp, mp: mp,
+                food: cr[ConsumeResources.Food], wine: cr[ConsumeResources.Wine],
                 herb: cr[ConsumeResources.Herb], pill: cr[ConsumeResources.Pill]);
             return new Dizi(
                 name: name, 

@@ -24,9 +24,9 @@ public class CombatArgs : EventArgs
     public static CombatArgs Instance(Dizi a,Dizi b)
     {
         var aCombat = InstanceCombatUnit(guid: a.Guid, name: a.Name, hp: a.Hp, mp: a.Mp, strength: a.Strength,
-            agility: a.Agility, teamId: 0, combat: a.GetBattle());
+            agility: a.Agility, teamId: 0, combat: a.GetCombatSet());
         var bCombat = InstanceCombatUnit(guid: b.Guid, name: b.Name, hp: b.Hp, mp: b.Mp, strength: b.Strength,
-            agility: b.Agility, teamId: 1, combat: b.GetBattle());
+            agility: b.Agility, teamId: 1, combat: b.GetCombatSet());
         return new CombatArgs(caster: aCombat, target: bCombat);
     }
     private class CombatUnit : IDiziCombatUnit

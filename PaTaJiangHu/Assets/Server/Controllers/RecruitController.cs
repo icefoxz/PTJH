@@ -46,9 +46,9 @@ namespace Server.Controllers
             //var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
             var diziIndex = TempDiziList.Count;
             var capable = new Capable(grade: randomGrade,
-                dodgeSlot: 1, combatSlot: 1, bag: bag,
+                combatSlot: 1, forceSlot: 1, dodgeSlot: 1, bag: bag,
                 strength: strength, agility: agility, hp: hp, mp: mp,
-                food: cr[ConsumeResources.Food], wine: cr[ConsumeResources.Wine], 
+                food: cr[ConsumeResources.Food], wine: cr[ConsumeResources.Wine],
                 herb: cr[ConsumeResources.Herb], pill: cr[ConsumeResources.Pill]);
             var guid = Guid.NewGuid().ToString();
             var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,

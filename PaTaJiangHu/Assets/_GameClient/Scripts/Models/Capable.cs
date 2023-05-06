@@ -20,13 +20,17 @@ namespace _GameClient.Models
         public GradeValue<int> Mp { get; private set; }
 
         /// <summary>
-        /// 轻功格
-        /// </summary>
-        public int DodgeSlot { get; private set; }
-        /// <summary>
         /// 武功格
         /// </summary>
         public int CombatSlot { get; private set; }
+        /// <summary>
+        /// 内功格
+        /// </summary>
+        public int ForceSlot { get; private set; }
+        /// <summary>
+        /// 轻功格
+        /// </summary>
+        public int DodgeSlot { get; private set; }
         /// <summary>
         /// 背包格
         /// </summary>
@@ -41,13 +45,14 @@ namespace _GameClient.Models
         {
         }
 
-        public Capable(int grade, int dodgeSlot, int combatSlot, int bag, GradeValue<int> strength,
+        public Capable(int grade, int combatSlot,int forceSlot, int dodgeSlot, int bag, GradeValue<int> strength,
             GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int food, int wine, int herb,
             int pill)
         {
             Grade = grade;
             DodgeSlot = dodgeSlot;
             CombatSlot = combatSlot;
+            ForceSlot = forceSlot;
             Bag = bag;
             Strength = strength;
             Agility = agility;

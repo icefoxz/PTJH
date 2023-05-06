@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using _GameClient.Models;
 using Core;
 using HotFix_Project.Managers.GameScene;
@@ -31,21 +32,24 @@ internal class Demo_Win_SkillComprehend : UiManagerBase
     protected override bool IsDynamicPixel => true;
 
     private Dizi SelectedDizi { get; set; }
-    private SkillType SkillType { get; set; }
-    private int SkillIndex { get; set; }
+    private ISkill Skill{ get; set; }
 
     protected override void Build(IView view)
     {
-        win_skillComprehend = new Win_skillComprehend(view, OnSkillComprehend);
+        win_skillComprehend = new Win_skillComprehend(view, arg =>
+        {
+            OnSkillComprehend(arg);
+        }, () =>
+        {
+            Hide();
+            Agent.HideWindows();
+        });
     }
 
-    public void Set(Dizi dizi, SkillType type, int index)
+    public void Set(Dizi dizi, ISkill skill, int level = 0)
     {
         SelectedDizi = dizi;
-        SkillType = type;
-        SkillIndex = index;
-        var skill = SelectedDizi.Skill.GetSkill(type, index);
-        var level = SelectedDizi.Skill.GetLevel(skill);
+        Skill = skill;
         var nextLevel = level + 1;
         var comprehend = skill.Book.GetLevelMap(nextLevel);
         win_skillComprehend.SetSkill(skill, level, comprehend.BookCost);
@@ -53,19 +57,27 @@ internal class Demo_Win_SkillComprehend : UiManagerBase
         win_skillComprehend.SetAdditionItems(items);
     }
 
+    public void Set(Dizi dizi, SkillType type, int index)
+    {
+        var skill = SelectedDizi.Skill.GetSkill(type, index);
+        var level = SelectedDizi.Skill.GetLevel(skill);
+        Set(dizi, skill, level);
+    }
+
     private void OnSkillComprehend((int id, int amount)[] obj)
     {
-        SkillController.Comprehend(SelectedDizi.Guid, SkillType, SkillIndex, obj);
+        SkillController.Comprehend(SelectedDizi.Guid, Skill, obj);
         Hide();
+        Agent.HideWindows();
     }
 
     protected override void RegEvents()
     {
     }
 
-    public override void Show()=> win_skillComprehend.Display(true);
+    public override void Show() => win_skillComprehend.Display(true);
 
-    public override void Hide()=> win_skillComprehend.Display(false);
+    public override void Hide() => win_skillComprehend.Display(false);
 
     private class Win_skillComprehend : UiBase 
     {
@@ -85,7 +97,7 @@ internal class Demo_Win_SkillComprehend : UiManagerBase
         private View_additionItem view_additionItem { get; }
         private Color DefaultTextColor { get; set; }
         
-        public Win_skillComprehend(IView v,Action<(int id, int amount)[]> onComprehendAction) : base(v, false)
+        public Win_skillComprehend(IView v,Action<(int id, int amount)[]> onComprehendAction,Action onCloseAction) : base(v, false)
         {
             btn_close = v.GetObject<Button>("btn_close");
             img_skillIcon = v.GetObject<Image>("img_skillIcon");
@@ -107,7 +119,7 @@ internal class Demo_Win_SkillComprehend : UiManagerBase
                 onComprehendAction?.Invoke(view_additionItem.SelectedItems);
                 view_additionItem.ClearItems();
             });
-            btn_close.OnClickAdd(() => Display(false));
+            btn_close.OnClickAdd(onCloseAction);
         }
 
         public void SetSkill(ISkill skill, int currentLevel, int bookCost)
@@ -153,8 +165,19 @@ internal class Demo_Win_SkillComprehend : UiManagerBase
             private ListViewUi<Prefab_item> ItemView { get; }
             private Dictionary<Prefab_item,bool> ItemMap { get; }
 
-            public (int id, int amount)[] SelectedItems =>
-                ItemMap.Where(kv => kv.Value).GroupBy(kv => kv.Key.Id).Select(kv => (kv.Key, kv.Count())).ToArray();
+            public (int id, int amount)[] SelectedItems
+            {
+                get
+                {
+                    var list = new List<(int Key, int)>();
+                    foreach (var kv1 in ItemMap.Where(kv => kv.Value).GroupBy(kv => kv.Key.Id))
+                    {
+                        list.Add((kv1.Key, kv1.Count()));
+                    }
+
+                    return list.ToArray();
+                }
+            }
 
             public View_additionItem(IView v) : base(v, true)
             {

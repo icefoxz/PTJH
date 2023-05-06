@@ -19,7 +19,7 @@ namespace Server.Configs.Battles
         [InspectorName("空手")]Unarmed,
         [InspectorName("剑")]Sword,
         [InspectorName("刀")]Blade,
-        [InspectorName("棍")]Stick
+        [InspectorName("棍")]Staff
     }
 
     public interface IEquipment : IGameItem

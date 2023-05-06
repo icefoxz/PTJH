@@ -4,6 +4,7 @@ using _GameClient.Models;
 using HotFix_Project.Managers.GameScene;
 using HotFix_Project.UiEffects;
 using Models;
+using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Controllers;
 using Utls;
@@ -224,18 +225,24 @@ internal class Demo_v1Agent : MainUiAgent
     {
         SelectedDizi = Faction.GetDizi(guid);
         Demo_Win_SkillComprehend.Set(SelectedDizi, type, index);
+        MainUi.ShowWindow(Demo_Win_SkillComprehend.View);
     }
 
-    public void SetBookComprehend(string guid)
+    public void SetBookComprehend(string guid, SkillType type, int index)
     {
         SelectedDizi = Faction.GetDizi(guid);
-        var items = Faction.Books.Select(b => (b.Id, b.Name, b.Icon)).ToArray();
+        var maps = SelectedDizi.Skill.Maps.ToArray();
+        var books = Faction.GetBooksForSkill(type);
+        var items = books.Where(b => maps.All(m => !m.IsThis(b.GetSkill()))).Select(b => (b.Id, b.Name, b.Icon))
+            .ToArray();
         Demo_Win_ItemSelector.SetItems(items, OnBookConfirmed);
+        MainUi.ShowWindow(Demo_Win_ItemSelector.View);
 
         void OnBookConfirmed(int id)
         {
             var book = Faction.GetBook(id);
-            Demo_Win_SkillComprehend.Set(SelectedDizi, book.GetSkill().SkillType, -1);
+            Demo_Win_SkillComprehend.Set(SelectedDizi, book.GetSkill(), index);
+            MainUi.ShowWindow(Demo_Win_SkillComprehend.View);
         }
     }
 }

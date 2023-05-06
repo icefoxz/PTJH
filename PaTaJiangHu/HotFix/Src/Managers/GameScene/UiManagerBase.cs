@@ -30,7 +30,7 @@ internal abstract class UiManagerBase
     /// 如果Ui是指定例:w 1080 h 1200, 设成true, 如果是根据硬件动态像素 = false
     /// </summary>
     protected abstract bool IsDynamicPixel { get; }
-    protected IView View { get; private set; }
+    public IView View { get; private set; }
 
     protected UiManagerBase(MainUiAgent uiAgent)
     {
@@ -62,4 +62,17 @@ internal abstract class UiManagerBase
     /// 当请求关闭Ui
     /// </summary>
     public abstract void Hide();
+}
+
+internal abstract class WinUiManagerBase : UiManagerBase
+{
+    protected WinUiManagerBase(MainUiAgent uiAgent) : base(uiAgent)
+    {
+    }
+
+    public override void Hide()
+    {
+        View.Hide();
+        MainUiAgent.HideWindows();
+    }
 }

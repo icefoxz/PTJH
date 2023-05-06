@@ -70,6 +70,7 @@ public class EventString
     //弟子技能
     public const string Dizi_Skill_ComprehendFailed = "Dizi_Skill_ComprehendFailed";//弟子技能领悟失败
     public const string Dizi_Skill_LevelUp = "Dizi_Skill_ComprehendSuccess";//弟子技能领悟成功
+    public const string Dizi_Skill_Update = "Dizi_Skill_Update"; //弟子技能更新
 
     //门派faction
     public const string Faction_DiziAdd = "Faction_DiziAdd";//给门派加弟子

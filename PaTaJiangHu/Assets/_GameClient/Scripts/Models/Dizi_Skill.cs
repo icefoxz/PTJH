@@ -1,17 +1,18 @@
 ﻿//弟子模型,处理技能和战斗相关代码
-
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Server.Configs.Battles;
+using Server.Configs.Characters;
 using Server.Configs.Skills;
+using Server.Controllers;
 
 namespace Models
 {
     //弟子装备和技能处理类,主要处理战斗相关的功能
     public partial class Dizi
     {
+        private SkillConfigSo SkillConfig => Game.Config.DiziCfg.SkillCfg;
         public IWeapon Weapon { get; private set; }
         public IArmor Armor { get; private set; }
         internal void SetWeapon(IWeapon weapon)
@@ -27,7 +28,7 @@ namespace Models
 
         public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
 
-        internal ICombatSet GetBattle() => Skill.GetCombatSet();
+        public ICombatSet GetCombatSet() => SkillConfig.GetCombatSet(this);
         internal void SetSkill(DiziSkill skill) => Skill = skill;
 
         public void SkillLevelUp(ISkill skill)
@@ -40,7 +41,16 @@ namespace Models
         public void UseSkill(SkillType type, int index)
         {
             var skill = Skill.UseSkill(type, index);
+            SendEvent(EventString.Dizi_Skill_Update);
             Log($"使用{skill}");
+        }
+
+        public void ForgetSkill(SkillType type, int index)
+        {
+            var skill = Skill.GetSkill(type, index);
+            Skill.RemoveSkill(skill);
+            SendEvent(EventString.Dizi_Skill_Update);
+            Log($"遗忘{skill.Name}");
         }
     }
 
@@ -57,7 +67,7 @@ namespace Models
         private IEnumerable<SkillMap> CombatMaps => CombatSkills;
         private IEnumerable<SkillMap> ForceMaps => ForceSkills;
         private IEnumerable<SkillMap> DodgeMaps => DodgeSkills;
-        public IEnumerable<SkillMap> Skills => CombatMaps.Concat(ForceMaps).Concat(DodgeMaps);
+        public IEnumerable<SkillMap> Maps => CombatMaps.Concat(ForceMaps).Concat(DodgeMaps);
 
         public CombatSkillMap Combat { get; private set; }
         public ForceSkillMap Force { get; private set; }
@@ -105,32 +115,65 @@ namespace Models
 
         public int LevelUp(ISkill skill)
         {
-            var set = Skills.SingleOrDefault(c => c.IsThis(skill)) ??
-                      throw new NullReferenceException($"技能={skill.Id}.{skill.Name}不存在!");
+            var set = Maps.SingleOrDefault(c => c.IsThis(skill)) ?? AddSkill(skill);
             set.LevelUp();
             return set.Level;
         }
 
-        public void AddSkill(ISkill skill)
+        public SkillMap AddSkill(ISkill skill)
+        {
+            SkillMap map = null;
+            switch (skill.SkillType)
+            {
+                case SkillType.Combat:
+                    var com = InstanceCombat((ICombatSkill)skill);
+                    _combatSkills.Add(com);
+                    map = com;
+                    break;
+                case SkillType.Force:
+                    var force = InstanceForce(skill);
+                    _forceSkills.Add(force);
+                    map = force;
+                    break;
+                case SkillType.Dodge:
+                    var dodge = InstanceDodge(skill);
+                    _dodgeSkills.Add(dodge);
+                    map = dodge;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            return map;
+        }
+
+        public void RemoveSkill(ISkill skill) 
         {
             switch (skill.SkillType)
             {
                 case SkillType.Combat:
-                    _combatSkills.Add(InstanceCombat((ICombatSkill)skill));
+                    var combat = CombatSkills.Single(m => m.IsThis(skill));
+                    _combatSkills.Remove(combat);
+                    if (Combat.IsThis(skill))
+                        Combat = null;
                     break;
                 case SkillType.Force:
-                    _forceSkills.Add(InstanceForce(skill));
+                    var force = ForceSkills.Single(m => m.IsThis(skill));
+                    _forceSkills.Remove(force);
+                    if (Force.IsThis(skill))
+                        Force = null;
                     break;
                 case SkillType.Dodge:
-                    _dodgeSkills.Add(InstanceDodge(skill));
+                    var dodge = DodgeSkills.Single(m => m.IsThis(skill));
+                    _dodgeSkills.Remove(dodge);
+                    if (Dodge.IsThis(skill))
+                        Dodge = null;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        public ICombatSet GetCombatSet() => new[] { Combat.GetCombatSet(), Force.GetCombatSet(), Dodge.GetCombatSet() }.Combine();
-        public int GetLevel(ISkill skill) => Skills.SingleOrDefault(m => m.IsThis(skill))?.Level ?? 0;
+        public int GetLevel(ISkill skill) => Maps.SingleOrDefault(m => m.IsThis(skill))?.Level ?? 0;
 
         public ISkill GetSkill(SkillType type, int index)
         {

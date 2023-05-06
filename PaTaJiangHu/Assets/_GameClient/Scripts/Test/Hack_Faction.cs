@@ -15,10 +15,12 @@ namespace Test
         [SerializeField] private ItemToAdd<WeaponFieldSo>[] _weapons;
         [SerializeField] private ItemToAdd<ArmorFieldSo>[] _armors;
         [SerializeField] private ItemToAdd<MedicineFieldSo>[] _medicines;
+        [SerializeField] private ItemToAdd<BookFieldSo>[] _books;
 
         private ItemToAdd<WeaponFieldSo>[] Weapons => _weapons;
         private ItemToAdd<ArmorFieldSo>[] Armors => _armors;
         private ItemToAdd<MedicineFieldSo>[] Medicines => _medicines;
+        private ItemToAdd<BookFieldSo>[] Books => _books;
 
         public static void TestFaction()
         {
@@ -32,6 +34,7 @@ namespace Test
             var faction = Game.World.Faction;
             AddItem(Weapons, i => faction.AddWeapon(i.Instance()));
             AddItem(Armors, i => faction.AddArmor(i.Instance()));
+            AddItem(Books, i => faction.AddBook(i));
             Medicines.ForEach(i => faction.AddMedicine(i.Item, i.Amount));
         }
 

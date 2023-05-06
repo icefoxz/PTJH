@@ -17,16 +17,9 @@ namespace Server.Controllers
         /// 领悟技能 
         /// </summary>
         /// <param name="diziGuid"></param>
-        /// <param name="skillIndex"></param>
+        /// <param name="skill"></param>
         /// <param name="comprehendItems"></param>
-        /// <param name="skillType"></param>
-        public void Comprehend(string diziGuid, SkillType skillType, int skillIndex,
-            (int id, int amount)[] comprehendItems)
-        {
-            var dizi = Faction.GetDizi(diziGuid);
-            var skill = dizi.Skill.GetSkill(skillType, skillIndex);
-            Comprehend(dizi.Guid, skill.Book.Id, comprehendItems);
-        }
+        public void Comprehend(string diziGuid, ISkill skill, (int id, int amount)[] comprehendItems) => Comprehend(diziGuid, skill.Book.Id, comprehendItems);
 
         /// <summary>
         /// 领悟技能
@@ -44,13 +37,16 @@ namespace Server.Controllers
             var comprehend = book.GetLevelMap(nextLevel);
             var luck = Sys.Luck;
             var comprehendRate = comprehend.Rate + GetAddOnFrom(comprehendItems, nextLevel);
-            if (comprehendRate > luck)
+            if (!IsLuckInRange(luck, comprehendRate))
             {
+                XDebug.Log($"领悟失败,幸运值:{luck},领悟率:{comprehendRate}");
                 Game.MessagingManager.SendParams(dizi.Guid, EventString.Dizi_Skill_ComprehendFailed, "领悟失败");
                 return;
             }
             dizi.SkillLevelUp(skill);
         }
+
+        private static bool IsLuckInRange(int luck, float comprehendRate) => luck <= comprehendRate;
 
         private float GetAddOnFrom((int id, int amount)[] arg,int level)
         {
@@ -74,6 +70,18 @@ namespace Server.Controllers
         {
             var dizi = Faction.GetDizi(diziGuid);
             dizi.UseSkill(skillType, skillIndex);
+        }
+
+        /// <summary>
+        /// 遗忘技能
+        /// </summary>
+        /// <param name="diziGuid"></param>
+        /// <param name="skillType"></param>
+        /// <param name="skillIndex"></param>
+        public void ForgetSkill(string diziGuid, SkillType skillType, int skillIndex)
+        {
+            var dizi = Faction.GetDizi(diziGuid);
+            dizi.ForgetSkill(skillType, skillIndex);
         }
     }
 }

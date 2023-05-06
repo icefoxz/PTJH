@@ -8,7 +8,7 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1;
 
-internal class Demo_Win_ItemSelector : UiManagerBase
+internal class Demo_Win_ItemSelector : WinUiManagerBase
 {
     private Win_itemSelector win_itemSelector { get; set; }
     public Demo_Win_ItemSelector(MainUiAgent uiAgent) : base(uiAgent)
@@ -20,18 +20,21 @@ internal class Demo_Win_ItemSelector : UiManagerBase
     protected override bool IsDynamicPixel => true;
 
     private event Action<int> OnConfirm;
-    protected override void Build(IView view) => win_itemSelector = new Win_itemSelector(view, OnConfirm);
+    protected override void Build(IView view) => win_itemSelector = new Win_itemSelector(view, id=>
+    {
+        OnConfirm?.Invoke(id);
+    }, Hide);
 
     protected override void RegEvents() { }
 
     public override void Show() => win_itemSelector.Display(true);
 
-    public override void Hide() => win_itemSelector.Display(false);
+    //public override void Hide() => win_itemSelector.Display(false);
 
     public void SetItems((int id, string title, Sprite icon)[] items, Action<int> onConfirmAction)
     {
         OnConfirm = onConfirmAction;
-        win_itemSelector.SetItems(items, 0);
+        win_itemSelector.SetItems(items);
         Show();
     }
 
@@ -43,18 +46,19 @@ internal class Demo_Win_ItemSelector : UiManagerBase
 
         private int SelectedId { get; set; }
 
-        public Win_itemSelector(IView view, Action<int> onConfirmAction) : base(view, false)
+        public Win_itemSelector(IView view, Action<int> onConfirmAction, Action onCloseAction) : base(view, false)
         {
             ItemList = new ListViewUi<Prefab_item>(view, "prefab_item", "scroll_item");
             btn_x = view.GetObject<Button>("btn_x");
             btn_confirm = view.GetObject<Button>("btn_confirm");
-            btn_x.OnClickAdd(() => Display(false));
+            btn_x.OnClickAdd(onCloseAction);
             btn_confirm.OnClickAdd(() => onConfirmAction?.Invoke(SelectedId));
         }
 
         public void SetItems((int id,string title, Sprite icon)[] items,int selectedIndex = 0)
         {
             ItemList.ClearList(ui => ui.Destroy());
+            btn_confirm.gameObject.SetActive(items.Length > 0);
             for (int i = 0; i < items.Length; i++)
             {
                 var index = i;
@@ -79,7 +83,7 @@ internal class Demo_Win_ItemSelector : UiManagerBase
         private class Prefab_item : UiBase
         {
             private Image img_select { get; }
-            private Image img_icon { get; }
+            private Image img_ico { get; }
             private Text text_title { get; }
             private Button btn_item { get; }
             public int Id { get; }
@@ -87,16 +91,16 @@ internal class Demo_Win_ItemSelector : UiManagerBase
             public Prefab_item(IView v, int id) : base(v, true)
             {
                 Id = id;
-                img_select = v.GetObject<Image>("img_select ");
-                img_icon = v.GetObject<Image>("img_icon ");
-                text_title = v.GetObject<Text>("text_title ");
-                btn_item = v.GetObject<Button>("btn_item ");
+                img_select = v.GetObject<Image>("img_select");
+                img_ico = v.GetObject<Image>("img_ico");
+                text_title = v.GetObject<Text>("text_title");
+                btn_item = v.GetObject<Button>("btn_item");
             }
 
             public void SetItem(string title, Sprite icon,Action onClickAction)
             {
                 text_title.text = title;
-                img_icon.sprite = icon;
+                img_ico.sprite = icon;
                 btn_item.OnClickAdd(onClickAction);
             }
 

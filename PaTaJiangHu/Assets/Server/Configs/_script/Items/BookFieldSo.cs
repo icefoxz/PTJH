@@ -31,14 +31,14 @@ namespace Server.Configs.Items
         private SkillLevelingSo SkillLeveling => 等级策略;
 
         /// <summary>
-        /// 获取升级概率, -1表示无法升级
+        /// 获取升级设定
         /// </summary>
         /// <param name="nextLevel"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public override ISkillLevelMap GetLevelMap(int nextLevel)
         {
-            if (nextLevel <= 1)
+            if (nextLevel < 1)
                 throw new NotImplementedException("等级不可为<=1");
             if (nextLevel > SkillFieldSo.MaxLevel())
                 throw new NotImplementedException("等级不可超过最大等级");

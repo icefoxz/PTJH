@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -9,7 +10,9 @@ using ILAdapters;
 using ILRuntime.Mono.Cecil.Pdb;
 using ILRuntime.Runtime.Intepreter;
 using ILRuntimeDemo;
+using Models;
 using Newtonsoft.Json.Linq;
+using Server.Configs.Items;
 using UnityEngine;
 using UnityEngine.Networking;
 using Utls;
@@ -74,8 +77,18 @@ namespace Systems
             appdomain.DelegateManager.RegisterFunctionDelegate<int, View, IView>();
             appdomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance>();
 
+            appdomain.DelegateManager.RegisterFunctionDelegate<KeyValuePair<ILTypeInstance, bool>, bool>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<KeyValuePair<ILTypeInstance, bool>, int>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<KeyValuePair<ILTypeInstance, bool>, float>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<KeyValuePair<ILTypeInstance, bool>, object>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<KeyValuePair<ILTypeInstance, bool>, string>();
+
             //Linq 弟子
             appdomain.DelegateManager.RegisterFunctionDelegate<Dizi, bool>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<IBook, bool>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<IBook, ValueTuple<int, string, Sprite>>();
+            appdomain.DelegateManager.RegisterFunctionDelegate<DiziSkill.SkillMap, bool>();
+
 
             appdomain.DelegateManager.RegisterFunctionDelegate<object>();
             appdomain.DelegateManager.RegisterFunctionDelegate<string>();
@@ -103,6 +116,7 @@ namespace Systems
             appdomain.DelegateManager.RegisterMethodDelegate<ValueTuple<int, int, EffectView, RectTransform>>();
             appdomain.DelegateManager.RegisterMethodDelegate<ValueTuple<int, int, RectTransform>>();
             appdomain.DelegateManager.RegisterMethodDelegate<IEffectView>();
+
 
             appdomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appdomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());

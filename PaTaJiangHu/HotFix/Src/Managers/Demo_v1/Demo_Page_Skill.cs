@@ -32,6 +32,7 @@ internal class Demo_Page_Skill : UiManagerBase
     protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Page;
     protected override string ViewName => "demo_page_skill";
     protected override bool IsDynamicPixel => true;
+
     protected override void Build(IView v)
     {
         view_diziInfo = new View_diziInfo(v.GetObject<View>("view_diziInfo"), true);
@@ -42,16 +43,17 @@ internal class Demo_Page_Skill : UiManagerBase
             {
                 SkillSelected(s, i);
             },
+            (guid, skill, index) =>
+            {
+                Agent.SetBookComprehend(guid, skill, index);
+            },
             Evolve,
             SkillUses,
             SkillForget,
             () => Agent.SetSkillComprehend(_selectedDizi.Guid, _selectedSkill, _selectedIndex),
             true);
         view_diziList = new View_DiziList(v.GetObject<View>("view_diziList"),
-            guid =>
-            {
-                Agent.SetDiziView(guid, Demo_v1Agent.Pages.Skills);
-            });
+            guid => { Agent.SetDiziView(guid, Demo_v1Agent.Pages.Skills); });
     }
 
     private SkillType _selectedSkill;
@@ -75,6 +77,8 @@ internal class Demo_Page_Skill : UiManagerBase
 
     private void SkillForget()
     {
+        var controller = Game.Controllers.Get<SkillController>();
+        controller.ForgetSkill(_selectedDizi.Guid, _selectedSkill, _selectedIndex);
         Debug.Log($"SkillForget: {_selectedSkill} {_selectedIndex}");
     }
 
@@ -94,14 +98,36 @@ internal class Demo_Page_Skill : UiManagerBase
         _selectedSkill = SkillType.Force;
         _selectedIndex = 0;
         _selectedDizi = dizi;
-        view_diziInfo.Set(dizi);
-        view_diziProps.Set(dizi);
+        UpdateSelected();
+    }
+
+    protected override void RegEvents()
+    {
+        Game.MessagingManager.RegEvent(EventString.Dizi_Skill_LevelUp, _ => UpdateSelected());
+        Game.MessagingManager.RegEvent(EventString.Dizi_Skill_Update, _ => UpdateSelected());
+    }
+
+    private void UpdateSelected()
+    {
+        ResolveSelected();
+        view_diziInfo.Set(_selectedDizi);
+        view_diziProps.Set(_selectedDizi);
         view_tags.Set(Array.Empty<(string, Action)>());
-        view_skillDev.UpdateSkill(dizi,_selectedSkill,_selectedIndex);
+        view_skillDev.UpdateSkill(_selectedDizi, _selectedSkill, _selectedIndex);
         view_diziList.UpdateList();
     }
 
-    protected override void RegEvents() {}
+    private void ResolveSelected()
+    {
+        var isSkillAvailable = _selectedSkill switch
+        {
+            SkillType.Combat => _selectedDizi.Skill.CombatSkills.Count > _selectedIndex,
+            SkillType.Force => _selectedDizi.Skill.ForceSkills.Count > _selectedIndex,
+            SkillType.Dodge => _selectedDizi.Skill.DodgeSkills.Count > _selectedIndex,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        _selectedIndex = isSkillAvailable ? _selectedIndex : -1;
+    }
 
     public override void Show() => View.Show();
 
@@ -170,7 +196,7 @@ internal class Demo_Page_Skill : UiManagerBase
 
         public void Set(Dizi dizi)
         {
-            var combatSet = dizi.Skill.GetCombatSet();
+            var combatSet = dizi.GetCombatSet();
             var criDmgRatio = combatSet.GetCriticalDamageRatio(CombatArgs.Instance(dizi, dizi));
             var criRate = combatSet.GetCriticalRate(CombatArgs.Instance(dizi, dizi));
             var hrdDmgRatio = combatSet.GetHardDamageRatio(CombatArgs.Instance(dizi, dizi));
@@ -244,6 +270,7 @@ internal class Demo_Page_Skill : UiManagerBase
 
         public View_skillDev(IView v,
             Action<SkillType,int> onSkillSelectedAction,
+            Action<string,SkillType,int> onEmptySkillAction,
             Action onUpgradeAction,
             Action onUseAction,
             Action onForgetAction,
@@ -251,10 +278,9 @@ internal class Demo_Page_Skill : UiManagerBase
             bool display) : base(v, display)
         {
             view_skillManagement = new View_skillManagement(v.GetObject<View>("view_skillManagement"),
-                (s, i) =>
-                {
-                    onSkillSelectedAction?.Invoke(s, i);
-                }, display);
+                (s, i) => onSkillSelectedAction?.Invoke(s, i), 
+                onEmptySkillAction,
+                display);
             view_skillInfo = new View_skillInfo(v.GetObject<View>("view_skillInfo"), display);
             view_buttons = new View_buttons(v: v.GetObject<View>("view_buttons"),
                 onUpgradeAction: () => onUpgradeAction?.Invoke(),
@@ -277,8 +303,8 @@ internal class Demo_Page_Skill : UiManagerBase
             }
             var arg = skillType switch
             {
-                SkillType.Combat => (dizi.Skill.ForceSkills[index].Skill, dizi.Skill.ForceSkills[index].Level),
-                SkillType.Force => (dizi.Skill.CombatSkills[index].Skill, dizi.Skill.CombatSkills[index].Level),
+                SkillType.Combat => (dizi.Skill.CombatSkills[index].Skill, dizi.Skill.CombatSkills[index].Level),
+                SkillType.Force => (dizi.Skill.ForceSkills[index].Skill, dizi.Skill.ForceSkills[index].Level),
                 SkillType.Dodge => (dizi.Skill.DodgeSkills[index].Skill, dizi.Skill.DodgeSkills[index].Level),
                 _ => throw new ArgumentOutOfRangeException(nameof(skillType), skillType, null)
             };
@@ -295,23 +321,23 @@ internal class Demo_Page_Skill : UiManagerBase
             {
                 case SkillType.Force:
                 {
-                    var skill = diziSkill.ForceSkills[index];
-                    isUseable = skill != diziSkill.Force;
-                    isUpgradable = skill.Level < diziSkill.Force.MaxLevel;
+                    var skill = diziSkill.GetSkill(skillType, index);
+                    isUseable = !diziSkill.Force?.IsThis(skill)?? true;
+                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel();
                     break;
                 }
                 case SkillType.Combat:
                 {
-                    var skill = diziSkill.CombatSkills[index];
-                    isUseable = skill != diziSkill.Combat;
-                    isUpgradable = skill.Level < diziSkill.Combat.MaxLevel;
+                    var skill = diziSkill.GetSkill(skillType, index);
+                    isUseable = !diziSkill.Combat?.IsThis(skill) ?? true;
+                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel();
                     break;
                 }
                 case SkillType.Dodge:
                 {
-                    var skill = diziSkill.DodgeSkills[index];
-                    isUseable = skill != diziSkill.Dodge;
-                    isUpgradable = skill.Level < diziSkill.Dodge.MaxLevel;
+                    var skill = diziSkill.GetSkill(skillType, index);
+                    isUseable = !diziSkill.Dodge?.IsThis(skill) ?? true;
+                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel();
                     break;
                 }
                 default:
@@ -327,12 +353,15 @@ internal class Demo_Page_Skill : UiManagerBase
             private ListViewUi<Prefab_skill> CombatList { get; }
             private ListViewUi<Prefab_skill> DodgeList { get; }
             private event Action<SkillType,int> OnSkillSelected;
+            private event Action<string,SkillType,int> OnEmptyAction;
 
             public View_skillManagement(IView v,
                 Action<SkillType,int> onSkillSelectedAction,
+                Action<string, SkillType, int> onEmptySkillAction,
                 bool display) : base(v, display)
             {
                 OnSkillSelected = onSkillSelectedAction;
+                OnEmptyAction = onEmptySkillAction;
                 ForceList = new ListViewUi<Prefab_skill>(v, "prefab_skill", "scroll_force");
                 CombatList = new ListViewUi<Prefab_skill>(v, "prefab_skill", "scroll_combat");
                 DodgeList = new ListViewUi<Prefab_skill>(v, "prefab_skill", "scroll_dodge");
@@ -341,11 +370,12 @@ internal class Demo_Page_Skill : UiManagerBase
             public void SetDodge(Dizi dizi, int defaultIndex = -1)
             {
                 DodgeList.ClearList(ui => ui.Destroy());
-                for (var i = 0; i < dizi.Skill.DodgeSkills.Count; i++)
+                for (var i = 0; i < dizi.Capable.DodgeSlot; i++)
                 {
                     var index = i;
-                    var f = dizi.Skill.DodgeSkills[i];
-                    var ui = DodgeList.Instance(v => new Prefab_skill(v, true));
+                    var f = dizi.Skill.DodgeSkills.Count > i ? dizi.Skill.DodgeSkills[i] : null;
+                    var ui = DodgeList.Instance(v =>
+                        new Prefab_skill(v, () => OnEmptyAction?.Invoke(dizi.Guid, SkillType.Dodge, index), true));
                     ui.SetAction(() =>
                     {
                         OnSkillSelected?.Invoke(SkillType.Dodge,index);
@@ -365,11 +395,12 @@ internal class Demo_Page_Skill : UiManagerBase
             public void SetCombat(Dizi dizi, int defaultIndex = -1)
             {
                 CombatList.ClearList(ui => ui.Destroy());
-                for (var i = 0; i < dizi.Skill.CombatSkills.Count; i++)
+                for (var i = 0; i < dizi.Capable.CombatSlot ; i++)
                 {
                     var index = i;
-                    var f = dizi.Skill.CombatSkills[i];
-                    var ui = CombatList.Instance(v => new Prefab_skill(v, true));
+                    var f = dizi.Skill.CombatSkills.Count > i ? dizi.Skill.CombatSkills[i] : null;
+                    var ui = CombatList.Instance(v =>
+                        new Prefab_skill(v, () => OnEmptyAction?.Invoke(dizi.Guid, SkillType.Combat, index), true));
                     ui.SetAction(() =>
                     {
                         OnSkillSelected?.Invoke(SkillType.Combat, index);
@@ -389,11 +420,12 @@ internal class Demo_Page_Skill : UiManagerBase
             public void SetForce(Dizi dizi, int defaultIndex = -1)
             {
                 ForceList.ClearList(ui => ui.Destroy());
-                for (var i = 0; i < dizi.Skill.ForceSkills.Count; i++)
+                for (var i = 0; i < dizi.Capable.ForceSlot; i++)
                 {
                     var index = i;
-                    var f = dizi.Skill.ForceSkills[i];
-                    var ui = ForceList.Instance(v => new Prefab_skill(v, true));
+                    var f = dizi.Skill.ForceSkills.Count > i ? dizi.Skill.ForceSkills[i] : null;
+                    var ui = ForceList.Instance(v =>
+                        new Prefab_skill(v, () => OnEmptyAction?.Invoke(dizi.Guid, SkillType.Force, index), true));
                     ui.SetAction(() =>
                     {
                         OnSkillSelected?.Invoke(SkillType.Force, index);
@@ -417,20 +449,21 @@ internal class Demo_Page_Skill : UiManagerBase
                 private Text text_name { get; }
                 private GameObject obj_content { get; }
                 private Button btn_skill { get; }
-                private Image img_empty { get; }
+                private Button btn_empty { get; }
                 private Image img_selected { get; }
                 private Image img_inUse { get; }
 
-                public Prefab_skill(IView v, bool display) : base(v, display)
+                public Prefab_skill(IView v,Action onEmptyAction ,bool display) : base(v, display)
                 {
                     text_level = v.GetObject<Text>("text_level");
                     img_ico = v.GetObject<Image>("img_ico");
                     text_name = v.GetObject<Text>("text_name");
                     obj_content = v.GetObject("obj_content");
-                    img_empty = v.GetObject<Image>("img_empty");
+                    btn_empty = v.GetObject<Button>("btn_empty");
                     img_selected = v.GetObject<Image>("img_selected");
                     img_inUse = v.GetObject<Image>("img_inUse");
                     btn_skill = v.GetObject<Button>("btn_skill");
+                    btn_empty.OnClickAdd(onEmptyAction);
                 }
 
                 public void SetAction(Action action) => btn_skill.OnClickAdd(action);
@@ -444,12 +477,12 @@ internal class Demo_Page_Skill : UiManagerBase
                     text_level.text = level.ToString();
                     text_name.text = name;
                     obj_content.SetActive(true);
-                    img_empty.gameObject.SetActive(false);
+                    btn_empty.gameObject.SetActive(false);
                 }
 
                 public void SetEmpty()
                 {
-                    img_empty.gameObject.SetActive(true);
+                    btn_empty.gameObject.SetActive(true);
                     obj_content.SetActive(false);
                     SetSelected(false);
                 }

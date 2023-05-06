@@ -173,4 +173,6 @@ internal class MainUiAgent
             Data[section].Add(manager);
         }
     }
+
+    public void HideWindows() => MainUi.HideWindows();
 }

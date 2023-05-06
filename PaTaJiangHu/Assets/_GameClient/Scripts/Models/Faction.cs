@@ -7,6 +7,7 @@ using Server.Configs.Adventures;
 using Server.Configs.Battles;
 using Server.Configs.Factions;
 using Server.Configs.Items;
+using Server.Configs.Skills;
 using Server.Controllers;
 using Utls;
 
@@ -27,7 +28,7 @@ namespace _GameClient.Models
     /// <summary>
     /// 门派模型
     /// </summary>
-    public class Faction : ModelBase, IFaction
+    public partial class Faction : ModelBase, IFaction
     {
         protected override string LogPrefix { get; } = "门派";
         private List<IBook> _books = new List<IBook>();
@@ -68,11 +69,15 @@ namespace _GameClient.Models
 
         public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
         public IBook GetBook(int bookId) => Books.FirstOrDefault(b => b.Id == bookId);
-        public IStacking<IComprehendItem>[] GetAllComprehendItems(int supportedLevel) => FuncItems
-            .Where(f => f.Key.FunctionType == FunctionItemType.Comprehend)
-            .Cast<KeyValuePair<IComprehendItem, int>>()
-            .Where(f => f.Key.IsLevelAvailable(supportedLevel))
-            .Select(f => new Stacking<IComprehendItem>(f.Key, f.Value)).ToArray();
+        public IStacking<IComprehendItem>[] GetAllComprehendItems(int supportedLevel)
+        {
+            var items = FuncItems
+                .Where(f => f.Key.FunctionType == FunctionItemType.Comprehend)
+                .Cast<KeyValuePair<IComprehendItem, int>>()
+                .Where(f => f.Key.IsLevelAvailable(supportedLevel))
+                .Select(f => new Stacking<IComprehendItem>(f.Key, f.Value)).ToArray();
+            return items;
+        }
 
         internal Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap,
             int food = 0, int wine = 0, int pill = 0, int herb = 0)
@@ -399,6 +404,13 @@ namespace _GameClient.Models
                 ConsumeResources.Pill => Pill,
                 _ => throw new ArgumentOutOfRangeException(nameof(resourceType), resourceType, null)
             };
+    }
 
+    /// <summary>
+    /// 门派获取物品的方法集
+    /// </summary>
+    public partial class Faction
+    {
+        public IBook[] GetBooksForSkill(SkillType type) => _books.Where(x => x.GetSkill().SkillType == type).ToArray();
     }
 }

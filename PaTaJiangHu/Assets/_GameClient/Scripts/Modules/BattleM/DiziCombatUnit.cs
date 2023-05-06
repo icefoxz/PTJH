@@ -36,7 +36,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         MaxMp = dizi.Mp;
         Agility = dizi.Agility;
         Strength = dizi.Strength;
-        Combat = dizi.GetBattle();
+        Combat = dizi.GetCombatSet();
     }
 
     internal DiziCombatUnit(int teamId, CombatNpcSo npc) 
