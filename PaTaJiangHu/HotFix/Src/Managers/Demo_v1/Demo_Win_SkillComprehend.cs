@@ -13,6 +13,7 @@ using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
 using UnityEngine.UI;
+using Utls;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1;
@@ -59,8 +60,8 @@ internal class Demo_Win_SkillComprehend : UiManagerBase
 
     public void Set(Dizi dizi, SkillType type, int index)
     {
-        var skill = SelectedDizi.Skill.GetSkill(type, index);
-        var level = SelectedDizi.Skill.GetLevel(skill);
+        var skill = dizi.Skill.GetSkill(type, index);
+        var level = dizi.Skill.GetLevel(skill);
         Set(dizi, skill, level);
     }
 

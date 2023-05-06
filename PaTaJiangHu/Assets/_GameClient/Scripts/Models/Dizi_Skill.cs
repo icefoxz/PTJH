@@ -6,6 +6,7 @@ using Server.Configs.Battles;
 using Server.Configs.Characters;
 using Server.Configs.Skills;
 using Server.Controllers;
+using Utls;
 
 namespace Models
 {
@@ -115,8 +116,10 @@ namespace Models
 
         public int LevelUp(ISkill skill)
         {
-            var set = Maps.SingleOrDefault(c => c.IsThis(skill)) ?? AddSkill(skill);
-            set.LevelUp();
+            var set = Maps.SingleOrDefault(c => c.IsThis(skill));
+            if (set == null)
+                set = AddSkill(skill);
+            else set.LevelUp();
             return set.Level;
         }
 
@@ -171,19 +174,22 @@ namespace Models
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
         }
 
         public int GetLevel(ISkill skill) => Maps.SingleOrDefault(m => m.IsThis(skill))?.Level ?? 0;
 
         public ISkill GetSkill(SkillType type, int index)
         {
-            return type switch
+            var skill = type switch
             {
                 SkillType.Combat => CombatSkills[index].Skill,
                 SkillType.Force => ForceSkills[index].Skill,
                 SkillType.Dodge => DodgeSkills[index].Skill,
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
+            XDebug.Log($"获取技能{skill.Name}");
+            return skill;
         }
 
         public abstract class SkillMap
