@@ -12,7 +12,7 @@ namespace Server.Configs.Items
         public override EquipKinds EquipKind => EquipKinds.Decoration;
 
         public IDecoration Instance() =>
-            new DecorationField(Id, Name, Icon, About, Grade, Quality, GetAddOn, GetCombatProps);
+            new DecorationField(Id, Name, Icon, About, Grade, Quality, GetAddOn, GetCombatProps, GetCombatSet);
 
 
         private class DecorationField : EquipmentBaseField,IDecoration
@@ -20,8 +20,9 @@ namespace Server.Configs.Items
             public override EquipKinds EquipKind => EquipKinds.Decoration;
 
             public DecorationField(int id, string name, Sprite icon, string about, ColorGrade grade, int quality,
-                Func<DiziProps, float> getAddOnFunc, Func<ICombatProps> getCombatPropsFunc) : base(id, name, icon,
-                about, grade, quality, getAddOnFunc, getCombatPropsFunc)
+                Func<DiziProps, float> getAddOnFunc, Func<ICombatProps> getCombatPropsFunc,
+                Func<ICombatSet> getCombatSetFunc) : base(id, name, icon,
+                about, grade, quality, getAddOnFunc, getCombatPropsFunc, getCombatSetFunc)
             {
             }
         }

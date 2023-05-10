@@ -109,7 +109,7 @@ public class TestBattle : MonoBehaviour
         public int MaxMp => 内力;
         public int Strength => 力量;
         public int Agility => 敏捷;
-        public ICombatSet Combat => this;
+        public ICombatSet CombatSet => this;
         public IDiziEquipment Equipment => this;
         private CombatSkill Com => 武功;
         private ForceSkill Force => 内功;
@@ -158,6 +158,7 @@ public class TestBattle : MonoBehaviour
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
         }
 
+        //暂时不实现装备
         public IWeapon Weapon { get; }
         public IArmor Armor { get; }
         public IShoes Shoes { get; }
@@ -165,8 +166,8 @@ public class TestBattle : MonoBehaviour
         public IEnumerable<IEquipment> AllEquipments { get; }
         public int GetPropAddon(DiziProps prop) => 0;
         public ICombatProps GetCombatProps() => new DiziCombatProps();
-
         public IDiziCombatUnit CombatDisarm(int teamId, IEquipment equipment) => new DiziCombatUnit(this);
+        ICombatSet IDiziEquipment.GetCombatSet() => Server.Configs.Battles.CombatSet.Empty;
 
         private class DiziCombatProps : ICombatProps
         {

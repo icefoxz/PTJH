@@ -28,7 +28,7 @@ namespace Models
 
         public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
 
-        public ICombatSet GetCombatSet() => SkillConfig.GetCombatSet(this);
+        public ICombatSet GetCombatSet() => new[] { SkillConfig.GetCombatSet(this),Equipment.GetCombatSet() }.Combine();
         internal void SetSkill(DiziSkill skill) => Skill = skill;
 
         public void SkillLevelUp(ISkill skill)
@@ -70,6 +70,7 @@ namespace Models
         /// <param name="equipment"></param>
         /// <returns></returns>
         IDiziCombatUnit CombatDisarm(int teamId,IEquipment equipment);
+        ICombatSet GetCombatSet();
     }
 
     public class DiziEquipment : IDiziEquipment
@@ -113,6 +114,8 @@ namespace Models
             }
             return new DiziCombatUnit(teamId, _dizi);
         }
+
+        public ICombatSet GetCombatSet() => AllEquipments.Select(e=>e.GetCombatSet()).Combine();
     }
 
     //弟子技能栏

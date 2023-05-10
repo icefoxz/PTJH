@@ -12,7 +12,7 @@ public interface IDiziCombatUnit : ICombatUnit
     int MaxMp { get; }
     int Strength { get; }
     int Agility { get; }
-    ICombatSet Combat { get; }
+    ICombatSet CombatSet { get; }
     IDiziEquipment Equipment { get; }
 }
 
@@ -26,7 +26,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public int MaxMp { get; private set; }
     public int Strength { get; private set; }
     public int Agility { get; private set; }
-    public ICombatSet Combat { get; private set; }
+    public ICombatSet CombatSet { get; private set; }
     public IDiziEquipment Equipment { get; }
 
     internal DiziCombatUnit(int teamId, Dizi dizi) 
@@ -37,7 +37,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         MaxMp = dizi.Mp;
         Agility = dizi.Agility;
         Strength = dizi.Strength;
-        Combat = dizi.GetCombatSet();
+        CombatSet = dizi.GetCombatSet();
         Equipment = dizi.Equipment;
     }
 
@@ -48,7 +48,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         MaxMp = npc.Mp;
         Agility = npc.Agility;
         Strength = npc.Strength;
-        Combat = npc.GetCombatSet();
+        CombatSet = npc.GetCombatSet();
         Equipment = npc.Equipment;
     }
 
@@ -58,7 +58,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         MaxMp = unit.Mp;
         Agility = unit.Agility;
         Strength = unit.Strength;
-        Combat = unit.Combat;
+        CombatSet = unit.CombatSet;
         Equipment = unit.Equipment;
     }
 
@@ -95,7 +95,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         MaxMp = update.MaxMp;
         Strength = update.Strength;
         Agility = update.Agility;
-        Combat = update.Combat;
+        CombatSet = update.CombatSet;
         Hp = update.Hp;
         MaxHp = update.MaxHp;
         Damage = update.Damage;

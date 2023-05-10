@@ -31,6 +31,7 @@ namespace Server.Configs.Battles
         ColorGrade Grade { get; }
         float GetAddOn(DiziProps prop);
         int Quality { get; }
+        ICombatSet GetCombatSet();
         ICombatProps GetCombatProps();
     }
 

@@ -57,33 +57,15 @@ namespace Server.Configs.Skills
 
             [ConditionalField(true, nameof(SetName))][SerializeField][ReadOnly] private string _name;
             [SerializeField] [Min(1)] private int 等级 = 1;
-            [SerializeField] private CombatField[] 属性;
+            [SerializeField] private CombatAdvancePropField[] 属性;
             [SerializeField] private CombatDifferentialStrategySo[] 差值配置;
 
             private CombatDifferentialStrategySo[] DifferentialStrategies => 差值配置;
-            private CombatField[] Fields => 属性;
+            private CombatAdvancePropField[] Fields => 属性;
             private int Level => 等级;
 
             public ICombatSet GetCombat()
             {
-                var hardRate = 0f;
-                var hardDamageRatio = 0f;
-                var criticalRate = 0f;
-                var criticalDamageRatio = 0f;
-                var mpDamage = 0f;
-                var mpCounteract = 0f;
-                var dodgeRate = 0f;
-                foreach (var field in Fields)
-                {
-                    hardRate += field.HardRate;
-                    hardDamageRatio += field.HardDamageRateAddOn;
-                    criticalRate += field.CriticalRate;
-                    criticalDamageRatio += field.CriticalDamageRateAddOn;
-                    mpDamage += field.MpDamage;
-                    mpCounteract += field.MpCounteract;
-                    dodgeRate += field.DodgeRate;
-                }
-
                 var hardRateList = new List<Func<CombatArgs, float>>();
                 var hardDamageRatioList = new List<Func<CombatArgs, float>>();
                 var criticalRateList = new List<Func<CombatArgs, float>>();
@@ -141,133 +123,144 @@ namespace Server.Configs.Skills
             public ISkillProp[] GetProps() => Fields.SelectMany(f => f.GetProps()).ToArray();
         }
 
-        [Serializable]
-        internal class CombatField
+    }
+
+    /// <summary>
+    /// 战斗高级属性配置
+    /// </summary>
+    [Serializable] internal class CombatAdvancePropField
+    {
+        public enum Settings
         {
-            public enum Settings
-            {
-                [InspectorName("内力")] Force,
-                [InspectorName("闪避")] Dodge,
-                [InspectorName("重击")] Hard,
-                [InspectorName("会心")] Critical,
-                [InspectorName("特殊")] Special,
-            }
+            [InspectorName("内力")] Force,
+            [InspectorName("闪避")] Dodge,
+            [InspectorName("重击")] Hard,
+            [InspectorName("会心")] Critical,
+            [InspectorName("特殊")] Special,
+        }
 
-            private bool SetLevelName()
-            {
-                var texts = GetSettingTexts();
-                _name = $"[{GetNameText(_set)}]{string.Join(',', texts)}";
-                return true;
+        private bool SetLevelName()
+        {
+            var texts = GetSettingTexts();
+            _name = $"[{GetNameText(_set)}]{string.Join(',', texts)}";
+            return true;
 
-            }
+        }
 
-            private string[] GetSettingTexts()
+        private string[] GetSettingTexts()
+        {
+            return _set switch
             {
-                return _set switch
-                {
-                    Settings.Force => SetForceText(),
-                    Settings.Dodge => SetDodgeText(),
-                    Settings.Hard => SetHardText(),
-                    Settings.Critical => SetCritical(),
-                    Settings.Special => SetSpecial(),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-            }
-
-            private string GetNameText(Settings set) => set switch
-            {
-                Settings.Force => "内力",
-                Settings.Dodge => "闪避",
-                Settings.Hard => "重击",
-                Settings.Critical => "会心",
-                Settings.Special => "特殊",
-                _ => throw new ArgumentOutOfRangeException(nameof(set), set, null)
+                Settings.Force => SetForceText(),
+                Settings.Dodge => SetDodgeText(),
+                Settings.Hard => SetHardText(),
+                Settings.Critical => SetCritical(),
+                Settings.Special => SetSpecial(),
+                _ => throw new ArgumentOutOfRangeException()
             };
+        }
 
-            private string[] SetSpecial() => new[] { "特殊招式未支持" };
+        private string GetNameText(Settings set) => set switch
+        {
+            Settings.Force => "内力",
+            Settings.Dodge => "闪避",
+            Settings.Hard => "重击",
+            Settings.Critical => "会心",
+            Settings.Special => "特殊",
+            _ => throw new ArgumentOutOfRangeException(nameof(set), set, null)
+        };
 
-            [ConditionalField(true, nameof(SetLevelName))] [SerializeField] [ReadOnly]
-            private string _name;
+        private string[] SetSpecial() => new[] { "特殊招式未支持" };
 
-            [SerializeField] private Settings _set;
+        [ConditionalField(true, nameof(SetLevelName))]
+        [SerializeField]
+        [ReadOnly]
+        private string _name;
 
-            #region Hard
+        [SerializeField] private Settings _set;
 
-            [ConditionalField(nameof(_set), false, Settings.Hard)] [SerializeField]
-            private float 重击率;
+        #region Hard
 
-            [ConditionalField(nameof(_set), false, Settings.Hard)] [SerializeField]
-            private float 重倍加成;
+        [ConditionalField(nameof(_set), false, Settings.Hard)]
+        [SerializeField]
+        private float 重击率;
 
-            public float HardRate => 重击率;
-            public float HardDamageRateAddOn => 重倍加成 * 0.01f;
-            private string[] SetHardText() => new []{$"触发:{ResolveSymbol(HardRate)}%" ,
+        [ConditionalField(nameof(_set), false, Settings.Hard)]
+        [SerializeField]
+        private float 重倍加成;
+
+        public float HardRate => 重击率;
+        public float HardDamageRateAddOn => 重倍加成 * 0.01f;
+        private string[] SetHardText() => new[]{$"触发:{ResolveSymbol(HardRate)}%" ,
                                                      $"倍率:{ResolveSymbol(HardDamageRateAddOn)}"};
 
-            #endregion
+        #endregion
 
-            #region dodge
+        #region dodge
 
-            [ConditionalField(nameof(_set), false, Settings.Dodge)] [SerializeField]
-            private float 闪避率;
+        [ConditionalField(nameof(_set), false, Settings.Dodge)]
+        [SerializeField]
+        private float 闪避率;
 
-            public float DodgeRate => 闪避率;
-            private string[] SetDodgeText() => new []{$"触发:{ResolveSymbol(DodgeRate)}%"};
+        public float DodgeRate => 闪避率;
+        private string[] SetDodgeText() => new[] { $"触发:{ResolveSymbol(DodgeRate)}%" };
 
-            #endregion
+        #endregion
 
-            #region force
+        #region force
 
-            [ConditionalField(nameof(_set), false, Settings.Force)] [SerializeField]
-            private float 内力消耗;
+        [ConditionalField(nameof(_set), false, Settings.Force)]
+        [SerializeField]
+        private float 内力消耗;
 
-            public float MpDamage => 内力消耗;
+        public float MpDamage => 内力消耗;
 
-            [ConditionalField(nameof(_set), false, Settings.Force)] 
-            //[SerializeField]
-            private float 内力抵消;
+        [ConditionalField(nameof(_set), false, Settings.Force)]
+        //[SerializeField]
+        private float 内力抵消;
 
-            public float MpCounteract => 内力抵消;
-            private string[] SetForceText() => new[]
-            {
+        public float MpCounteract => 内力抵消;
+        private string[] SetForceText() => new[]
+        {
                 $"消耗:{ResolveSymbol(MpDamage)}"
                 //, $"抵消:{MpCounteract}"
             };
 
-            #endregion
+        #endregion
 
-            #region critical
+        #region critical
 
-            [ConditionalField(nameof(_set), false, Settings.Critical)] [SerializeField]
-            private float 会心率;
-            [ConditionalField(nameof(_set), false, Settings.Critical)] [SerializeField]
-            private float 会心倍率;
+        [ConditionalField(nameof(_set), false, Settings.Critical)]
+        [SerializeField]
+        private float 会心率;
+        [ConditionalField(nameof(_set), false, Settings.Critical)]
+        [SerializeField]
+        private float 会心倍率;
 
-            public float CriticalRate => 会心率;
-            public float CriticalDamageRateAddOn => 会心倍率 * 0.01f;
-            public string Name => _name;
+        public float CriticalRate => 会心率;
+        public float CriticalDamageRateAddOn => 会心倍率 * 0.01f;
+        public string Name => _name;
 
-            private string[] SetCritical() => new []{ $"触发:{ResolveSymbol(CriticalRate)}%" ,
+        private string[] SetCritical() => new[]{ $"触发:{ResolveSymbol(CriticalRate)}%" ,
                                                       $"倍率:{ResolveSymbol(CriticalDamageRateAddOn)}"};
-            #endregion
-            private static string ResolveSymbol(float value)
-            {
-                if (value == 0) return value.ToString();
-                return value > 0 ? $"+{value}" : $"-{value}";
-            }
+        #endregion
+        private static string ResolveSymbol(float value)
+        {
+            if (value == 0) return value.ToString();
+            return value > 0 ? $"+{value}" : $"-{value}";
+        }
 
-            public ISkillProp[] GetProps()
-            {
-                var label = GetNameText(_set);
-                var settings = GetSettingTexts();
-                return settings.Select(s => new SkillProp(label, s)).Cast<ISkillProp>().ToArray();
-            }
+        public ISkillProp[] GetProps()
+        {
+            var label = GetNameText(_set);
+            var settings = GetSettingTexts();
+            return settings.Select(s => new SkillProp(label, s)).Cast<ISkillProp>().ToArray();
+        }
 
-            private record SkillProp(string Name, string Value) : ISkillProp
-            {
-                public string Name { get; } = Name;
-                public string Value { get; } = Value;
-            }
+        private record SkillProp(string Name, string Value) : ISkillProp
+        {
+            public string Name { get; } = Name;
+            public string Value { get; } = Value;
         }
     }
 }

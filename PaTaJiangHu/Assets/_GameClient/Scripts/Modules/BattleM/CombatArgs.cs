@@ -43,7 +43,7 @@ public class CombatArgs : EventArgs
         public int MaxMp { get; }
         public int Strength { get; }
         public int Agility { get; }
-        public ICombatSet Combat { get; }
+        public ICombatSet CombatSet { get; }
         public IDiziEquipment Equipment { get; }
         public void SetInstanceId(int instanceId) => InstanceId=instanceId;
 
@@ -60,7 +60,7 @@ public class CombatArgs : EventArgs
             MaxMp = mp;
             Strength = strength;
             Agility = agility;
-            Combat = combat;
+            CombatSet = combat;
             Equipment = equipment;
         }
     }

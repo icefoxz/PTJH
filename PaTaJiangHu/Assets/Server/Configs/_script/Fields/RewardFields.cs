@@ -168,6 +168,8 @@ namespace Server.Configs.Fields
         public WeaponArmed Armed => W.Armed;
         public int Quality => W.Quality;
         public float GetAddOn(DiziProps prop)=> W.GetAddOn(prop);
+        public ICombatSet GetCombatSet() => W.GetCombatSet();
+
         public ICombatProps GetCombatProps()=> W.GetCombatProps();
     }
 
@@ -187,6 +189,7 @@ namespace Server.Configs.Fields
         public ColorGrade Grade => A.Grade;
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
+        public ICombatSet GetCombatSet() => A.GetCombatSet();
         public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
     
@@ -206,6 +209,7 @@ namespace Server.Configs.Fields
         public ColorGrade Grade => A.Grade;
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
+        public ICombatSet GetCombatSet() => A.GetCombatSet();
         public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
 
@@ -225,6 +229,7 @@ namespace Server.Configs.Fields
         public ColorGrade Grade => A.Grade;
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
+        public ICombatSet GetCombatSet() => A.GetCombatSet();
         public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
 

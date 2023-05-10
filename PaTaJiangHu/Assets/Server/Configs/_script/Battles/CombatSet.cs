@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 
 namespace Server.Configs.Battles
 {
@@ -9,6 +10,7 @@ namespace Server.Configs.Battles
     /// </summary>
     internal record CombatSet : ICombatSet
     {
+        internal static readonly CombatSet Empty = new CombatSet(0, 0, 0, 0, 0, 0, 0);
         protected virtual List<Func<CombatArgs, float>> HardRate { get; }
         protected virtual List<Func<CombatArgs, float>> HardDamageRatio { get; }
         protected virtual List<Func<CombatArgs, float>> CriticalRate { get; }
@@ -34,6 +36,38 @@ namespace Server.Configs.Battles
             MpCounteract = mpCounteract;
             DodgeRate = dodgeRate;
         }
+
+        public CombatSet(
+            Func<CombatArgs, float> hardRate,
+            Func<CombatArgs, float> hardDamageRatio,
+            Func<CombatArgs, float> criticalRate,
+            Func<CombatArgs, float> criticalDamageRatio,
+            Func<CombatArgs, float> mpDamage,
+            Func<CombatArgs, float> mpCounteract,
+            Func<CombatArgs, float> dodgeRate) : this(
+            new List<Func<CombatArgs, float>> { hardRate },
+            new List<Func<CombatArgs, float>> { hardDamageRatio },
+            new List<Func<CombatArgs, float>> { criticalRate },
+            new List<Func<CombatArgs, float>> { criticalDamageRatio },
+            new List<Func<CombatArgs, float>> { mpDamage },
+            new List<Func<CombatArgs, float>> { mpCounteract },
+            new List<Func<CombatArgs, float>> { dodgeRate }
+        ) { }
+
+        public CombatSet(float hardRate,
+            float hardDamageRatio,
+            float criticalRate,
+            float criticalDamageRatio,
+            float mpDamage,
+            float mpCounteract,
+            float dodgeRate
+            ) : this(_=>hardRate,
+            _=>hardDamageRatio,
+            _=>criticalRate,
+            _=>criticalDamageRatio,
+            _=>mpDamage,
+            _=>mpCounteract,
+            _=>dodgeRate) { }
 
         public virtual float GetHardRate(CombatArgs arg) => HardRate?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
         public virtual float GetHardDamageRatio(CombatArgs arg) => HardDamageRatio?.Sum(f => f?.Invoke(arg) ?? 0) ?? 0;
