@@ -1,10 +1,9 @@
-﻿using _GameClient.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 using System.Linq;
+using Models;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
-using Dizi = Models.Dizi;
 
 public interface IDiziCombatUnit : ICombatUnit
 {
@@ -14,6 +13,7 @@ public interface IDiziCombatUnit : ICombatUnit
     int Strength { get; }
     int Agility { get; }
     ICombatSet Combat { get; }
+    IDiziEquipment Equipment { get; }
 }
 
 /// <summary>
@@ -26,7 +26,8 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public int MaxMp { get; private set; }
     public int Strength { get; private set; }
     public int Agility { get; private set; }
-    public ICombatSet Combat { get; }
+    public ICombatSet Combat { get; private set; }
+    public IDiziEquipment Equipment { get; }
 
     internal DiziCombatUnit(int teamId, Dizi dizi) 
         : base(teamId: teamId, name: dizi.Name, maxHp: dizi.Hp, damage: dizi.Strength, speed: dizi.Agility)
@@ -37,6 +38,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Agility = dizi.Agility;
         Strength = dizi.Strength;
         Combat = dizi.GetCombatSet();
+        Equipment = dizi.Equipment;
     }
 
     internal DiziCombatUnit(int teamId, CombatNpcSo npc) 
@@ -47,6 +49,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Agility = npc.Agility;
         Strength = npc.Strength;
         Combat = npc.GetCombatSet();
+        Equipment = npc.Equipment;
     }
 
     internal DiziCombatUnit(IDiziCombatUnit unit) : base(u: unit)
@@ -56,14 +59,15 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Agility = unit.Agility;
         Strength = unit.Strength;
         Combat = unit.Combat;
+        Equipment = unit.Equipment;
     }
 
-    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId: teamId, name: s.Name, maxHp: s.MaxHp, damage: s.Damage, speed: s.Agility)
+    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId: teamId, name: s.Name, maxHp: s.MaxHp, damage: s.Damage, speed: (int)s.Agility)
     {
-        Mp = s.Mp;
-        MaxMp = s.Mp;
-        Agility = s.Agility;
-        Strength = s.Strength;
+        Mp = (int)s.Mp;
+        MaxMp = (int)s.Mp;
+        Agility = (int)s.Agility;
+        Strength = (int)s.Strength;
     }
     
     //伤害减免
@@ -81,6 +85,21 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     {
         Mp += mp;
         Math.Clamp(value: Mp, min: 0, max: MaxMp);
+    }
+
+    public void EquipmentUpdate(IEquipment equipment)
+    {
+        if (Equipment == null) return;
+        IDiziCombatUnit update = Equipment.CombatDisarm(TeamId, equipment);
+        Mp = update.Mp;
+        MaxMp = update.MaxMp;
+        Strength = update.Strength;
+        Agility = update.Agility;
+        Combat = update.Combat;
+        Hp = update.Hp;
+        MaxHp = update.MaxHp;
+        Damage = update.Damage;
+        Speed = update.Speed;
     }
 }
 

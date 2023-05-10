@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using _GameClient.Models;
-using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Models;

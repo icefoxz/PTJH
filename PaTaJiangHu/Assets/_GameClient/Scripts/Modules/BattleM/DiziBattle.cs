@@ -19,26 +19,6 @@ using Utls;
 /// </summary>
 public class DiziBattle
 {
-    /// <summary>
-    /// 战斗事件, 用于定义战斗配置
-    /// </summary>
-    public enum Events
-    {
-        Perform,
-        Response,
-        RoundEnd,
-        BattleEnd,
-    }
-    /// <summary>
-    /// 战斗反馈, 用于定义战斗配置
-    /// </summary>
-    public enum Responses
-    {
-        Suffer,
-        Dodge,
-        Defeat
-    }
-
     public bool IsPlayerWin { get; private set; }
     public List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>> Rounds { get; }
     public BuffManager<DiziCombatUnit> BuffManager { get; private set; }
@@ -46,11 +26,6 @@ public class DiziBattle
     public bool IsFinalized { get; private set; }
     private static int CombatUnitSeed { get; set; }
     public int RoundLimit { get; private set; }
-
-    // 使用Action<>定义事件
-    //public event Action OnRoundStart;
-    //public event Action OnRoundEnd;
-    //public event Action OnBattleEnd;
 
     private DiziBattle(int roundLimit, params DiziCombatUnit[] combats)
     {

@@ -174,10 +174,10 @@ internal class DiziAdvManager : MainPageBase
             //ElementMgr.SetSkill(Skills.Combat, dizi.CombatSkill.Name, dizi.CombatSkill.Level);
             //ElementMgr.SetSkill(Skills.Force, dizi.ForceSkill.Name, dizi.ForceSkill.Level);
             //ElementMgr.SetSkill(Skills.Dodge, dizi.DodgeSkill.Name, dizi.DodgeSkill.Level);
-            if (dizi.Weapon == null) ElementMgr.ClearItem(Items.Weapon);
-            else ElementMgr.SetItem(Items.Weapon, dizi.Weapon.Name, (int) dizi.Weapon.Grade);
-            if (dizi.Armor == null) ElementMgr.ClearItem(Items.Armor);
-            else ElementMgr.SetItem(Items.Armor, dizi.Armor.Name, (int) dizi.Armor.Grade);
+            if (dizi.Equipment.Weapon == null) ElementMgr.ClearItem(Items.Weapon);
+            else ElementMgr.SetItem(Items.Weapon, dizi.Equipment.Weapon.Name, (int) dizi.Equipment.Weapon.Grade);
+            if (dizi.Equipment.Armor == null) ElementMgr.ClearItem(Items.Armor);
+            else ElementMgr.SetItem(Items.Armor, dizi.Equipment.Armor.Name, (int)dizi.Equipment.Armor.Grade);
             var (foodText, fColor) = controller.GetFoodCfg(dizi.Food.ValueMaxRatio);
             var (emoText, eColor) = controller.GetEmotionCfg(dizi.Emotion.ValueMaxRatio);
             var (silverText, sColor) = controller.GetSilverCfg(dizi.Silver.ValueMaxRatio);

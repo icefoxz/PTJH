@@ -67,7 +67,7 @@ namespace Server.Controllers
             {
                 case 0:
                 {
-                    var diziWeapon = dizi.Weapon;
+                    var diziWeapon = dizi._equipment.Weapon;
                     var weapon = Faction.Weapons[index];
                     dizi.SetWeapon(weapon);
                     Faction.RemoveWeapon(weapon);
@@ -76,7 +76,7 @@ namespace Server.Controllers
                 }
                 case 1:
                 {
-                    var diziArmor = dizi.Armor;
+                    var diziArmor = dizi._equipment.Armor;
                     var armor = Faction.Armors[index];
                     dizi.SetArmor(armor);
                     Faction.RemoveArmor(armor);
@@ -95,14 +95,14 @@ namespace Server.Controllers
             {
                 case 0:
                 {
-                    var weapon = dizi.Weapon;
+                    var weapon = dizi._equipment.Weapon;
                     dizi.SetWeapon(null);
                     Faction.AddWeapon(weapon);
                     break;
                 }
                 case 1:
                 {
-                    var armor = dizi.Armor;
+                    var armor = dizi._equipment.Armor;
                     dizi.SetArmor(null);
                     Faction.RemoveArmor(armor);
                     break;

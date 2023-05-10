@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using _GameClient.Models;
-using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Models;
@@ -73,10 +72,10 @@ namespace HotFix_Project.Managers.Demo_v1
             }
             private void SetDiziEquipment(Dizi dizi)
             {
-                if (dizi.Weapon == null) WeaponElement.ClearItem(WeaponElement);
-                else WeaponElement.SetItem(WeaponElement, dizi.Weapon.Name, (int)dizi.Weapon.Grade);
-                if (dizi.Armor == null) ArmorElement.ClearItem(ArmorElement);
-                else ArmorElement.SetItem(ArmorElement, dizi.Weapon.Name, (int)dizi.Armor.Grade);
+                if (dizi.Equipment.Weapon == null) WeaponElement.ClearItem(WeaponElement);
+                else WeaponElement.SetItem(WeaponElement, dizi.Equipment.Weapon.Name, (int)dizi.Equipment.Weapon.Grade);
+                if (dizi.Equipment.Armor == null) ArmorElement.ClearItem(ArmorElement);
+                else ArmorElement.SetItem(ArmorElement, dizi.Equipment.Weapon.Name, (int)dizi.Equipment.Armor.Grade);
             }
 
             public void Set(string guid)

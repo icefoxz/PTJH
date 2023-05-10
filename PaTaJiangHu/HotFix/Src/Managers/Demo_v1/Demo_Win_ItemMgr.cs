@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
@@ -147,8 +146,8 @@ namespace HotFix_Project.Managers.Demo_v1
                 switch (type)
                 {
                     case ItemTypes.Weapon:
-                        IsDiziEquipped = selectedDizi.Weapon != null;
-                        if(IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, selectedDizi.Weapon.About, -1, 1, (int) selectedDizi.Weapon.Grade));
+                        IsDiziEquipped = selectedDizi.Equipment.Weapon != null;
+                        if(IsDiziEquipped) items.Add((selectedDizi.Equipment.Weapon.Name, selectedDizi.Equipment.Weapon.About, -1, 1, (int) selectedDizi.Equipment.Weapon.Grade));
                         for(var i = 0; i < faction.Weapons.Count; i++)
                         {
                             var item = faction.Weapons[i];
@@ -156,8 +155,8 @@ namespace HotFix_Project.Managers.Demo_v1
                         }
                         break;
                     case ItemTypes.Armor:
-                        IsDiziEquipped = selectedDizi.Armor != null;
-                        if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, selectedDizi.Armor.About, -1, 1, (int)selectedDizi.Armor.Grade));
+                        IsDiziEquipped = selectedDizi.Equipment.Armor != null;
+                        if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Armor.Name, selectedDizi.Equipment.Armor.About, -1, 1, (int)selectedDizi.Equipment.Armor.Grade));
                         for(var i = 0; i < faction.Armors.Count; i++)
                         {
                             var item = faction.Armors[i];

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace HotFix_Project
+namespace HotFix_Project.ILRuntimeDemo
 {
     public class TestCoroutine
     {

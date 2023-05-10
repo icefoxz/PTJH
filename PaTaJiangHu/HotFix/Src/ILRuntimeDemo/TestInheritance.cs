@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace HotFix_Project
+﻿namespace HotFix_Project.ILRuntimeDemo
 {
     //一定要特别注意，:后面只允许有1个Unity主工程的类或者接口，但是可以有随便多少个热更DLL中的接口
     public class TestInheritance : TestClassBase
@@ -20,7 +17,7 @@ namespace HotFix_Project
 
         public static TestInheritance NewObject()
         {
-            return new HotFix_Project.TestInheritance();
+            return new TestInheritance();
         }
     }
 }

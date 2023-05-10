@@ -66,7 +66,7 @@ namespace Server.Configs.Characters
         private ICombatSet GetCombatSkillSet(Dizi dizi)
         {
             var diziSkill = dizi.Skill;
-            var diziArmed = dizi.Weapon?.Armed ?? WeaponArmed.Unarmed; //如果弟子没有装备默认为空手
+            var diziArmed = dizi._equipment.Weapon?.Armed ?? WeaponArmed.Unarmed; //如果弟子没有装备默认为空手
             if (diziSkill.Combat != null && diziSkill.Combat.Skill.Armed == diziArmed) //如果弟子有武功并且武学类型与装备类型相符
                 return diziSkill.Combat.GetCombatSet(diziSkill.Combat.Level); //返回当前使用的武功
             var combatSkill = diziSkill.CombatSkills //否则返回与装备相符最高等的武功

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using _GameClient.Models;
 using Core;
-using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
 using Models;
 using Server.Configs.Items;

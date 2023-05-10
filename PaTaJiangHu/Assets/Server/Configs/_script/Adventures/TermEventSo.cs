@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core;
 using DiziM;
+using Models;
 using Server.Configs.Battles;
 using UnityEngine;
 using UnityEngine.Analytics;
@@ -41,14 +42,7 @@ namespace Server.Configs.Adventures
         /// 当前轻功
         /// </summary>
         //IDodgeSkill DodgeSkill { get; }
-        /// <summary>
-        /// 当前武器
-        /// </summary>
-        IWeapon Weapon { get; }
-        /// <summary>
-        /// 当前防具
-        /// </summary>
-        IArmor Armor { get; }
+        IDiziEquipment Equipment { get; }
         Gender Gender { get; }
         int Level { get; }
         /// <summary>

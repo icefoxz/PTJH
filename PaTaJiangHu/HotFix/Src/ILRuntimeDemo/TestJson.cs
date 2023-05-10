@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using JsonMapper = HotFix_Project.Serialization.LitJson.JsonMapper;
 
-namespace HotFix_Project
+namespace HotFix_Project.ILRuntimeDemo
 {
     public class TestJson
     {

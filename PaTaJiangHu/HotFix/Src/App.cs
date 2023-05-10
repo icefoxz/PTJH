@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Net.Http;
+using HotFix_Project.Managers;
 using HotFix_Project.Managers.Demo_v1;
-using HotFix_Project.Managers.GameScene;
 using Systems;
 using Systems.Coroutines;
 using UnityEngine;
@@ -29,7 +29,6 @@ namespace HotFix_Project
         {
             MainUiAgent = AppLunch.UiAgent switch
             {
-                "GameScene" => new GameSceneAgent(Game.MainUi),
                 "Demo_v1" => new Demo_v1Agent(Game.MainUi),
                 _ => throw new NotImplementedException($"找不到指定的MainUi代理= {AppLunch.UiAgent}!")
             };

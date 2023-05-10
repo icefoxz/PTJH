@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace HotFix_Project
+﻿namespace HotFix_Project.ILRuntimeDemo
 {
     public class TestCLRBinding
     {

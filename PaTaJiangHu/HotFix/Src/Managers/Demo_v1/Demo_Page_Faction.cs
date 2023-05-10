@@ -1,5 +1,4 @@
-﻿using HotFix_Project.Managers.GameScene;
-using HotFix_Project.Views.Bases;
+﻿using HotFix_Project.Views.Bases;
 using Views;
 
 namespace HotFix_Project.Managers.Demo_v1;

@@ -279,6 +279,8 @@ namespace _GameClient.Models
                                 var armor = data.GetArmor(gi.Item.Id);
                                 AddArmor(armor);
                                 break;
+                            case EquipKinds.Shoes:
+                            case EquipKinds.Decoration:
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
@@ -328,6 +330,8 @@ namespace _GameClient.Models
                                 var armor = data.GetArmor(gi.Id);
                                 RemoveArmor(armor);
                                 break;
+                            case EquipKinds.Shoes:
+                            case EquipKinds.Decoration:
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }

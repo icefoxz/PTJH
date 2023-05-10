@@ -6,6 +6,7 @@ using Data;
 using MyBox;
 using Server.Configs.Adventures;
 using Server.Configs.Battles;
+using Server.Configs.Characters;
 using Server.Configs.Items;
 using Server.Controllers;
 using UnityEngine;
@@ -19,6 +20,8 @@ namespace Server.Configs.Fields
         [SerializeField] private AdvPackage[] 奖励包;
         [SerializeField] private WeaponItem[] 武器;
         [SerializeField] private ArmorItem[] 防具;
+        [SerializeField] private ShoesItem[] 鞋子;
+        [SerializeField] private DecorationItem[] 挂件;
         [SerializeField] private MedicineItem[] 丹药;
         [SerializeField] private BookItem[] 秘籍;
         [SerializeField] private StoryPropItem[] 故事道具;
@@ -31,8 +34,13 @@ namespace Server.Configs.Fields
         public IStacking<IGameItem>[] Book => 秘籍;
         public IStacking<IGameItem>[] StoryProps => 故事道具;
         public IStacking<IGameItem>[] FunctionProps => 功能道具;
+        public IStacking<IGameItem>[] Shoes => 鞋子;
+        public IStacking<IGameItem>[] Decoration => 挂件;
 
-        public IStacking<IGameItem>[] AllItems => Weapons.Concat(Armor)
+        public IStacking<IGameItem>[] AllItems => Weapons
+            .Concat(Armor)
+            .Concat(Shoes)
+            .Concat(Decoration)
             .Concat(Medicines)
             .Concat(Book)
             .Concat(StoryProps)
@@ -40,7 +48,9 @@ namespace Server.Configs.Fields
             .ToArray();
 
         public GameItemField[] AllItemFields => 武器.Cast<GameItemField>()
-            .Concat(防具).Concat(丹药).Concat(秘籍).Concat(故事道具)
+            .Concat(鞋子).Concat(挂件).Concat(防具)
+            .Concat(丹药).Concat(秘籍)
+            .Concat(故事道具)
             .Concat(功能道具).ToArray();
     }
 
@@ -111,7 +121,6 @@ namespace Server.Configs.Fields
                     _name = "未设置资源!";
                     return true;
                 }
-
                 _name = $"{GetResourceName(Resource)}x{Value}";
                 return true;
             }
@@ -155,9 +164,11 @@ namespace Server.Configs.Fields
         protected override IGameItem Gi => 武器;
         private WeaponFieldSo W => 武器;
         public EquipKinds EquipKind => W.EquipKind;
-        public DiziGrades Grade => W.Grade;
+        public ColorGrade Grade => W.Grade;
         public WeaponArmed Armed => W.Armed;
-        public int Damage => W.Damage;
+        public int Quality => W.Quality;
+        public float GetAddOn(DiziProps prop)=> W.GetAddOn(prop);
+        public ICombatProps GetCombatProps()=> W.GetCombatProps();
     }
 
     [Serializable]
@@ -173,8 +184,48 @@ namespace Server.Configs.Fields
         protected override IGameItem Gi => 防具;
         private ArmorFieldSo A => 防具;
         public EquipKinds EquipKind => A.EquipKind;
-        public DiziGrades Grade => A.Grade;
-        public int AddHp => A.AddHp;
+        public ColorGrade Grade => A.Grade;
+        public int Quality => A.Quality;
+        public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
+        public ICombatProps GetCombatProps()=> A.GetCombatProps();
+    }
+    
+    [Serializable]
+    internal class ShoesItem : GameItemField, IShoes
+    {
+        [ConditionalField(true, nameof(TryUseSo))]
+        [SerializeField]
+        private ShoesFieldSo 鞋子;
+
+        public override ItemType Type => ItemType.Equipment;
+        public override Sprite Icon => Gi.Icon;
+        protected override ScriptableObject So => 鞋子;
+        protected override IGameItem Gi => 鞋子;
+        private ShoesFieldSo A => 鞋子;
+        public EquipKinds EquipKind => A.EquipKind;
+        public ColorGrade Grade => A.Grade;
+        public int Quality => A.Quality;
+        public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
+        public ICombatProps GetCombatProps()=> A.GetCombatProps();
+    }
+
+    [Serializable]
+    internal class DecorationItem : GameItemField, IShoes
+    {
+        [ConditionalField(true, nameof(TryUseSo))]
+        [SerializeField]
+        private DecorationFieldSo 挂件;
+
+        public override ItemType Type => ItemType.Equipment;
+        public override Sprite Icon => Gi.Icon;
+        protected override ScriptableObject So => 挂件;
+        protected override IGameItem Gi => 挂件;
+        private DecorationFieldSo A => 挂件;
+        public EquipKinds EquipKind => A.EquipKind;
+        public ColorGrade Grade => A.Grade;
+        public int Quality => A.Quality;
+        public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
+        public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
 
     [Serializable]

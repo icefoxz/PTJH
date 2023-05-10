@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Core;
 using DiziM;
+using Models;
 using MyBox;
 using Server.Configs.Adventures;
 using Server.Configs.Battles;
@@ -219,6 +220,7 @@ namespace Server.Controllers
             public IConditionValue Emotion { get; }
             public IConditionValue Injury { get; }
             public IConditionValue Inner { get; }
+            public IDiziEquipment Equipment { get; }
             public IWeapon Weapon { get; }
             public IArmor Armor { get; }
             public Gender Gender { get; }

@@ -4,7 +4,7 @@ using System.Linq;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Managers.GameScene;
+namespace HotFix_Project.Managers;
 /// <summary>
 /// 所有UiManager的代理,主要是管理MainUi上的操作
 /// </summary>

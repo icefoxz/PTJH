@@ -18,15 +18,15 @@ public class CombatArgs : EventArgs
     }
 
     public static DiziCombatUnit InstanceCombatUnit(string guid, string name, int hp, int mp, int strength, int agility,
-        int teamId, ICombatSet combat) => new(unit: new CombatUnit(guid: guid, name: name, hp: hp, mp: mp,
-        strength: strength, agility: agility, teamId: teamId, combat: combat));
+        int teamId, ICombatSet combat, IDiziEquipment equipment) => new(unit: new CombatUnit(guid: guid, name: name,
+        hp: hp, mp: mp, strength: strength, agility: agility, teamId: teamId, combat: combat, equipment));
 
     public static CombatArgs Instance(Dizi a,Dizi b)
     {
         var aCombat = InstanceCombatUnit(guid: a.Guid, name: a.Name, hp: a.Hp, mp: a.Mp, strength: a.Strength,
-            agility: a.Agility, teamId: 0, combat: a.GetCombatSet());
+            agility: a.Agility, teamId: 0, combat: a.GetCombatSet(), a.Equipment);
         var bCombat = InstanceCombatUnit(guid: b.Guid, name: b.Name, hp: b.Hp, mp: b.Mp, strength: b.Strength,
-            agility: b.Agility, teamId: 1, combat: b.GetCombatSet());
+            agility: b.Agility, teamId: 1, combat: b.GetCombatSet(), b.Equipment);
         return new CombatArgs(caster: aCombat, target: bCombat);
     }
     private class CombatUnit : IDiziCombatUnit
@@ -44,9 +44,10 @@ public class CombatArgs : EventArgs
         public int Strength { get; }
         public int Agility { get; }
         public ICombatSet Combat { get; }
+        public IDiziEquipment Equipment { get; }
         public void SetInstanceId(int instanceId) => InstanceId=instanceId;
 
-        public CombatUnit(string guid, string name, int hp, int mp, int strength, int agility, int teamId, ICombatSet combat)
+        public CombatUnit(string guid, string name, int hp, int mp, int strength, int agility, int teamId, ICombatSet combat, IDiziEquipment equipment)
         {
             Name = name;
             Hp = hp;
@@ -60,6 +61,7 @@ public class CombatArgs : EventArgs
             Strength = strength;
             Agility = agility;
             Combat = combat;
+            Equipment = equipment;
         }
     }
 }

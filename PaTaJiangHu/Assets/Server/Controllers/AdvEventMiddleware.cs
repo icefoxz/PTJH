@@ -49,8 +49,7 @@ namespace Server.Controllers
                     if (advEvent is not BattleSimulationEventSo bs)
                         throw new NotImplementedException($"{advEvent.Name} 事件类型错误!");
                     var diziSim = Simulator.GetSimulation(0, simName: dizi.Name, strength: dizi.Strength,
-                        agility: dizi.Agility, hp: dizi.Hp, mp: dizi.Mp,
-                        weaponDamage: dizi.WeaponPower, armorAddHp: dizi.ArmorPower);
+                        agility: dizi.Agility, hp: dizi.Hp, mp: dizi.Mp);
                     var npc = bs.GetNpc(Simulator);
                     var outcome = Simulator.CountSimulationOutcome(diziSim, npc);
                     var staminaController = Game.Controllers.Get<StaminaController>();

@@ -60,10 +60,10 @@ internal class TreasureHouseManager : UiManagerBase
                 case View_contentList.TreasureTypes.Equipment:
                     foreach (var dizi in faction.DiziList)
                     {
-                        if (dizi.Weapon != null)
-                            items.Add((dizi.Weapon.Name, dizi.Weapon.About, -1));
-                        if (dizi.Armor != null)
-                            items.Add((dizi.Armor.Name, dizi.Armor.About, -1));
+                        if (dizi.Equipment.Weapon != null)
+                            items.Add((dizi.Equipment.Weapon.Name, dizi.Equipment.Weapon.About, -1));
+                        if (dizi.Equipment.Armor != null)
+                            items.Add((dizi.Equipment.Armor.Name, dizi.Equipment.Armor.About, -1));
                     }
                     for (var i = 0; i < faction.Weapons.Count; i++)
                     {
@@ -208,10 +208,10 @@ internal class TreasureHouseManager : UiManagerBase
                     case TreasureTypes.Equipment: //武器+防具=装备
                         foreach (var dizi in faction.DiziList)
                         {
-                            if (dizi.Weapon != null)
-                                items.Add((dizi.Weapon.Name, dizi.Name, dizi.Grade, 1, -1, (int) dizi.Weapon.Grade));
-                            if (dizi.Armor != null)
-                                items.Add((dizi.Armor.Name, dizi.Name, dizi.Grade, 1, -1, (int)dizi.Armor.Grade));
+                            if (dizi.Equipment.Weapon != null)
+                                items.Add((dizi.Equipment.Weapon.Name, dizi.Name, dizi.Grade, 1, -1, (int) dizi.Equipment.Weapon.Grade));
+                            if (dizi.Equipment.Armor != null)
+                                items.Add((dizi.Equipment.Armor.Name, dizi.Name, dizi.Grade, 1, -1, (int)dizi.Equipment.Armor.Grade));
                         }
                         for (var i = 0; i < faction.Weapons.Count; i++)
                         {

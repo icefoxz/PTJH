@@ -1,6 +1,6 @@
 ﻿using Views;
 
-namespace HotFix_Project.Managers.GameScene;
+namespace HotFix_Project.Managers;
 
 /// <summary>
 /// 基于MainPage的UiManagerBase 扩展类

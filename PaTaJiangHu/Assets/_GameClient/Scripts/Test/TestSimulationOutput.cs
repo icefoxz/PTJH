@@ -38,8 +38,7 @@ public class TestSimulationOutput : MonoBehaviour
     }
 
     private ISimCombat GetSimulation(int teamId, Unit unit) =>
-        SimSo.GetSimulation(teamId, unit.Name, unit.Strength, unit.Agility, unit.Hp, unit.Mp, unit.WeaponDamage,
-            unit.ArmorAddHp);
+        SimSo.GetSimulation(teamId, unit.Name, unit.Strength, unit.Agility, unit.Hp, unit.Mp);
 
     [Serializable]private class Unit
     {
@@ -48,16 +47,12 @@ public class TestSimulationOutput : MonoBehaviour
         [SerializeField] private int 敏;
         [SerializeField] private int 血;
         [SerializeField] private int 内;
-        [SerializeField] private int 武器伤害;
-        [SerializeField] private int 防具加血量;
 
         public string Name => 名字;
         public int Strength => 力;
         public int Agility => 敏;
         public int Hp=> 血;
         public int Mp => 内;
-        public int WeaponDamage => 武器伤害;
-        public int ArmorAddHp => 防具加血量;
     }
 }
 

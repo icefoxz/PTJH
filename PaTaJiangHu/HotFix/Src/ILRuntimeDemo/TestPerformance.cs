@@ -1,9 +1,7 @@
-﻿using System;
+﻿using System.Text;
 using UnityEngine;
-using System.Collections.Generic;
-using System.Text;
 
-namespace HotFix_Project
+namespace HotFix_Project.ILRuntimeDemo
 {
     public class TestPerformance
     {

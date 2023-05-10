@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Models;
 using MyBox;
 using Server.Configs.BattleSimulation;
+using Server.Configs.Characters;
 using Server.Configs.Items;
 using Server.Configs.Skills;
 using UnityEngine;
@@ -11,7 +13,7 @@ using UnityEngine.Analytics;
 namespace Server.Configs.Battles
 {
     [CreateAssetMenu(fileName = "id_战斗Npc", menuName = "历练/战斗Npc")]
-    internal class CombatNpcSo : AutoDashNamingObject
+    internal class CombatNpcSo : AutoDashNamingObject,IDiziEquipment
     {
         [SerializeField] private Gender 性别;
         [SerializeField] private int 力;
@@ -20,6 +22,8 @@ namespace Server.Configs.Battles
         [SerializeField] private int _mp;
         [SerializeField] private WeaponFieldSo 武器;
         [SerializeField] private ArmorFieldSo 防具;
+        [SerializeField] private ShoesFieldSo 鞋子;
+        [SerializeField] private DecorationFieldSo 挂件;
         [SerializeField] private SkillField[] 技能;
 
         internal Gender Gender => 性别;
@@ -31,13 +35,62 @@ namespace Server.Configs.Battles
         private SkillField[] Skills => 技能;
         internal WeaponFieldSo Weapon => 武器;
         internal ArmorFieldSo Armor => 防具;
+        IArmor IDiziEquipment.Armor => Armor;
+        IWeapon IDiziEquipment.Weapon => Weapon;
         internal WeaponArmed Armed => Weapon?.Armed ?? WeaponArmed.Unarmed;
+        public IDiziEquipment Equipment => this;
+        public IShoes Shoes => 鞋子;
+        public IDecoration Decoration => 挂件;
+
+        public IEnumerable<IEquipment> AllEquipments => new IEquipment[]
+        {
+            Weapon,
+            Armor,
+            Shoes,
+            Decoration
+        }.Where(e => e != null);
+        public int GetPropAddon(DiziProps prop)=> (int)AllEquipments.Sum(e => e.GetAddOn(prop));
+
+        public ICombatProps GetCombatProps() => new CombatProps(
+            Strength + GetPropAddon(DiziProps.Strength),
+            Agility + GetPropAddon(DiziProps.Agility),
+            Hp + GetPropAddon(DiziProps.Hp),
+            Mp + GetPropAddon(DiziProps.Mp));
+
+        public IDiziCombatUnit CombatDisarm(int teamId, IEquipment equipment)
+        {
+            switch (equipment.EquipKind)
+            {
+                case EquipKinds.Weapon:
+                    武器 = null;
+                    break;
+                case EquipKinds.Armor:
+                    防具 = null;
+                    break;
+                case EquipKinds.Shoes:
+                    鞋子 = null;
+                    break;
+                case EquipKinds.Decoration:
+                    挂件 = null;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            return new DiziCombatUnit(teamId, this);
+        }
 
         public ISimCombat GetSimCombat(BattleSimulatorConfigSo cfg)
         {
-            return cfg.GetSimulation(1, Name, Strength, Agility, Hp, Mp,
-                Weapon != null ? Weapon.Damage : 0,
-                Armor != null ? Armor.AddHp : 0);
+            var equipments = new IEquipment[]
+            {
+                Weapon.Instance(),
+                Armor.Instance()
+            }.Where(e => e != null).ToArray();
+            var strAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Strength));
+            var agiAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Agility));
+            var hpAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Hp));
+            var mpAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Mp));
+            return cfg.GetSimulation(1, Name, Strength + strAddon, Agility + agiAddon, Hp + hpAddon, Mp + mpAddon);
         }
 
         public ICombatSet GetCombatSet()

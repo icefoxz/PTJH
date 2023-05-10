@@ -69,10 +69,10 @@ public abstract class SkillFieldSOEditor : Editor
         public int Power { get; set; }
         public int Damage { get; set; } = 100;
         public int MaxHp { get; set; } = 100;
-        public int Strength { get; set; } = 10;
-        public int Agility { get; set; } = 10;
-        public int Hp { get; set; } = 100;
-        public int Mp { get; set; } = 100;
+        public float Strength { get; set; } = 10;
+        public float Agility { get; set; } = 10;
+        public float Hp { get; set; } = 100;
+        public float Mp { get; set; } = 100;
         public int Weapon { get; set; }
         public int Armor { get; set; }
 

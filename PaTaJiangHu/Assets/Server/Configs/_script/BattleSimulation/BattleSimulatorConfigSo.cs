@@ -92,25 +92,20 @@ namespace Server.Configs.BattleSimulation
             return m.Value;
         }
 
-        public int GetPower(int strength, int agility, int hp, int mp, int weaponDamage = 0,
-            int armorAddHp = 0) => (strength + agility) * (hp + mp) / 1000;
+        public int GetPower(float strength, float agility, float hp, float mp) => (int)((strength + agility) * (hp + mp) / 1000);
 
-        public ISimCombat GetSimulation(int teamId, string simName, int strength, int agility, int hp, int mp,
-            int weaponDamage,
-            int armorAddHp) => new SimCombat(teamId, name: simName,
-            power: GetPower(strength, agility, hp, mp, weaponDamage, armorAddHp),
-            strength: strength, agility: agility, hp: hp, mp: mp, weaponDamage, armorAddHp);
+        public ISimCombat GetSimulation(int teamId, string simName, float strength, float agility, float hp, float mp)
+            => new SimCombat(teamId, name: simName, power: GetPower(strength, agility, hp, mp), 
+                strength: strength, agility: agility, hp: hp, mp: mp);
 
         private record SimCombat : ISimCombat
         {
-            public SimCombat(int teamId,string name, int power, int strength, int agility, int hp, int mp, int weapon, int armor)
+            public SimCombat(int teamId,string name, int power, float strength, float agility, float hp, float mp)
             {
                 Name = name;
                 Power = power;
                 Strength = strength;
                 Agility = agility;
-                Weapon = weapon;
-                Armor = armor;
                 TeamId = teamId;
                 Hp = hp;
                 Mp = mp;
@@ -118,16 +113,14 @@ namespace Server.Configs.BattleSimulation
 
             public string Name { get; }
             public int Power { get; }
-            public int Damage => Strength + Agility + Weapon;
-            public int MaxHp => Hp + Mp + Armor;
-            public int Strength { get; }
-            public int Agility { get; }
-            public int Hp { get; }
-            public int Speed => Agility;
+            public int Damage => (int)(Strength + Agility);
+            public int MaxHp => (int)(Hp + Mp);
+            public float Strength { get; }
+            public float Agility { get; }
+            public float Hp { get; }
+            public int Speed => (int)Agility;
             public int TeamId { get; }
-            public int Mp { get; }
-            public int Weapon { get; }
-            public int Armor { get; }
+            public float Mp { get; }
         }
 
         public record Outcome : ISimulationOutcome

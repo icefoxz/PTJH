@@ -1,4 +1,5 @@
 ﻿using Core;
+using Server.Configs.Characters;
 using Server.Controllers;
 using UnityEngine;
 
@@ -11,7 +12,9 @@ namespace Server.Configs.Battles
     public enum EquipKinds
     {
         Weapon,
-        Armor
+        Armor,
+        Shoes,
+        Decoration,
     }
 
     public enum WeaponArmed
@@ -25,16 +28,25 @@ namespace Server.Configs.Battles
     public interface IEquipment : IGameItem
     {
         EquipKinds EquipKind { get; }
-        DiziGrades Grade { get; }
+        ColorGrade Grade { get; }
+        float GetAddOn(DiziProps prop);
+        int Quality { get; }
+        ICombatProps GetCombatProps();
     }
 
     public interface IArmor : IEquipment
     {
-        int AddHp { get; }
+    }
+
+    public interface IShoes : IEquipment
+    {
+
+    }
+    public interface IDecoration : IEquipment
+    {
     }
     public interface IWeapon : IEquipment
     {
         WeaponArmed Armed { get; }
-        int Damage { get; }
     }
 }

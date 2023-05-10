@@ -180,8 +180,8 @@ internal class WinEquipmentManager : UiManagerBase
             switch (type)
             {
                 case ItemTypes.Weapon:
-                    IsDiziEquipped = selectedDizi.Weapon != null;
-                    if (IsDiziEquipped) items.Add((selectedDizi.Weapon.Name, -1, 1, (int) selectedDizi.Weapon.Grade));
+                    IsDiziEquipped = selectedDizi.Equipment.Weapon != null;
+                    if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Weapon.Name, -1, 1, (int) selectedDizi.Equipment.Weapon.Grade));
                     for (var i = 0; i < faction.Weapons.Count; i++)
                     {
                         var item = faction.Weapons[i];
@@ -190,8 +190,8 @@ internal class WinEquipmentManager : UiManagerBase
                     }
                     break;
                 case ItemTypes.Armor:
-                    IsDiziEquipped = selectedDizi.Armor != null;
-                    if (IsDiziEquipped) items.Add((selectedDizi.Armor.Name, -1, 1, (int)selectedDizi.Armor.Grade));
+                    IsDiziEquipped = selectedDizi.Equipment.Armor != null;
+                    if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Armor.Name, -1, 1, (int)selectedDizi.Equipment.Armor.Grade));
                     for (var i = 0; i < faction.Armors.Count; i++)
                     {
                         var item = faction.Armors[i];

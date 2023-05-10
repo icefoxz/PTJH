@@ -1,6 +1,5 @@
 ﻿using System;
 using _GameClient.Models;
-using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
 using Models;
 using Server.Configs.Adventures;

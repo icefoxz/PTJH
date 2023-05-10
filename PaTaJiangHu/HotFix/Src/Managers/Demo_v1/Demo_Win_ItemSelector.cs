@@ -1,5 +1,4 @@
 ﻿using System;
-using HotFix_Project.Managers.GameScene;
 using HotFix_Project.Views.Bases;
 using Systems.Messaging;
 using UnityEngine;

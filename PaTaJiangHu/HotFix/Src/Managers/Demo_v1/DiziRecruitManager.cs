@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Utls;
 using Views;
 
-namespace HotFix_Project.Managers.GameScene;
+namespace HotFix_Project.Managers.Demo_v1;
 
 internal class DiziRecruitManager : UiManagerBase
 {

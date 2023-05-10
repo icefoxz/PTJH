@@ -40,11 +40,11 @@ internal class DiziCombatConfigSo : ScriptableObject
 
     [Serializable]internal class UiEffectField
     {
-        [SerializeField] private DiziBattle.Events 事件;
+        [SerializeField] private DiziCombatAnimator.Events 事件;
         [SerializeField] private EffectView[] Ui特效;
         [SerializeField] private float 持续秒 = 0.5f;
         public EffectView[] Effects => Ui特效;
-        public DiziBattle.Events Event => 事件;
+        public DiziCombatAnimator.Events Event => 事件;
         public float Lasting => 持续秒;
     }
 }

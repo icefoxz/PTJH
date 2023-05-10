@@ -1,4 +1,5 @@
 using System;
+using Models;
 using Server.Configs.Skills;
 using UnityEngine;
 
@@ -11,8 +12,8 @@ public class SkillLevelStrategyTests : MonoBehaviour
     {
         // Use the Assert class to test conditions
         var level1CombatSet = LevelStrategy.GetCombatSet(1);
-        var com1 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test1", hp: 100, mp: 100, strength: 20, agility: 20, teamId: 0, combat: level1CombatSet);
-        var com2 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test2", hp: 100, mp: 100, strength: 30, agility: 30, teamId: 1, combat: level1CombatSet);
+        var com1 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test1", hp: 100, mp: 100, strength: 20, agility: 20, teamId: 0, combat: level1CombatSet, null);
+        var com2 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test2", hp: 100, mp: 100, strength: 30, agility: 30, teamId: 1, combat: level1CombatSet, null);
         var arg = new CombatArgs(com1, com2);
         var dodgeRate = level1CombatSet.GetDodgeRate(arg);
         var criticalRate = level1CombatSet.GetCriticalRate(arg);

@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Models;
+using Server.Configs.Battles;
+using Server.Configs.Characters;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
@@ -75,7 +79,7 @@ public class TestBattle : MonoBehaviour
     }
 
     [Serializable]
-    private class CombatChar : IDiziCombatUnit, ICombatSet
+    private class CombatChar : IDiziCombatUnit, ICombatSet, IDiziEquipment
     {
         [SerializeField] private CharacterOperator _op;
         [SerializeField] private bool 玩家;
@@ -106,16 +110,18 @@ public class TestBattle : MonoBehaviour
         public int Strength => 力量;
         public int Agility => 敏捷;
         public ICombatSet Combat => this;
+        public IDiziEquipment Equipment => this;
         private CombatSkill Com => 武功;
         private ForceSkill Force => 内功;
         private DodgeSkill Dodge => 轻功;
-        public float GetHardRate(CombatArgs arg)=> Com.GetHardRate(arg);
-        public float GetHardDamageRatio(CombatArgs arg)=> Com.GetHardDamageRatio(arg);
-        public float GetCriticalRate(CombatArgs arg)=> Force.GetCriticalRate(arg);
+        public float GetHardRate(CombatArgs arg) => Com.GetHardRate(arg);
+        public float GetHardDamageRatio(CombatArgs arg) => Com.GetHardDamageRatio(arg);
+        public float GetCriticalRate(CombatArgs arg) => Force.GetCriticalRate(arg);
         public float GetCriticalDamageRatio(CombatArgs arg) => Force.GetCriticalMultiplier(arg);
-        public float GetMpDamage(CombatArgs arg)=> Force.GetMpDamage(arg);
-        public float GetMpCounteract(CombatArgs arg)=> Force.GetMpCounteract(arg);
-        public float GetDodgeRate(CombatArgs arg)=> Dodge.GetDodgeRate(arg);
+        public float GetMpDamage(CombatArgs arg) => Force.GetMpDamage(arg);
+        public float GetMpCounteract(CombatArgs arg) => Force.GetMpCounteract(arg);
+        public float GetDodgeRate(CombatArgs arg) => Dodge.GetDodgeRate(arg);
+
         public void SetInstanceId(int instanceId)
         {
             InstanceId = instanceId;
@@ -124,7 +130,7 @@ public class TestBattle : MonoBehaviour
         public DiziCombatUnit GetCombatUnit() => new(this);
 
         [Serializable]
-        private class CombatSkill 
+        private class CombatSkill
         {
             [SerializeField] private float 重击率;
             [Range(0, 3)] [SerializeField] private float 重击伤害倍数;
@@ -133,7 +139,7 @@ public class TestBattle : MonoBehaviour
         }
 
         [Serializable]
-        private class ForceSkill 
+        private class ForceSkill
         {
             [SerializeField] private float 伤害内力;
             [SerializeField] private float 抵消内力;
@@ -146,10 +152,28 @@ public class TestBattle : MonoBehaviour
         }
 
         [Serializable]
-        private class DodgeSkill 
+        private class DodgeSkill
         {
             [SerializeField] private float 闪避率;
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
+        }
+
+        public IWeapon Weapon { get; }
+        public IArmor Armor { get; }
+        public IShoes Shoes { get; }
+        public IDecoration Decoration { get; }
+        public IEnumerable<IEquipment> AllEquipments { get; }
+        public int GetPropAddon(DiziProps prop) => 0;
+        public ICombatProps GetCombatProps() => new DiziCombatProps();
+
+        public IDiziCombatUnit CombatDisarm(int teamId, IEquipment equipment) => new DiziCombatUnit(this);
+
+        private class DiziCombatProps : ICombatProps
+        {
+            public float StrAddon { get; } = 0;
+            public float AgiAddon { get; } = 0;
+            public float HpAddon { get; } = 0;
+            public float MpAddon { get; } = 0;
         }
     }
 

@@ -37,15 +37,11 @@ namespace Models
         public int Agility => AgilityProp.TotalValue;
         public int Hp => HpProp.TotalValue;
         public int Mp => MpProp.TotalValue;
-        public int Power => BattleSimulator.GetPower(strength: Strength, agility: Agility, hp: Hp, mp: Mp,
-            weaponDamage: WeaponPower, armorAddHp: ArmorPower);
+        public int Power => BattleSimulator.GetPower(strength: Strength, agility: Agility, hp: Hp, mp: Mp);
         public DiziPropValue StrengthProp { get; }
         public DiziPropValue AgilityProp { get; }
         public DiziPropValue HpProp { get; }
         public DiziPropValue MpProp { get; }
-
-        public int WeaponPower => GetWeaponDamage();
-        public int ArmorPower => GetArmorAddHp();
         public IDiziStamina Stamina => StaminaManager.Stamina;
         public DiziStaminaManager StaminaManager { get; }
         // 私有字段
@@ -84,15 +80,15 @@ namespace Models
             _silver = new ConValue(PropStateCfg.SilverDefault.Max, PropStateCfg.SilverDefault.Min);
             _injury = new ConValue(PropStateCfg.InjuryDefault.Max, PropStateCfg.InjuryDefault.Min);
             _inner = new ConValue(PropStateCfg.InnerDefault.Max, PropStateCfg.InnerDefault.Min);
-
+            _equipment = new DiziEquipment(this);
             StrengthProp = new DiziPropValue(Capable.Strength.Value, () => GetLevelBonus(DiziProps.Strength),
-                () => GetPropStateAddon(DiziProps.Strength), GetWeaponDamage, null);
+                () => GetPropStateAddon(DiziProps.Strength), () => _equipment.GetPropAddon(DiziProps.Strength), null);
             AgilityProp = new DiziPropValue(Capable.Agility.Value, () => GetLevelBonus(DiziProps.Agility),
-                () => GetPropStateAddon(DiziProps.Agility), null, null);
+                () => GetPropStateAddon(DiziProps.Agility), () => _equipment.GetPropAddon(DiziProps.Agility), null);
             HpProp = new DiziPropValue(Capable.Hp.Value, () => GetLevelBonus(DiziProps.Hp),
-                () => GetPropStateAddon(DiziProps.Hp), GetArmorAddHp, null);
+                () => GetPropStateAddon(DiziProps.Hp), ()=> _equipment.GetPropAddon(DiziProps.Hp), null);
             MpProp = new DiziPropValue(Capable.Mp.Value, () => GetLevelBonus(DiziProps.Mp),
-                () => GetPropStateAddon(DiziProps.Mp), null, null);
+                () => GetPropStateAddon(DiziProps.Mp), ()=> _equipment.GetPropAddon(DiziProps.Mp), null);
             StaminaManager = new DiziStaminaManager(this, stamina);
             State = new DiziStateHandler(this, OnMessageAction, OnAdjustAction, OnRewardAction);
             StaminaService();
@@ -147,9 +143,6 @@ namespace Models
             var leveledValue = propValue + LevelCfg.GetLeveledBonus(prop, propValue, Level);
             return leveledValue;
         }
-
-        private int GetWeaponDamage() => Weapon?.Damage ?? 0;
-        private int GetArmorAddHp() => Armor?.AddHp ?? 0;
 
         #region ITerm
 

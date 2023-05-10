@@ -6,11 +6,9 @@
         int Power { get; }
         int Damage { get; }
         int MaxHp { get; }
-        int Strength { get; }
-        int Agility { get; }
-        int Hp { get; }
-        int Mp { get; }
-        int Weapon { get; }
-        int Armor { get; }
+        float Strength { get; }
+        float Agility { get; }
+        float Hp { get; }
+        float Mp { get; }
     }
 }

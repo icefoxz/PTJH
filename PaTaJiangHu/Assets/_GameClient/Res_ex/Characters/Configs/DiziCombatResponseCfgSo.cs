@@ -25,11 +25,11 @@ internal class DiziCombatResponseCfgSo : ScriptableObject
     [SerializeField] private BasicEffect[] _suffer;
     [SerializeField] private BasicEffect[] _dodge;
     [SerializeField] private BasicEffect[] _defeat;
-    public ICombat2DEffect[] GetResponseEffect(DiziBattle.Responses response) => response switch
+    public ICombat2DEffect[] GetResponseEffect(DiziCombatAnimator.Responses response) => response switch
     {
-        DiziBattle.Responses.Suffer => _suffer,
-        DiziBattle.Responses.Dodge => _dodge,
-        DiziBattle.Responses.Defeat => _defeat,
+        DiziCombatAnimator.Responses.Suffer => _suffer,
+        DiziCombatAnimator.Responses.Dodge => _dodge,
+        DiziCombatAnimator.Responses.Defeat => _defeat,
         _ => throw new ArgumentOutOfRangeException(nameof(response), response, null)
     };
 

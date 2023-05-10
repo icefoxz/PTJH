@@ -5,7 +5,6 @@ using System.Linq;
 using Server.Configs.Battles;
 using Server.Configs.Characters;
 using Server.Configs.Skills;
-using Server.Controllers;
 using Utls;
 
 namespace Models
@@ -14,17 +13,17 @@ namespace Models
     public partial class Dizi
     {
         private SkillConfigSo SkillConfig => Game.Config.DiziCfg.SkillCfg;
-        public IWeapon Weapon { get; private set; }
-        public IArmor Armor { get; private set; }
+        public IDiziEquipment Equipment => _equipment;
+        internal DiziEquipment _equipment;
         internal void SetWeapon(IWeapon weapon)
         {
-            Log(weapon == null ? $"卸下{Weapon.Name}" : $"装备{weapon.Name}!");
-            Weapon = weapon;
+            Log(weapon == null ? $"卸下{_equipment.Weapon.Name}" : $"装备{weapon.Name}!");
+            _equipment.SetWeapon(weapon);
         }
         internal void SetArmor(IArmor armor)
         {
-            Log(armor == null ? $"卸下{Armor.Name}" : $"装备{armor.Name}!");
-            Armor = armor;
+            Log(armor == null ? $"卸下{_equipment.Armor.Name}" : $"装备{armor.Name}!");
+            _equipment.SetArmor(armor);
         }
 
         public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
@@ -52,6 +51,67 @@ namespace Models
             Skill.RemoveSkill(skill);
             SendEvent(EventString.Dizi_Skill_Update);
             Log($"遗忘{skill.Name}");
+        }
+    }
+
+    public interface IDiziEquipment
+    {
+        IWeapon Weapon { get; }
+        IArmor Armor { get; }
+        IShoes Shoes { get; }
+        IDecoration Decoration { get; }
+        IEnumerable<IEquipment> AllEquipments { get; }
+        int GetPropAddon(DiziProps prop);
+        ICombatProps GetCombatProps();
+        /// <summary>
+        /// 战斗时被打掉装备的主要逻辑
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <param name="equipment"></param>
+        /// <returns></returns>
+        IDiziCombatUnit CombatDisarm(int teamId,IEquipment equipment);
+    }
+
+    public class DiziEquipment : IDiziEquipment
+    {
+        private Dizi _dizi;
+        public DiziEquipment(Dizi dizi)
+        {
+            _dizi = dizi;
+        }
+        public IWeapon Weapon { get; private set; }
+        public IArmor Armor { get; private set; }
+        public IShoes Shoes { get; private set; }
+        public IDecoration Decoration { get; private set; }
+        public IEnumerable<IEquipment> AllEquipments => new IEquipment[] { Weapon, Armor, Shoes, Decoration }.Where(e => e != null);
+        internal void SetWeapon(IWeapon weapon) => Weapon = weapon;
+        internal void SetArmor(IArmor armor) => Armor = armor;
+        internal void SetShoes(IShoes shoes) => Shoes = shoes;
+        internal void SetDecoration(IDecoration decoration) => Decoration = decoration;
+
+        public int GetPropAddon(DiziProps prop) => (int)AllEquipments.Sum(e => e.GetAddOn(prop));
+        public ICombatProps GetCombatProps() => AllEquipments.Select(e => e.GetCombatProps()).Combine();
+        public IDiziCombatUnit CombatDisarm(int teamId,IEquipment equipment)
+        {
+            var type = equipment.EquipKind;
+            switch (type)
+            {
+                case EquipKinds.Weapon:
+                    Weapon = null;
+                    break;
+                case EquipKinds.Armor:
+                    Armor = null;
+                    break;
+                case EquipKinds.Shoes:
+                    Shoes = null;
+                    break;
+                case EquipKinds.Decoration:
+                    Decoration = null;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+            return new DiziCombatUnit(teamId, _dizi);
         }
     }
 

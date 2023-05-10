@@ -11,6 +11,27 @@ using Object = UnityEngine.Object;
 /// </summary>
 internal class DiziCombatAnimator
 {
+    /// <summary>
+    /// 战斗事件, 用于定义战斗配置,
+    /// </summary>
+    public enum Events
+    {
+        Perform,
+        Response,
+        RoundEnd,
+        BattleEnd,
+    }
+
+    /// <summary>
+    /// 战斗反馈, 用于定义战斗配置
+    /// </summary>
+    public enum Responses
+    {
+        Suffer,
+        Dodge,
+        Defeat
+    }
+
     private DiziCombatConfigSo CombatConfig { get; }
     private DiziCombatResponseCfgSo CombatResponseSo => CombatConfig.CombatResponseSo;
     private EffectViewsPool EffectViewsPool { get; } = new EffectViewsPool();
@@ -38,16 +59,16 @@ internal class DiziCombatAnimator
         var reAct = GetResponseAction(response);
         switch (reAct)
         {
-            case DiziBattle.Responses.Suffer:
+            case DiziCombatAnimator.Responses.Suffer:
                 tarOp.SetAnim(CharacterOperator.Anims.Suffer);
-                PlayUiEffects(performerId, performIndex, DiziBattle.Events.Response, rectTransform);
+                PlayUiEffects(performerId, performIndex, DiziCombatAnimator.Events.Response, rectTransform);
                 break;
-            case DiziBattle.Responses.Dodge:
+            case DiziCombatAnimator.Responses.Dodge:
                 tarOp.SetAnim(CharacterOperator.Anims.Dodge);
                 break;
-            case DiziBattle.Responses.Defeat:
+            case DiziCombatAnimator.Responses.Defeat:
                 tarOp.SetAnim(CharacterOperator.Anims.Defeat);
-                PlayUiEffects(performerId, performIndex, DiziBattle.Events.Response, rectTransform);
+                PlayUiEffects(performerId, performIndex, DiziCombatAnimator.Events.Response, rectTransform);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -65,7 +86,7 @@ internal class DiziCombatAnimator
         RectTransform rectTransform)
     {
         performOp.SetAnim(CharacterOperator.Anims.Attack); //attack
-        PlayUiEffects(info.Performer.InstanceId, performIndex, DiziBattle.Events.Perform, rectTransform);
+        PlayUiEffects(info.Performer.InstanceId, performIndex, DiziCombatAnimator.Events.Perform, rectTransform);
     }
 
     /// <summary>
@@ -127,7 +148,7 @@ internal class DiziCombatAnimator
     /// <param name="battleEvent"></param>
     /// <param name="tran"></param>
     /// <exception cref="NotImplementedException"></exception>
-    private void PlayUiEffects(int performerId, int performIndex, DiziBattle.Events battleEvent, RectTransform tran)
+    private void PlayUiEffects(int performerId, int performIndex, DiziCombatAnimator.Events battleEvent, RectTransform tran)
     {
         foreach (var effect in CombatConfig.UiEffectFields.Where(u => u.Event == battleEvent))
         {
@@ -158,11 +179,11 @@ internal class DiziCombatAnimator
 
 
     //获取反馈
-    private static DiziBattle.Responses GetResponseAction(CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response)
+    private static DiziCombatAnimator.Responses GetResponseAction(CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response)
     {
-        return response.IsDodged ? DiziBattle.Responses.Dodge
-            : response.Target.Hp > 0 ? DiziBattle.Responses.Suffer
-            : DiziBattle.Responses.Defeat;
+        return response.IsDodged ? DiziCombatAnimator.Responses.Dodge
+            : response.Target.Hp > 0 ? DiziCombatAnimator.Responses.Suffer
+            : DiziCombatAnimator.Responses.Defeat;
     }
 }
 
