@@ -55,7 +55,7 @@ namespace Server.Controllers
         }
 
         /// <summary>
-        /// 弟子装备物件, itemType { 0 : weapon, 1 : armor }
+        /// 弟子装备物件, itemType { 0 : weapon, 1 : armor, 2 : shoes, 3 : decoration}
         /// </summary>
         /// <param name="guid">弟子guid</param>
         /// <param name="index">第几个物件</param>
@@ -83,6 +83,24 @@ namespace Server.Controllers
                     if (diziArmor!= null) Faction.AddArmor(diziArmor);
                     break;
                 }
+                case 2:
+                {
+                    var diziShoes = dizi._equipment.Shoes;
+                    var shoes = Faction.Shoes[index];
+                    dizi.SetShoes(shoes);
+                    Faction.RemoveShoes(shoes);
+                    if (diziShoes != null) Faction.AddShoes(diziShoes);
+                    break;
+                }
+                case 3:
+                {
+                    var diziDecoration = dizi._equipment.Decoration;
+                    var decoration = Faction.Decorations[index];
+                    dizi.SetDecoration(decoration);
+                    Faction.RemoveDecoration(decoration);
+                    if (diziDecoration != null) Faction.AddDecoration(diziDecoration);
+                    break;
+                }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
             }
 
@@ -104,7 +122,21 @@ namespace Server.Controllers
                 {
                     var armor = dizi._equipment.Armor;
                     dizi.SetArmor(null);
-                    Faction.RemoveArmor(armor);
+                    Faction.AddArmor(armor);
+                    break;
+                }
+                case 2:
+                {
+                    var shoes = dizi._equipment.Shoes;
+                    dizi.SetShoes(null);
+                    Faction.AddShoes(shoes);
+                    break;
+                }
+                case 3:
+                {
+                    var decoration = dizi._equipment.Decoration;
+                    dizi.SetDecoration(null);
+                    Faction.AddDecoration(decoration);
                     break;
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));

@@ -1,7 +1,10 @@
 using System;
+using System.Collections;
 using ILRuntime.CLR.Method;
 using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
+using AppDomain = ILRuntime.Runtime.Enviorment.AppDomain;
+
 #if DEBUG && !DISABLE_ILRUNTIME_DEBUG
 
 #else
@@ -12,117 +15,56 @@ namespace ILAdapters
 {   
     public class IDictionaryEnumeratorAdapter : CrossBindingAdaptor
     {
-        public override Type BaseCLRType
+        public override Type BaseCLRType => typeof(IDictionaryEnumerator);
+        public override Type AdaptorType => typeof(Adapter);
+        public override object CreateCLRInstance(AppDomain appdomain, ILTypeInstance instance) => new Adapter(appdomain, instance);
+        public class Adapter : IDictionaryEnumerator, CrossBindingAdaptorType
         {
-            get
-            {
-                return typeof(System.Collections.IDictionaryEnumerator);
-            }
-        }
-
-        public override Type AdaptorType
-        {
-            get
-            {
-                return typeof(Adapter);
-            }
-        }
-
-        public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance)
-        {
-            return new Adapter(appdomain, instance);
-        }
-
-        public class Adapter : System.Collections.IDictionaryEnumerator, CrossBindingAdaptorType
-        {
-            CrossBindingFunctionInfo<System.Object> mget_Key_0 = new CrossBindingFunctionInfo<System.Object>("get_Key");
-            CrossBindingFunctionInfo<System.Object> mget_Value_1 = new CrossBindingFunctionInfo<System.Object>("get_Value");
-            CrossBindingFunctionInfo<System.Collections.DictionaryEntry> mget_Entry_2 = new CrossBindingFunctionInfo<System.Collections.DictionaryEntry>("get_Entry");
-            CrossBindingFunctionInfo<System.Boolean> mMoveNext_3 = new CrossBindingFunctionInfo<System.Boolean>("MoveNext");
-            CrossBindingFunctionInfo<System.Object> mget_Current_4 = new CrossBindingFunctionInfo<System.Object>("get_Current");
-            CrossBindingMethodInfo mReset_5 = new CrossBindingMethodInfo("Reset");
+            CrossBindingFunctionInfo<object> mget_Key_0 = new("get_Key");
+            CrossBindingFunctionInfo<object> mget_Value_1 = new("get_Value");
+            CrossBindingFunctionInfo<DictionaryEntry> mget_Entry_2 = new("get_Entry");
+            CrossBindingFunctionInfo<bool> mMoveNext_3 = new("MoveNext");
+            CrossBindingFunctionInfo<object> mget_Current_4 = new("get_Current");
+            CrossBindingMethodInfo mReset_5 = new("Reset");
 
             bool isInvokingToString;
-            ILTypeInstance instance;
-            ILRuntime.Runtime.Enviorment.AppDomain appdomain;
+            AppDomain appdomain;
 
-            public Adapter()
-            {
+            public Adapter() { }
 
-            }
-
-            public Adapter(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance)
+            public Adapter(AppDomain appdomain, ILTypeInstance instance)
             {
                 this.appdomain = appdomain;
-                this.instance = instance;
+                ILInstance = instance;
             }
 
-            public ILTypeInstance ILInstance { get { return instance; } }
+            public ILTypeInstance ILInstance { get; }
 
-            public System.Boolean MoveNext()
-            {
-                return mMoveNext_3.Invoke(this.instance);
-            }
-
-            public void Reset()
-            {
-                mReset_5.Invoke(this.instance);
-            }
-
-            public System.Object Key
-            {
-            get
-            {
-                return mget_Key_0.Invoke(this.instance);
-
-            }
-            }
-
-            public System.Object Value
-            {
-            get
-            {
-                return mget_Value_1.Invoke(this.instance);
-
-            }
-            }
-
-            public System.Collections.DictionaryEntry Entry
-            {
-            get
-            {
-                return mget_Entry_2.Invoke(this.instance);
-
-            }
-            }
-
-            public System.Object Current
-            {
-            get
-            {
-                return mget_Current_4.Invoke(this.instance);
-
-            }
-            }
+            public bool MoveNext() => mMoveNext_3.Invoke(ILInstance);
+            public void Reset() => mReset_5.Invoke(ILInstance);
+            public object Key => mget_Key_0.Invoke(ILInstance);
+            public object Value => mget_Value_1.Invoke(ILInstance);
+            public DictionaryEntry Entry => mget_Entry_2.Invoke(ILInstance);
+            public object Current => mget_Current_4.Invoke(ILInstance);
 
             public override string ToString()
             {
-                IMethod m = appdomain.ObjectType.GetMethod("ToString", 0);
-                m = instance.Type.GetVirtualMethod(m);
-                if (m == null || m is ILMethod)
+                var m = appdomain.ObjectType.GetMethod("ToString", 0);
+                m = ILInstance.Type.GetVirtualMethod(m);
+                switch (m)
                 {
-                    if (!isInvokingToString)
+                    case null or ILMethod when !isInvokingToString:
                     {
                         isInvokingToString = true;
-                        string res = instance.ToString();
+                        var res = ILInstance.ToString();
                         isInvokingToString = false;
                         return res;
                     }
-                    else
-                        return instance.Type.FullName;
+                    case null or ILMethod:
+                        return ILInstance.Type.FullName;
+                    default:
+                        return ILInstance.Type.FullName;
                 }
-                else
-                    return instance.Type.FullName;
             }
         }
     }

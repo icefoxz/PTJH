@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
 using Core;
+using MyBox;
 using Server.Configs.Battles;
 using Server.Configs.Characters;
 using Server.Configs.Skills;
 using Server.Controllers;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Server.Configs.Items
 {
@@ -39,7 +41,7 @@ namespace Server.Configs.Items
         [SerializeField] private Sprite 图标;
         [SerializeField] [TextArea] private string 说明;
         [SerializeField] private int 韧性;
-        [SerializeField] private DiziPropAddOn[] 加成;
+        [FormerlySerializedAs("加成")][SerializeField] private DiziPropAddOn[] 属性;
         [SerializeField] private CombatAdvancePropField[] 高级属性;
         public Sprite Icon => 图标;
         public string About => 说明;
@@ -47,12 +49,38 @@ namespace Server.Configs.Items
         public abstract EquipKinds EquipKind { get; }
         public ColorGrade Grade => 品级;
         public int Quality => 韧性;
-        private DiziPropAddOn[] AddOns => 加成;
+        private DiziPropAddOn[] AddOns => 属性;
         private CombatAdvancePropField[] AdvanceProps => 高级属性;
 
         [Serializable]
         protected class DiziPropAddOn
         {
+            private bool SetName()
+            {
+                _name = $"【{PropText()}】{AddOnText()}";
+                return true;
+            }
+
+            private string AddOnText()=> AddOn switch
+            {
+                > 0 => $"+{AddOn}",
+                < 0 => $"-{AddOn}",
+                _ => AddOn.ToString()
+            };
+
+            private string PropText()
+            {
+                return Prop switch
+                {
+                    DiziProps.Strength => "力量",
+                    DiziProps.Agility => "敏捷",
+                    DiziProps.Hp => "血量",
+                    DiziProps.Mp => "内力",
+                    _ => "未设"
+                };
+            }
+
+            [ConditionalField(true, nameof(SetName))][SerializeField][ReadOnly] private string _name;
             [SerializeField] private DiziProps 属性;
             [SerializeField] private float 加成;
             public DiziProps Prop => 属性;

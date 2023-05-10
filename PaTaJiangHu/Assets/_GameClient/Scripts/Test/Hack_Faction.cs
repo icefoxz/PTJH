@@ -14,11 +14,15 @@ namespace Test
     {
         [SerializeField] private ItemToAdd<WeaponFieldSo>[] _weapons;
         [SerializeField] private ItemToAdd<ArmorFieldSo>[] _armors;
+        [SerializeField] private ItemToAdd<ShoesFieldSo>[] _shoes;
+        [SerializeField] private ItemToAdd<DecorationFieldSo>[] _decorations;
         [SerializeField] private ItemToAdd<MedicineFieldSo>[] _medicines;
         [SerializeField] private ItemToAdd<BookFieldSo>[] _books;
 
         private ItemToAdd<WeaponFieldSo>[] Weapons => _weapons;
         private ItemToAdd<ArmorFieldSo>[] Armors => _armors;
+        private ItemToAdd<ShoesFieldSo>[] Shoes => _shoes;
+        private ItemToAdd<DecorationFieldSo>[] Decorations => _decorations;
         private ItemToAdd<MedicineFieldSo>[] Medicines => _medicines;
         private ItemToAdd<BookFieldSo>[] Books => _books;
 
@@ -34,6 +38,8 @@ namespace Test
             var faction = Game.World.Faction;
             AddItem(Weapons, i => faction.AddWeapon(i.Instance()));
             AddItem(Armors, i => faction.AddArmor(i.Instance()));
+            AddItem(Shoes, i => faction.AddShoes(i.Instance()));
+            AddItem(Decorations, i => faction.AddDecoration(i.Instance()));
             AddItem(Books, i => faction.AddBook(i));
             Medicines.ForEach(i => faction.AddMedicine(i.Item, i.Amount));
         }

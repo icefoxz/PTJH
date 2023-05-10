@@ -34,6 +34,8 @@ namespace _GameClient.Models
         private List<IBook> _books = new List<IBook>();
         private List<IWeapon> _weapons= new List<IWeapon>();
         private List<IArmor> _armors = new List<IArmor>();
+        private List<IShoes> _shoes = new List<IShoes>();
+        private List<IDecoration> _decorations = new List<IDecoration>();
         private List<IAdvPackage> _packages = new List<IAdvPackage>();
         private List<IGameItem> _advItems = new List<IGameItem>();
         private List<Dizi> _diziList = new List<Dizi>();
@@ -56,6 +58,9 @@ namespace _GameClient.Models
         private Dictionary<string,Dizi> DiziMap { get; }
         public IReadOnlyList<IWeapon> Weapons => _weapons;
         public IReadOnlyList<IArmor> Armors => _armors;
+        public IReadOnlyList<IShoes> Shoes => _shoes;
+        public IReadOnlyList<IDecoration> Decorations => _decorations;
+
         public IReadOnlyList<Dizi> DiziList => _diziList;
         public IReadOnlyList<IAdvPackage> Packages => _packages;
         public IReadOnlyList<IBook> Books => _books;
@@ -162,6 +167,34 @@ namespace _GameClient.Models
             if(armor == null) LogError("armor = null!");
             _armors.Remove(armor);
             Log($"移除防具【{armor.Name}】");
+        }
+
+        internal void AddShoes(IShoes shoes)
+        {
+            if(shoes == null) LogError("shoes = null!");
+            _shoes.Add(shoes);
+            Log($"添加鞋子【{shoes.Name}】");
+        }
+
+        internal void RemoveShoes(IShoes shoes)
+        {
+            if(shoes == null) LogError("shoes = null!");
+            _shoes.Remove(shoes);
+            Log($"移除鞋子【{shoes.Name}】");
+        }
+
+        internal void AddDecoration(IDecoration decoration)
+        {
+            if(decoration == null) LogError("decoration = null!");
+            _decorations.Add(decoration);
+            Log($"添加饰品【{decoration.Name}】");
+        }
+
+        internal void RemoveDecoration(IDecoration decoration)
+        {
+            if(decoration == null) LogError("decoration = null!");
+            _decorations.Remove(decoration);
+            Log($"移除饰品【{decoration.Name}】");
         }
 
         #region Dictionary Items
