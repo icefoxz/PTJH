@@ -2,6 +2,7 @@ using System;
 using ILRuntime.CLR.Method;
 using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
+using UnityEngine;
 #if DEBUG && !DISABLE_ILRUNTIME_DEBUG
 using AutoList = System.Collections.Generic.List<object>;
 #else
@@ -112,4 +113,25 @@ namespace ILRuntimeDemo
         }
     }
 }
+public abstract class TestClassBase
+    {
+        public virtual int Value
+        {
+            get
+            {
+                return 0;
+            }
+            set
+            {
+
+            }
+        }
+
+        public virtual void TestVirtual(string str)
+        {
+            Debug.Log("!! TestClassBase.TestVirtual, str = " + str);
+        }
+
+        public abstract void TestAbstract(int gg);
+    }
 
