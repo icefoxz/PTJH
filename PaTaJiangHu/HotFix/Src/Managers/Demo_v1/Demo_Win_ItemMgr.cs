@@ -27,21 +27,8 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void Build(IView view)
         {
-            ItemWindow = new Win_Item(view,
-                (guid, index, itemType, slot) =>
-                {
-                    if (itemType == 2)
-                        DiziAdvController.SetDiziAdvItem(guid, index, slot);
-                    else
-                        DiziController.DiziEquip(guid, index, itemType);
-                },
-                (guid, index, itemType, slot) =>
-                {
-                    if (itemType == 2)
-                        DiziAdvController.RemoveDiziAdvItem(guid, index, slot);
-                    else
-                        DiziController.DiziUnEquipItem(guid, itemType);
-                }, Hide);
+            ItemWindow = new Win_Item(view, DiziController.DiziEquip,
+                (guid, index, itemType) => DiziController.DiziUnEquipItem(guid, itemType), Hide);
         }
         protected override void RegEvents()
         {
@@ -61,9 +48,15 @@ namespace HotFix_Project.Managers.Demo_v1
                 ItemWindow.UpdateItemList();
             });
         }
+        /// <summary>
+        /// 设定物品窗口, 用于装备物品, slot是用于历练道具的, 装备物品时, slot为0
+        /// </summary>
+        /// <param name="diziGuid"></param>
+        /// <param name="itemType"></param>
+        /// <param name="slot"></param>
         public void Set(string diziGuid, int itemType, int slot)
         {
-            ItemWindow.Set(diziGuid, itemType, slot);
+            ItemWindow.Set(diziGuid, itemType);
             Game.MainUi.ShowWindow(ItemWindow.View);
         }
         public override void Show() => ItemWindow.Display(true);
@@ -79,6 +72,8 @@ namespace HotFix_Project.Managers.Demo_v1
             {
                 Weapon,
                 Armor,
+                Shoes,
+                Decoration
             }
             private ScrollRect Scroll_item { get; }
             private ListViewUi<Prefab_Item> ItemView { get; }
@@ -86,8 +81,8 @@ namespace HotFix_Project.Managers.Demo_v1
             private Button Btn_equip { get; }
             private Button Btn_x { get; }
             public Win_Item(IView v, 
-                Action<string, int, int, int> onEquip, 
-                Action<string, int, int, int> onUnequip,
+                Action<string, int, int> onEquip, 
+                Action<string, int, int> onUnequip,
                 Action onCloseAction) : base(v, false)
             {
                 Scroll_item = v.GetObject<ScrollRect>("scroll_item");
@@ -96,14 +91,14 @@ namespace HotFix_Project.Managers.Demo_v1
                 Btn_unequip.OnClickAdd(() =>
                 {
                     if (!IsDiziEquipped) return;
-                    onUnequip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
+                    onUnequip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType);
                     ListItems((ItemTypes)SelectedType);
                 });
                 Btn_equip = v.GetObject<Button>("btn_equip");
                 Btn_equip.OnClickAdd(() =>
                 {
                     if (SelectedItemIndex < 0) return;
-                    onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType, SelectedSlot);
+                    onEquip?.Invoke(SelectedDiziGuid, SelectedItemIndex, SelectedType);
                     ListItems((ItemTypes)SelectedType);
                 });
                 Btn_x = v.GetObject<Button>("btn_x");
@@ -112,7 +107,6 @@ namespace HotFix_Project.Managers.Demo_v1
             private string SelectedDiziGuid { get; set; }
             private int SelectedItemIndex { get; set; }
             private int SelectedType { get; set; }
-            private int SelectedSlot { get; set; }
             private bool IsDiziEquipped { get; set; }
             public void UpdateItemList()
             {
@@ -124,17 +118,12 @@ namespace HotFix_Project.Managers.Demo_v1
                     ui.SetEquipped(ui.ItemIndex == -1);
                 }
             }
-            public void Set(string diziGuid, int itemType, int slot)
+            public void Set(string diziGuid, int itemType)
             {
                 SelectedDiziGuid = diziGuid;
                 SelectedType = itemType;
-                SelectedSlot = slot;
                 var item = (ItemTypes)itemType;
                 ListItems(item);
-            }
-            public void SetInteraction(bool isInteractable)
-            {
-
             }
             
             private void ListItems(ItemTypes type)
@@ -161,6 +150,24 @@ namespace HotFix_Project.Managers.Demo_v1
                         {
                             var item = faction.Armors[i];
                             items.Add((item.Name, item.About, i , 1, (int)item.Grade));
+                        }
+                        break;
+                    case ItemTypes.Shoes:
+                        IsDiziEquipped = selectedDizi.Equipment.Shoes != null;
+                        if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Shoes.Name, selectedDizi.Equipment.Shoes.About, -1, 1, (int)selectedDizi.Equipment.Shoes.Grade));
+                        for (var i = 0; i < faction.Shoes.Count; i++)
+                        {
+                            var item = faction.Shoes[i];
+                            items.Add((item.Name, item.About, i, 1, (int)item.Grade));
+                        }
+                        break;
+                    case ItemTypes.Decoration:
+                        IsDiziEquipped = selectedDizi.Equipment.Decoration != null;
+                        if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Decoration.Name, selectedDizi.Equipment.Decoration.About, -1, 1, (int)selectedDizi.Equipment.Decoration.Grade));
+                        for (var i = 0; i < faction.Decorations.Count; i++)
+                        {
+                            var item = faction.Decorations[i];
+                            items.Add((item.Name, item.About, i, 1, (int)item.Grade));
                         }
                         break;
                     //case ItemTypes.AdvItems:

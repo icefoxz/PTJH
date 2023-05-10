@@ -25,6 +25,16 @@ namespace Models
             Log(armor == null ? $"卸下{_equipment.Armor.Name}" : $"装备{armor.Name}!");
             _equipment.SetArmor(armor);
         }
+        internal void SetShoes(IShoes shoes)
+        {
+            Log(shoes == null ? $"卸下{_equipment.Shoes.Name}" : $"装备{shoes.Name}!");
+            _equipment.SetShoes(shoes);
+        }
+        internal void SetDecoration(IDecoration decoration)
+        {
+            Log(decoration == null ? $"卸下{_equipment.Decoration.Name}" : $"装备{decoration.Name}!");
+            _equipment.SetDecoration(decoration);
+        }
 
         public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
 

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using _GameClient.Models;
+using HotFix_Project.Serialization;
 using HotFix_Project.UiEffects;
 using Models;
 using Server.Configs.Items;
@@ -244,4 +245,11 @@ internal class Demo_v1Agent : MainUiAgent
             MainUi.ShowWindow(Demo_Win_SkillComprehend.View);
         }
     }
+
+    /// <summary>
+    /// 装备管理,(窗口替换装备)
+    /// </summary>
+    /// <param name="guid"></param>
+    /// <param name="itemType"></param>
+    public void EquipmentManagement(string guid, int itemType) => Demo_Win_ItemMgr.Set(guid, itemType, slot: 0);
 }
