@@ -19,16 +19,15 @@ namespace Server.Configs.Items
         public WeaponArmed Armed => 类型;
         public override EquipKinds EquipKind => EquipKinds.Weapon;
         public IWeapon Instance() =>
-            new WeaponField(Id, Name, Armed, Icon, About, Grade, Quality, GetAddOn, GetCombatProps, GetCombatSet);
+            new WeaponField(Id, Name, Armed, Icon, About, Grade, Quality, GetAddOn, GetCombatSet);
         private class WeaponField : EquipmentBaseField, IWeapon
         {
             public WeaponArmed Armed { get; }
             public override EquipKinds EquipKind => EquipKinds.Weapon;
 
             public WeaponField(int id, string name, WeaponArmed armed, Sprite icon, string about, ColorGrade grade,
-                int quality, Func<DiziProps, float> getAddOnFunc, Func<ICombatProps> getCombatPropsFunc,
-                Func<ICombatSet> getCombatSetFunc) : base(id, name, icon,
-                about, grade, quality, getAddOnFunc, getCombatPropsFunc, getCombatSetFunc)
+                int quality, Func<DiziProps, float> getAddOnFunc, Func<ICombatSet> getCombatSetFunc) : base(id, name, icon,
+                about, grade, quality, getAddOnFunc, getCombatSetFunc)
             {
                 Armed = armed;
             }
@@ -98,33 +97,6 @@ namespace Server.Configs.Items
 
             return value;
         }
-        public ICombatProps GetCombatProps()
-        {
-            (float str, float agi, float hp, float mp) tuple = (0, 0, 0, 0);
-            for (var i = 0; i < AddOns.Length; i++)
-            {
-                var addOn = AddOns[i];
-                switch (addOn.Prop)
-                {
-                    case DiziProps.Strength:
-                        tuple.str += addOn.AddOn;
-                        break;
-                    case DiziProps.Agility:
-                        tuple.agi += addOn.AddOn;
-                        break;
-                    case DiziProps.Hp:
-                        tuple.hp += addOn.AddOn;
-                        break;
-                    case DiziProps.Mp:
-                        tuple.mp += addOn.AddOn;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            return new CombatProps(tuple.str, tuple.agi, tuple.hp, tuple.mp);
-        }
 
         public ICombatSet GetCombatSet()
         {
@@ -160,14 +132,12 @@ namespace Server.Configs.Items
             public ColorGrade Grade { get; }
             public int Quality { get; }
             private event Func<DiziProps, float> GetAddOnFunc;
-            private event Func<ICombatProps> GetCombatPropsFunc;
             private event Func<ICombatSet> GetCombatSetFunc;
             public float GetAddOn(DiziProps prop) => GetAddOnFunc?.Invoke(prop) ?? 0;
             public ICombatSet GetCombatSet() => GetCombatSetFunc?.Invoke() ?? CombatSet.Empty;
-            public ICombatProps GetCombatProps() => GetCombatPropsFunc?.Invoke();
 
             protected EquipmentBaseField(int id, string name, Sprite icon, string about, ColorGrade grade, int quality,
-                Func<DiziProps, float> getAddOnFunc, Func<ICombatProps> getCombatPropsFunc,Func<ICombatSet> getCombatSetFunc)
+                Func<DiziProps, float> getAddOnFunc, Func<ICombatSet> getCombatSetFunc)
             {
                 Id = id;
                 Icon = icon;
@@ -176,7 +146,6 @@ namespace Server.Configs.Items
                 Grade = grade;
                 Quality = quality;
                 GetAddOnFunc = getAddOnFunc;
-                GetCombatPropsFunc = getCombatPropsFunc;
                 GetCombatSetFunc = getCombatSetFunc;
             }
         }

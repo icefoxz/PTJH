@@ -2,13 +2,6 @@
 using System;
 using System.Collections.Generic;
 
-public interface ICombatProps
-{
-    float StrAddon { get; }
-    float AgiAddon { get; }
-    float HpAddon { get; }
-    float MpAddon { get; }
-}
 /// <summary>
 /// 战斗基本接口
 /// </summary>
@@ -57,21 +50,5 @@ public static class CombatExtension
             mpDamage: mpDamage, 
             mpCounteract: mpCounteract, 
             dodgeRate: dodgeRate);
-    }
-
-    public static ICombatProps Combine(this IEnumerable<ICombatProps> combats)
-    {
-        var strength = 0f;
-        var agility = 0f;
-        var hp = 0f;
-        var mp = 0f;
-        foreach (var field in combats)
-        {
-            strength += field.StrAddon;
-            agility += field.AgiAddon;
-            hp += field.HpAddon;
-            mp += field.MpAddon;
-        }
-        return new CombatProps(strength, agility, hp, mp);
     }
 }

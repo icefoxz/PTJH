@@ -170,7 +170,6 @@ namespace Server.Configs.Fields
         public float GetAddOn(DiziProps prop)=> W.GetAddOn(prop);
         public ICombatSet GetCombatSet() => W.GetCombatSet();
 
-        public ICombatProps GetCombatProps()=> W.GetCombatProps();
     }
 
     [Serializable]
@@ -190,7 +189,6 @@ namespace Server.Configs.Fields
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
         public ICombatSet GetCombatSet() => A.GetCombatSet();
-        public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
     
     [Serializable]
@@ -210,7 +208,6 @@ namespace Server.Configs.Fields
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
         public ICombatSet GetCombatSet() => A.GetCombatSet();
-        public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
 
     [Serializable]
@@ -230,7 +227,6 @@ namespace Server.Configs.Fields
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
         public ICombatSet GetCombatSet() => A.GetCombatSet();
-        public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
 
     [Serializable]
