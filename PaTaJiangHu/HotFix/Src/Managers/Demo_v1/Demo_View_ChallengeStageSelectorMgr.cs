@@ -37,7 +37,7 @@ namespace HotFix_Project.Managers.Demo_v1
         public override void Show() => ChallengeStageSelector.Display(true);
         public override void Hide() => ChallengeStageSelector.Display(false);
 
-        public void SetChallenges(IChallengeStageNpc[] challengeStages) => ChallengeStageSelector.Set(challengeStages);
+        public void SetChallenges(ISingleStageNpc[] challengeStages) => ChallengeStageSelector.Set(challengeStages);
 
         private class View_ChallengeStageSelector : UiBase
         {
@@ -58,7 +58,7 @@ namespace HotFix_Project.Managers.Demo_v1
             }
 
             private int SelectedNpcIndex { get; set; }
-            public void Set(IChallengeStageNpc[] npcs)
+            public void Set(ISingleStageNpc[] npcs)
             {
                 ChallengeList.ClearList(c=>c.Destroy());
                 for (var i = 0; i < npcs.Length; i++)

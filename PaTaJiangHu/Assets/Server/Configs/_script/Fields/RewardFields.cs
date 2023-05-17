@@ -6,6 +6,7 @@ using Data;
 using MyBox;
 using Server.Configs.Adventures;
 using Server.Configs.Battles;
+using Server.Configs.ChallengeStages;
 using Server.Configs.Characters;
 using Server.Configs.Items;
 using Server.Controllers;
@@ -14,6 +15,13 @@ using UnityEngine.Serialization;
 
 namespace Server.Configs.Fields
 {
+    [Serializable]
+    internal class DiziRewardField : IDiziReward
+    {
+        [SerializeField] private int 经验;
+
+        public int Exp => 经验;
+    }
     [Serializable]
     internal class RewardField : IGameReward
     {
@@ -170,7 +178,6 @@ namespace Server.Configs.Fields
         public float GetAddOn(DiziProps prop)=> W.GetAddOn(prop);
         public ICombatSet GetCombatSet() => W.GetCombatSet();
 
-        public ICombatProps GetCombatProps()=> W.GetCombatProps();
     }
 
     [Serializable]
@@ -190,7 +197,6 @@ namespace Server.Configs.Fields
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
         public ICombatSet GetCombatSet() => A.GetCombatSet();
-        public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
     
     [Serializable]
@@ -210,7 +216,6 @@ namespace Server.Configs.Fields
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
         public ICombatSet GetCombatSet() => A.GetCombatSet();
-        public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
 
     [Serializable]
@@ -230,7 +235,6 @@ namespace Server.Configs.Fields
         public int Quality => A.Quality;
         public float GetAddOn(DiziProps prop)=> A.GetAddOn(prop);
         public ICombatSet GetCombatSet() => A.GetCombatSet();
-        public ICombatProps GetCombatProps()=> A.GetCombatProps();
     }
 
     [Serializable]

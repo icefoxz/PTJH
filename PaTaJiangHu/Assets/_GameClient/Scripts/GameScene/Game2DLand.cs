@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using _GameClient.Models;
 using UnityEngine;
+using static Game2DLand;
 using Dizi = Models.Dizi;
 
 /// <summary>
@@ -16,6 +17,7 @@ public interface IGame2DLand
     Vector2 ConvertWorldPosToCanvasPos(RectTransform mainCanvasRect, RectTransform targetParent, Vector3 objWorldPos);
     void FinalizeBattle();
     void PlayDizi(string guid);
+    void SwitchPage(CameraFocus.Focus page);
 }
 
 /// <summary>
@@ -26,6 +28,8 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     [SerializeField] private ParallaxBackgroundController _parallaxBgController;
     [SerializeField] private BattleStage2D _battleStage;
     [SerializeField] private CharacterUiSyncHandler _characterUiSyncHandler;
+    [SerializeField] private CameraFocus _cameraFocus;
+
     private BattleStage2D BattleStage => _battleStage;
     private ParallaxBackgroundController ParallaxBgController => _parallaxBgController;
     public CharacterUiSyncHandler CharacterUiSyncHandler => _characterUiSyncHandler;
@@ -49,6 +53,8 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
                 PlayDizi(dizi.Guid);
         });
     }
+
+    public void SwitchPage(CameraFocus.Focus page) => _cameraFocus.SetFocus(page);
 
     public void InitBattle(string guid, DiziBattle battle)
     {

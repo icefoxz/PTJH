@@ -32,7 +32,7 @@ namespace Server.Configs.Battles
         float GetAddOn(DiziProps prop);
         int Quality { get; }
         ICombatSet GetCombatSet();
-        ICombatProps GetCombatProps();
+        //ICombatProps GetCombatProps();
     }
 
     public interface IArmor : IEquipment

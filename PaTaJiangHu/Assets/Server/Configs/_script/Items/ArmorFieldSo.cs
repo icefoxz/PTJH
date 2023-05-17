@@ -14,16 +14,15 @@ namespace Server.Configs.Items
         public override EquipKinds EquipKind => EquipKinds.Armor;
 
         public IArmor Instance() =>
-            new ArmorField(Id, Name, Icon, About, Grade, Quality, GetAddOn, GetCombatProps, GetCombatSet);
+            new ArmorField(Id, Name, Icon, About, Grade, Quality, GetAddOn, GetCombatSet);
 
         private class ArmorField : EquipmentBaseField, IArmor
         {
             public override EquipKinds EquipKind => EquipKinds.Armor;
 
             public ArmorField(int id, string name, Sprite icon, string about, ColorGrade grade, int quality,
-                Func<DiziProps, float> getAddOnFunc, Func<ICombatProps> getCombatPropsFunc,
-                Func<ICombatSet> getCombatSetFunc) : base(id, name, icon,
-                about, grade, quality, getAddOnFunc, getCombatPropsFunc, getCombatSetFunc)
+                Func<DiziProps, float> getAddOnFunc, Func<ICombatSet> getCombatSetFunc) : base(id, name, icon,
+                about, grade, quality, getAddOnFunc, getCombatSetFunc)
             {
             }
         }

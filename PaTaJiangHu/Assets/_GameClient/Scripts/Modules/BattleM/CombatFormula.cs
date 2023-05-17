@@ -77,4 +77,40 @@ public static class CombatFormula
         var finalDamage = Math.Max(halfDamage - mpConsume, 0) + halfDamage;
         return (finalDamage, mpConsume);
     }
+
+    /// <summary>
+    /// 武器损坏率,差值百分比
+    /// </summary>
+    /// <param name="weapon"></param>
+    /// <param name="comparer"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public static float WeaponBrokenJudgment(int weapon, int comparer)
+    {
+        return (weapon - comparer) / 500f;
+    }
+
+    /// <summary>
+    /// 装备损坏率,差值百分比
+    /// </summary>
+    /// <param name="equipment"></param>
+    /// <param name="comparer"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public static float ArmorBrokenJudgment(int equipment, int comparer)
+    {
+        return (equipment - comparer) / 500f;
+    }
+    
+    /// <summary>
+    /// 装备损坏率,差值百分比
+    /// </summary>
+    /// <param name="equipment"></param>
+    /// <param name="comparer"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public static float EquipmentBrokenJudgment(int equipment, int comparer)
+    {
+        return (equipment - comparer) / 1.20f + 5;
+    }
 }

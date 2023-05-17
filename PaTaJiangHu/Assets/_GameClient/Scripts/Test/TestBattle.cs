@@ -79,7 +79,7 @@ public class TestBattle : MonoBehaviour
     }
 
     [Serializable]
-    private class CombatChar : IDiziCombatUnit, ICombatSet, IDiziEquipment
+    private class CombatChar : ICombatSet
     {
         [SerializeField] private CharacterOperator _op;
         [SerializeField] private bool 玩家;
@@ -110,7 +110,6 @@ public class TestBattle : MonoBehaviour
         public int Strength => 力量;
         public int Agility => 敏捷;
         public ICombatSet CombatSet => this;
-        public IDiziEquipment Equipment => this;
         private CombatSkill Com => 武功;
         private ForceSkill Force => 内功;
         private DodgeSkill Dodge => 轻功;
@@ -127,7 +126,7 @@ public class TestBattle : MonoBehaviour
             InstanceId = instanceId;
         }
 
-        public DiziCombatUnit GetCombatUnit() => new(this);
+        public DiziCombatUnit GetCombatUnit() => new(string.Empty, TeamId, Name, Strength, Agility, Hp, Mp, this);
 
         [Serializable]
         private class CombatSkill
@@ -156,25 +155,6 @@ public class TestBattle : MonoBehaviour
         {
             [SerializeField] private float 闪避率;
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
-        }
-
-        //暂时不实现装备
-        public IWeapon Weapon { get; }
-        public IArmor Armor { get; }
-        public IShoes Shoes { get; }
-        public IDecoration Decoration { get; }
-        public IEnumerable<IEquipment> AllEquipments { get; }
-        public int GetPropAddon(DiziProps prop) => 0;
-        public ICombatProps GetCombatProps() => new DiziCombatProps();
-        public IDiziCombatUnit CombatDisarm(int teamId, IEquipment equipment) => new DiziCombatUnit(this);
-        ICombatSet IDiziEquipment.GetCombatSet() => Server.Configs.Battles.CombatSet.Empty;
-
-        private class DiziCombatProps : ICombatProps
-        {
-            public float StrAddon { get; } = 0;
-            public float AgiAddon { get; } = 0;
-            public float HpAddon { get; } = 0;
-            public float MpAddon { get; } = 0;
         }
     }
 

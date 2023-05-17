@@ -82,7 +82,7 @@ public class CombatUnit : ICombatUnit
 
     public void SetInstanceId(int instanceId) => InstanceId = instanceId;
 
-    public int AddHp(int hp)
+    public virtual int AddHp(int hp)
     {
         Hp += hp;
         Math.Clamp(Hp, 0, MaxHp);
@@ -95,12 +95,6 @@ public class CombatUnit : ICombatUnit
     public bool IsAlive => !IsDead;
     //血量比率
     public float HpRatio => 1f * Hp / MaxHp;
-    //补血
-    public void Heal(int amount)
-    {
-        Hp += amount;
-        Math.Clamp(Hp, 0, MaxHp);
-    }
 }
 //回合记录器
 public class RoundInfo<TUnit, TInfo, TUnitInfo> where TUnit : ICombatUnit

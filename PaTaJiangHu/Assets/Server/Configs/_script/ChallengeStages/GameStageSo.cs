@@ -1,39 +1,46 @@
 ﻿using System;
-using _GameClient.Models;
+using Models;
 using MyBox;
 using Server.Configs.Adventures;
 using Server.Configs.Battles;
 using Server.Configs.Fields;
 using Server.Configs.Items;
 using UnityEngine;
-using Dizi = Models.Dizi;
+using UnityEngine.Serialization;
 
 namespace Server.Configs.ChallengeStages
 {
-    public interface IChallengeStageNpc
+    public interface ISingleStageNpc : IStageNpc
     {
-        IGameReward Reward{get;}
-        IDiziReward DiziReward { get; }
+        string Faction { get; }
+        IGameReward Reward { get; }
+    }
+    
+    public interface IStageNpc
+    {
         bool IsBoss { get; }
         string NpcName { get; }
-        string Faction { get; }
         int Level { get; }
         DiziCombatUnit GetNpc();
+        IDiziReward DiziReward { get; }
     }
-
+    //对单个弟子的奖励
     public interface IDiziReward
     {
         int Exp { get; }
     }
 
-    [CreateAssetMenu(fileName = "id_奖励件名", menuName = "挑战关卡/关卡")]
-    internal class ChallengeStageSo : AutoAtNamingObject
+    [CreateAssetMenu(fileName = "id_关卡", menuName = "关卡/关卡")]
+    internal class GameStageSo : AutoAtNamingObject
     {
         [SerializeField] private int 回合限制 = 20;
-        [SerializeField] private ChallengeField[] 挑战;
+
+        [FormerlySerializedAs("挑战")] [SerializeField]
+        private StageNpc[] 关卡;
+
         private int RoundLimit => 回合限制;
 
-        public IChallengeStageNpc[] Npcs => 挑战;
+        public ISingleStageNpc[] Npcs => 关卡;
 
         public DiziBattle Instance(int challengeIndex, Dizi dizi)
         {
@@ -43,19 +50,22 @@ namespace Server.Configs.ChallengeStages
             return DiziBattle.Instance(new[] { diziCombat, npcCombat }, RoundLimit);
         }
 
-        [Serializable] private class ChallengeField : IChallengeStageNpc
+        [Serializable]
+        internal class StageNpc : ISingleStageNpc
         {
             #region ChangeName
+
             private bool ChangeElementName()
             {
                 _name = _npc != null ? (Boss ? "Boss: " : string.Empty) + _npc.Name : "未设置NPC!";
                 return true;
             }
+
             #endregion
-            [ConditionalField(true, nameof(ChangeElementName))]
-            [SerializeField]
-            [ReadOnly]
+
+            [ConditionalField(true, nameof(ChangeElementName))] [SerializeField] [ReadOnly]
             private string _name;
+
             [SerializeField] private CombatNpcSo _npc;
             [SerializeField] private bool Boss;
             [SerializeField] private int 等级 = 1;
@@ -72,14 +82,7 @@ namespace Server.Configs.ChallengeStages
             public string Faction => 所属势力;
 
             private CombatNpcSo Npc => _npc;
-            public DiziCombatUnit GetNpc() => new DiziCombatUnit(1, Npc);
-
-            [Serializable] private class DiziRewardField : IDiziReward
-            {
-                [SerializeField] private int 经验;
-
-                public int Exp => 经验;
-            }
+            public DiziCombatUnit GetNpc() => new(teamId: 1, npc: Npc);
         }
     }
 }

@@ -70,16 +70,11 @@ namespace Models
         IArmor Armor { get; }
         IShoes Shoes { get; }
         IDecoration Decoration { get; }
-        IEnumerable<IEquipment> AllEquipments { get; }
         int GetPropAddon(DiziProps prop);
-        ICombatProps GetCombatProps();
         /// <summary>
-        /// 战斗时被打掉装备的主要逻辑
+        /// 战斗高级属性
         /// </summary>
-        /// <param name="teamId"></param>
-        /// <param name="equipment"></param>
         /// <returns></returns>
-        IDiziCombatUnit CombatDisarm(int teamId,IEquipment equipment);
         ICombatSet GetCombatSet();
     }
 
@@ -94,14 +89,13 @@ namespace Models
         public IArmor Armor { get; private set; }
         public IShoes Shoes { get; private set; }
         public IDecoration Decoration { get; private set; }
-        public IEnumerable<IEquipment> AllEquipments => new IEquipment[] { Weapon, Armor, Shoes, Decoration }.Where(e => e != null);
+        private IEnumerable<IEquipment> AllEquipments => new IEquipment[] { Weapon, Armor, Shoes, Decoration }.Where(e => e != null);
         internal void SetWeapon(IWeapon weapon) => Weapon = weapon;
         internal void SetArmor(IArmor armor) => Armor = armor;
         internal void SetShoes(IShoes shoes) => Shoes = shoes;
         internal void SetDecoration(IDecoration decoration) => Decoration = decoration;
 
         public int GetPropAddon(DiziProps prop) => (int)AllEquipments.Sum(e => e.GetAddOn(prop));
-        public ICombatProps GetCombatProps() => AllEquipments.Select(e => e.GetCombatProps()).Combine();
         public IDiziCombatUnit CombatDisarm(int teamId,IEquipment equipment)
         {
             var type = equipment.EquipKind;

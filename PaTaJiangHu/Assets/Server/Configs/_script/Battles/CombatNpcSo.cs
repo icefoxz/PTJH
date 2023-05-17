@@ -42,7 +42,7 @@ namespace Server.Configs.Battles
         public IShoes Shoes => 鞋子;
         public IDecoration Decoration => 挂件;
 
-        public IEnumerable<IEquipment> AllEquipments => new IEquipment[]
+        IEnumerable<IEquipment> AllEquipments => new IEquipment[]
         {
             Weapon,
             Armor,
@@ -50,34 +50,6 @@ namespace Server.Configs.Battles
             Decoration
         }.Where(e => e != null);
         public int GetPropAddon(DiziProps prop)=> (int)AllEquipments.Sum(e => e.GetAddOn(prop));
-
-        public ICombatProps GetCombatProps() => new CombatProps(
-            Strength + GetPropAddon(DiziProps.Strength),
-            Agility + GetPropAddon(DiziProps.Agility),
-            Hp + GetPropAddon(DiziProps.Hp),
-            Mp + GetPropAddon(DiziProps.Mp));
-
-        public IDiziCombatUnit CombatDisarm(int teamId, IEquipment equipment)
-        {
-            switch (equipment.EquipKind)
-            {
-                case EquipKinds.Weapon:
-                    武器 = null;
-                    break;
-                case EquipKinds.Armor:
-                    防具 = null;
-                    break;
-                case EquipKinds.Shoes:
-                    鞋子 = null;
-                    break;
-                case EquipKinds.Decoration:
-                    挂件 = null;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            return new DiziCombatUnit(teamId, this);
-        }
 
         public ISimCombat GetSimCombat(BattleSimulatorConfigSo cfg)
         {
