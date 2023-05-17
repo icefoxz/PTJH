@@ -1,10 +1,8 @@
 using System;
 using System.Linq;
 using _GameClient.Models;
-using HotFix_Project.Serialization;
 using HotFix_Project.UiEffects;
 using Models;
-using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Controllers;
 using Utls;
@@ -49,7 +47,7 @@ internal class Demo_v1Agent : MainUiAgent
 
     private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
     private SkillController SkillController => Game.Controllers.Get<SkillController>();
-    private IGame2DLand Game2DLand => Game.Game2DLand;
+    private IGame2DLand Game2D => Game.Game2DLand;
 
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
     {
@@ -126,7 +124,7 @@ internal class Demo_v1Agent : MainUiAgent
         }
 
         //main
-        Game2DLand.PlayDizi(dizi.Guid);
+        Game2D.PlayDizi(dizi.Guid);
 
         Demo_View_ConsumeResMgr.Set(dizi);
         Demo_View_ConPropsMgr.Set(dizi);
@@ -155,6 +153,7 @@ internal class Demo_v1Agent : MainUiAgent
                     Demo_View_EquipmentMgr,
                     Demo_Dizi_InfoMgr,
                 }, true);
+                Game2D.SwitchPage(CameraFocus.Focus.DiziView);
                 break;
             case Pages.Skills:
                 Show(new UiManagerBase[]
@@ -167,6 +166,7 @@ internal class Demo_v1Agent : MainUiAgent
                 {
                     Demo_Page_Faction,
                 }, true);
+                Game2D.SwitchPage(CameraFocus.Focus.FactionView);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(page), page, null);

@@ -96,7 +96,7 @@ internal class Configure : MonoBehaviour
     [FormerlySerializedAs("挑战关卡配置")][SerializeField] private GameStageCfg 关卡配置;
     internal GameStageCfg StageCfg => 关卡配置;
 
-    internal class GameStageCfg : AutoHashNamingObject
+    [Serializable]internal class GameStageCfg
     {
         [FormerlySerializedAs("挑战")][SerializeField] private GameStageSo[] 关卡;
         internal GameStageSo[] Stages => 关卡;

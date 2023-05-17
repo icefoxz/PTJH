@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using _GameClient.Models;
 using HotFix_Project.Views.Bases;
 using Models;
 using Systems.Coroutines;
