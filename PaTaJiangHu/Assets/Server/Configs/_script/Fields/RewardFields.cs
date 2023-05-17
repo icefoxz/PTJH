@@ -6,6 +6,7 @@ using Data;
 using MyBox;
 using Server.Configs.Adventures;
 using Server.Configs.Battles;
+using Server.Configs.ChallengeStages;
 using Server.Configs.Characters;
 using Server.Configs.Items;
 using Server.Controllers;
@@ -14,6 +15,13 @@ using UnityEngine.Serialization;
 
 namespace Server.Configs.Fields
 {
+    [Serializable]
+    internal class DiziRewardField : IDiziReward
+    {
+        [SerializeField] private int 经验;
+
+        public int Exp => 经验;
+    }
     [Serializable]
     internal class RewardField : IGameReward
     {

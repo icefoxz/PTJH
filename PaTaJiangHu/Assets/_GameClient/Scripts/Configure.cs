@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Server.Configs.Adventures;
 using Server.Configs.BattleSimulation;
@@ -7,8 +6,8 @@ using Server.Configs.ChallengeStages;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
 using Server.Configs.Items;
-using Server.Controllers;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utls;
 using Object = UnityEngine.Object;
 
@@ -94,14 +93,18 @@ internal class Configure : MonoBehaviour
         public CharacterOperator InstanceCharacterOp(Transform parent) => Object.Instantiate(CharacterOpPrefab, parent);
     }
 
-    [SerializeField] private ChallengeStageCfg 挑战关卡配置;
-    internal ChallengeStageCfg ChallengeCfg => 挑战关卡配置;
+    [FormerlySerializedAs("挑战关卡配置")][SerializeField] private GameStageCfg 关卡配置;
+    internal GameStageCfg StageCfg => 关卡配置;
 
-    [Serializable]internal class ChallengeStageCfg
+    internal class GameStageCfg : AutoHashNamingObject
     {
-        [SerializeField] private ChallengeStageSo[] 挑战;
-        internal ChallengeStageSo[] Stages => 挑战;
+        [FormerlySerializedAs("挑战")][SerializeField] private GameStageSo[] 关卡;
+        internal GameStageSo[] Stages => 关卡;
     }
+
+    [SerializeField] private ChallengeCfgSo 挑战关卡配置;
+    internal ChallengeCfgSo ChallengeCfg => 挑战关卡配置;
+
     //[SerializeField] private FactionConfig 门派配置;
     //public FactionConfig FactionCfg => 门派配置;
     //[Serializable] internal class FactionConfig

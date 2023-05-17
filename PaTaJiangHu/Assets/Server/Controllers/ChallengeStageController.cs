@@ -8,16 +8,16 @@ namespace Server.Controllers
 {
     public class ChallengeStageController : IGameController
     {
-        private Config.ChallengeStageCfg ChallengeCfg => Game.Config.ChallengeCfg;
+        private Config.GameStageCfg GameCfg => Game.Config.StageCfg;
         private int ChallengeProgressIndex { get; set; }
         private Faction Faction => Game.World.Faction;
-        public IChallengeStageNpc[] GetChallenges() => ChallengeCfg.Stages[ChallengeProgressIndex].Npcs;
+        public ISingleStageNpc[] GetChallenges() => GameCfg.Stages[ChallengeProgressIndex].Npcs;
         private IGame2DLand GameLand { get; } = Game.Game2DLand;
 
         public void StartChallenge(string guid, int npcIndex)
         {
             var dizi = Faction.GetDizi(guid);
-            var battle = ChallengeCfg.Stages[ChallengeProgressIndex].Instance(npcIndex, dizi);
+            var battle = GameCfg.Stages[ChallengeProgressIndex].Instance(npcIndex, dizi);
             Game.CacheBattle(battle);
             GameLand.InitBattle(guid,battle);
             var diziFighter = battle.Fighters.First(f => f.Guid == guid);

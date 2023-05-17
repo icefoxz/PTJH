@@ -40,6 +40,7 @@ namespace Server.Configs.Items
         [SerializeField] private Sprite 图标;
         [SerializeField] [TextArea] private string 说明;
         [SerializeField] private int 韧性;
+        [SerializeField] private int 等级;
         [FormerlySerializedAs("加成")][SerializeField] private DiziPropAddOn[] 属性;
         [SerializeField] private CombatAdvancePropField[] 高级属性;
         public Sprite Icon => 图标;
@@ -48,6 +49,8 @@ namespace Server.Configs.Items
         public abstract EquipKinds EquipKind { get; }
         public ColorGrade Grade => 品级;
         public int Quality => 韧性;
+        public int Level => 等级;
+
         private DiziPropAddOn[] AddOns => 属性;
         private CombatAdvancePropField[] AdvanceProps => 高级属性;
 

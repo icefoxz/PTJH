@@ -288,7 +288,7 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         return infos.ToArray();
     }
 
-    //守方挂件
+    //守方鞋子
     private void ShoesConsumption(DiziCombatUnit caster, DiziCombatUnit target, DiziCombatInfo targetInfo)
     {
         if (caster.Equipment.Weapon == null || target.Equipment.Shoes == null) return;
@@ -299,13 +299,6 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         {
             target.EquipmentDisarmed(targetShoes);
             targetInfo.SetShoesDisarmed();
-        }
-
-        bool IsEquipmentBroken(int weapon, int comparer)
-        {
-            var brokenRatio = 100; //CombatFormula.WeaponBrokenJudgment(weapon, comparer);
-            var luck = Sys.Luck;
-            return luck < brokenRatio;
         }
     }
     
@@ -320,13 +313,6 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         {
             target.EquipmentDisarmed(targetDecoration);
             targetInfo.SetDecorationDisarmed();
-        }
-
-        bool IsEquipmentBroken(int weapon, int comparer)
-        {
-            var brokenRatio = 100; //CombatFormula.WeaponBrokenJudgment(weapon, comparer);
-            var luck = Sys.Luck;
-            return luck < brokenRatio;
         }
     }
 
@@ -349,13 +335,13 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
             target.EquipmentDisarmed(targetArmor);
             targetInfo.SetArmorDisarmed();
         }
+    }
 
-        bool IsEquipmentBroken(int weapon, int comparer)
-        {
-            var brokenRatio = 100; //CombatFormula.WeaponBrokenJudgment(weapon, comparer);
-            var luck = Sys.Luck;
-            return luck < brokenRatio;
-        }
+    private bool IsEquipmentBroken(int equipment, int comparer)
+    {
+        var brokenRatio = CombatFormula.EquipmentBrokenJudgment(equipment, comparer);
+        var luck = Sys.Luck;
+        return luck < brokenRatio;
     }
 
     //武器被打掉
@@ -368,24 +354,24 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         //这里填充武器品质差
         //是否执行者的武器被破坏
 
-        if (IsWeaponBrokenFormula(casterWeapon.Quality, targetWeapon.Quality))
+        if (IsEquipmentBroken(casterWeapon.Quality, targetWeapon.Quality))
         {
             caster.EquipmentDisarmed(casterWeapon);
             casterInfo.SetWeaponDisarmed();
         }
 
-        if (IsWeaponBrokenFormula(targetWeapon.Quality, casterWeapon.Quality))
+        if (IsEquipmentBroken(targetWeapon.Quality, casterWeapon.Quality))
         {
             target.EquipmentDisarmed(targetWeapon);
             targetInfo.SetWeaponDisarmed();
         }
 
-        bool IsWeaponBrokenFormula(int weapon, int comparer)
-        {
-            var brokenRatio = 100; //CombatFormula.WeaponBrokenJudgment(weapon, comparer);
-            var luck = Sys.Luck;
-            return luck < brokenRatio;
-        }
+        //bool IsWeaponBrokenFormula(int weapon, int comparer)
+        //{
+        //    var brokenRatio = 100; //CombatFormula.WeaponBrokenJudgment(weapon, comparer);
+        //    var luck = Sys.Luck;
+        //    return luck < brokenRatio;
+        //}
     }
 
     //反击判断

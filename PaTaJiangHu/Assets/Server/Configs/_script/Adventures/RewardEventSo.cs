@@ -23,7 +23,9 @@ namespace Server.Configs.Adventures
         int Silver { get; }
         int YuanBao { get; }
     }
-
+    /// <summary>
+    /// 主要的游戏奖励, 可以用于宝箱接口
+    /// </summary>
     public interface IGameReward
     {
         IAdvPackage[] Packages { get; }
