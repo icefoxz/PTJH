@@ -450,4 +450,40 @@ namespace _GameClient.Models
     {
         public IBook[] GetBooksForSkill(SkillType type) => _books.Where(x => x.GetSkill().SkillType == type).ToArray();
     }
+
+    /// <summary>
+    /// 门派挑战相关方法集
+    /// </summary>
+    public partial class Faction
+    {
+        public ChallengeStage Challenge { get; private set; }
+        public int ChallengeLevel { get; private set; }
+        public class ChallengeStage
+        {
+            private List<IGameChest> _chests = new List<IGameChest>();
+            public IChallengeStage CurrentStage { get; private set; }
+            public int Progress { get; private set; }
+            public bool IsFinished { get; private set; }
+            public ICollection<IGameChest> Chests => _chests;
+
+            public ChallengeStage(IChallengeStage currentStage)
+            {
+                CurrentStage = currentStage;
+            }
+            internal void SetProgress(int progress) => Progress = progress;
+            internal void SetFinished(bool isFinished) => IsFinished = isFinished;
+            internal void AddChests(IGameChest chest) => Chests.Add(chest);
+            internal void RemoveChests(IGameChest chest) => Chests.Remove(chest);
+        }
+
+        public void SetChallenge(IChallengeStage challenge)
+        {
+            Challenge = new ChallengeStage(challenge);
+        }
+        public void SetProgress(int progress) => Challenge.SetProgress(progress);
+        public void SetFinished(bool isFinished) => Challenge.SetFinished(isFinished);
+        public void AddChests(IGameChest chest) => Challenge.AddChests(chest);
+        public void RemoveChests(IGameChest chest) => Challenge.RemoveChests(chest);
+        public void SetChallengeLevel(int level) => ChallengeLevel = level;
+    }
 }
