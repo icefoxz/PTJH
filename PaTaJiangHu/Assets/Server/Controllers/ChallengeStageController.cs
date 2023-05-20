@@ -1,53 +1,50 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
+﻿using System.Linq;
 using _GameClient.Models;
-using Server.Configs.ChallengeStages;
 
 namespace Server.Controllers
 {
+    /// <summary>
+    /// 挑战控制器
+    /// </summary>
     public class ChallengeStageController : IGameController
     {
-        private Config.GameStageCfg GameCfg => Game.Config.StageCfg;
-        private int ChallengeProgressIndex { get; set; }
+        private ChallengeCfgSo ChallengeStageCfg => Game.Config.ChallengeCfg;
         private Faction Faction => Game.World.Faction;
-        public ISingleStageNpc[] GetChallenges() => GameCfg.Stages[ChallengeProgressIndex].Npcs;
-        private IGame2DLand GameLand { get; } = Game.Game2DLand;
+        private BattleController BattleController => Game.Controllers.Get<BattleController>();
+
+        public IChallengeStage RequestNewChallenge()
+        {
+            var stage = ChallengeStageCfg.GetRandomStage(Faction.ChallengeLevel);
+            Faction.SetChallenge(stage);
+            Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);
+            return stage;
+        }
 
         public void StartChallenge(string guid, int npcIndex)
         {
             var dizi = Faction.GetDizi(guid);
-            var battle = GameCfg.Stages[ChallengeProgressIndex].Instance(npcIndex, dizi);
-            Game.CacheBattle(battle);
-            GameLand.InitBattle(guid,battle);
-            var diziFighter = battle.Fighters.First(f => f.Guid == guid);
-            Game.MessagingManager.SendParams(EventString.Battle_Init, guid, diziFighter.InstanceId, battle.RoundLimit);
-            var co = Game.CoService.RunCo(RunBattle(battle), null, nameof(ChallengeStageController));
-            co.name = $"挑战战斗:[{string.Join(',', battle.Fighters.Select(f => f.Name))}]";
+            var challenge = Faction.Challenge;
+            var battle = ChallengeStageCfg.InstanceBattle(dizi, challenge.Id, challenge.Progress, npcIndex);
+            BattleController.StartBattle(guid, battle);
         }
 
-        private IEnumerator RunBattle(DiziBattle battle)
+        public void RequestChallengeGiveup()
         {
-            while (!battle.IsFinalized)
-            {
-                var roundInfo = battle.ExecuteRound();
-                Game.MessagingManager.SendParams(EventString.Battle_RoundUpdate, battle.Rounds.Count, battle.RoundLimit);
-                yield return GameLand.PlayRound(roundInfo);
-            }
-            Game.MessagingManager.Send(EventString.Battle_End, battle.IsPlayerWin);
-            UpdateChallenge(battle);
-        }
-
-        private void UpdateChallenge(DiziBattle battle)
-        {
-            if (!battle.IsPlayerWin) return;
-            ChallengeProgressIndex++;
+            Faction.RemoveChallenge();
             Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);
         }
 
-        public void FinalizeBattle()
+        public void GetReward()
         {
-            GameLand.FinalizeBattle();
+            var challenge = Faction.Challenge;
+            Game.World.RewardBoard.SetReward(challenge.Chests.First());
+        }
+
+        public IChallengeStage GetCurrentChallengeStage()
+        {
+            if(Faction.Challenge == null) return null;
+            var stage = ChallengeStageCfg.GetStage(Faction.Challenge.Id);
+            return stage;
         }
     }
 }

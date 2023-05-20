@@ -9,6 +9,7 @@ using Server.Configs.Factions;
 using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Controllers;
+using UnityEngine;
 using Utls;
 
 namespace _GameClient.Models
@@ -461,17 +462,21 @@ namespace _GameClient.Models
         public class ChallengeStage
         {
             private List<IGameChest> _chests = new List<IGameChest>();
-            public IChallengeStage CurrentStage { get; private set; }
+            private IChallengeStage CurrentStage { get;  }
+            public int Id => CurrentStage.Id;
             public int Progress { get; private set; }
-            public bool IsFinished { get; private set; }
+            public int StageCount => CurrentStage.StageCount;
+            public string StageName => CurrentStage.Name;
+            public string StageInfo => CurrentStage.About;
+            public Sprite StageImage => CurrentStage.Image; 
             public ICollection<IGameChest> Chests => _chests;
+            public bool IsFinish => Progress == StageCount;
 
             public ChallengeStage(IChallengeStage currentStage)
             {
                 CurrentStage = currentStage;
             }
             internal void SetProgress(int progress) => Progress = progress;
-            internal void SetFinished(bool isFinished) => IsFinished = isFinished;
             internal void AddChests(IGameChest chest) => Chests.Add(chest);
             internal void RemoveChests(IGameChest chest) => Chests.Remove(chest);
         }
@@ -480,10 +485,11 @@ namespace _GameClient.Models
         {
             Challenge = new ChallengeStage(challenge);
         }
-        public void SetProgress(int progress) => Challenge.SetProgress(progress);
-        public void SetFinished(bool isFinished) => Challenge.SetFinished(isFinished);
-        public void AddChests(IGameChest chest) => Challenge.AddChests(chest);
-        public void RemoveChests(IGameChest chest) => Challenge.RemoveChests(chest);
-        public void SetChallengeLevel(int level) => ChallengeLevel = level;
+
+        public void RemoveChallenge() => Challenge = null;
+        internal void AddChests(IGameChest chest) => Challenge.AddChests(chest);
+        internal void RemoveChests(IGameChest chest) => Challenge.RemoveChests(chest);
+        internal void SetChallengeLevel(int level) => ChallengeLevel = level;
+        internal void NextChallengeProgress() => Challenge.SetProgress(Challenge.Progress + 1);
     }
 }

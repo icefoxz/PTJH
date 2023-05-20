@@ -255,7 +255,6 @@ namespace Models
                 SkillType.Dodge => DodgeSkills[index].Skill,
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
-            XDebug.Log($"获取技能{skill.Name}");
             return skill;
         }
 

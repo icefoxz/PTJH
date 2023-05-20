@@ -17,7 +17,7 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1;
 
-internal class Demo_Win_SkillComprehend : UiManagerBase
+internal class Demo_Win_SkillComprehend : WinUiManagerBase
 {
     private Win_skillComprehend win_skillComprehend { get; set; }
     private Demo_v1Agent Agent { get; }
@@ -74,10 +74,6 @@ internal class Demo_Win_SkillComprehend : UiManagerBase
     protected override void RegEvents()
     {
     }
-
-    public override void Show() => win_skillComprehend.Display(true);
-
-    public override void Hide() => win_skillComprehend.Display(false);
 
     private class Win_skillComprehend : UiBase 
     {

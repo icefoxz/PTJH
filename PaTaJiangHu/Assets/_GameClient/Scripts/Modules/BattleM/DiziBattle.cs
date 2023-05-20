@@ -10,7 +10,7 @@ using Utls;
  * Events 枚举：表示战斗事件，用于定义战斗配置。包括 Perform（执行）、Response（反馈）、RoundEnd（回合结束）和 BattleEnd（战斗结束）。
  * Responses 枚举：表示战斗反馈，用于定义战斗配置。包括 Suffer（受击）、Dodge（闪避）和 Defeat（击败）。
  * ExecuteRound 方法：执行一个回合的战斗。创建一个 DiziCombatRound 对象，根据战斗结果更新回合信息列表，并根据条件判断战斗是否结束。
- * Instance 静态方法：创建一个新的 DiziBattle 实例。
+ * InstanceBattle 静态方法：创建一个新的 DiziBattle 实例。
  * StartAuto 静态方法：自动开始并执行战斗。创建一个新的 DiziBattle 实例，并在回合限制内执行战斗回合。根据队伍的平均血量比率判断获胜。
  * PrintLog 静态方法：打印战斗日志。输出战斗开始、回合执行和战斗结束的信息。
  */

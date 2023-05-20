@@ -35,7 +35,7 @@ internal class GameSceneAgent : MainUiAgent
         WinRewardManager = new WinRewardManager(this);
         FactionInfo = new FactionInfoManager(this);
         BtmPageBtnsManager = new BtmPageBtnsManager(this);
-        Debug.Log($"{nameof(GameSceneAgent)} Init!");
+        Debug.Log($"{nameof(GameSceneAgent)} RegEvents!");
     }
 
     private void TestFactionInventory()

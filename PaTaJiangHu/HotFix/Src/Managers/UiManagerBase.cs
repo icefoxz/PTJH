@@ -75,4 +75,9 @@ internal abstract class WinUiManagerBase : UiManagerBase
         View.Hide();
         MainUiAgent.HideWindows();
     }
+
+    public override void Show()
+    {
+        MainUiAgent.ShowWindow(View);
+    }
 }

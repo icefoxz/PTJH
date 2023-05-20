@@ -193,10 +193,15 @@ namespace HotFix_Project.Managers.Demo_v1
 
                 public void SetMode(Modes mode)
                 {
+                    var faction = Game.World.Faction;
+                    DisplayButton(Btn_challenge, faction != null && 
+                                                 faction.Challenge != null && 
+                                                 !faction.Challenge.IsFinish &&
+                                                 mode == Modes.Idle);
+                    //DisplayButton(Btn_challenge, mode == Modes.Idle);
                     DisplayButton(Btn_callback, mode == Modes.Adventure);
                     DisplayButton(Btn_selectAdvMap, mode == Modes.Idle);
                     DisplayButton(Btn_selectProMap, mode == Modes.Idle);
-                    DisplayButton(Btn_challenge, mode == Modes.Idle);
                     DisplayButton(Btn_forgetDizi, mode == Modes.Lost);
                     DisplayButton(Btn_buybackDizi, mode == Modes.Lost);
                     DisplayButton(Btn_returnDizi, mode == Modes.Waiting);
