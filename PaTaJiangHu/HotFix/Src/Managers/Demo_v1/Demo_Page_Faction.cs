@@ -14,9 +14,10 @@ namespace HotFix_Project.Managers.Demo_v1;
 internal class Demo_Page_Faction : UiManagerBase
 {
     private Faction_page FactionPage { get; set; }
-
+    private Demo_v1Agent Agent { get; }
     public Demo_Page_Faction(Demo_v1Agent uiAgent) : base(uiAgent)
     {
+        Agent = uiAgent;
     }
 
     protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Page;
@@ -25,12 +26,16 @@ internal class Demo_Page_Faction : UiManagerBase
 
     protected override void Build(IView view)
     {
-        FactionPage = new Faction_page(view, true);
+        FactionPage = new Faction_page(view, Agent, true);
     }
 
     protected override void RegEvents()
     {
         Game.MessagingManager.RegEvent(EventString.Faction_Challenge_Update, _ =>
+        {
+            FactionPage.UpdateChallengeUi();
+        });
+        Game.MessagingManager.RegEvent(EventString.Faction_Init, _ =>
         {
             FactionPage.UpdateChallengeUi();
         });
@@ -43,9 +48,11 @@ internal class Demo_Page_Faction : UiManagerBase
     private class Faction_page : UiBase
     {
         private View_challenge view_challenge { get; }
-        public Faction_page(IView v, bool display) : base(v, display)
+        private Demo_v1Agent Agent { get; }
+        public Faction_page(IView v, Demo_v1Agent agent, bool display) : base(v, display)
         {
             view_challenge = new View_challenge(v.GetObject<View>("view_challenge"));
+            Agent = agent;
         }
 
         /** 根据不同的状态,点击效果会不一样.
@@ -59,37 +66,43 @@ internal class Demo_Page_Faction : UiManagerBase
         {
             var faction = Game.World.Faction;
             var challenge = faction.Challenge;
-            if (challenge == null)
+            var action = NewChallenge;
+            if (challenge != null)
             {
-                //未解锁挑战
-                ChallengeNoneUi();
-                return;
+                var isChallenging = challenge.Progress < challenge.StageCount;
+                if (isChallenging)
+                {
+                    //挑战中
+                    action = DoChallenge;
+                }
+
+                var hasChest = challenge.Chests.Count > 0;
+                if (hasChest)
+                {
+                    //领取宝箱
+                    action = OpenChest;
+                }
             }
 
-            var isChallenging = challenge.Progress < challenge.CurrentStage.MaxCheckPoint;
-            var hasChest = challenge.Chests.Count > 0;
-            if (hasChest)
-            {
-                //领取宝箱
-                view_challenge.UpdateStage(challenge, faction.ChallengeLevel, () => { XDebug.Log("领取宝箱"); });
-                return;
-            }
-
-            if (isChallenging)
-            {
-                //挑战中
-                view_challenge.UpdateStage(challenge, faction.ChallengeLevel, () => { XDebug.Log("跳转挑战页面!"); });
-                return;
-            }
-            //代码会跑到这里估计是已完成并且领取了所有宝箱, 所以跟无挑战状态一样处理
-            ChallengeNoneUi();
-
-            void ChallengeNoneUi() => view_challenge.UpdateStage(null, -1, () =>
-            {
-                XDebug.Log("请求解锁挑战新挑战!");
-            });
+            view_challenge.UpdateStage(challenge, faction.ChallengeLevel, action);
         }
 
+        private void NewChallenge()
+        {
+            Agent.PromptChallengeWindow();
+            XDebug.Log("请求解锁挑战新挑战!");
+        }
+
+        private void DoChallenge()
+        {
+            Agent.ShowChallengeState();
+            XDebug.Log("跳转挑战页面!");
+        }
+
+        private void OpenChest()
+        {
+            XDebug.Log("领取宝箱");
+        }
 
         private class View_challenge : UiBase
         {
@@ -107,7 +120,7 @@ internal class Demo_Page_Faction : UiManagerBase
 
             private GameObject[] Chests { get; }
 
-            public View_challenge(IView v) : base(v, false)
+            public View_challenge(IView v) : base(v, true)
             {
                 img_icon = v.GetObject<Image>("img_icon");
                 text_stageName = v.GetObject<Text>("text_stageName");
@@ -135,9 +148,8 @@ internal class Demo_Page_Faction : UiManagerBase
                     return;
                 }
 
-                var stage = challenge.CurrentStage;
                 SetChest(challenge.Chests.Count);
-                SetStage(stage.Name, challenge.Progress, challenge.CurrentStage.MaxCheckPoint, level, stage.Image);
+                SetStage(challenge.StageName, challenge.Progress, challenge.StageCount, level, challenge.StageImage);
                 obj_challenge.gameObject.SetActive(true);
             }
 

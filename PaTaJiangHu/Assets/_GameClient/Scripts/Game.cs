@@ -71,6 +71,7 @@ public class Game : UnitySingleton<Game>
         game2DLand.Init(config.GameAnimCfg);
         //SceneCanvas = sceneCanvas;
         InitControllers();
+        //***************Init********************//
     }
 
     public static Color GetColorFromGrade(int grade) => Config.Global.GradeColor.GetColor((ColorGrade)grade);
@@ -81,11 +82,11 @@ public class Game : UnitySingleton<Game>
     public static void Run()
     {
         Instance.Log();
-        Instance.StartGameAfterASecond();
+        Instance.StartGameAfterSeconds();
         //TestFactionInventory();
     }
 
-    private void StartGameAfterASecond(float sec = 0.5f)
+    private void StartGameAfterSeconds(float sec = 0.5f)
     {
         StartCoroutine(StartAfterSec(sec));
 
@@ -108,8 +109,10 @@ public class Game : UnitySingleton<Game>
         Controllers.Reg(new DataController());
         Controllers.Reg(new DiziIdleController());
         Controllers.Reg(new FactionController());
-        Controllers.Reg(new ChallengeStageController());
+        Controllers.Reg(new GameStageController());
         Controllers.Reg(new SkillController());
+        Controllers.Reg(new BattleController());
+        Controllers.Reg(new ChallengeStageController());
     }
 
     private static void TestFactionInventory()

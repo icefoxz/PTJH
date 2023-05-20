@@ -88,6 +88,7 @@ public class EventString
     public const string Faction_BookUpdate = "Faction_BookUpdate";//门派书籍更新
     public const string Faction_FunctionItemUpdate = "Faction_FunctionItemUpdate";//门派功能道具更新
     public const string Faction_Challenge_Update = "Faction_Challenge_Update";//门派挑战进度更新
+    public const string Faction_Stage_update = "Faction_Stage_update";//门派关卡更新
 
     //战斗演示
     public const string Battle_Performer_update = "Battle_Performer_update";//进攻者信息更新

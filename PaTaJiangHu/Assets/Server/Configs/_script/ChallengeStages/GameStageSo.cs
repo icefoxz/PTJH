@@ -42,7 +42,7 @@ namespace Server.Configs.ChallengeStages
 
         public ISingleStageNpc[] Npcs => 关卡;
 
-        public DiziBattle Instance(int challengeIndex, Dizi dizi)
+        public DiziBattle InstanceBattle(int challengeIndex, Dizi dizi)
         {
             var challenge = Npcs[challengeIndex];
             var diziCombat = new DiziCombatUnit(0, dizi);

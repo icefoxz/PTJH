@@ -410,7 +410,7 @@ namespace Data.LitJson
         {
             if (data.type != JsonType.Boolean)
                 throw new InvalidCastException (
-                    "Instance of JsonData doesn't hold a double");
+                    "InstanceBattle of JsonData doesn't hold a double");
 
             return data.inst_boolean;
         }
@@ -419,7 +419,7 @@ namespace Data.LitJson
         {
             if (data.type != JsonType.Double)
                 throw new InvalidCastException (
-                    "Instance of JsonData doesn't hold a double");
+                    "InstanceBattle of JsonData doesn't hold a double");
 
             return data.inst_double;
         }
@@ -428,7 +428,7 @@ namespace Data.LitJson
         {
             if (data.type != JsonType.Int)
                 throw new InvalidCastException (
-                    "Instance of JsonData doesn't hold an int");
+                    "InstanceBattle of JsonData doesn't hold an int");
 
             return data.inst_int;
         }
@@ -437,7 +437,7 @@ namespace Data.LitJson
         {
             if (data.type != JsonType.Long)
                 throw new InvalidCastException (
-                    "Instance of JsonData doesn't hold an int");
+                    "InstanceBattle of JsonData doesn't hold an int");
 
             return data.inst_long;
         }
@@ -446,7 +446,7 @@ namespace Data.LitJson
         {
             if (data.type != JsonType.String)
                 throw new InvalidCastException (
-                    "Instance of JsonData doesn't hold a string");
+                    "InstanceBattle of JsonData doesn't hold a string");
 
             return data.inst_string;
         }
@@ -703,7 +703,7 @@ namespace Data.LitJson
 
             if (type != JsonType.None)
                 throw new InvalidOperationException (
-                    "Instance of JsonData is not a dictionary");
+                    "InstanceBattle of JsonData is not a dictionary");
 
             type = JsonType.Object;
             inst_object = new Dictionary<string, JsonData> ();
@@ -719,7 +719,7 @@ namespace Data.LitJson
 
             if (type != JsonType.None)
                 throw new InvalidOperationException (
-                    "Instance of JsonData is not a list");
+                    "InstanceBattle of JsonData is not a list");
 
             type = JsonType.Array;
             inst_array = new List<JsonData> ();

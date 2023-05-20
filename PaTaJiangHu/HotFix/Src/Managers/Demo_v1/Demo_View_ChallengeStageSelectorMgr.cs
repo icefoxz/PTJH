@@ -24,7 +24,7 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             ChallengeStageSelector = new View_ChallengeStageSelector(view,
-                onChallengeAction: challengeIndex => UiAgent.StartChallenge(challengeIndex),
+                onChallengeAction: challengeIndex => UiAgent.StartChallengeBattle(challengeIndex),
                 onBattleFinalized: ()=> UiAgent.SetBattleFinalize());
         }
 
@@ -37,7 +37,7 @@ namespace HotFix_Project.Managers.Demo_v1
         public override void Show() => ChallengeStageSelector.Display(true);
         public override void Hide() => ChallengeStageSelector.Display(false);
 
-        public void SetChallenges(ISingleStageNpc[] challengeStages) => ChallengeStageSelector.Set(challengeStages);
+        public void SetChallengeNpcs(IChallengeStage stage) => ChallengeStageSelector.Set(stage);
 
         private class View_ChallengeStageSelector : UiBase
         {
@@ -58,15 +58,17 @@ namespace HotFix_Project.Managers.Demo_v1
             }
 
             private int SelectedNpcIndex { get; set; }
-            public void Set(ISingleStageNpc[] npcs)
+            public void Set(IChallengeStage stage)
             {
+                var faction = Game.World.Faction;
+                var npcs = stage.GetChallengeNpcs(faction.Challenge.Progress);
                 ChallengeList.ClearList(c=>c.Destroy());
                 for (var i = 0; i < npcs.Length; i++)
                 {
                     var index = i;
                     var n = npcs[i];
                     var ui = ChallengeList.Instance(v => new ChallengePrefab(v, () => SetSelected(index)));
-                    ui.SetNpc(n.NpcName, n.Faction, n.Level, n.IsBoss);
+                    ui.SetNpc(n.NpcName, stage.Name , n.Level, n.IsBoss);
                     if (i == 0)
                     {
                         //预选第一个

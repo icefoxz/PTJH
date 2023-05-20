@@ -16,7 +16,7 @@ public interface IChallengeStage
     string Name { get; }
     string About { get; }
     Sprite Image { get; }
-    int MaxCheckPoint { get; }
+    int StageCount { get; }
     IChallengeNpc[] GetChallengeNpcs(int index);
 }
 
@@ -34,7 +34,7 @@ internal class ChallengeStageSo : AutoHashNamingObject,IChallengeStage
     [SerializeField][TextArea] private string 说明;
     private StageBoss[] Stages => 关卡;
     public Sprite Image => 图标;
-    public int MaxCheckPoint => Stages.Length;
+    public int StageCount => Stages.Length;
     public string About => 说明;
 
     public IChallengeNpc[] GetChallengeNpcs(int index) => Stages[index].Npcs;

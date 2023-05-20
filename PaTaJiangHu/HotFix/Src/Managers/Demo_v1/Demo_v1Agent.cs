@@ -44,9 +44,12 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_Win_ItemMgr Demo_Win_ItemMgr { get; }
     private Demo_Win_SkillComprehend Demo_Win_SkillComprehend { get; }
     private Demo_Win_ItemSelector Demo_Win_ItemSelector { get; }
+    private Demo_Win_ChallengeMgr Demo_Win_ChallengeMgr { get; }
 
     private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
+    private BattleController BattleController => Game.Controllers.Get<BattleController>();
     private SkillController SkillController => Game.Controllers.Get<SkillController>();
+    private GameStageController GameStageController => Game.Controllers.Get<GameStageController>();
     private IGame2DLand Game2D => Game.Game2DLand;
 
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
@@ -80,6 +83,7 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_Win_ItemMgr = new Demo_Win_ItemMgr(this);
         Demo_Win_SkillComprehend = new Demo_Win_SkillComprehend(this);
         Demo_Win_ItemSelector = new Demo_Win_ItemSelector(this);
+        Demo_Win_ChallengeMgr = new Demo_Win_ChallengeMgr(this);
 
         CloseAllPages();
     }
@@ -180,6 +184,7 @@ internal class Demo_v1Agent : MainUiAgent
     /// <param name="mapType"></param>
     internal void AdvMapSelection(string guid,int mapType)
     {
+        ShowPage(Pages.Main);
         Demo_View_AdventureMapsMgr.Set(guid, mapType);
         Demo_View_AdventureMapsMgr.Show();
     }
@@ -189,17 +194,19 @@ internal class Demo_v1Agent : MainUiAgent
     /// </summary>
     internal void ShowChallengeState()
     {
+        ShowPage(Pages.Main);
         Show(Demo_View_ChallengeStageSelectorMgr, false);
-        var challenges = ChallengeController.GetChallenges();
-        Demo_View_ChallengeStageSelectorMgr.SetChallenges(challenges);
+        var stage = ChallengeController.GetCurrentChallengeStage();
+        Demo_View_ChallengeStageSelectorMgr.SetChallengeNpcs(stage);
     }
 
     /// <summary>
     /// 开始关卡挑战
     /// </summary>
     /// <param name="challengeIndex"></param>
-    internal void StartChallenge(int challengeIndex)
+    internal void StartChallengeBattle(int challengeIndex)
     {
+        ShowPage(Pages.Main);
         ChallengeController.StartChallenge(SelectedDizi.Guid, challengeIndex);
         Demo_Game_ViewMgr.Hide();
     }
@@ -209,7 +216,7 @@ internal class Demo_v1Agent : MainUiAgent
     /// </summary>
     public void SetBattleFinalize()
     {
-        ChallengeController.FinalizeBattle();
+        BattleController.FinalizeBattle();
         Demo_Game_ViewMgr.Show();
         Demo_Game_ViewMgr.Set(SelectedDizi);
         Demo_Game_BattleBannerMgr.Reset();
@@ -252,4 +259,16 @@ internal class Demo_v1Agent : MainUiAgent
     /// <param name="guid"></param>
     /// <param name="itemType"></param>
     public void EquipmentManagement(string guid, int itemType) => Demo_Win_ItemMgr.Set(guid, itemType, slot: 0);
+
+    public void RequestNewChallenge() => ChallengeController.RequestNewChallenge();
+
+    public void ChallengeGiveUp()
+    {
+        ChallengeController.RequestChallengeGiveup();
+    }
+
+    public void PromptChallengeWindow()
+    {
+        Demo_Win_ChallengeMgr.Show();
+    }
 }

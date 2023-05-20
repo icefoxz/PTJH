@@ -31,7 +31,7 @@ internal class MainUiAgent
         MainPage
     }
 
-    public void RegPage<T>(Sections section, T manager) where T : UiManagerBase
+    private void RegPage<T>(Sections section, T manager) where T : UiManagerBase
     {
         if (!UiMappers.Any(m => m.Manager == manager && section == m.Section))
             UiMappers.Add(new UiMapper(section, manager.GetType().Name, manager));
@@ -89,6 +89,8 @@ internal class MainUiAgent
     public void Show(UiManagerBase[] managers, bool hideSameSection )
     {
         var maps = UiMappers.Where(m => managers.Contains(m.Manager)).ToArray();
+        if(!maps.Any())
+            throw new Exception($"{string.Join(",",managers.Select(m=>m.View.name))}没有找到对应的UiManager");
         var section = maps.First().Section;
         OnShowUi(section, hideSameSection, maps);
     }
@@ -122,7 +124,7 @@ internal class MainUiAgent
         }
     }
 
-    public void CloseAllPages() => CloseAllUi(Sections.Page);
+    protected void CloseAllPages() => CloseAllUi(Sections.Page);
     private void CloseAllUi(Sections section, params UiMapper[] skipsMaps)
     {
         foreach (var mapper in UiMappers.Where(m => m.Section == section).ToList())

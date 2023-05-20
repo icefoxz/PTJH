@@ -9,6 +9,7 @@ using Server.Configs.Factions;
 using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Controllers;
+using UnityEngine;
 using Utls;
 
 namespace _GameClient.Models
@@ -461,10 +462,16 @@ namespace _GameClient.Models
         public class ChallengeStage
         {
             private List<IGameChest> _chests = new List<IGameChest>();
-            public IChallengeStage CurrentStage { get; private set; }
+            private IChallengeStage CurrentStage { get;  }
+            public int Id => CurrentStage.Id;
             public int Progress { get; private set; }
+            public int StageCount => CurrentStage.StageCount;
+            public string StageName => CurrentStage.Name;
+            public string StageInfo => CurrentStage.About;
+            public Sprite StageImage => CurrentStage.Image; 
             public bool IsFinished { get; private set; }
             public ICollection<IGameChest> Chests => _chests;
+            public bool IsFinish => Progress == StageCount;
 
             public ChallengeStage(IChallengeStage currentStage)
             {
@@ -480,10 +487,10 @@ namespace _GameClient.Models
         {
             Challenge = new ChallengeStage(challenge);
         }
-        public void SetProgress(int progress) => Challenge.SetProgress(progress);
-        public void SetFinished(bool isFinished) => Challenge.SetFinished(isFinished);
-        public void AddChests(IGameChest chest) => Challenge.AddChests(chest);
-        public void RemoveChests(IGameChest chest) => Challenge.RemoveChests(chest);
-        public void SetChallengeLevel(int level) => ChallengeLevel = level;
+        internal void SetFinished(bool isFinished) => Challenge.SetFinished(isFinished);
+        internal void AddChests(IGameChest chest) => Challenge.AddChests(chest);
+        internal void RemoveChests(IGameChest chest) => Challenge.RemoveChests(chest);
+        internal void SetChallengeLevel(int level) => ChallengeLevel = level;
+        internal void NextChallengeProgress() => Challenge.SetProgress(Challenge.Progress + 1);
     }
 }
