@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using _GameClient.Models;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
@@ -62,8 +63,9 @@ internal class Demo_Page_Faction : UiManagerBase
          *  3. 已经有挑战,点击弹出挑战窗口,可选择转换挑战页或请求控制器放弃挑战
          *  4. 有宝箱状态, 点击并领取宝箱.
          */
-        public void UpdateChallengeUi()
+        public void UpdateChallengeUi([CallerMemberName]string methodName = null)
         {
+            Console.WriteLine($"{methodName}.{nameof(UpdateChallengeUi)}");
             var faction = Game.World.Faction;
             var challenge = faction.Challenge;
             var action = NewChallenge;
