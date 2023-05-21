@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
 using Systems.Messaging;

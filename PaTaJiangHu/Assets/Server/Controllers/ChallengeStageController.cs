@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using _GameClient.Models;
 
 namespace Server.Controllers

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using HotFix_Project.Views.Bases;
 using Server.Configs.ChallengeStages;
 using Server.Controllers;
@@ -66,6 +66,8 @@ namespace HotFix_Project.Managers.Demo_v1
             private int SelectedNpcIndex { get; set; }
             public void Set(IChallengeStage stage)
             {
+                var faction = Game.World.Faction;
+                var npcs = stage.GetChallengeNpcs(faction.Challenge.Progress);
                 ChallengeList.ClearList(c=>c.Destroy());
                 if (stage == null) return;
                 var faction = Game.World.Faction;

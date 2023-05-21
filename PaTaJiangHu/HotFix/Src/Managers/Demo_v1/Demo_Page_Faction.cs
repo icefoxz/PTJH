@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using _GameClient.Models;
 using HotFix_Project.Views.Bases;
 using Server.Controllers;
