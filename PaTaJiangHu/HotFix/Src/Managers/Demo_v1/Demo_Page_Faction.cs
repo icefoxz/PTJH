@@ -65,7 +65,7 @@ internal class Demo_Page_Faction : UiManagerBase
          */
         public void UpdateChallengeUi([CallerMemberName]string methodName = null)
         {
-            Console.WriteLine($"{methodName}.{nameof(UpdateChallengeUi)}");
+            XDebug.Log($"{methodName}.{nameof(UpdateChallengeUi)}");
             var faction = Game.World.Faction;
             var challenge = faction.Challenge;
             var action = NewChallenge;
