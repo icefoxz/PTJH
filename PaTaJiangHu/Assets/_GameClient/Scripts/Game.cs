@@ -86,7 +86,11 @@ public class Game : UnitySingleton<Game>
         //TestFactionInventory();
     }
 
-    private void StartGameAfterSeconds(float sec = 0.5f)
+    /// <summary>
+    /// 由于IlRuntime的初始化会因为游戏性能而导致ui延迟, 所以需要延迟一段时间再开始游戏, 否则ui的一些注册事件会失效
+    /// </summary>
+    /// <param name="sec"></param>
+    private void StartGameAfterSeconds(float sec = 1f)
     {
         StartCoroutine(StartAfterSec(sec));
 
