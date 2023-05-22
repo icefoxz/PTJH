@@ -29,11 +29,11 @@ namespace HotFix_Project.Managers.Demo_v1
         {
             View_diziActivity = new View_DiziActivity(v: view,
                 onRecallAction: guid => DiziAdvController.AdventureRecall(guid),
-                onMapListAction: (guid, mapType) => Agent.AdvMapSelection(guid, mapType),
+                onMapListAction: (guid, mapType) => Agent.Dizi_AdvMapSelection(guid, mapType),
                 onDiziForgetAction: guid => XDebug.LogWarning("当前弟子遗忘互动"),
                 onDiziBuyBackAction: guid => XDebug.LogWarning("当前弟子买回互动"),
                 onDiziReturnAction: guid => DiziAdvController.AdventureFinalize(guid),
-                onChallengeAction: () => Agent.ShowChallengeState()
+                onChallengeAction: () => Agent.Dizi_ChallengeShowStage()
             );
         }
 
@@ -42,24 +42,24 @@ namespace HotFix_Project.Managers.Demo_v1
             Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
             {
                 var guid = b.GetString(0);
-                View_diziActivity.UpdateActivity(guid);
+                View_diziActivity.ActivityUpdate(guid);
             });
             Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Message, b =>
             {
                 var guid = b.GetString(0);
                 var message = b.GetString(1);
-                View_diziActivity.OnActivityUpdate(guid);
+                View_diziActivity.AdventureLogUpdate(guid);
             });
             Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Adjust, b =>
             {
                 var guid = b.GetString(0);
                 var adjust = b.GetString(1);
-                View_diziActivity.OnActivityUpdate(guid);
+                View_diziActivity.AdventureLogUpdate(guid);
             });
             Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Reward, b =>
             {
                 var guid = b.GetString(0);
-                View_diziActivity.OnActivityUpdate(guid);
+                View_diziActivity.AdventureLogUpdate(guid);
             });
         }
         public override void Show() => View_diziActivity.Display(true);
@@ -101,10 +101,10 @@ namespace HotFix_Project.Managers.Demo_v1
             {
                 var dizi = Game.World.Faction.GetDizi(diziGuid);
                 SelectedDizi = dizi;
-                UpdateActivity(diziGuid);
+                ActivityUpdate(diziGuid);
             }
 
-            public void UpdateActivity(string guid)
+            public void ActivityUpdate(string guid)
             {
                 if (SelectedDizi==null || SelectedDizi.Guid != guid) return;
                 var mode = SelectedDizi.State.Current switch
@@ -120,11 +120,12 @@ namespace HotFix_Project.Managers.Demo_v1
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 ButtonsView.SetMode(mode);
-                OnActivityUpdate(SelectedDizi.Guid);
+                AdventureLogUpdate(SelectedDizi.Guid);
             }
 
-            public void OnActivityUpdate(string guid)
+            public void AdventureLogUpdate(string guid)
             {
+                if (SelectedDizi == null) return;
                 if (guid != SelectedDizi.Guid) return;
                 var logs = SelectedDizi.State.LogHistory;
                 Scroll_advLog.SetList(logs.Count);

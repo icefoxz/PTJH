@@ -25,7 +25,7 @@ namespace HotFix_Project.Managers.Demo_v1
         {
             DiziList = new View_DiziList(view, dizi =>
             {
-                DemoAgent.SetDiziView(dizi.Guid);
+                DemoAgent.DiziPage_Show(dizi.Guid);
             });
         }
         protected override void RegEvents()

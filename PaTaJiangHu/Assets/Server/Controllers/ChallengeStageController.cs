@@ -33,6 +33,7 @@ namespace Server.Controllers
                 if (!bat.IsPlayerWin) return;
                 Faction.NextChallengeProgress();
                 Game.MessagingManager.SendParams(EventString.Faction_Challenge_BattleEnd, bat.IsPlayerWin);
+                Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);
             }
         }
 

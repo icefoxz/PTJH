@@ -88,13 +88,13 @@ internal class Demo_Page_Faction : UiManagerBase
             view_challenge.UpdateStage(challenge, faction.ChallengeLevel, action);
         }
 
-        private void NewChallenge() => Agent.PromptChallengeWindow();
+        private void NewChallenge() => Agent.Win_ChallengeWindow();
 
-        private void DoChallenge() => Agent.PromptChallengeWindow();
+        private void DoChallenge() => Agent.Win_ChallengeWindow();
 
         private void OpenChest()
         {
-            Agent.PromptChallengeReward();
+            Agent.Win_ChallengeReward();
             XDebug.Log("领取宝箱");
         }
 

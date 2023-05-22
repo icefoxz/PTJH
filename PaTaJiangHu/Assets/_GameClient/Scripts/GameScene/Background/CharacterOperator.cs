@@ -117,7 +117,9 @@ public class CharacterOperator : MonoBehaviour,ISceneObj
             Anims.Run => "run",
             _ => throw new ArgumentOutOfRangeException(nameof(anim), anim, null)
         };
-        StartCoroutine(PlayAnim());
+        if (gameObject.activeInHierarchy)
+            StartCoroutine(PlayAnim());
+        else callback?.Invoke();
 
         IEnumerator PlayAnim()
         {

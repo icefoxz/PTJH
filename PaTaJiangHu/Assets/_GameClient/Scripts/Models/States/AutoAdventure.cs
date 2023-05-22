@@ -190,14 +190,15 @@ namespace _GameClient.Models.States
 
         //注册故事,准备展示
         protected override void OnRegStory(DiziActivityLog story)
-            {
+        {
             if (Mode == Modes.Story)
             {
                 //如果还有故事未播放完毕,清除故事
                 UpdateStoryLog(true);
             }
+
             Mode = Modes.Story;
-            UpdateTime(story.NowTicks, story.LastMiles);//更新发生地点 & 最新里数
+            UpdateTime(story.NowTicks, story.LastMiles); //更新发生地点 & 最新里数
             if (messageUpdate == default)
                 messageUpdate = SysTime.Now;
             _stories.Add(story);

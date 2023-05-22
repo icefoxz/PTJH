@@ -26,12 +26,12 @@ namespace HotFix_Project.Managers.Demo_v1
             View_pages = new View_Pages(view,
                 onShengongPage: () =>
                 {
-                    DemoAgent.SetDiziView(null, Demo_v1Agent.Pages.Skills);
+                    DemoAgent.SkillPage_Show(null);
                 }, //MainUiAgent.Show<TreasureHouseManager>(m=> m.Show()),
-                onXiuxingPage: () => { DemoAgent.SetDiziView(); },
+                onXiuxingPage: () => { DemoAgent.DiziPage_Show(null); },
                 onFactionPage: () =>
                 {
-                    DemoAgent.OpenFactionPage();
+                    DemoAgent.FactionPage_Show();
                 },
                 onRecruitPage: () => Game.MessagingManager.Send(EventString.Page_DiziRecruit, null)
             );

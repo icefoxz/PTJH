@@ -25,8 +25,8 @@ namespace HotFix_Project.Managers.Demo_v1
         protected override void Build(IView view)
         {
             ChallengeStageSelector = new View_ChallengeStageSelector(view,
-                onChallengeAction: challengeIndex => UiAgent.StartChallengeBattle(challengeIndex),
-                onBattleFinalized: ()=> UiAgent.SetBattleFinalize());
+                onChallengeAction: challengeIndex => UiAgent.Dizi_ChallengeStart(challengeIndex),
+                onBattleFinalized: ()=> UiAgent.BattleFinalize());
         }
 
         protected override void RegEvents()

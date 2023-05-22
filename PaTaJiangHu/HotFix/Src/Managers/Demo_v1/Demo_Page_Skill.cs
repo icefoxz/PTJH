@@ -44,18 +44,18 @@ internal class Demo_Page_Skill : UiManagerBase
             },
             (guid, skill, index) =>
             {
-                Agent.SetBookComprehend(guid, skill, index);
+                Agent.Skill_BookComprehend(guid, skill, index);
             },
             Evolve,
             SkillUses,
             SkillForget,
             () =>
             {
-                Agent.SetSkillComprehend(_selectedDizi.Guid, _selectedSkill, _selectedIndex);
+                Agent.Skill_Comprehend(_selectedDizi.Guid, _selectedSkill, _selectedIndex);
             },
             true);
         view_diziList = new View_DiziList(v.GetObject<View>("view_diziList"),
-            guid => { Agent.SetDiziView(guid, Demo_v1Agent.Pages.Skills); });
+            guid => { Agent.SkillPage_Show(guid); });
     }
 
     private SkillType _selectedSkill;

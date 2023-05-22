@@ -102,54 +102,25 @@ internal class Demo_v1Agent : MainUiAgent
 
     private Dizi SelectedDizi { get; set; }
 
-    /// <summary>
-    /// 弟子信息(相关板块)显示, 作为主页上整合显示所有板块的方法
-    /// </summary>
-    /// <param name="guid"></param>
-    /// <param name="page"></param>
-    internal void SetDiziView(string guid = null, Pages page = Pages.Main)
+    internal void FactionPage_Show() => ShowPage(Pages.Faction);
+    internal void DiziPage_Show(string guid)
     {
-        if (guid != null)
-        {
-            SelectedDizi = Game.World.Faction.GetDizi(guid);
-        }
-
-        var dizi = SelectedDizi;
-        if (dizi == null) //如果没有缓存弟子,就会获取门派中的第一个弟子
-        {
-            dizi = Game.World.Faction.DiziList.FirstOrDefault();
-            if (dizi == null)
-            {
-                XDebug.LogWarning("当前门派并没有弟子!");
-                return;
-            }
-
-            guid = dizi.Guid;
-        }
-
-        //main
-        Game2D.PlayDizi(dizi.Guid);
-
-        Demo_View_ConsumeResMgr.Set(dizi);
-        Demo_View_ConPropsMgr.Set(dizi);
-        Demo_View_DiziActivityMgr.Set(dizi);
-        Demo_View_EquipmentMgr.Set(dizi);
-        Demo_Dizi_InfoMgr.Set(dizi);
-        Demo_Game_ViewMgr.Set(dizi);
-        Demo_View_AdventureMapsMgr.Hide();
-
-        //skill
-        Demo_Page_Skill.SetDizi(dizi);
-        ShowPage(page);
+        if (!string.IsNullOrWhiteSpace(guid)) SelectedDizi = Game.World.Faction.GetDizi(guid);
+        ShowPage(Pages.Main);
     }
 
-    internal void OpenFactionPage() => ShowPage(Pages.Faction);
+    internal void SkillPage_Show(string guid)
+    {
+        if (!string.IsNullOrWhiteSpace(guid)) SelectedDizi = Game.World.Faction.GetDizi(guid);
+        ShowPage(Pages.Skills);
+    }
+
     private void ShowPage(Pages page)
     {
         switch (page)
         {
             case Pages.Main:
-                SelectedDizi ??= Game.World.Faction.DiziList.FirstOrDefault();
+                SetDiziView(Pages.Main);
                 Show(new UiManagerBase[]
                 {
                     Demo_View_ConsumeResMgr,
@@ -161,7 +132,7 @@ internal class Demo_v1Agent : MainUiAgent
                 Game2D.SwitchPage(CameraFocus.Focus.DiziView);
                 break;
             case Pages.Skills:
-                SelectedDizi ??= Game.World.Faction.DiziList.FirstOrDefault();
+                SetDiziView(Pages.Skills);
                 Show(new UiManagerBase[]
                 {
                     Demo_Page_Skill,
@@ -177,6 +148,35 @@ internal class Demo_v1Agent : MainUiAgent
             default:
                 throw new ArgumentOutOfRangeException(nameof(page), page, null);
         }
+        // 弟子信息(相关板块)显示, 作为主页上整合显示所有板块的方法
+        void SetDiziView(Pages p)
+        {
+            var dizi = SelectedDizi;
+            if (dizi == null) //如果没有缓存弟子,就会获取门派中的第一个弟子
+            {
+                dizi = Game.World.Faction.DiziList.FirstOrDefault();
+                if (dizi == null)
+                {
+                    XDebug.LogWarning("当前门派并没有弟子!");
+                    return;
+                }
+            }
+
+            //main
+            Game2D.PlayDizi(dizi.Guid);
+
+            Demo_View_ConsumeResMgr.Set(dizi);
+            Demo_View_ConPropsMgr.Set(dizi);
+            Demo_View_DiziActivityMgr.Set(dizi);
+            Demo_View_EquipmentMgr.Set(dizi);
+            Demo_Dizi_InfoMgr.Set(dizi);
+            Demo_Game_ViewMgr.Set(dizi);
+            Demo_View_AdventureMapsMgr.Hide();
+
+            //skill
+            Demo_Page_Skill.SetDizi(dizi);
+        }
+
     }
 
     /// <summary>
@@ -184,7 +184,7 @@ internal class Demo_v1Agent : MainUiAgent
     /// </summary>
     /// <param name="guid"></param>
     /// <param name="mapType"></param>
-    internal void AdvMapSelection(string guid,int mapType)
+    internal void Dizi_AdvMapSelection(string guid,int mapType)
     {
         ShowPage(Pages.Main);
         Demo_View_AdventureMapsMgr.Set(guid, mapType);
@@ -194,7 +194,7 @@ internal class Demo_v1Agent : MainUiAgent
     /// <summary>
     /// 获取挑战关卡并打开选择窗口
     /// </summary>
-    internal void ShowChallengeState()
+    internal void Dizi_ChallengeShowStage()
     {
         ShowPage(Pages.Main);
         Show(Demo_View_ChallengeStageSelectorMgr, false);
@@ -205,7 +205,7 @@ internal class Demo_v1Agent : MainUiAgent
     /// 开始关卡挑战
     /// </summary>
     /// <param name="challengeIndex"></param>
-    internal void StartChallengeBattle(int challengeIndex)
+    internal void Dizi_ChallengeStart(int challengeIndex)
     {
         ShowPage(Pages.Main);
         ChallengeController.ChallengeStart(SelectedDizi.Guid, challengeIndex);
@@ -215,7 +215,7 @@ internal class Demo_v1Agent : MainUiAgent
     /// <summary>
     /// 战斗结束,ui转场
     /// </summary>
-    public void SetBattleFinalize()
+    public void BattleFinalize()
     {
         BattleController.FinalizeBattle();
         Demo_Game_ViewMgr.Show();
@@ -229,14 +229,14 @@ internal class Demo_v1Agent : MainUiAgent
     /// <param name="guid"></param>
     /// <param name="type"></param>
     /// <param name="index"></param>
-    public void SetSkillComprehend(string guid, SkillType type, int index)
+    public void Skill_Comprehend(string guid, SkillType type, int index)
     {
         SelectedDizi = Faction.GetDizi(guid);
         Demo_Win_SkillComprehend.Set(SelectedDizi, type, index);
         MainUi.ShowWindow(Demo_Win_SkillComprehend.View);
     }
 
-    public void SetBookComprehend(string guid, SkillType type, int index)
+    public void Skill_BookComprehend(string guid, SkillType type, int index)
     {
         SelectedDizi = Faction.GetDizi(guid);
         var maps = SelectedDizi.Skill.Maps.ToArray();
@@ -259,16 +259,13 @@ internal class Demo_v1Agent : MainUiAgent
     /// </summary>
     /// <param name="guid"></param>
     /// <param name="itemType"></param>
-    public void EquipmentManagement(string guid, int itemType) => Demo_Win_ItemMgr.Set(guid, itemType, slot: 0);
+    public void Win_EquipmentManagement(string guid, int itemType) => Demo_Win_ItemMgr.Set(guid, itemType, slot: 0);
 
-    public void RequestNewChallenge() => ChallengeController.RequestNewChallenge();
+    public void Win_ChallengeRequestNew() => ChallengeController.RequestNewChallenge();
 
-    public void ChallengeGiveUp()
-    {
-        ChallengeController.RequestChallengeGiveup();
-    }
+    public void Win_ChallengeGiveUp() => ChallengeController.RequestChallengeGiveup();
 
-    public void PromptChallengeWindow() => Demo_Win_ChallengeMgr.ShowChallengeWindow();
+    public void Win_ChallengeWindow() => Demo_Win_ChallengeMgr.ShowChallengeWindow();
 
-    public void PromptChallengeReward() => ChallengeController.GetReward();
+    public void Win_ChallengeReward() => ChallengeController.GetReward();
 }

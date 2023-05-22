@@ -24,15 +24,16 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
 
     protected override void Build(IView view)
     {
-        win_challenge = new Win_challenge(view, () => Hide(), () =>
-        {
-            UiAgent.ShowChallengeState();
-            Hide();
-        }, () =>
-        {
-            UiAgent.ChallengeGiveUp();
-            Hide();
-        });
+        win_challenge = new Win_challenge(v: view, onCloseAction: () => Hide(),
+            onChallengeRedirection: () =>
+            {
+                UiAgent.DiziPage_Show(null);
+                Hide();
+            }, onChallengeGiveup: () =>
+            {
+                UiAgent.Win_ChallengeGiveUp();
+                Hide();
+            });
     }
 
     protected override void RegEvents() {}
@@ -49,7 +50,7 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
                 newChallenge.Image, newChallenge.StageCount,
                 newChallenge.About, () =>
                 {
-                    UiAgent.ShowChallengeState();
+                    UiAgent.Dizi_ChallengeShowStage();
                     Hide();
                 });
             return;

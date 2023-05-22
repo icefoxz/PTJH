@@ -23,7 +23,7 @@ namespace HotFix_Project.Managers.Demo_v1
 
         protected override void Build(IView view)
         {
-            Equipment = new View_Equipment(view, onItemSelection: Agent.EquipmentManagement);
+            Equipment = new View_Equipment(view, onItemSelection: Agent.Win_EquipmentManagement);
         }
 
         protected override void RegEvents()
