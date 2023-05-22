@@ -462,19 +462,14 @@ namespace _GameClient.Models
         public class ChallengeStage
         {
             private List<IGameChest> _chests = new List<IGameChest>();
-            private IChallengeStage CurrentStage { get;  }
-            public int Id => CurrentStage.Id;
+            public IChallengeStage Stage { get;  }
             public int Progress { get; private set; }
-            public int StageCount => CurrentStage.StageCount;
-            public string StageName => CurrentStage.Name;
-            public string StageInfo => CurrentStage.About;
-            public Sprite StageImage => CurrentStage.Image; 
             public ICollection<IGameChest> Chests => _chests;
-            public bool IsFinish => Progress == StageCount;
+            public bool IsFinish => Progress == Stage.StageCount;
 
-            public ChallengeStage(IChallengeStage currentStage)
+            public ChallengeStage(IChallengeStage stage)
             {
-                CurrentStage = currentStage;
+                Stage = stage;
             }
             internal void SetProgress(int progress) => Progress = progress;
             internal void AddChests(IGameChest chest) => Chests.Add(chest);

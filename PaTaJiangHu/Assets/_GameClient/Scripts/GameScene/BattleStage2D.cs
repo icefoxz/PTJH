@@ -10,7 +10,7 @@ public class BattleStage2D : MonoBehaviour
     private Config.GameAnimConfig AnimConfig => Game.Config.GameAnimCfg;
 
     private DiziBattleAnimator CurrentBattleAnim { get; set; }
-    private bool IsBusy => CurrentBattleAnim != null;
+    public bool IsBusy => CurrentBattleAnim != null;
 
     public void InitBattle(DiziBattle battle)
     {

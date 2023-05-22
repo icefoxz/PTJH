@@ -11,12 +11,18 @@ namespace Server.Controllers
         public ISingleStageNpc[] GetChallenges() => GameCfg.Stages[ChallengeProgressIndex].Npcs;
         private BattleController BattleController => Game.Controllers.Get<BattleController>();
 
-        public void StartChallenge(string guid, int npcIndex)
+        public void ChallengeStart(string guid, int npcIndex)
         {
             var dizi = Faction.GetDizi(guid);
             var battle = GameCfg.Stages[ChallengeProgressIndex].InstanceBattle(npcIndex, dizi);
             Game.CacheBattle(battle);
-            BattleController.StartBattle(guid, battle);
+            BattleController.StartBattle(guid, battle, OnBattleEnd);
+
+            void OnBattleEnd(DiziBattle bat)
+            {
+                if(bat.IsPlayerWin) ChallengeProgressIndex++;
+                Game.MessagingManager.SendParams(EventString.Faction_Challenge_BattleEnd, bat.IsPlayerWin);
+            }
         }
     }
 }

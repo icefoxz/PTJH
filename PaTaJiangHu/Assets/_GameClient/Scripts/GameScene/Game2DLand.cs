@@ -41,6 +41,11 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
     private UnitLand2dHandler UnitLandHandler { get; set; }
     private Dizi CurrentDizi { get; set; }
 
+    /// <summary>
+    /// 是否在战斗演示(战斗演示期间不允许切换弟子), 并且战斗结束后必须调用FinalizeBattle
+    /// </summary>
+    public bool IsOnBattle => BattleStage.IsBusy || !UnitLandHandler.IsActive;
+
     internal void Init(Config.GameAnimConfig animConfig)
     {
         MainCanvasRect = MainCanvas.transform as RectTransform;
@@ -54,7 +59,11 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
         });
     }
 
-    public void SwitchPage(CameraFocus.Focus page) => _cameraFocus.SetFocus(page);
+    public void SwitchPage(CameraFocus.Focus page)
+    {
+        if(IsOnBattle) FinalizeBattle();//自动清扫战场
+        _cameraFocus.SetFocus(page);
+    }
 
     public void InitBattle(string guid, DiziBattle battle)
     {
@@ -78,6 +87,7 @@ public class Game2DLand : MonoBehaviour, IGame2DLand
 
     public void FinalizeBattle()
     {
+        if (!IsOnBattle) return;
         BattleStage.FinalizeBattle();
         UnitLandHandler.ShowOperator();
     }

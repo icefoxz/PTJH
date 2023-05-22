@@ -93,16 +93,16 @@ namespace _GameClient.Models
                 if (DiziState is IdleState) return States.Idle;
                 if (DiziState is AutoAdventure a)
                 {
-                    return a.AdvType switch
+                    return a.State switch
                     {
-                        AutoAdventure.AdvTypes.Adventure => a.State switch
+                        AutoAdventure.States.Progress => a.AdvType switch
                         {
-                            AutoAdventure.States.Progress => States.AdvProgress,
-                            AutoAdventure.States.Recall => States.AdvReturning,
-                            AutoAdventure.States.End => States.AdvWaiting,
+                            AutoAdventure.AdvTypes.Adventure => States.AdvProgress,
+                            AutoAdventure.AdvTypes.Production => States.AdvProduction,
                             _ => throw new ArgumentOutOfRangeException()
                         },
-                        AutoAdventure.AdvTypes.Production => States.AdvProduction,
+                        AutoAdventure.States.Recall => States.AdvReturning,
+                        AutoAdventure.States.End => States.AdvWaiting,
                         _ => throw new ArgumentOutOfRangeException()
                     };
                 }

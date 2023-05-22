@@ -20,12 +20,20 @@ namespace Server.Controllers
             return stage;
         }
 
-        public void StartChallenge(string guid, int npcIndex)
+        public void ChallengeStart(string guid, int npcIndex)
         {
             var dizi = Faction.GetDizi(guid);
             var challenge = Faction.Challenge;
-            var battle = ChallengeStageCfg.InstanceBattle(dizi, challenge.Id, challenge.Progress, npcIndex);
-            BattleController.StartBattle(guid, battle);
+            var stage = challenge.Stage;
+            var battle = ChallengeStageCfg.InstanceBattle(dizi, stage.Id, challenge.Progress, npcIndex);
+            BattleController.StartBattle(guid, battle, BattleEndUpdateChallenge);
+
+            void BattleEndUpdateChallenge(DiziBattle bat)
+            {
+                if (!bat.IsPlayerWin) return;
+                Faction.NextChallengeProgress();
+                Game.MessagingManager.SendParams(EventString.Faction_Challenge_BattleEnd, bat.IsPlayerWin);
+            }
         }
 
         public void RequestChallengeGiveup()
@@ -38,13 +46,6 @@ namespace Server.Controllers
         {
             var challenge = Faction.Challenge;
             Game.World.RewardBoard.SetReward(challenge.Chests.First());
-        }
-
-        public IChallengeStage GetCurrentChallengeStage()
-        {
-            if(Faction.Challenge == null) return null;
-            var stage = ChallengeStageCfg.GetStage(Faction.Challenge.Id);
-            return stage;
         }
     }
 }

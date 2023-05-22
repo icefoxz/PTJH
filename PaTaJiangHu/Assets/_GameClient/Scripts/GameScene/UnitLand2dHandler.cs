@@ -32,6 +32,8 @@ public class UnitLand2dHandler
 
     private Action<Dizi> BouncingAction { get; set; }
     private bool isWaitingForBouncing { get; set; }
+    public bool IsActive => CurrentOp.gameObject.activeSelf;
+
     public async void PlayDizi(Dizi dizi)
     {
         //抖动行动,为了确保多次请求,只有最后一次有效

@@ -49,19 +49,15 @@ namespace Server.Configs.Battles
             Shoes,
             Decoration
         }.Where(e => e != null);
+
         public int GetPropAddon(DiziProps prop)=> (int)AllEquipments.Sum(e => e.GetAddOn(prop));
 
         public ISimCombat GetSimCombat(BattleSimulatorConfigSo cfg)
         {
-            var equipments = new IEquipment[]
-            {
-                Weapon.Instance(),
-                Armor.Instance()
-            }.Where(e => e != null).ToArray();
-            var strAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Strength));
-            var agiAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Agility));
-            var hpAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Hp));
-            var mpAddon = (int)equipments.Sum(e => e.GetAddOn(DiziProps.Mp));
+            var strAddon = GetPropAddon(DiziProps.Strength);
+            var agiAddon = GetPropAddon(DiziProps.Agility);
+            var hpAddon = GetPropAddon(DiziProps.Hp);
+            var mpAddon = GetPropAddon(DiziProps.Mp);
             return cfg.GetSimulation(1, Name, Strength + strAddon, Agility + agiAddon, Hp + hpAddon, Mp + mpAddon);
         }
 

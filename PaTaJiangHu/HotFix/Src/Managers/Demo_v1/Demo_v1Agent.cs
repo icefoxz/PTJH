@@ -198,7 +198,7 @@ internal class Demo_v1Agent : MainUiAgent
     {
         ShowPage(Pages.Main);
         Show(Demo_View_ChallengeStageSelectorMgr, false);
-        Demo_View_ChallengeStageSelectorMgr.UpdateChallengeNpcs();
+        Demo_View_ChallengeStageSelectorMgr.UpdateChallengeSelector();
     }
 
     /// <summary>
@@ -208,7 +208,7 @@ internal class Demo_v1Agent : MainUiAgent
     internal void StartChallengeBattle(int challengeIndex)
     {
         ShowPage(Pages.Main);
-        ChallengeController.StartChallenge(SelectedDizi.Guid, challengeIndex);
+        ChallengeController.ChallengeStart(SelectedDizi.Guid, challengeIndex);
         Demo_Game_ViewMgr.Hide();
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using _GameClient.Models;
 
@@ -12,18 +13,17 @@ namespace Server.Controllers
         private IGame2DLand GameLand => Game.Game2DLand;
         private Faction Faction => Game.World.Faction;
 
-        public void StartBattle(string guid,DiziBattle battle)
+        public void StartBattle(string guid, DiziBattle battle, Action<DiziBattle> battleResultAction)
         {
             Game.CacheBattle(battle);
             GameLand.InitBattle(guid, battle);
             var diziFighter = battle.Fighters.First(f => f.Guid == guid);
             Game.MessagingManager.SendParams(EventString.Battle_Init, guid, diziFighter.InstanceId, battle.RoundLimit);
-            var co = Game.CoService.RunCo(RunBattle(battle), null, nameof(GameStageController));
-            co.name = $"挑战战斗:[{string.Join(',', battle.Fighters.Select(f => f.Name))}]";
-
+            var co = Game.CoService.RunCo(RunBattle(battle, battleResultAction), null, nameof(GameStageController));
+            co.name = $"战斗:[{string.Join(',', battle.Fighters.Select(f => f.Name))}]";
         }
 
-        IEnumerator RunBattle(DiziBattle bat)
+        IEnumerator RunBattle(DiziBattle bat,Action<DiziBattle> battleResultAction)
         {
             while (!bat.IsFinalized)
             {
@@ -32,18 +32,12 @@ namespace Server.Controllers
                     bat.RoundLimit);
                 yield return GameLand.PlayRound(roundInfo);
             }
-
+            battleResultAction?.Invoke(bat);
             Game.MessagingManager.Send(EventString.Battle_End, bat.IsPlayerWin);
-            UpdateChallenge(bat);
         }
-
-        void UpdateChallenge(DiziBattle bat)
-        {
-            if (!bat.IsPlayerWin) return;
-            Faction.NextChallengeProgress();
-        }
-
+        /// <summary>
+        /// 清扫战场, 所有战斗后必须调用, 否则会战斗演示一直存在
+        /// </summary>
         public void FinalizeBattle() => GameLand.FinalizeBattle();
-
     }
 }

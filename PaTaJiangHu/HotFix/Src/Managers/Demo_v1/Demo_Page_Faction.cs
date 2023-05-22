@@ -70,7 +70,7 @@ internal class Demo_Page_Faction : UiManagerBase
             var action = NewChallenge;
             if (challenge != null)
             {
-                var isChallenging = challenge.Progress < challenge.StageCount;
+                var isChallenging = !challenge.IsFinish;
                 if (isChallenging)
                 {
                     //挑战中
@@ -141,9 +141,9 @@ internal class Demo_Page_Faction : UiManagerBase
                     obj_challenge.gameObject.SetActive(false);
                     return;
                 }
-
+                var stage = challenge.Stage;
                 SetChest(challenge.Chests.Count);
-                SetStage(challenge.StageName, challenge.Progress, challenge.StageCount, level, challenge.StageImage);
+                SetStage(stage.Name, challenge.Progress, stage.StageCount, level, stage.Image);
                 obj_challenge.gameObject.SetActive(true);
             }
 

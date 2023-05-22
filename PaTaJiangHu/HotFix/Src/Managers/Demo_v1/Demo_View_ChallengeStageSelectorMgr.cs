@@ -1,6 +1,5 @@
 using System;
 using HotFix_Project.Views.Bases;
-using Server.Configs.ChallengeStages;
 using Server.Controllers;
 using Systems.Messaging;
 using UnityEngine;
@@ -32,17 +31,28 @@ namespace HotFix_Project.Managers.Demo_v1
 
         protected override void RegEvents()
         {
-            Game.MessagingManager.RegEvent(EventString.Faction_Challenge_Update, b => UpdateChallengeNpcs());
-            Game.MessagingManager.RegEvent(EventString.Battle_End, b => ChallengeStageSelector.SetFinalize(b.GetBool(0)));
+            Game.MessagingManager.RegEvent(EventString.Faction_Challenge_Update, b => UpdateChallengeSelector());
+            Game.MessagingManager.RegEvent(EventString.Faction_Challenge_BattleEnd,
+                b =>
+                {
+                    ChallengeStageSelector.SetFinalize(b.GetBool(0));
+                    UpdateChallengeSelector();
+                });
         }
 
         public override void Show() => ChallengeStageSelector.Display(true);
         public override void Hide() => ChallengeStageSelector.Display(false);
 
-        public void UpdateChallengeNpcs()
+        public void UpdateChallengeSelector()
         {
-            var stage = ChallengeController.GetCurrentChallengeStage();
-            ChallengeStageSelector.Set(stage);
+            var faction = Game.World.Faction;
+            var challenge = faction.Challenge;
+            if (challenge == null || challenge.IsFinish)
+            {
+                Hide();
+                return;
+            }
+            ChallengeStageSelector.Set(challenge.Stage);
         }
 
         private class View_ChallengeStageSelector : UiBase

@@ -54,9 +54,10 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
                 });
             return;
         }
+        var stage = challenge.Stage;
 
-        win_challenge.ChallengingWindow(challenge.StageName, challenge.StageImage, challenge.Progress,
-            challenge.StageCount, challenge.StageInfo);
+        win_challenge.ChallengingWindow(stage.Name, stage.Image, challenge.Progress,
+            stage.StageCount, stage.About);
     }
 
     private class Win_challenge : UiBase
