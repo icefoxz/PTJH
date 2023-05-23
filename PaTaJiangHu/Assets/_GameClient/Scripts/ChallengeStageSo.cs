@@ -20,7 +20,7 @@ public interface IChallengeStage
     IChallengeNpc[] GetChallengeNpcs(int index);
 }
 
-public interface IChallengeNpc : IStageNpc
+public interface IChallengeNpc : ICombatNpc
 {
     IGameChest Chest { get; }
 }
@@ -82,9 +82,10 @@ internal class ChallengeStageSo : AutoHashNamingObject,IChallengeStage
         public bool IsBoss => Boss;
         public string NpcName => _npc.Name;
         public int Level => 等级;
+        public Sprite Icon => _npc.Icon;
         public IGameChest Chest => 宝箱;
 
         private CombatNpcSo Npc => _npc;
-        public DiziCombatUnit GetNpc() => new(teamId: 1, npc: Npc);
+        public DiziCombatUnit GetDiziCombat() => new(teamId: 1, npc: Npc);
     }
 }

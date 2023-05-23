@@ -5,6 +5,7 @@ using Models;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
+using UnityEngine;
 using Utls;
 
 public interface IDiziCombatUnit : ICombatUnit

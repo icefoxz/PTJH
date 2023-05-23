@@ -85,7 +85,7 @@ namespace HotFix_Project.Managers.Demo_v1
                     var index = i;
                     var n = npcs[i];
                     var ui = ChallengeList.Instance(v => new ChallengePrefab(v, () => SetSelected(index)));
-                    ui.SetNpc(n.NpcName, stage.Name , n.Level, n.IsBoss);
+                    ui.SetNpc(n.NpcName, stage.Name, n.Level, n.Icon, n.IsBoss);
                     if (i == 0)
                     {
                         //预选第一个
@@ -128,10 +128,11 @@ namespace HotFix_Project.Managers.Demo_v1
                     Btn_npc.OnClickAdd(onSelectAction);
                 }
 
-                public void SetIcon(Sprite ico) => Img_npcIco.sprite = ico;
                 public void SetSelected(bool selected) => Img_select.gameObject.SetActive(selected);
-                public void SetNpc(string name, string faction, int level,bool isBoss)
+
+                public void SetNpc(string name, string faction, int level, Sprite icon, bool isBoss)
                 {
+                    Img_npcIco.sprite = icon;
                     Text_name.text = name;
                     Text_faction.text = faction;
                     Text_npcLevel.text = level.ToString();

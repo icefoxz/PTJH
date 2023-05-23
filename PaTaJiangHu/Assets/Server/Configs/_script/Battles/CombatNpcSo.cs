@@ -25,16 +25,19 @@ namespace Server.Configs.Battles
         [SerializeField] private ShoesFieldSo 鞋子;
         [SerializeField] private DecorationFieldSo 挂件;
         [SerializeField] private SkillField[] 技能;
+        [SerializeField] private Sprite 头像;
 
         internal Gender Gender => 性别;
         internal int Strength => 力;
         internal int Agility => 敏;
         internal int Hp => _hp;
         internal int Mp => _mp;
+        internal Sprite Icon => 头像;
 
         private SkillField[] Skills => 技能;
         internal WeaponFieldSo Weapon => 武器;
         internal ArmorFieldSo Armor => 防具;
+        
         IArmor IDiziEquipment.Armor => Armor;
         IWeapon IDiziEquipment.Weapon => Weapon;
         internal WeaponArmed Armed => Weapon?.Armed ?? WeaponArmed.Unarmed;

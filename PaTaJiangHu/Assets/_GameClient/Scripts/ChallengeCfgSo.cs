@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Models;
 using UnityEngine;
 using Utls;
 
@@ -27,10 +26,6 @@ using Utls;
 
     public ChallengeStageSo GetStage(int stageId) => Levels.SelectMany(level => level.Stages).FirstOrDefault(stage => stage.Id == stageId);
 
-    public DiziBattle InstanceBattle(Dizi dizi,int stageId, int progress, int npcIndex)
-    {
-        var diziCombat = new DiziCombatUnit(0, dizi);
-        var npcCombat = GetStage(stageId).GetChallengeNpcs(progress)[npcIndex].GetNpc();
-        return DiziBattle.Instance(new[] { diziCombat, npcCombat });
-    }
+    public IChallengeNpc InstanceBattle(int stageId, int progress, int npcIndex) =>
+        GetStage(stageId).GetChallengeNpcs(progress)[npcIndex];
 }

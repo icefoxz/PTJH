@@ -1,5 +1,4 @@
 ﻿using System;
-using Models;
 using MyBox;
 using Server.Configs.Adventures;
 using Server.Configs.Battles;
@@ -10,18 +9,28 @@ using UnityEngine.Serialization;
 
 namespace Server.Configs.ChallengeStages
 {
-    public interface ISingleStageNpc : IStageNpc
+    public interface ISingleCombatNpc : ICombatNpc
     {
         string Faction { get; }
         IGameReward Reward { get; }
     }
-    
-    public interface IStageNpc
+
+    /// <summary>
+    /// Npc基本信息类
+    /// </summary>
+    public interface INpc
     {
-        bool IsBoss { get; }
         string NpcName { get; }
         int Level { get; }
-        DiziCombatUnit GetNpc();
+        Sprite Icon { get; }
+    }
+    /// <summary>
+    /// 关卡npc类
+    /// </summary>
+    public interface ICombatNpc : INpc
+    {
+        bool IsBoss { get; }
+        DiziCombatUnit GetDiziCombat();
         IDiziReward DiziReward { get; }
     }
     //对单个弟子的奖励
@@ -36,22 +45,16 @@ namespace Server.Configs.ChallengeStages
         [SerializeField] private int 回合限制 = 20;
 
         [FormerlySerializedAs("挑战")] [SerializeField]
-        private StageNpc[] 关卡;
+        private CombatNpc[] 关卡;
 
-        private int RoundLimit => 回合限制;
+        public int RoundLimit => 回合限制;
 
-        public ISingleStageNpc[] Npcs => 关卡;
+        public ISingleCombatNpc[] Npcs => 关卡;
 
-        public DiziBattle InstanceBattle(int challengeIndex, Dizi dizi)
-        {
-            var challenge = Npcs[challengeIndex];
-            var diziCombat = new DiziCombatUnit(0, dizi);
-            var npcCombat = challenge.GetNpc();
-            return DiziBattle.Instance(new[] { diziCombat, npcCombat }, RoundLimit);
-        }
+        public ISingleCombatNpc GetNpc(int challengeIndex) => Npcs[challengeIndex];
 
         [Serializable]
-        internal class StageNpc : ISingleStageNpc
+        internal class CombatNpc : ISingleCombatNpc
         {
             #region ChangeName
 
@@ -79,10 +82,11 @@ namespace Server.Configs.ChallengeStages
             public bool IsBoss => Boss;
             public string NpcName => _npc.Name;
             public int Level => 等级;
+            public Sprite Icon => _npc.Icon;
             public string Faction => 所属势力;
 
             private CombatNpcSo Npc => _npc;
-            public DiziCombatUnit GetNpc() => new(teamId: 1, npc: Npc);
+            public DiziCombatUnit GetDiziCombat() => new(teamId: 1, npc: Npc);
         }
     }
 }

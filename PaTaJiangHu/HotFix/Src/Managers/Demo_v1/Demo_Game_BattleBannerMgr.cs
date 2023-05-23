@@ -84,8 +84,10 @@ internal class Demo_Game_BattleBannerMgr : MainPageBase
             CurrentDiziInstanceId = diziInstanceId;
             NpcInstanceId = npc.InstanceId;
             SetRound(0, maxRound);
-            element_combatStateLeft.InitBattle(dizi);
-            element_combatStateRight.InitBattle(npc);
+            Game.BattleCache.Avatars.TryGetValue(dizi, out var diziAvatar);
+            Game.BattleCache.Avatars.TryGetValue(npc, out var npcAvatar);
+            element_combatStateLeft.InitBattle(dizi, diziAvatar);
+            element_combatStateRight.InitBattle(npc, npcAvatar);
             Display(true);
         }
 
@@ -162,9 +164,9 @@ internal class Demo_Game_BattleBannerMgr : MainPageBase
                 SetProp(0, 0);
             }
 
-            public void InitBattle(DiziCombatUnit dizi)
+            public void InitBattle(DiziCombatUnit dizi, Sprite icon)
             {
-                SetInfo(dizi.Name);
+                SetInfo(dizi.Name, icon);
                 SetProp(dizi.Strength, dizi.Agility);
                 UpdateHp(dizi.Hp, dizi.Hp);
                 UpdateMp(dizi.Mp, dizi.Mp);

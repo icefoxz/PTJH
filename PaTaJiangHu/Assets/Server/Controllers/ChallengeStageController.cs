@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
 using _GameClient.Models;
+using UnityEngine;
 
 namespace Server.Controllers
 {
@@ -11,6 +13,7 @@ namespace Server.Controllers
         private ChallengeCfgSo ChallengeStageCfg => Game.Config.ChallengeCfg;
         private Faction Faction => Game.World.Faction;
         private BattleController BattleController => Game.Controllers.Get<BattleController>();
+        private DiziController DiziController => Game.Controllers.Get<DiziController>();
 
         public IChallengeStage RequestNewChallenge()
         {
@@ -25,12 +28,17 @@ namespace Server.Controllers
             var dizi = Faction.GetDizi(guid);
             var challenge = Faction.Challenge;
             var stage = challenge.Stage;
-            var battle = ChallengeStageCfg.InstanceBattle(dizi, stage.Id, challenge.Progress, npcIndex);
+            var npc = ChallengeStageCfg.InstanceBattle(stage.Id, challenge.Progress, npcIndex);
+            var diziCombat = new DiziCombatUnit(0, dizi);
+            var npcCombat = npc.GetDiziCombat();
+            Game.BattleCache.SetAvatars(new (CombatUnit, Sprite)[] { (npcCombat, npc.Icon) });
+            var battle = DiziBattle.Instance(new[] { diziCombat, npcCombat });
             BattleController.StartBattle(guid, battle, BattleEndUpdateChallenge);
 
             void BattleEndUpdateChallenge(DiziBattle bat)
             {
                 if (!bat.IsPlayerWin) return;
+                DiziController.DiziExpAdd(dizi.Guid, npc.DiziReward.Exp);
                 Faction.NextChallengeProgress();
                 Game.MessagingManager.SendParams(EventString.Faction_Challenge_BattleEnd, bat.IsPlayerWin);
                 Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);

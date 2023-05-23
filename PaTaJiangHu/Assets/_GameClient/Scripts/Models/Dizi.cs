@@ -4,7 +4,6 @@ using _GameClient.Models;
 using Core;
 using DiziM;
 using Server.Configs.Adventures;
-using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using UnityEngine;

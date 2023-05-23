@@ -15,7 +15,7 @@ namespace Server.Controllers
 
         public void StartBattle(string guid, DiziBattle battle, Action<DiziBattle> battleResultAction)
         {
-            Game.CacheBattle(battle);
+            Game.BattleCache.SetBattle(battle);
             GameLand.InitBattle(guid, battle);
             var diziFighter = battle.Fighters.First(f => f.Guid == guid);
             Game.MessagingManager.SendParams(EventString.Battle_Init, guid, diziFighter.InstanceId, battle.RoundLimit);
