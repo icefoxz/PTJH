@@ -9,11 +9,29 @@ public interface IGameChest : IGameReward
     public int Id { get; }
     public string Name { get; }
 }
-[CreateAssetMenu(fileName = "id_宝箱", menuName = "挑战/宝箱")]
-internal class GameChestSo : AutoAtNamingObject,IGameChest
+
+[CreateAssetMenu(fileName = "id_宝箱", menuName = "宝箱/宝箱")]
+internal class GameChestSo : GameChestSoBase
 {
     [SerializeField] private RewardField 奖励;
     private RewardField Reward => 奖励;
     public IAdvPackage[] Packages => Reward.Packages;
     public IStacking<IGameItem>[] AllItems => Reward.AllItems;
+
+    public override IGameChest GetChest() => new GameChest(Id, Name, Packages, AllItems);
+}
+
+/// <summary>
+/// 宝箱父类, 主要用于其它宝箱实现的统一接口
+/// </summary>
+internal abstract class GameChestSoBase : AutoAtNamingObject
+{
+    public abstract IGameChest GetChest();
+    protected record GameChest(int Id, string Name, IAdvPackage[] Packages, IStacking<IGameItem>[] AllItems) : IGameChest
+    {
+        public int Id { get; } = Id;
+        public string Name { get; } = Name;
+        public IAdvPackage[] Packages { get; } = Packages;
+        public IStacking<IGameItem>[] AllItems { get; } = AllItems;
+    }
 }
