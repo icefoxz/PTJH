@@ -75,7 +75,7 @@ internal class ChallengeStageSo : AutoHashNamingObject,IChallengeStage
         [SerializeField] private CombatNpcSo _npc;
         [SerializeField] private bool Boss;
         [SerializeField] private int 等级 = 1;
-        [SerializeField] private GameChestSo 宝箱;
+        [SerializeField] private GameChestSoBase 宝箱;
         [SerializeField] private DiziRewardField 弟子奖励;
 
         public IDiziReward DiziReward => 弟子奖励;

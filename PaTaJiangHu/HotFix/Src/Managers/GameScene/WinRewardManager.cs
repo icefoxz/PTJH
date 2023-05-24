@@ -25,7 +25,7 @@ internal class WinRewardManager : UiManagerBase
 
     protected override void RegEvents()
     {
-        Game.MessagingManager.RegEvent(EventString.Rewards_Propmt, bag =>
+        Game.MessagingManager.RegEvent(EventString.Rewards_Prompt, bag =>
         {
             WinReward.ShowContainer();
             Game.MainUi.ShowWindow(WinReward.View);
