@@ -83,7 +83,7 @@ internal class ChallengeStageSo : AutoHashNamingObject,IChallengeStage
         public string NpcName => _npc.Name;
         public int Level => 等级;
         public Sprite Icon => _npc.Icon;
-        public IGameChest Chest => 宝箱.GetChest();
+        public IGameChest Chest => 宝箱?.GetChest();
 
         private CombatNpcSo Npc => _npc;
         public DiziCombatUnit GetDiziCombat() => new(teamId: 1, npc: Npc);
