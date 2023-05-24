@@ -87,6 +87,7 @@ public class CharacterOperator : MonoBehaviour,ISceneObj
         yield return new WaitForSeconds(0.1f);
         SetAnim(Anims.AttackReturn);
         yield return OffendReturnMove(currentPoint, offendReturnCurve);
+        SetAnim(Anims.Idle);
     }
 
     public IEnumerator Dodge(float delay = 0.3f)

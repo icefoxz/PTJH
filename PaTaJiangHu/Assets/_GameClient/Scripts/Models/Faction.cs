@@ -32,16 +32,16 @@ namespace _GameClient.Models
     public partial class Faction : ModelBase, IFaction
     {
         protected override string LogPrefix { get; } = "门派";
-        private List<IBook> _books = new List<IBook>();
-        private List<IWeapon> _weapons= new List<IWeapon>();
-        private List<IArmor> _armors = new List<IArmor>();
-        private List<IShoes> _shoes = new List<IShoes>();
-        private List<IDecoration> _decorations = new List<IDecoration>();
-        private List<IAdvPackage> _packages = new List<IAdvPackage>();
-        private List<IGameItem> _advItems = new List<IGameItem>();
-        private List<Dizi> _diziList = new List<Dizi>();
-        private Dictionary<IFunctionItem,int> _funcItems = new Dictionary<IFunctionItem, int>();
-        private Dictionary<IMedicine,int> Medicines { get; } = new Dictionary<IMedicine,int>();
+        private List<IBook> _books = new();
+        private List<IWeapon> _weapons= new();
+        private List<IArmor> _armors = new();
+        private List<IShoes> _shoes = new();
+        private List<IDecoration> _decorations = new();
+        private List<IAdvPackage> _packages = new();
+        private List<IGameItem> _advItems = new();
+        private List<Dizi> _diziList = new();
+        private Dictionary<IFunctionItem,int> _funcItems = new();
+        private Dictionary<IMedicine,int> Medicines { get; } = new();
 
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
@@ -457,34 +457,110 @@ namespace _GameClient.Models
     /// </summary>
     public partial class Faction
     {
-        public ChallengeStage Challenge { get; private set; }
-        public int ChallengeLevel { get; private set; }
+        internal ChallengeStage Challenge { get; set; } = new ChallengeStage();
+        public bool IsChallenging => Challenge is { IsFinish: false, Stage: not null };
+        public int ChallengeStageProgress => Challenge?.Progress ?? -1;
+        public int ChallengeLevel => Challenge.Level;
+        public ICollection<IGameChest> ChallengeChests => Challenge?.Chests ?? Array.Empty<IGameChest>();
+        public IChallengeStage GetChallengeStage() => Challenge?.Stage;
         public class ChallengeStage
         {
             private List<IGameChest> _chests = new List<IGameChest>();
-            public IChallengeStage Stage { get;  }
+            public IChallengeStage Stage { get; private set; }
             public int Progress { get; private set; }
+            public int Level { get; private set; }
+            public int PassCount { get; set; }
+            public int AbandonCount { get; set; }
             public ICollection<IGameChest> Chests => _chests;
-            public bool IsFinish => Progress == Stage.StageCount;
+            public bool IsFinish => Progress == Stage?.StageCount;
 
-            public ChallengeStage(IChallengeStage stage)
+            internal void SetProgress(int progress) => Progress = progress;
+            internal void AddChest(IGameChest chest) => Chests.Add(chest);
+            internal void RemoveChest(IGameChest chest) => Chests.Remove(chest);
+            internal void RemoveStage()
+            {
+                Stage = null;
+                Progress = 0;
+            }
+            internal void SetStage(IChallengeStage stage)
             {
                 Stage = stage;
+                Progress = 0;
             }
-            internal void SetProgress(int progress) => Progress = progress;
-            internal void AddChests(IGameChest chest) => Chests.Add(chest);
-            internal void RemoveChests(IGameChest chest) => Chests.Remove(chest);
+            internal void SetLevel(int level) => Level = level;
+            internal void SetAbandonCount(int count) => AbandonCount = count;
+            internal void SetPassCount(int count) => PassCount = count;
+
+            public void LevelDown()
+            {
+                ResetLevelProgress();
+                Level = Math.Max(Level, Level - 1);
+            }
+            public void LevelUp()
+            {
+                ResetLevelProgress();
+                Level++;
+            }
+
+            private void ResetLevelProgress()
+            {
+                SetAbandonCount(0);
+                SetPassCount(0);
+            }
         }
 
-        public void SetChallenge(IChallengeStage challenge)
+        internal void SetChallenge(IChallengeStage stage)
         {
-            Challenge = new ChallengeStage(challenge);
+            Challenge.SetStage(stage);
+            SendEvent(EventString.Faction_Challenge_Update);
         }
 
-        public void RemoveChallenge() => Challenge = null;
-        internal void AddChests(IGameChest chest) => Challenge.AddChests(chest);
-        internal void RemoveChests(IGameChest chest) => Challenge.RemoveChests(chest);
-        internal void SetChallengeLevel(int level) => ChallengeLevel = level;
-        internal void NextChallengeProgress() => Challenge.SetProgress(Challenge.Progress + 1);
+        internal void RemoveChallenge()
+        {
+            Challenge.RemoveStage();
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
+
+        internal void AddChest(IGameChest chest)
+        {
+            Challenge.AddChest(chest);
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
+
+        internal void RemoveChest(IGameChest chest)
+        {
+            Challenge.RemoveChest(chest);
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
+
+        internal void LevelDown()
+        {
+            Challenge.LevelDown();
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
+
+        internal void LevelUp()
+        {
+            Challenge.LevelUp();
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
+
+        internal void NextChallengeProgress()
+        {
+            Challenge.SetProgress(Challenge.Progress + 1);
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
+
+        internal void SetAbandonCount(int count)
+        {
+            Challenge.SetAbandonCount(count);
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
+
+        internal void SetPassCount(int count)
+        {
+            Challenge.SetPassCount(count);
+            SendEvent(EventString.Faction_Challenge_Update);
+        }
     }
 }

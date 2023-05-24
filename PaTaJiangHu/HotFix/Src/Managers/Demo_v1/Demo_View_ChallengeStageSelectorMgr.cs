@@ -46,13 +46,12 @@ namespace HotFix_Project.Managers.Demo_v1
         public void UpdateChallengeSelector()
         {
             var faction = Game.World.Faction;
-            var challenge = faction.Challenge;
-            if (challenge == null || challenge.IsFinish)
+            if (!faction.IsChallenging)
             {
                 Hide();
                 return;
             }
-            ChallengeStageSelector.Set(challenge.Stage);
+            ChallengeStageSelector.Set(faction.GetChallengeStage());
         }
 
         private class View_ChallengeStageSelector : UiBase
@@ -79,7 +78,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 ChallengeList.ClearList(c=>c.Destroy());
                 if (stage == null) return;
                 var faction = Game.World.Faction;
-                var npcs = stage.GetChallengeNpcs(faction.Challenge.Progress);
+                var npcs = stage.GetChallengeNpcs(faction.ChallengeStageProgress);
                 for (var i = 0; i < npcs.Length; i++)
                 {
                     var index = i;

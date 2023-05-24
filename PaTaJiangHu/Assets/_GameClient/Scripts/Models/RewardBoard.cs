@@ -13,17 +13,15 @@ namespace _GameClient.Models
     public class RewardBoard : ModelBase
     {
         protected override string LogPrefix => "奖励栏";
-
-        public IGameReward Reward { get; private set; }
         public IGameReward[] Rewards { get; private set; }
 
         public void SetReward(IGameReward reward)
         {
-            Reward = reward;
+            Rewards = new IGameReward[] { reward };
             XDebug.Log(
                 $"注册奖励: 物品x{reward.AllItems.Length}, " +
                 $"包裹x{reward.Packages.Length}!");
-            Game.MessagingManager.Send(EventString.Reward_Propmt, string.Empty);
+            Game.MessagingManager.Send(EventString.Rewards_Prompt, string.Empty);
         }
 
         public void SetRewards(ICollection<IGameReward> rewards)
@@ -32,7 +30,7 @@ namespace _GameClient.Models
             XDebug.Log(
                 $"注册奖励: 物品x{rewards.SelectMany(r => r.AllItems).Count()}, " +
                 $"包裹x{rewards.SelectMany(r => r.Packages).Count()}!");
-            Game.MessagingManager.Send(EventString.Rewards_Propmt, string.Empty);
+            Game.MessagingManager.Send(EventString.Rewards_Prompt, string.Empty);
         }
     }
 }

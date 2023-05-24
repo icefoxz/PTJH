@@ -11,8 +11,8 @@ using Utls;
     [SerializeField] private int 降级连续放弃次数 = 2;
     [SerializeField] private ChallengeLevel[] 配置;
 
-    private int UpgradeWinningStreak => 升级连续过关次数;
-    private int DowngradeLosingStreak => 降级连续放弃次数;
+    public int UpgradePassStreak => 升级连续过关次数;
+    public int DowngradeAbandonStreak => 降级连续放弃次数;
     private ChallengeLevel[] Levels => 配置;
 
     public ChallengeStageSo GetRandomStage(int progress) => GetRandomStages(progress).RandomPick();

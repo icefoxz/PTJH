@@ -40,6 +40,10 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_Page_Faction Demo_Page_Faction { get; }
 
     //window
+    /// <summary>
+    /// 注意: 这是一个统一奖励窗口. 自动从<see cref="RewardBoard"/>获取信息并显示.
+    /// 所以请调用<see cref="Demo_Win_RewardMgr.Show"/>方法显示即可
+    /// </summary>
     private Demo_Win_RewardMgr Demo_Win_RewardMgr { get; }
     private Demo_Win_ItemMgr Demo_Win_ItemMgr { get; }
     private Demo_Win_SkillComprehend Demo_Win_SkillComprehend { get; }
@@ -263,7 +267,7 @@ internal class Demo_v1Agent : MainUiAgent
 
     public void Win_ChallengeRequestNew() => ChallengeController.RequestNewChallenge();
 
-    public void Win_ChallengeGiveUp() => ChallengeController.RequestChallengeGiveup();
+    public void Win_ChallengeAbandon() => ChallengeController.ChallengeAbandon();
 
     public void Win_ChallengeWindow() => Demo_Win_ChallengeMgr.ShowChallengeWindow();
 

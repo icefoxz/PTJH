@@ -26,8 +26,7 @@ public class EventString
     public const string Page_DiziRecruit = "Page_DiziRecruit";
 
     //奖励
-    public const string Rewards_Propmt = "Rewards_Propmt";//多个奖励
-    public const string Reward_Propmt = "Reward_Propmt";//单个奖励
+    public const string Rewards_Prompt = "Rewards_Prompt";//奖励
 
     //招募
     public const string Recruit_DiziGenerated = "Recruit_DiziGenerated";

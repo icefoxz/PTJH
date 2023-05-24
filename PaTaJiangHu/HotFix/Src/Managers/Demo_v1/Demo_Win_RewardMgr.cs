@@ -7,7 +7,7 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
 {
-    internal class Demo_Win_RewardMgr : UiManagerBase
+    internal class Demo_Win_RewardMgr : WinUiManagerBase
     {
         private Win_Reward RewardWindow { get; set; } 
         protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
@@ -20,14 +20,12 @@ namespace HotFix_Project.Managers.Demo_v1
         }
         protected override void RegEvents()
         {
-            Game.MessagingManager.RegEvent(EventString.Rewards_Propmt, bag =>
+            Game.MessagingManager.RegEvent(EventString.Rewards_Prompt, _ =>
             {
                 RewardWindow.ShowRewardsContainer();
-                Game.MainUi.ShowWindow(RewardWindow.View);
+                Show();
             });
         }
-        public override void Show() => RewardWindow.Display(true);
-        public override void Hide() => RewardWindow.Display(false);
 
         private class Win_Reward : UiBase
         {

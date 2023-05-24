@@ -14,6 +14,7 @@ namespace Server.Controllers
         private Faction Faction => Game.World.Faction;
         private BattleController BattleController => Game.Controllers.Get<BattleController>();
         private DiziController DiziController => Game.Controllers.Get<DiziController>();
+        private RewardController RewardController => Game.Controllers.Get<RewardController>();
 
         public IChallengeStage RequestNewChallenge()
         {
@@ -26,9 +27,8 @@ namespace Server.Controllers
         public void ChallengeStart(string guid, int npcIndex)
         {
             var dizi = Faction.GetDizi(guid);
-            var challenge = Faction.Challenge;
-            var stage = challenge.Stage;
-            var npc = ChallengeStageCfg.InstanceBattle(stage.Id, challenge.Progress, npcIndex);
+            var stage = Faction.GetChallengeStage();
+            var npc = ChallengeStageCfg.InstanceBattle(stage.Id, Faction.ChallengeStageProgress, npcIndex);
             var diziCombat = new DiziCombatUnit(0, dizi);
             var npcCombat = npc.GetDiziCombat();
             Game.BattleCache.SetAvatars(new (CombatUnit, Sprite)[] { (npcCombat, npc.Icon) });
@@ -39,22 +39,45 @@ namespace Server.Controllers
             {
                 if (!bat.IsPlayerWin) return;
                 DiziController.DiziExpAdd(dizi.Guid, npc.DiziReward.Exp);
+                if (npc.Chest != null) Faction.AddChest(npc.Chest);
                 Faction.NextChallengeProgress();
+                if (Faction.Challenge.IsFinish) ChallengeLevelUp();
                 Game.MessagingManager.SendParams(EventString.Faction_Challenge_BattleEnd, bat.IsPlayerWin);
-                Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);
             }
         }
 
-        public void RequestChallengeGiveup()
+        public void ChallengeAbandon()
         {
+            ChallengeLevelDown();
             Faction.RemoveChallenge();
-            Game.MessagingManager.SendParams(EventString.Faction_Challenge_Update);
         }
 
         public void GetReward()
         {
-            var challenge = Faction.Challenge;
-            Game.World.RewardBoard.SetReward(challenge.Chests.First());
+            var chest = Faction.ChallengeChests.First();
+            Faction.RemoveChest(chest);
+            RewardController.SetReward(chest, true);
+        }
+
+        private void ChallengeLevelDown()
+        {
+            var nextAbandonCount = Faction.Challenge.AbandonCount + 1;
+            if (nextAbandonCount < ChallengeStageCfg.DowngradeAbandonStreak)
+            {
+                Faction.SetAbandonCount(nextAbandonCount);
+                Faction.SetPassCount(0);
+            }
+            else Faction.LevelDown();
+        }
+        private void ChallengeLevelUp()
+        {
+            var passCount = Faction.Challenge.PassCount + 1;
+            if (passCount < ChallengeStageCfg.UpgradePassStreak)
+            {
+                Faction.SetPassCount(passCount);
+                Faction.SetAbandonCount(0);
+            }
+            else Faction.LevelUp();
         }
     }
 }

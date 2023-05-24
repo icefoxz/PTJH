@@ -66,26 +66,20 @@ internal class Demo_Page_Faction : UiManagerBase
         {
             XDebug.Log($"{methodName}.{nameof(UpdateChallengeUi)}");
             var faction = Game.World.Faction;
-            var challenge = faction.Challenge;
             var action = NewChallenge;
-            if (challenge != null)
+            if (!faction.IsChallenging)
             {
-                var isChallenging = !challenge.IsFinish;
-                if (isChallenging)
-                {
-                    //挑战中
-                    action = DoChallenge;
-                }
+                //挑战中
+                action = DoChallenge;
 
-                var hasChest = challenge.Chests.Count > 0;
-                if (hasChest)
-                {
-                    //领取宝箱
-                    action = OpenChest;
-                }
+            }
+            if (faction.ChallengeChests.Count > 0)
+            {
+                //领取宝箱
+                action = OpenChest;
             }
 
-            view_challenge.UpdateStage(challenge, faction.ChallengeLevel, action);
+            view_challenge.UpdateStage(action);
         }
 
         private void NewChallenge() => Agent.Win_ChallengeWindow();
@@ -131,20 +125,23 @@ internal class Demo_Page_Faction : UiManagerBase
                 Chests = new[] {obj_chest_0, obj_chest_1, obj_chest_2, obj_chest_3};
             }
 
-            public void UpdateStage(Faction.ChallengeStage challenge, int level, Action onClickAction)
+            public void UpdateStage(Action onClickAction)
             {
+                var faction = Game.World.Faction;
                 btn_action.OnClickAdd(() => onClickAction?.Invoke());
-                if (challenge == null)
+                if (faction.IsChallenging || faction.ChallengeChests.Count > 0)
                 {
-                    SetChest(0);
-                    SetStage("未解锁", 0, 0, level, null);
-                    obj_challenge.gameObject.SetActive(false);
+                    var stage = faction.GetChallengeStage();
+                    SetChest(faction.ChallengeChests.Count);
+                    SetStage(stage.Name, faction.ChallengeStageProgress, stage.StageCount, faction.ChallengeLevel,
+                        stage.Image);
+                    obj_challenge.gameObject.SetActive(true);
                     return;
                 }
-                var stage = challenge.Stage;
-                SetChest(challenge.Chests.Count);
-                SetStage(stage.Name, challenge.Progress, stage.StageCount, level, stage.Image);
-                obj_challenge.gameObject.SetActive(true);
+
+                SetChest(0);
+                SetStage("未解锁", 0, 0, faction.ChallengeLevel, null);
+                obj_challenge.gameObject.SetActive(false);
             }
 
             private  void SetChest(int chests)

@@ -29,9 +29,9 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
             {
                 UiAgent.DiziPage_Show(null);
                 Hide();
-            }, onChallengeGiveup: () =>
+            }, onChallengeAbandon: () =>
             {
-                UiAgent.Win_ChallengeGiveUp();
+                UiAgent.Win_ChallengeAbandon();
                 Hide();
             });
     }
@@ -42,8 +42,7 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
     {
         Show();
         var faction = Game.World.Faction;
-        var challenge = faction.Challenge;
-        if (challenge == null)
+        if (!faction.IsChallenging)
         {
             var newChallenge = ChallengeStageController.RequestNewChallenge();
             win_challenge.UnChallengeWindow(newChallenge.Name,
@@ -55,9 +54,9 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
                 });
             return;
         }
-        var stage = challenge.Stage;
+        var stage = faction.GetChallengeStage();
 
-        win_challenge.ChallengingWindow(stage.Name, stage.Image, challenge.Progress,
+        win_challenge.ChallengingWindow(stage.Name, stage.Image, faction.ChallengeStageProgress,
             stage.StageCount, stage.About);
     }
 
@@ -68,13 +67,13 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
         private View_unchallenge view_unchallenge { get; }
         private View_challenging view_challenging { get; }
 
-        public Win_challenge(IView v,Action onCloseAction,Action onChallengeRedirection,Action onChallengeGiveup) : base(v, true)
+        public Win_challenge(IView v,Action onCloseAction,Action onChallengeRedirection,Action onChallengeAbandon) : base(v, true)
         {
             btn_x = v.GetObject<Button>("btn_x");
             view_info = new View_info(v.GetObject<View>("view_info"));
             view_unchallenge = new View_unchallenge(v.GetObject<View>("view_unchallenge"), false);
             view_challenging = new View_challenging(v.GetObject<View>("view_challenging"), onChallengeRedirection,
-                onChallengeGiveup);
+                onChallengeAbandon);
             btn_x.OnClickAdd(onCloseAction);
         }
 

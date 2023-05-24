@@ -195,9 +195,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 public void SetMode(Modes mode)
                 {
                     var faction = Game.World.Faction;
-                    DisplayButton(Btn_challenge, faction != null && 
-                                                 faction.Challenge != null && 
-                                                 !faction.Challenge.IsFinish &&
+                    DisplayButton(Btn_challenge, faction is { IsChallenging: true } &&
                                                  mode == Modes.Idle);
                     //DisplayButton(Btn_challenge, mode == Modes.Idle);
                     DisplayButton(Btn_callback, mode == Modes.Adventure);
