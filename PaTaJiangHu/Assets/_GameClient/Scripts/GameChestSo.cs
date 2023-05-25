@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Core;
 using Server.Configs.Adventures;
 using Server.Configs.Fields;
@@ -27,11 +29,19 @@ internal class GameChestSo : GameChestSoBase
 internal abstract class GameChestSoBase : AutoAtNamingObject
 {
     public abstract IGameChest GetChest();
-    protected record GameChest(int Id, string Name, IAdvPackage[] Packages, IStacking<IGameItem>[] AllItems) : IGameChest
+    internal record GameChest(int Id, string Name, IAdvPackage[] Packages, IStacking<IGameItem>[] AllItems) : IGameChest
     {
         public int Id { get; } = Id;
         public string Name { get; } = Name;
         public IAdvPackage[] Packages { get; } = Packages;
         public IStacking<IGameItem>[] AllItems { get; } = AllItems;
     }
+}
+
+public static class GameChestSoExtension
+{
+    public static IGameChest Combine(this ICollection<IGameChest> sos) =>
+        new GameChestSoBase.GameChest(0, "组合宝箱", 
+            sos.SelectMany(_ => _.Packages).ToArray(),
+            sos.SelectMany(_ => _.AllItems).ToArray());
 }
