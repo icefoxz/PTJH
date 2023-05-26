@@ -22,6 +22,8 @@ namespace Server.Controllers
         }
         public IWeapon GetWeapon(int id) => GetFromData(id, Data.Weapons).Instance();
         public IArmor GetArmor(int id) => GetFromData(id, Data.Armors).Instance();
+        public IShoes GetShoes(int id) => GetFromData(id, Data.Shoes).Instance();
+        public IDecoration GetDecoration(int id) => GetFromData(id, Data.Decorations).Instance();
         public IBook GetBook(int id) => GetFromData(id, Data.Books);
         public IAdvItem GetAdvProp(int id) => GetFromData(id, Data.AdvItems);
         public IFunctionItem GetFunctionItem(int id) => GetFromData(id, Data.FunctionItems);
@@ -31,7 +33,7 @@ namespace Server.Controllers
                 throw new NotImplementedException($"物件{typeof(T).Name},Id = {id}, 请确保id > 0");
             var items = list.Where(o => o.Id == id).ToArray();
             if (!items.Any())
-                XDebug.Log($"找不到物件<{typeof(T).Name}>.id = {id}");
+                XDebug.Log($"找不到物件<{typeof(T).Name}>.id = {id}, 请确保物件已经注册在配置里了.");
             if (items.Length > 1)
             {
                 foreach (var item in items) 
@@ -39,6 +41,7 @@ namespace Server.Controllers
             }
             return items[0];
         }
+
     }
 
     /// <summary>

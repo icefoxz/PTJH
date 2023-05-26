@@ -314,7 +314,13 @@ namespace _GameClient.Models
                                 AddArmor(armor);
                                 break;
                             case EquipKinds.Shoes:
+                                var shoes = data.GetShoes(gi.Item.Id);
+                                AddShoes(shoes);
+                                break;
                             case EquipKinds.Decoration:
+                                var decoration = data.GetDecoration(gi.Item.Id);
+                                AddDecoration(decoration);
+                                break;
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
