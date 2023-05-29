@@ -17,7 +17,7 @@ public class BattleStage2D : MonoBehaviour
         if (IsBusy) throw new NotImplementedException($"{name} is busy!");
         var opMap = SetBattleStage(battle);
         CurrentBattleAnim =
-            new DiziBattleAnimator(AnimConfig.DiziCombatCfg, opMap, Game.Game2DLand.CharacterUiSyncHandler, this,
+            new DiziBattleAnimator(AnimConfig.DiziCombatVisualCfg, opMap, Game.Game2DLand.CharacterUiSyncHandler, this,
                 Game.MainUi.Pool.transform);
     }
 

@@ -56,7 +56,7 @@ public class TestBattle : MonoBehaviour
         Battle = DiziBattle.Instance(fighters.Select(f => f.combat).ToArray());
         _battleCache.SetBattle(Battle);
         BattleAnim =
-            new DiziBattleAnimator(_animConfig.DiziCombatCfg,
+            new DiziBattleAnimator(_animConfig.DiziCombatVisualCfg,
                 fighters.ToDictionary(c => c.combat.InstanceId, c => c.op),
                 CharacterUiSyncHandler, this, transform);
         StartRound();

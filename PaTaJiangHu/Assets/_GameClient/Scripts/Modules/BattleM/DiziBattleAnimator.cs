@@ -14,13 +14,13 @@ internal class DiziBattleAnimator
     private Dictionary<int, CharacterOperator> OpMap { get; }
     private MonoBehaviour Mono { get; }
     private CharacterUiSyncHandler UiHandler { get; set; }
-    public DiziBattleAnimator(DiziCombatConfigSo combatCfg, 
+    public DiziBattleAnimator(DiziCombatVisualConfigSo combatVisualCfg, 
         Dictionary<int, CharacterOperator> opMap,
         CharacterUiSyncHandler uiHandler,
         MonoBehaviour mono,
         Transform poolTransform)
     {
-        CombatAnimator = new DiziCombatAnimator(combatCfg, poolTransform);
+        CombatAnimator = new DiziCombatAnimator(combatVisualCfg, poolTransform);
         OpMap = opMap;
         Mono = mono;
         UiHandler = uiHandler;

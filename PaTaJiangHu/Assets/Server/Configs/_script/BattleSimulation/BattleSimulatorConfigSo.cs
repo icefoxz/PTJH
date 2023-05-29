@@ -30,8 +30,6 @@ namespace Server.Configs.BattleSimulation
         private ValueMapping<int>[] Maps => 体力扣除配置;
         private int RoundLimit => 回合限制;
 
-        private const int LimitedRound = 99;
-
         /// <summary>
         /// 模拟回合制
         /// </summary>
@@ -47,49 +45,6 @@ namespace Server.Configs.BattleSimulation
             var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,battle.IsPlayerWin,player,enemy,playerCombat.Hp);
             return new Outcome(roundCount, battle.IsPlayerWin, player.Damage, enemy.Damage, player.MaxHp, enemy.MaxHp,
                 playerCombat.Hp, enemyCombat.Hp, combatMessages);
-        }
-        //public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
-        //{
-        //    var playerHp = player.Defend;
-        //    var enemyHp = enemy.Defend;
-        //    var playerAtt = player.Offend <= 0 ? 1 : player.Offend;//攻击最小数为1
-        //    var enemyAtt = enemy.Offend <= 0 ? 1 : enemy.Offend;
-        //    var isPlayerWin = false;
-        //    var round = 1;
-        //    for (var i = 0; i < RoundLimit; i++)
-        //    {
-        //        enemyHp -= playerAtt; //玩家先攻击
-        //        if (enemyHp <= 0)
-        //        {
-        //            isPlayerWin = true;
-        //            break;
-        //        }
-
-        //        playerHp -= enemyAtt; //敌人后攻击
-        //        if (playerHp > 0)
-        //        {
-        //            round++;
-        //            continue;
-        //        }
-
-        //        break;
-        //    }
-
-        //    var playerHpRatio = playerHp == 0 ? 0 : 1f * playerHp / player.Defend;
-        //    var messages = BattleMessageSo.GetSimulationMessages(round, isPlayerWin, player, enemy, playerHp);
-        //    return new Outcome(round, playerHpRatio, isPlayerWin, player.Offend,
-        //        enemy.Offend, player.Defend, enemy.Defend, playerHp, enemyHp, messages);
-        //}
-        public int GetDeductionValueFromRemaining(int hp)
-        {
-            if (hp <= 0)
-            {
-                XDebug.LogWarning($"弟子Hp异常 = {hp}!");
-                hp = 0;
-            }
-            var m = Maps.Where(m => m.IsInCondition(hp))
-                .RandomPick();
-            return m.Value;
         }
 
         public int GetPower(float strength, float agility, float hp, float mp) => (int)((strength + agility) * (hp + mp) / 1000);

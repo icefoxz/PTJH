@@ -5,14 +5,14 @@ using System.Linq;
 using UnityEngine;
 using Views;
 
-[CreateAssetMenu(fileName = "战斗攻击配置", menuName = "战斗/单位/攻击配置")]
-internal class DiziCombatConfigSo : ScriptableObject
+[CreateAssetMenu(fileName = "战斗演示攻击配置", menuName = "战斗/单位/攻击配置")]
+internal class DiziCombatVisualConfigSo : ScriptableObject
 {
-    [SerializeField] private DiziCombatResponseCfgSo 反馈配置;
+    [SerializeField] private DiziCombatVisualResponseCfgSo 反馈配置;
     [SerializeField] private DiziCombatConfig 弟子攻击配置;
     [SerializeField] private UiEffectField[] Ui特效配置;
 
-    public DiziCombatResponseCfgSo CombatResponseSo => 反馈配置;
+    public DiziCombatVisualResponseCfgSo CombatVisualResponseSo => 反馈配置;
     private DiziCombatConfig CombatConfig => 弟子攻击配置;
     public UiEffectField[] UiEffectFields => Ui特效配置;
     public BasicAnimConfig OffendReturnCurve => CombatConfig.OffendReturnCurve;

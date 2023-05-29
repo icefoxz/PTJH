@@ -53,10 +53,12 @@ internal class Configure : MonoBehaviour
         [SerializeField] private LevelConfigSo 升级配置;
         [SerializeField] private PropStateConfigSo 属性状态配置;
         [SerializeField] private SkillConfigSo 技能配置;
+        [SerializeField] private BattleConfigSo 战斗配置;
         internal StaminaConfigSo StaminaCfg => GetSo(体力配置);
         internal LevelConfigSo LevelConfigSo => GetSo(升级配置);
         internal PropStateConfigSo PropState => GetSo(属性状态配置);
         internal SkillConfigSo SkillCfg => GetSo(技能配置);
+        internal BattleConfigSo BattleCfg => GetSo(战斗配置);
     }
 
     //弟子闲置配置
@@ -88,8 +90,8 @@ internal class Configure : MonoBehaviour
     {
         [SerializeField] private CharacterOperator 角色预设;
         internal CharacterOperator CharacterOpPrefab => 角色预设;
-        [SerializeField] private DiziCombatConfigSo 弟子战斗配置;
-        internal DiziCombatConfigSo DiziCombatCfg => 弟子战斗配置;
+        [SerializeField] private DiziCombatVisualConfigSo 弟子战斗配置;
+        internal DiziCombatVisualConfigSo DiziCombatVisualCfg => 弟子战斗配置;
 
         public CharacterOperator InstanceCharacterOp(Transform parent) => Object.Instantiate(CharacterOpPrefab, parent);
     }

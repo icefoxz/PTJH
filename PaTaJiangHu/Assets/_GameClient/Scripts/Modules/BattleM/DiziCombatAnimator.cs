@@ -32,14 +32,14 @@ internal class DiziCombatAnimator
         Defeat
     }
 
-    private DiziCombatConfigSo CombatConfig { get; }
-    private DiziCombatResponseCfgSo CombatResponseSo => CombatConfig.CombatResponseSo;
+    private DiziCombatVisualConfigSo CombatVisualConfig { get; }
+    private DiziCombatVisualResponseCfgSo CombatVisualResponseSo => CombatVisualConfig.CombatVisualResponseSo;
     private EffectViewsPool EffectViewsPool { get; } = new EffectViewsPool();
     private Transform PoolTransform { get; }
 
-    public DiziCombatAnimator(DiziCombatConfigSo combatConfig, Transform poolTransform)
+    public DiziCombatAnimator(DiziCombatVisualConfigSo combatVisualConfig, Transform poolTransform)
     {
-        CombatConfig = combatConfig;
+        CombatVisualConfig = combatVisualConfig;
         PoolTransform = poolTransform;
     }
 
@@ -98,7 +98,7 @@ internal class DiziCombatAnimator
     public IEnumerator PlayOffendReturn(float targetPoint, CharacterOperator performOp)
     {
         performOp.SetAnim(CharacterOperator.Anims.AttackReturn);//move return
-        yield return performOp.OffendReturnMove(targetPoint, CombatConfig.OffendReturnCurve);
+        yield return performOp.OffendReturnMove(targetPoint, CombatVisualConfig.OffendReturnCurve);
     }
     /// <summary>
     /// 播放2d效果
@@ -109,7 +109,7 @@ internal class DiziCombatAnimator
     public IEnumerator PlayResponse2DEffects(CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response, CharacterOperator tarOp)
     {
         var reAct = GetResponseAction(response);
-        var effects = CombatResponseSo.GetResponseEffect(reAct);
+        var effects = CombatVisualResponseSo.GetResponseEffect(reAct);
 
         var list = new List<(float, GameObject)>();
         foreach (var effect in effects) list.Add((effect.LastingSecs, effect.Invoke(tarOp.transform)));
@@ -137,7 +137,7 @@ internal class DiziCombatAnimator
     public IEnumerator PlayOffendMove(DiziCombatPerformInfo info, CharacterOperator op, float targetPos)
     {
         op.SetAnim(CharacterOperator.Anims.MoveStep);
-        yield return op.OffendMove(targetPos, CombatConfig.OffendMovingCurve);
+        yield return op.OffendMove(targetPos, CombatVisualConfig.OffendMovingCurve);
     }
 
     /// <summary>
@@ -150,7 +150,7 @@ internal class DiziCombatAnimator
     /// <exception cref="NotImplementedException"></exception>
     private void PlayUiEffects(int performerId, int performIndex, DiziCombatAnimator.Events battleEvent, RectTransform tran)
     {
-        foreach (var effect in CombatConfig.UiEffectFields.Where(u => u.Event == battleEvent))
+        foreach (var effect in CombatVisualConfig.UiEffectFields.Where(u => u.Event == battleEvent))
         {
             foreach (var view in effect.Effects)
             {

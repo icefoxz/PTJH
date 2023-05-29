@@ -1,4 +1,5 @@
 ﻿using System;
+using Models;
 using UnityEngine;
 using Utls;
 
@@ -12,6 +13,7 @@ namespace Server.Configs.Characters
 
         private int Minutes => 分钟;
         private int Hours => 小时;
+        
         /// <summary>
         /// 获取总体力
         /// </summary>

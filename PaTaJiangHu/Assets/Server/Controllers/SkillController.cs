@@ -31,6 +31,7 @@ namespace Server.Controllers
         {
             var dizi = Faction.GetDizi(diziGuid);
             var book = DataController.GetBook(bookId);
+            Faction.RemoveBook(book);
             var skill = book.GetSkill();
             var currentLevel = dizi.Skill.GetLevel(skill);
             var nextLevel = currentLevel + 1;

@@ -19,8 +19,8 @@ public interface ICombat2DEffect
     GameObject Invoke(Transform parent);
 }
 
-[CreateAssetMenu(fileName = "战斗反馈配置", menuName = "战斗/单位/战斗反馈")]
-internal class DiziCombatResponseCfgSo : ScriptableObject
+[CreateAssetMenu(fileName = "战斗演示反馈配置", menuName = "战斗/单位/战斗反馈")]
+internal class DiziCombatVisualResponseCfgSo : ScriptableObject
 {
     [SerializeField] private BasicEffect[] _suffer;
     [SerializeField] private BasicEffect[] _dodge;

@@ -147,13 +147,14 @@ namespace Server.Controllers
 
         public void AddDiziCon(string guid, IAdjustment.Types type, int adjValue)
         {
+            if (adjValue == 0) return;
             var dizi = Faction.GetDizi(guid);
             switch (type)
             {
                 case IAdjustment.Types.Stamina:
                 {
                     var staminaController = Game.Controllers.Get<StaminaController>();
-                    staminaController.ConsumeStamina(guid, adjValue, true);
+                    staminaController.AddStamina(guid, adjValue);
                     break;
                 }
                 case IAdjustment.Types.Exp:

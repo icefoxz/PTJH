@@ -72,14 +72,14 @@ public class CharacterOperator : MonoBehaviour,ISceneObj
         FaceTo(facing);
     }
 
-    internal void AttackMove(float x, DiziCombatConfigSo.BasicAnimConfig offendMoveCurve,
-        DiziCombatConfigSo.BasicAnimConfig offendReturnCurve)
+    internal void AttackMove(float x, DiziCombatVisualConfigSo.BasicAnimConfig offendMoveCurve,
+        DiziCombatVisualConfigSo.BasicAnimConfig offendReturnCurve)
     {
         var currentPoint = transform.localPosition.x;
         StartCoroutine(AttackMove(currentPoint, x, offendMoveCurve, offendReturnCurve));
     }
 
-    internal IEnumerator AttackMove(float currentPoint,float targetPoint, DiziCombatConfigSo.BasicAnimConfig offendMoveCurve,DiziCombatConfigSo.BasicAnimConfig offendReturnCurve)
+    internal IEnumerator AttackMove(float currentPoint,float targetPoint, DiziCombatVisualConfigSo.BasicAnimConfig offendMoveCurve,DiziCombatVisualConfigSo.BasicAnimConfig offendReturnCurve)
     {
         SetAnim(Anims.MoveStep);
         yield return OffendMove(targetPoint, offendMoveCurve);
@@ -130,9 +130,9 @@ public class CharacterOperator : MonoBehaviour,ISceneObj
         }
     }
 
-    internal IEnumerator OffendMove(float targetPoint, DiziCombatConfigSo.BasicAnimConfig cfg) => MoveTo(targetPoint, cfg);
-    internal IEnumerator OffendReturnMove(float targetPoint, DiziCombatConfigSo.BasicAnimConfig cfg) => MoveTo(targetPoint, cfg);
-    private IEnumerator MoveTo(float targetPoint, DiziCombatConfigSo.BasicAnimConfig cfg)
+    internal IEnumerator OffendMove(float targetPoint, DiziCombatVisualConfigSo.BasicAnimConfig cfg) => MoveTo(targetPoint, cfg);
+    internal IEnumerator OffendReturnMove(float targetPoint, DiziCombatVisualConfigSo.BasicAnimConfig cfg) => MoveTo(targetPoint, cfg);
+    private IEnumerator MoveTo(float targetPoint, DiziCombatVisualConfigSo.BasicAnimConfig cfg)
     {
         var elapsedTime = 0f;
         var startPos = transform.position;
