@@ -280,6 +280,7 @@ namespace _GameClient.Models
 
         public Dizi GetDizi(string guid)
         {
+            if (string.IsNullOrEmpty(guid)) return null;
             if(DiziMap.TryGetValue(guid, out var dizi)) return dizi;
             LogWarning($"找不到弟子 = {guid}");
             return null;
