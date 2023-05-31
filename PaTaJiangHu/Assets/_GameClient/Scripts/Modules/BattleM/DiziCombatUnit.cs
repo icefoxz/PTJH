@@ -156,8 +156,24 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         return hp;
     }
 
-    public void EquipmentDisarmed(IEquipment equipment) => _equipment.CombatDisarm(equipment);
-    public void EquipmentArmed(IEquipment equipment) => _equipment.CombatArm(equipment);
+    public void EquipmentDisarmed(IEquipment equipment)
+    {
+        _equipment.CombatDisarm(equipment);
+        UpdateConditionValues();
+    }
+
+    //更新状态值, 主要是装备变化时可以解除最大值
+    private void UpdateConditionValues()
+    {
+        AddHp(0);
+        AddMp(0);
+    }
+
+    public void EquipmentArmed(IEquipment equipment)
+    {
+        _equipment.CombatArm(equipment);
+        UpdateConditionValues();
+    }
 
     /// <summary>
     /// 战斗单位装备类, 处理装备状态

@@ -18,6 +18,7 @@ namespace Server.Configs.BattleSimulation
         public int GetConditionValue(float hpRatio)
         {
             var staRate= (int)(hpRatio * 100);
+            if (staRate < 0) staRate = 0;
             return After.ConditionMaps.FirstOrDefault(c => c.IsInCondition(staRate))?.Value ?? 0;
         }
         //战斗后配置
