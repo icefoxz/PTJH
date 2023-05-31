@@ -42,6 +42,11 @@ public class DiziBattle
         IsFinalized = true;
     }
     
+    /// <summary>
+    /// 执行一个回合
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public DiziRoundInfo ExecuteRound()
     {
         // 触发回合开始事件
@@ -75,15 +80,33 @@ public class DiziBattle
         return info;
     }
 
+    /// <summary>
+    /// 根据队伍的平均血量比率判断获胜
+    /// </summary>
+    /// <param name="fighters"></param>
+    /// <returns></returns>
     private static bool AverageHpHigherWin(DiziCombatUnit[] fighters)
     {
         return fighters.Where(f => f.TeamId == 0).Average(f => f.HpRatio) >
                fighters.Where(f => f.TeamId == 1).Average(f => f.HpRatio);
     }
 
+    /// <summary>
+    /// 创建一个新的战斗器
+    /// </summary>
+    /// <param name="units"></param>
+    /// <param name="roundLimit"></param>
+    /// <returns></returns>
     public static DiziBattle Instance(DiziCombatUnit[] units, int roundLimit = 20) => new(roundLimit, units);
 
-    public static DiziBattle StartAuto(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
+    /// <summary>
+    /// 自动战斗, 没有介入直接结束
+    /// </summary>
+    /// <param name="playerCombat"></param>
+    /// <param name="enemyCombat"></param>
+    /// <param name="roundLimit"></param>
+    /// <returns></returns>
+    public static DiziBattle AutoCount(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
     {
         var battle = new DiziBattle(roundLimit, playerCombat, enemyCombat);
         for (var i = 0; i < roundLimit; i++)
@@ -98,19 +121,18 @@ public class DiziBattle
         PrintLog(battle);
 #endif
         return battle;
-    }
-
-    private static void PrintLog(DiziBattle battle)
-    {
-        var teams = battle.Fighters.GroupBy(f => f.TeamId).ToArray();
-        Log($"战斗开始! {string.Join(',', teams[0])} vs {string.Join(',', teams[1])}");
-        for (var i = 0; i < battle.Rounds.Count; i++)
+        static void PrintLog(DiziBattle bat)
         {
-            var round = battle.Rounds[i];
-            RoundLog(i + 1, round);
-        }
+            var teams = bat.Fighters.GroupBy(f => f.TeamId).ToArray();
+            Log($"战斗开始! {string.Join(',', teams[0])} vs {string.Join(',', teams[1])}");
+            for (var i = 0; i < bat.Rounds.Count; i++)
+            {
+                var round = bat.Rounds[i];
+                RoundLog(i + 1, round);
+            }
 
-        Log($"战斗结束! {(battle.IsPlayerWin ? "玩家获胜!" : "玩家战败!")}");
+            Log($"战斗结束! {(bat.IsPlayerWin ? "玩家获胜!" : "玩家战败!")}");
+        }
     }
 
     private static void RoundLog(int roundNum, RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo> round)
@@ -139,7 +161,7 @@ public class DiziBattle
     {
         var target = response.Target.Name + GetStateText(response.Target);
         var finalDmg = response.FinalDamage;
-        if (response.IsDodged) return $"但{target}闪避了!";
+        if (response.IsDodge) return $"但{target}闪避了!";
         return $" 伤害:{finalDmg}, {target}";
     }
 

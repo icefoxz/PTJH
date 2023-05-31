@@ -55,7 +55,7 @@ namespace Server.Configs.Items
         private CombatAdvancePropField[] AdvanceProps => 高级属性;
 
         [Serializable]
-        protected class DiziPropAddOn
+        internal class DiziPropAddOn
         {
             private bool SetName()
             {
@@ -101,28 +101,7 @@ namespace Server.Configs.Items
             return value;
         }
 
-        public ICombatSet GetCombatSet()
-        {
-            var hardRate = 0f;
-            var hardDamageRatio = 0f;
-            var criticalRate = 0f;
-            var criticalDamageRatio = 0f;
-            var mpDamage = 0f;
-            var mpCounteract = 0f;
-            var dodgeRate = 0f;
-            foreach (var field in AdvanceProps)
-            {
-                hardRate += field.HardRate;
-                hardDamageRatio += field.HardDamageRateAddOn;
-                criticalRate += field.CriticalRate;
-                criticalDamageRatio += field.CriticalDamageRateAddOn;
-                mpDamage += field.MpDamage;
-                mpCounteract += field.MpCounteract;
-                dodgeRate += field.DodgeRate;
-            }
-            var combatSet = new CombatSet(hardRate, hardDamageRatio, criticalRate, criticalDamageRatio, mpDamage, mpCounteract, dodgeRate);
-            return combatSet;
-        }
+        public ICombatSet GetCombatSet() => AdvanceProps.Select(a=>a.GetCombatSet()).Combine();
 
         protected abstract class EquipmentBaseField : IEquipment
         {

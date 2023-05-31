@@ -161,10 +161,10 @@ internal class Demo_Page_Skill : UiManagerBase
             //img_diziIcon.sprite = 
             text_diziName.text = dizi.Name;
             text_diziLevel.text = dizi.Level.ToString();
-            element_propStrength.Set(dizi.StrengthProp.LeveledValue, dizi.StrengthProp.SkillBonus());
-            element_propAgility.Set(dizi.AgilityProp.LeveledValue, dizi.AgilityProp.SkillBonus());
-            element_propHp.Set(dizi.HpProp.LeveledValue, dizi.HpProp.SkillBonus());
-            element_propMp.Set(dizi.MpProp.LeveledValue, dizi.MpProp.SkillBonus());
+            element_propStrength.Set((int)dizi.StrengthProp.LeveledValue, dizi.StrengthProp.SkillBonus());
+            element_propAgility.Set((int)dizi.AgilityProp.LeveledValue, dizi.AgilityProp.SkillBonus());
+            element_propHp.Set((int)dizi.HpProp.LeveledValue, dizi.HpProp.SkillBonus());
+            element_propMp.Set((int)dizi.MpProp.LeveledValue, dizi.MpProp.SkillBonus());
         }
         private class Element_prop : UiBase
         {

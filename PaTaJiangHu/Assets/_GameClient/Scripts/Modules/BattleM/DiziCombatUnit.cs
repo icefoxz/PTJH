@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Text;
 using Models;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
@@ -39,10 +40,10 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
      * 重写基本属性是为了调整对武器的加成作用
      */
     public override string Name => _name;
-    public override int MaxHp => _maxHp + _equipment.GetPropAddon(DiziProps.Hp);
+    public override int MaxHp => (int)(_maxHp + _equipment.GetPropAddon(DiziProps.Hp));
     public override int Damage => Strength; //暂时攻击力直接引用力量
     public override int Speed => Agility; //暂时速度直接引用敏捷
-    public int MaxMp => _maxMp + _equipment.GetPropAddon(DiziProps.Mp);
+    public int MaxMp => (int)(_maxMp + _equipment.GetPropAddon(DiziProps.Mp));
     public int Strength => _strength;
     public int Agility => _agility;
 
@@ -53,10 +54,10 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public ICombatSet CombatSet { get; private set; }
 
     public IDiziEquipment Equipment => _equipment;
-    public int GetStrength() => Strength + _equipment.GetPropAddon(DiziProps.Strength);
-    public int GetAgility() => Agility + _equipment.GetPropAddon(DiziProps.Agility);
-    public int GetHp() => Hp + _equipment.GetPropAddon(DiziProps.Hp);
-    public int GetMp() => Mp + _equipment.GetPropAddon(DiziProps.Mp);
+    public int GetStrength() => (int)(Strength + _equipment.GetPropAddon(DiziProps.Strength));
+    public int GetAgility() => (int)(Agility + _equipment.GetPropAddon(DiziProps.Agility));
+    public int GetHp() => (int)(Hp + _equipment.GetPropAddon(DiziProps.Hp));
+    public int GetMp() => (int)(Mp + _equipment.GetPropAddon(DiziProps.Mp));
 
     internal DiziCombatUnit(string guid,int teamId, string name, int strength, int agility, int hp, int mp, ICombatSet set, IDiziEquipment equipment = null)
         : base(teamId: teamId)
@@ -176,12 +177,12 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         }
         public DiziEquipment(IDiziEquipment equipment)
         {
-            Weapon = equipment.Weapon;
-            Armor = equipment.Armor;
-            Shoes = equipment.Shoes;
-            Decoration = equipment.Decoration;
+            Weapon = equipment?.Weapon;
+            Armor = equipment?.Armor;
+            Shoes = equipment?.Shoes;
+            Decoration = equipment?.Decoration;
         }
-        public int GetPropAddon(DiziProps prop) => (int)AllEquipments.Sum(e => e.GetAddOn(prop));
+        public float GetPropAddon(DiziProps prop) => (int)AllEquipments.Sum(e => e.GetAddOn(prop));
         /// <summary>
         /// 卸下装备
         /// </summary>
@@ -427,6 +428,13 @@ public record DiziCombatPerformInfo :CombatPerformInfo<DiziCombatUnit, DiziComba
 {
     public bool IsHard { get; set; }
     public void SetHard(bool isHard) => IsHard = isHard;
+    protected override StringBuilder Description(StringBuilder sb)
+    {
+        if (IsHard) sb.Append("重击,");
+        return base.Description(sb);
+    }
+    //如果不重写, 调用不到base的ToString
+    public override string ToString() => base.ToString();
 }
 
 public record DiziCombatInfo : CombatUnitInfo<DiziCombatUnit>
@@ -457,6 +465,18 @@ public record DiziCombatInfo : CombatUnitInfo<DiziCombatUnit>
         MaxMp = unit.MaxMp;
         base.Set(unit);
     }
+
+    protected override StringBuilder Description(StringBuilder sb)
+    {
+        sb.Append($"MP:{Mp}/{MaxMp},");
+        if (IsWeaponDisarmed) sb.Append("武器被打掉,");
+        if (IsArmorDisarmed) sb.Append("防具被打掉,");
+        if (IsShoesDisarmed) sb.Append("鞋子被打掉,");
+        if (IsDecorationDisarmed) sb.Append("饰品被打掉,");
+        return base.Description(sb);
+    }
+    //如果不重写, 调用不到base的ToString
+    public override string ToString() => base.ToString();
 }
 
 

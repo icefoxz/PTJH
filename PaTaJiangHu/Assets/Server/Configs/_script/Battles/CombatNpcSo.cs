@@ -53,7 +53,7 @@ namespace Server.Configs.Battles
             Decoration
         }.Where(e => e != null);
 
-        public int GetPropAddon(DiziProps prop)=> (int)AllEquipments.Sum(e => e.GetAddOn(prop));
+        public float GetPropAddon(DiziProps prop)=> AllEquipments.Sum(e => e.GetAddOn(prop));
 
         public ISimCombat GetSimCombat(BattleSimulatorConfigSo cfg)
         {

@@ -44,7 +44,7 @@ internal class Demo_game_charPopValue
 
     private string GetResponseText(CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response)
     {
-        return response.Target.IsDead ? "绝杀" : response.IsDodged ? "闪避" : string.Empty;
+        return response.Target.IsDead ? "绝杀" : response.IsDodge ? "闪避" : string.Empty;
     }
 
     private void OnReset()

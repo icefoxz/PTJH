@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 
 /// <summary>
@@ -266,22 +267,28 @@ public class AttackBehavior<TUnit,TInfo,TUnitInfo> : CombatBehavior<TUnit, TInfo
 /// 战斗执行信息, 记录了战斗行为以及对手的反馈.
 /// 目前仅仅是记录攻击方式, 包括暴击, 连击
 /// </summary>
-public record CombatPerformInfo<TUnit,TUnitInfo> where TUnit : ICombatUnit where TUnitInfo : ICombatUnitInfo<TUnit>, new()
+public record CombatPerformInfo<TUnit, TUnitInfo>
+    where TUnit : ICombatUnit where TUnitInfo : ICombatUnitInfo<TUnit>, new()
 {
     public TUnitInfo Performer { get; set; }
-    public CombatResponseInfo<TUnit,TUnitInfo> Response { get; set; }
-    //是否重击
-    public bool IsHardAttack { get; set; }
+
+    public CombatResponseInfo<TUnit, TUnitInfo> Response { get; set; }
+
     //是否会心
     public bool IsCritical { get; set; }
+
     //补血(吸血)
     public int Heal { get; set; }
+
     //是否反击
     public bool IsCounterAttack { get; set; }
+
     //是否反击暴击
     public bool IsCounterAttackCritical { get; set; }
+
     //反击伤害
     public int CounterAttackDamage { get; set; }
+
     //反击被闪避
     public bool IsCounterAttackDodged { get; set; }
 
@@ -293,15 +300,30 @@ public record CombatPerformInfo<TUnit,TUnitInfo> where TUnit : ICombatUnit where
 
     public void SetCritical(bool isCritical) => IsCritical = isCritical;
 
-    public void AddResponse(CombatResponseInfo<TUnit,TUnitInfo> info) => Response = info;
+    public void AddResponse(CombatResponseInfo<TUnit, TUnitInfo> info) => Response = info;
 
-    public void SetCounterAttack(int damage, bool isDodged ,bool isCritical)
+    public void SetCounterAttack(int damage, bool isDodged, bool isCritical)
     {
         IsCounterAttack = true;
         CounterAttackDamage = damage;
         IsCounterAttackDodged = isDodged;
         IsCounterAttackCritical = isCritical;
     }
+
+    public void SetHeal(int heal) => Heal = heal;
+
+    protected virtual StringBuilder Description(StringBuilder sb)
+    {
+        if (IsCritical) sb.Append(value: "会心一击,");
+        if (Heal != 0) sb.Append(value: $"治疗{Heal}点,");
+        if (IsCounterAttack) sb.Append(value: "反击,");
+        if (IsCounterAttackCritical) sb.Append(value: "暴击,");
+        if (CounterAttackDamage != 0) sb.Append(value: $"反击造成({CounterAttackDamage})点伤害,");
+        if (IsCounterAttackDodged) sb.Append(value: "反击被闪避,");
+        return sb;
+    }
+
+    public override string ToString() => Description(new StringBuilder()).ToString();
 }
 
 public interface ICombatUnitInfo<in TUnit> where TUnit : ICombatUnit
@@ -333,6 +355,17 @@ public record CombatUnitInfo<TUnit> : ICombatUnitInfo<TUnit> where TUnit : IComb
     public bool IsDead => Hp <= 0;
     public bool IsAlive => !IsDead;
     public float HpRatio => 1f * Hp / MaxHp;
+
+    protected virtual StringBuilder Description(StringBuilder sb)
+    {
+        sb.Append(value: $"[{InstanceId}]{Name},");
+        sb.Append(value: $"Hp:{Hp}/{MaxHp},");
+        sb.Append(value: $"Dmg:{Damage},");
+        sb.Append(value: $"Spd:{Speed},");
+        return sb;
+    }
+
+    public override string ToString()=> Description(new StringBuilder()).ToString();
 }
 /// <summary>
 /// 战斗反馈信息, 记录被攻击单位的反馈信息.
@@ -346,7 +379,7 @@ public record CombatResponseInfo<TUnit,TUnitInfo> where TUnit : ICombatUnit wher
     //最终补血
     public int FinalHeal { get; set; }
     //攻击闪避
-    public bool IsDodged { get; set; }
+    public bool IsDodge { get; set; }
 
     public void Set(TUnit unit)
     {
@@ -357,10 +390,19 @@ public record CombatResponseInfo<TUnit,TUnitInfo> where TUnit : ICombatUnit wher
     public void RegDamage(int damage, bool isDodge)
     {
         FinalDamage = damage;
-        IsDodged = isDodge;
+        IsDodge = isDodge;
     }
 
     public void SetHeal(int heal) => FinalHeal = heal;
+
+    protected virtual StringBuilder Description(StringBuilder sb)
+    {
+        if (FinalDamage != 0) sb.Append(value: $"受到({FinalDamage})点伤害,");
+        if (IsDodge) sb.Append(value: "闪避,");
+        if (FinalHeal != 0) sb.Append(value: $"治疗({FinalHeal})点,");
+        return sb;
+    }
+    public override string ToString() => Description(new StringBuilder()).ToString();
 }
 //全局Buff管理器
 public class BuffManager<TUnit> where TUnit : ICombatUnit

@@ -71,10 +71,10 @@ namespace HotFix_Project.Managers.Demo_v1
                 var a = dizi.AgilityProp;
                 var h = dizi.HpProp;
                 var m = dizi.MpProp;
-                SetProps(Props.Strength, s.LeveledValue, s.SkillBonus(), s.EquipmentBonus(), s.StateBonus());
-                SetProps(Props.Agility, a.LeveledValue, a.SkillBonus(), a.EquipmentBonus(), a.StateBonus());
-                SetProps(Props.Hp, h.LeveledValue, h.SkillBonus(), h.EquipmentBonus(), h.StateBonus());
-                SetProps(Props.Mp, m.LeveledValue, m.SkillBonus(), m.EquipmentBonus(), m.StateBonus());
+                SetProps(Props.Strength, (int)s.LeveledValue, s.SkillBonus(), s.EquipmentBonus(), s.StateBonus());
+                SetProps(Props.Agility, (int)a.LeveledValue, a.SkillBonus(), a.EquipmentBonus(), a.StateBonus());
+                SetProps(Props.Hp, (int)h.LeveledValue, h.SkillBonus(), h.EquipmentBonus(), h.StateBonus());
+                SetProps(Props.Mp, (int)m.LeveledValue, m.SkillBonus(), m.EquipmentBonus(), m.StateBonus());
             }
             //private void SetProp(Props props, int value, int skill, int equip = 0, int condition = 0) => Set(props, value, skill, equip, condition);
             private void SetProps(Props prop, int value, int skill, int equip, int condition) =>

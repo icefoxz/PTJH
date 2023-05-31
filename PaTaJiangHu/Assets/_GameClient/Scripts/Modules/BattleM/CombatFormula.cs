@@ -87,7 +87,7 @@ public static class CombatFormula
     /// <exception cref="NotImplementedException"></exception>
     public static float WeaponBrokenJudgment(int weapon, int comparer)
     {
-        return (weapon - comparer) / 500f;
+        return (comparer - weapon) / 500f;
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public static class CombatFormula
     /// <exception cref="NotImplementedException"></exception>
     public static float ArmorBrokenJudgment(int equipment, int comparer)
     {
-        return (equipment - comparer) / 500f;
+        return (comparer - equipment) / 500f;
     }
     
     /// <summary>
@@ -111,6 +111,6 @@ public static class CombatFormula
     /// <exception cref="NotImplementedException"></exception>
     public static float EquipmentBrokenJudgment(int equipment, int comparer)
     {
-        return (equipment - comparer) / 1.20f + 5;
+        return (comparer - equipment) / 1.20f + 5;
     }
 }

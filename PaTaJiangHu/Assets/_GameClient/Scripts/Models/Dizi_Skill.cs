@@ -70,7 +70,7 @@ namespace Models
         IArmor Armor { get; }
         IShoes Shoes { get; }
         IDecoration Decoration { get; }
-        int GetPropAddon(DiziProps prop);
+        float GetPropAddon(DiziProps prop);
         /// <summary>
         /// 战斗高级属性
         /// </summary>
@@ -95,7 +95,7 @@ namespace Models
         internal void SetShoes(IShoes shoes) => Shoes = shoes;
         internal void SetDecoration(IDecoration decoration) => Decoration = decoration;
 
-        public int GetPropAddon(DiziProps prop) => (int)AllEquipments.Sum(e => e.GetAddOn(prop));
+        public float GetPropAddon(DiziProps prop) => (int)AllEquipments.Sum(e => e.GetAddOn(prop));
         public IDiziCombatUnit CombatDisarm(int teamId,IEquipment equipment)
         {
             var type = equipment.EquipKind;

@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using Utls;
 
-public class TestSimulationOutput : MonoBehaviour
+public class TestSimulationBattle : MonoBehaviour
 {
     [SerializeField] private BattleSimulatorConfigSo SimSo;
     [SerializeField] private Unit 玩家单位;
@@ -57,14 +57,14 @@ public class TestSimulationOutput : MonoBehaviour
 }
 
 #if UNITY_EDITOR
-[CustomEditor(typeof(TestSimulationOutput))]
+[CustomEditor(typeof(TestSimulationBattle))]
 public class TestSimEditor : Editor
 {
     public override void OnInspectorGUI()
     {
         if (GUILayout.Button("点击开始战斗"))
         {
-            var script = (TestSimulationOutput)target;
+            var script = (TestSimulationBattle)target;
             script.StartBattle();
         }
         base.OnInspectorGUI();

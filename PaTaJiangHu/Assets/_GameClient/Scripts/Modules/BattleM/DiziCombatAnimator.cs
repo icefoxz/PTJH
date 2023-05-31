@@ -181,7 +181,7 @@ internal class DiziCombatAnimator
     //获取反馈
     private static DiziCombatAnimator.Responses GetResponseAction(CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response)
     {
-        return response.IsDodged ? DiziCombatAnimator.Responses.Dodge
+        return response.IsDodge ? DiziCombatAnimator.Responses.Dodge
             : response.Target.Hp > 0 ? DiziCombatAnimator.Responses.Suffer
             : DiziCombatAnimator.Responses.Defeat;
     }

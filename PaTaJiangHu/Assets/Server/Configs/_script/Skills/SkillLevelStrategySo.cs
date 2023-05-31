@@ -262,5 +262,7 @@ namespace Server.Configs.Skills
             public string Name { get; } = Name;
             public string Value { get; } = Value;
         }
+
+        public ICombatSet GetCombatSet() => new CombatSet(HardRate, HardDamageRateAddOn, CriticalRate, CriticalDamageRateAddOn, MpDamage, MpCounteract, DodgeRate);
     }
 }

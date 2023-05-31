@@ -1,9 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using Core;
 using Models;
 using Server.Configs.Battles;
 using Server.Configs.Characters;
+using Server.Configs.Items;
+using Server.Configs.Skills;
+using Server.Controllers;
 using UnityEngine;
 using UnityEngine.UI;
 using Views;
@@ -50,10 +53,38 @@ public class TestBattle : MonoBehaviour
         CharacterUiSyncHandler.AssignObjToUi(TestSceneObj);
     }
 
+    public void InstanceBattle()
+    {
+        Battle = NewBattle(CombatChars.Select(c => c.GetCombatUnit()).ToArray());
+        Debug.Log("<color=green>********战斗开始**********</color>");
+    }
+
+    public void InvokeRoundForLogOnly()
+    {
+        if (Battle.IsFinalized)
+        {
+            Debug.LogError("<color=red>战斗已经结束!</color>");
+            return;
+        }
+        var info = ExecuteRound();
+        Debug.Log("********战斗回合[" +
+                  $"<color=yellow><b>{Battle.Rounds.Count}</b></color>]" +
+                  "**********");
+        foreach (var (unit, pfmInfo) in info.UnitInfoMap)
+        {
+            foreach (var pfm in pfmInfo)
+            {
+                Debug.Log($"<color=white>{unit.Name}进攻- {pfm}</color>");
+                Debug.Log($"<color=#FFA07A>{pfm.Response.Target.Name}{pfm.Response}</color>");
+                Debug.Log($"<color=yellow>{pfm.Performer}</color>\n<color=cyan>{pfm.Response.Target}</color>");
+            }
+        }
+    }
+
     public void StartBattle()
     {
         var fighters = CombatChars.Select(c => new { op = c.Op, combat = c.GetCombatUnit() }).ToArray();
-        Battle = DiziBattle.Instance(fighters.Select(f => f.combat).ToArray());
+        Battle = NewBattle(fighters.Select(f => f.combat).ToArray());
         _battleCache.SetBattle(Battle);
         BattleAnim =
             new DiziBattleAnimator(_animConfig.DiziCombatVisualCfg,
@@ -61,6 +92,9 @@ public class TestBattle : MonoBehaviour
                 CharacterUiSyncHandler, this, transform);
         StartRound();
     }
+
+    private DiziBattle NewBattle(DiziCombatUnit[] combatUnits) => DiziBattle.Instance(combatUnits);
+
     public void StartRound()
     {
     
@@ -70,7 +104,7 @@ public class TestBattle : MonoBehaviour
             return;
         }
 
-        var roundInfo = Battle.ExecuteRound();
+        var roundInfo = ExecuteRound();
         BattleAnim.PlayRound(roundInfo, () =>
         {
             if (Battle.IsFinalized)
@@ -78,8 +112,10 @@ public class TestBattle : MonoBehaviour
         });
     }
 
+    private DiziRoundInfo ExecuteRound() => Battle.ExecuteRound();
+
     [Serializable]
-    private class CombatChar : ICombatSet
+    private class CombatChar : ICombatSet,IDiziEquipment
     {
         [SerializeField] private CharacterOperator _op;
         [SerializeField] private bool 玩家;
@@ -93,6 +129,10 @@ public class TestBattle : MonoBehaviour
         [SerializeField] private CombatSkill 武功;
         [SerializeField] private ForceSkill 内功;
         [SerializeField] private DodgeSkill 轻功;
+        [SerializeField] private WeaponField 武器;
+        [SerializeField] private ArmorField 防具;
+        [SerializeField] private ShoesField 鞋子;
+        [SerializeField] private DecorationField 装饰;
         public CharacterOperator Op => _op;
 
         public int InstanceId { get; private set; }
@@ -113,6 +153,7 @@ public class TestBattle : MonoBehaviour
         private CombatSkill Com => 武功;
         private ForceSkill Force => 内功;
         private DodgeSkill Dodge => 轻功;
+
         public float GetHardRate(CombatArgs arg) => Com.GetHardRate(arg);
         public float GetHardDamageRatio(CombatArgs arg) => Com.GetHardDamageRatio(arg);
         public float GetCriticalRate(CombatArgs arg) => Force.GetCriticalRate(arg);
@@ -121,24 +162,94 @@ public class TestBattle : MonoBehaviour
         public float GetMpCounteract(CombatArgs arg) => Force.GetMpCounteract(arg);
         public float GetDodgeRate(CombatArgs arg) => Dodge.GetDodgeRate(arg);
 
-        public void SetInstanceId(int instanceId)
+        public void SetInstanceId(int instanceId) => InstanceId = instanceId;
+
+        public DiziCombatUnit GetCombatUnit() => new(string.Empty, TeamId, Name, Strength, Agility, Hp, Mp, this, this);
+
+        #region Equipment
+        public IWeapon Weapon => 武器;
+        public IArmor Armor => 防具;
+        public IShoes Shoes => 鞋子;
+        public IDecoration Decoration => 装饰;
+        private IEquipment[] Equipments => new IEquipment[] { Weapon, Armor, Shoes, Decoration };
+        public float GetPropAddon(DiziProps prop)=>  Equipments.Sum(e => e.GetAddOn(prop));
+
+        public ICombatSet GetCombatSet() => Equipments.Select(e => e.GetCombatSet()).Combine();
+
+        private abstract class EuipmentBase : IEquipment
         {
-            InstanceId = instanceId;
+            [SerializeField] private ColorGrade 品;
+            [SerializeField] private int 韧性;
+            [SerializeField] private EquipmentSoBase.DiziPropAddOn[] 加成;
+            [SerializeField] private CombatAdvancePropField[] 高级属性;
+            public abstract EquipKinds EquipKind { get; } 
+            public ColorGrade Grade => 品;
+            public int Quality => 韧性;
+            public int Id { get; }
+            public Sprite Icon { get; }
+            public abstract string Name { get; }
+            public string About { get; }
+            public ItemType Type { get; } = ItemType.Equipment;
+            private EquipmentSoBase.DiziPropAddOn[] AddOns => 加成;
+            private CombatAdvancePropField[] AdvanceProps => 高级属性;
+
+            public float GetAddOn(DiziProps prop)
+            {
+                var value = 0f;
+                for (var i = 0; i < AddOns.Length; i++)
+                {
+                    var addOn = AddOns[i];
+                    if (addOn.Prop == prop) value += addOn.AddOn;
+                }
+                return value;
+            }
+            public ICombatSet GetCombatSet() => AdvanceProps.Select(c => c.GetCombatSet()).Combine();
         }
+        #endregion
 
-        public DiziCombatUnit GetCombatUnit() => new(string.Empty, TeamId, Name, Strength, Agility, Hp, Mp, this);
-
-        [Serializable]
-        private class CombatSkill
+        [Serializable]private class WeaponField : EuipmentBase, IWeapon
+        {
+            [SerializeField] private WeaponArmed 类型;
+            public int Id { get; } = 0;
+            public Sprite Icon { get; }
+            public override string Name { get; } = "测试武器";
+            public string About { get; }
+            public override EquipKinds EquipKind { get; } = EquipKinds.Weapon;
+            public WeaponArmed Armed => 类型;
+        }
+        [Serializable]private class ArmorField : EuipmentBase, IArmor
+        {
+            public int Id { get; }
+            public Sprite Icon { get; }
+            public override string Name { get; } = "测试防具";
+            public string About { get; }
+            public override EquipKinds EquipKind { get; } = EquipKinds.Armor;
+        }
+        [Serializable]private class ShoesField : EuipmentBase, IShoes
+        {
+            public int Id { get; }
+            public Sprite Icon { get; }
+            public override string Name { get; } = "测试鞋子";
+            public string About { get; }
+            public override EquipKinds EquipKind { get; } = EquipKinds.Shoes;
+        }
+        [Serializable]private class DecorationField : EuipmentBase, IDecoration
+        {
+            public int Id { get; }
+            public Sprite Icon { get; }
+            public override string Name { get; } = "测试饰品";
+            public string About { get; }
+            public override EquipKinds EquipKind { get; } = EquipKinds.Decoration;
+        }
+        
+        [Serializable] private class CombatSkill
         {
             [SerializeField] private float 重击率;
             [Range(0, 3)] [SerializeField] private float 重击伤害倍数;
             public float GetHardRate(CombatArgs arg) => 重击率;
             public float GetHardDamageRatio(CombatArgs arg) => 重击伤害倍数;
         }
-
-        [Serializable]
-        private class ForceSkill
+        [Serializable] private class ForceSkill
         {
             [SerializeField] private float 伤害内力;
             [SerializeField] private float 抵消内力;
@@ -149,9 +260,7 @@ public class TestBattle : MonoBehaviour
             public float GetMpCounteract(CombatArgs arg) => 抵消内力;
             public float GetCriticalMultiplier(CombatArgs arg) => 会心倍率;
         }
-
-        [Serializable]
-        private class DodgeSkill
+        [Serializable] private class DodgeSkill
         {
             [SerializeField] private float 闪避率;
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
@@ -197,7 +306,7 @@ public class TestBattle : MonoBehaviour
 
         private string GetResponseText(CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> response)
         {
-            return response.Target.IsDead ? "绝杀" : response.IsDodged ? "闪避" : string.Empty;
+            return response.Target.IsDead ? "绝杀" : response.IsDodge ? "闪避" : string.Empty;
         }
 
         private void OnReset()
