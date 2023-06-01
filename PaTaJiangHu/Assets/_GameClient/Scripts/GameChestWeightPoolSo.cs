@@ -4,7 +4,7 @@ using UnityEngine;
 using Utls;
 
 [CreateAssetMenu(fileName = "id_权重池", menuName = "宝箱/权重池")]
-internal class GameChessWeightPoolSo : GameChestSoBase
+internal class GameChestWeightPoolSo : GameChestSoBase
 {
     [SerializeField] private WeightElement[] 设定;
     private WeightElement[] WeightElements => 设定;

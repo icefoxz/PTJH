@@ -38,9 +38,10 @@ public class EventString
     public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";//弟子状态管理(打开窗口吃药)
     public const string Dizi_ConditionUpdate = "Dizi_ConditionUpdate";//弟子状态更新
     public const string Dizi_EquipmentManagement = "Dizi_EquipmentManagement";//装备管理
-    public const string Dizi_ItemEquipped = "Dizi_ItemEquipped";//装备物品
-    public const string Dizi_ItemUnEquipped = "Dizi_ItemUnEquipped";//卸下物品
+    //public const string Dizi_ItemEquipped = "Dizi_ItemEquipped";//装备物品
+    //public const string Dizi_ItemUnEquipped = "Dizi_ItemUnEquipped";//卸下物品
     public const string Dizi_Props_Update = "Dizi_Props_Update";
+    public const string Dizi_EquipmentUpdate = "Dizi_EquipmentUpdate";
 
     //弟子活动
     public const string Dizi_Activity_Reward = "Dizi_Activity_Reward";//弟子奖励活动

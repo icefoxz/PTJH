@@ -49,13 +49,15 @@ namespace Server.Controllers
             {
                 var dizi = Faction.GetDizi(combatUnit.Guid);
                 if (dizi == null) continue;
-                SetDiziConditionAfterBattle(dizi, combatUnit.HpRatio);
+                SetDiziConditionAfterBattle(dizi, combatUnit);
             }
         }
         //设定弟子战斗后的状态
-        private void SetDiziConditionAfterBattle(Dizi dizi, float hpRatio)
+        private void SetDiziConditionAfterBattle(Dizi dizi, DiziCombatUnit combat)
         {
-            var conditionValue = BattleCfg.GetConditionValue(hpRatio);
+            dizi.SetEquipment(combat.Equipment);
+            //状态调整
+            var conditionValue = BattleCfg.GetConditionValue(combat.HpRatio);
             var cons = new int[4];
             for (var i = 0; i < cons.Length; i++)
             {

@@ -103,8 +103,6 @@ namespace Server.Controllers
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
             }
-
-            Game.MessagingManager.Send(EventString.Dizi_ItemEquipped, dizi.Guid);
         }
         public void DiziUnEquipItem(string guid, int itemType)
         {
@@ -141,8 +139,6 @@ namespace Server.Controllers
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
             }
-
-            Game.MessagingManager.Send(EventString.Dizi_ItemUnEquipped, guid);
         }
 
         public void AddDiziCon(string guid, IAdjustment.Types type, int adjValue)

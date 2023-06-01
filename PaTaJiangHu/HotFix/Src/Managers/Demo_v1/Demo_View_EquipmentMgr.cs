@@ -32,8 +32,7 @@ namespace HotFix_Project.Managers.Demo_v1
             //{
             //    Equipment.Set(bag);
             //});
-            Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag => Equipment.Update(bag.Get<string>(0)));
-            Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag => Equipment.Update(bag.Get<string>(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentUpdate, bag => Equipment.Update(bag.Get<string>(0)));
             Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => Equipment.Update(bag.GetString(0)));
             Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => Equipment.Update(bag.GetString(0)));
         }

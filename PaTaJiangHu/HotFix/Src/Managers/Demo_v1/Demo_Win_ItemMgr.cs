@@ -38,12 +38,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 var itemType = bag.GetInt(1);
                 Set(guid, itemType, 0);
             });
-            Game.MessagingManager.RegEvent(EventString.Dizi_ItemEquipped, bag =>
-            {
-                ItemWindow.UpdateItemList();
-                Game.MainUi.HideWindows();
-            });
-            Game.MessagingManager.RegEvent(EventString.Dizi_ItemUnEquipped, bag =>
+            Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentUpdate, bag =>
             {
                 ItemWindow.UpdateItemList();
             });

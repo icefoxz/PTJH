@@ -5,7 +5,6 @@ using System.Linq;
 using Server.Configs.Battles;
 using Server.Configs.Characters;
 using Server.Configs.Skills;
-using Utls;
 
 namespace Models
 {
@@ -19,21 +18,25 @@ namespace Models
         {
             Log(weapon == null ? $"卸下{_equipment.Weapon.Name}" : $"装备{weapon.Name}!");
             _equipment.SetWeapon(weapon);
+            SendEvent(EventString.Dizi_EquipmentUpdate);
         }
         internal void SetArmor(IArmor armor)
         {
             Log(armor == null ? $"卸下{_equipment.Armor.Name}" : $"装备{armor.Name}!");
             _equipment.SetArmor(armor);
+            SendEvent(EventString.Dizi_EquipmentUpdate);
         }
         internal void SetShoes(IShoes shoes)
         {
             Log(shoes == null ? $"卸下{_equipment.Shoes.Name}" : $"装备{shoes.Name}!");
             _equipment.SetShoes(shoes);
+            SendEvent(EventString.Dizi_EquipmentUpdate);
         }
         internal void SetDecoration(IDecoration decoration)
         {
             Log(decoration == null ? $"卸下{_equipment.Decoration.Name}" : $"装备{decoration.Name}!");
             _equipment.SetDecoration(decoration);
+            SendEvent(EventString.Dizi_EquipmentUpdate);
         }
 
         public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
@@ -41,26 +44,35 @@ namespace Models
         public ICombatSet GetCombatSet() => new[] { SkillConfig.GetCombatSet(this),Equipment.GetCombatSet() }.Combine();
         internal void SetSkill(DiziSkill skill) => Skill = skill;
 
-        public void SkillLevelUp(ISkill skill)
+        internal void SkillLevelUp(ISkill skill)
         {
             var level = Skill.LevelUp(skill);
             SendEvent(EventString.Dizi_Skill_LevelUp);
             Log($"技能{skill.Name}升级到{level}!");
         }
 
-        public void UseSkill(SkillType type, int index)
+        internal void UseSkill(SkillType type, int index)
         {
             var skill = Skill.UseSkill(type, index);
             SendEvent(EventString.Dizi_Skill_Update);
             Log($"使用{skill}");
         }
 
-        public void ForgetSkill(SkillType type, int index)
+        internal void ForgetSkill(SkillType type, int index)
         {
             var skill = Skill.GetSkill(type, index);
             Skill.RemoveSkill(skill);
             SendEvent(EventString.Dizi_Skill_Update);
             Log($"遗忘{skill.Name}");
+        }
+
+        internal void SetEquipment(IDiziEquipment equipment)
+        {
+            _equipment.SetWeapon(equipment.Weapon);
+            _equipment.SetArmor(equipment.Armor);
+            _equipment.SetShoes(equipment.Shoes);
+            _equipment.SetDecoration(equipment.Decoration);
+            SendEvent(EventString.Dizi_EquipmentUpdate);
         }
     }
 

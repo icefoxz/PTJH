@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "id_随机池", menuName = "宝箱/随机池")]
-internal class GameChessRandomPoolSo : GameChestSoBase
+internal class GameChestRandomPoolSo : GameChestSoBase
 {
     [SerializeField] private GameChestSoBase[] 宝箱;
     private GameChestSoBase[] Chests => 宝箱;
