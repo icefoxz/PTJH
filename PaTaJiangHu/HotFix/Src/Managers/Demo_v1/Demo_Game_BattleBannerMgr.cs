@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using _GameClient.Models;
 using HotFix_Project.Serialization;
 using HotFix_Project.Views.Bases;
 using Models;
@@ -167,9 +166,9 @@ internal class Demo_Game_BattleBannerMgr : MainPageBase
             public void InitBattle(DiziCombatUnit dizi, Sprite icon)
             {
                 SetInfo(dizi.Name, icon);
-                SetProp(dizi.Strength, dizi.Agility);
-                UpdateHp(dizi.Hp, dizi.Hp);
-                UpdateMp(dizi.Mp, dizi.Mp);
+                SetProp(dizi.Strength.Value, dizi.Agility.Value);
+                UpdateHp(dizi.Hp.Value, dizi.Hp.Max);
+                UpdateMp(dizi.Mp.Value, dizi.Mp.Max);
             }
 
             public void UpdateInfo(DiziCombatInfo info)

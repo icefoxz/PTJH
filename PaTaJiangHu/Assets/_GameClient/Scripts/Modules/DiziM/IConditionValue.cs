@@ -7,7 +7,7 @@ namespace DiziM
     {
         int Max { get; }
         int Value { get; }
-        int Fix { get; }
+        int Base { get; }
         /// <summary>
         /// 上限与固定值的比率
         /// </summary>
@@ -15,7 +15,7 @@ namespace DiziM
         /// <summary>
         /// 当前与固定值的比率
         /// </summary>
-        double ValueFixRatio { get; }
+        double ValueBaseRatio { get; }
         /// <summary>
         /// 当前与最大值的比率
         /// </summary>
@@ -37,9 +37,16 @@ namespace DiziM
         int Squeeze(int value);
         void Set(int value);
         void SetMax(int max, bool alignValue = true);
-        void SetFix(int fix);
+        void SetBase(int fix);
         void AddMax(int value, bool alignValue = true);
         void Clone(IConditionValue con);
     }
 
+    /// <summary>
+    /// 战斗状态接口
+    /// </summary>
+    public interface ICombatCondition : IGameCondition
+    {
+        string Name { get; }
+    }
 }

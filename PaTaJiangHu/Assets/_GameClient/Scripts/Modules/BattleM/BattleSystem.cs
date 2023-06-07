@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DiziM;
+using static UnityEngine.UI.GridLayoutGroup;
 
 
 /// <summary>
@@ -14,14 +16,13 @@ public interface ICombatUnit
     /// </summary>
     int InstanceId { get; }
     string Name { get; }
-    int Hp { get; }
-    int MaxHp { get; }
-    int Damage { get; }
-    int Speed { get; }
+    ICombatCondition Hp { get; }
+    int GetDamage();
+    int GetSpeed();
     int TeamId { get; }
-    bool IsDead => Hp <= 0;
+    bool IsDead => Hp.IsExhausted;
     bool IsAlive => !IsDead;
-    float HpRatio => 1f * Hp / MaxHp;
+    double HpRatio => Hp.ValueMaxRatio;
     /// <summary>
     /// 设定身份Id, 用于标识战斗单位
     /// </summary>
@@ -44,58 +45,130 @@ public interface ICombatUnit
  *      同一个单位有可能多次被攻击, 所以用这个可以更详细的记录到每次执行后的状态.
  */
 
+//战斗单位的属性管理类, 主要为了可以更好的扩展
+public abstract class CombatantBase
+{
+    private readonly List<Attribute> _attributes = new List<Attribute>();
+    private readonly List<Condition> _conditions = new List<Condition>();
+
+    public IReadOnlyList<ICombatAttribute> Attributes => _attributes;
+    public IReadOnlyList<ICombatCondition> Conditions => _conditions;
+    protected int GetAttributeValue(string name) => GetAttribute(name).Value;
+    protected int GetAttributeBase(string name) => GetAttribute(name).Base;
+    protected int GetConditionValue(string name) => GetCondition(name).Value;
+    protected int GetConditionMax(string name) => GetCondition(name).Max;
+    protected int GetConditionBase(string name) => GetCondition(name).Base;
+
+    protected void AddAttribute(string name, int value, int @base = -1) => _attributes.Add(new Attribute(name, value, @base == -1 ? value : @base));
+    protected void AddCondition(string name, int value, int max = -1, int @base = -1)
+    {
+        if(max == -1) max = value;
+        _conditions.Add(new Condition(name, value, max, @base == -1 ? max : @base));
+    }
+
+    protected ICombatAttribute GetAttribute(string name) => _attributes.Single(a => a.Name == name);
+    protected ICombatCondition GetCondition(string name) => _conditions.Single(a => a.Name == name);
+
+    private class Attribute : ICombatAttribute
+    {
+        public Attribute(string name, int value, int @base)
+        {
+            Name = name;
+            Value = value;
+            Base = @base;
+        }
+        public Attribute(string name, int value)
+        {
+            Name = name;
+            Value = value;
+            Base = value;
+        }
+
+        public string Name { get; }
+        public int Value { get; private set; }
+        public int Base { get; }
+
+        public void Add(int value)
+        {
+            Value += value;
+        }
+
+        public void Set(int value)
+        {
+            Value = value;
+        }
+
+        public override string ToString() => $"{Name}:{Value}({Base})";
+    }
+    private class Condition : ConValue, ICombatCondition
+    {
+        public string Name { get; }
+
+        public Condition(string name, int value, int max, int @base) : base(@base, max, value)
+        {
+            Name = name;
+        }
+    }
+}
+/// <summary>
+/// 'ICombatAttribute' 是战斗属性的接口。属性表示战斗者的某种特性，如生命值、攻击力等。
+/// </summary>
+public interface ICombatAttribute
+{
+    string Name { get; }
+    int Value { get; }
+    int Base { get; }
+    void Add(int value);
+    void Set(int value);
+}
 /// <summary>
 /// 战斗单位,
 /// </summary>
-public class CombatUnit : ICombatUnit
+public abstract class CombatUnit : CombatantBase, ICombatUnit
 {
     public int InstanceId { get; private set; }
-    public virtual string Name { get; protected set; }
+    public string Name { get; protected set; }
     //血量
-    public virtual int Hp { get; protected set; }
-    //最大血量
-    public virtual int MaxHp { get; protected set; }
-    //伤害
-    public virtual int Damage { get; protected set; }
-    //速度
-    public virtual int Speed { get; protected set; }
+    public ICombatCondition Hp => GetCondition(Combat.Hp);
     //队伍
     public int TeamId { get; }
 
-    protected CombatUnit(int teamId)
+    protected CombatUnit(ICombatUnit u) : this(teamId: u.TeamId, name: u.Name, u.Hp.Value, u.Hp.Max, u.Hp.Base)
     {
-        TeamId = teamId;
     }
 
-    public CombatUnit(ICombatUnit u):this(teamId: u.TeamId, name: u.Name, maxHp: u.MaxHp, damage: u.Damage, speed: u.Speed)
+    protected CombatUnit(int teamId, string name, int hp, int maxHp = -1, int baseHp = -1)
     {
-        Hp = u.Hp;
-    }
-    public CombatUnit(int teamId, string name, int maxHp, int damage, int speed)
-    {
+        if (maxHp == -1)
+            maxHp = hp;
+        if (baseHp == -1)
+            baseHp = maxHp;
         Name = name;
-        MaxHp = maxHp;
-        Hp = maxHp;
-        Damage = damage;
-        Speed = speed;
         TeamId = teamId;
+        AddCondition(Combat.Hp, hp, maxHp, baseHp);
     }
+
+    //伤害
+    public abstract int GetDamage();
+    //速度
+    public abstract int GetSpeed();
 
     public void SetInstanceId(int instanceId) => InstanceId = instanceId;
 
-    public virtual int AddHp(int hp)
+    public int AddHp(int hp)
     {
-        Hp += hp;
-        Math.Clamp(Hp, 0, MaxHp);
-        return hp;
+        if (hp == 0) return Hp.Value;
+        var clampValue = Math.Clamp(Hp.Value + hp, 0, Hp.Max);
+        Hp.Set(clampValue);
+        return Hp.Value;
     }
 
     //是否阵亡
-    public bool IsDead => Hp <= 0;
+    public bool IsDead => Hp.IsExhausted;
     //是否还活着
     public bool IsAlive => !IsDead;
     //血量比率
-    public float HpRatio => 1f * Hp / MaxHp;
+    public double HpRatio => GetCondition(Combat.Hp).ValueBaseRatio;
 }
 //回合记录器
 public class RoundInfo<TUnit, TInfo, TUnitInfo> where TUnit : ICombatUnit
@@ -103,6 +176,8 @@ public class RoundInfo<TUnit, TInfo, TUnitInfo> where TUnit : ICombatUnit
     where TUnitInfo : ICombatUnitInfo<TUnit>, new()
 {
     private readonly Dictionary<TUnit, List<TInfo>> _infoMap;
+
+    public int RoundCount { get; private set; } //回合数
 
     //每个单位在每个回合的战斗活动
     public IReadOnlyDictionary<TUnit, List<TInfo>> UnitInfoMap => _infoMap;
@@ -112,6 +187,10 @@ public class RoundInfo<TUnit, TInfo, TUnitInfo> where TUnit : ICombatUnit
         _infoMap = new Dictionary<TUnit, List<TInfo>>();
     }
 
+    public void SetRound(int round)
+    {
+        RoundCount = round;
+    }
     public void AddUnitActionInfo(TUnit unit, TInfo performInfo)
     {
         if (!UnitInfoMap.ContainsKey(key: unit))
@@ -124,36 +203,41 @@ public class RoundInfo<TUnit, TInfo, TUnitInfo> where TUnit : ICombatUnit
 }
 
 //战斗回合
-public class Round<TUnit,TRoundInfo ,TPerformInfo, TUnitInfo> 
+public class Round<TUnit,TRoundInfo ,TPerformInfo, TUnitInfo, TBuff> 
     where TUnit : CombatUnit
     where TRoundInfo : RoundInfo<TUnit, TPerformInfo, TUnitInfo>, new()
     where TPerformInfo : CombatPerformInfo<TUnit, TUnitInfo>, new()
     where TUnitInfo : ICombatUnitInfo<TUnit>, new()
+    where TBuff : Buff<TUnit>
 {
     private readonly List<TUnit> _combatUnits;
-
+    public int RoundIndex { get; }
     //所有战斗单位,不可移除
     public IReadOnlyList<TUnit> CombatUnits => _combatUnits;
 
     //buff管理器
-    public BuffManager<TUnit> BuffManager { get; }
+    public IBuffHandler<TUnit> BuffHandler { get; }
 
-    public Round(List<TUnit> combatUnits, BuffManager<TUnit> buffManager)
+    public Round(List<TUnit> combatUnits, IBuffHandler<TUnit> buffHandler, int roundIndex)
     {
         _combatUnits = combatUnits;
-        BuffManager = buffManager;
+        BuffHandler = buffHandler;
+        RoundIndex = roundIndex;
     }
-
+    //执行回合函数前的前置逻辑, 一般上用来上buff
+    protected virtual void BeforeRoundExecute(TUnit[] sortedAliveCombatUnits){}
     //执行回合
     public TRoundInfo Execute()
     {
         var info = new TRoundInfo();
-        var sortedCombatUnits = CombatUnits.Where(c => c.IsAlive).OrderByDescending(keySelector: x => x.Speed);
-        BuffManager.OnRoundStart(); //开始回合buff执行
+        info.SetRound(RoundIndex);
+        var sortedCombatUnits = CombatUnits.Where(c => c.IsAlive).OrderByDescending(keySelector: x => x.GetSpeed()).ToArray();
+        BeforeRoundExecute(sortedCombatUnits);
+        BuffHandler.OnRoundStart(); //开始回合buff执行
         foreach (var combatUnit in sortedCombatUnits)
         {
             if (combatUnit.IsDead) break; //如果单位已阵亡
-            BuffManager.OnCombatStart(combatUnit); //当开始战斗时buff调用
+            BuffHandler.OnCombatStart(); //当开始战斗时buff调用
             var combatBehavior = ChooseBehavior(unit: combatUnit); //选择战斗行为
             var targets = combatBehavior.ChooseTargets(caster: combatUnit, combatUnits: _combatUnits); //选择执行目标
             var performInfos = combatBehavior.Execute(caster: combatUnit, targets: targets); //执行战斗
@@ -162,7 +246,7 @@ public class Round<TUnit,TRoundInfo ,TPerformInfo, TUnitInfo>
                 info.AddUnitActionInfo(unit: combatUnit, performInfo: performInfo);
         }
 
-        BuffManager.OnRoundEnd(); //结束回合buff执行
+        BuffHandler.OnRoundEnd(); //结束回合buff执行
         return info;
     }
 
@@ -240,7 +324,7 @@ public class AttackBehavior<TUnit,TInfo,TUnitInfo> : CombatBehavior<TUnit, TInfo
     {
         var (damage, isDodge, isCritical) = GetDamage(caster, target);
         if (!isDodge) target.AddHp((int)-damage);
-        perform.SetCounterAttack(damage: caster.Damage, isDodged: isDodge, isCritical); //记录反击伤害
+        perform.SetCounterAttack(damage: caster.GetDamage(), isDodged: isDodge, isCritical); //记录反击伤害
     }
 
     private (float damage, bool isDodge, bool isCritical) GetDamage(TUnit caster, TUnit target)
@@ -248,8 +332,8 @@ public class AttackBehavior<TUnit,TInfo,TUnitInfo> : CombatBehavior<TUnit, TInfo
         var isDodge = Random.Next(0, 100) < 15;//15%闪避
         var isCritical = Random.Next(0, 100) < 15;//15%暴击
         var damage = isDodge ? 0
-            : isCritical ? caster.Damage * CriticalMultiplier
-            : caster.Damage;
+            : isCritical ? caster.GetDamage() * CriticalMultiplier
+            : caster.GetDamage();
         return (damage, isDodge, isCritical);
     }
 
@@ -345,10 +429,10 @@ public record CombatUnitInfo<TUnit> : ICombatUnitInfo<TUnit> where TUnit : IComb
     {
         InstanceId = unit.InstanceId;
         Name = unit.Name;
-        Hp = unit.Hp;
-        MaxHp = unit.MaxHp;
-        Damage = unit.Damage;
-        Speed = unit.Speed;
+        Hp = unit.Hp.Value;
+        MaxHp = unit.Hp.Max;
+        Damage = unit.GetDamage();
+        Speed = unit.GetSpeed();
         TeamId = unit.TeamId;
     }
 
@@ -404,125 +488,164 @@ public record CombatResponseInfo<TUnit,TUnitInfo> where TUnit : ICombatUnit wher
     }
     public override string ToString() => Description(new StringBuilder()).ToString();
 }
-//全局Buff管理器
-public class BuffManager<TUnit> where TUnit : ICombatUnit
+
+public interface IBuffHandler<TUnit> where TUnit : ICombatUnit
 {
-    private List<BuffCombatMapper> BuffMappers { get; }
+    int GetBuffInstanceId();
+    void RemoveBuff(IBuff<TUnit> buff);
+    void AddBuff(IBuff<TUnit> buff);
+    void OnRoundStart();
+    void OnCombatStart();
+    void OnRoundEnd();
+}
+
+//全局Buff管理器, 处理历遍统一调用回合开始,回合结束等方法
+public class BuffManager<TUnit> : IBuffHandler<TUnit> where TUnit : ICombatUnit
+{
+    private List<IBuff<TUnit>> Buffs { get; }
     private List<TUnit> AllUnits { get; }
     public BuffManager(List<TUnit> allUnits)
     {
         AllUnits = allUnits;
-        BuffMappers = new List<BuffCombatMapper>();
+        Buffs = new List<IBuff<TUnit>>();
     }
     //buff Id 种子
     private int BuffInstanceSeed { get; set; }
     public int GetBuffInstanceId() => ++BuffInstanceSeed;
 
-    public void AddBuff(Buff<TUnit> buff, TUnit owner)
+    // 添加buff, 确保调用入口只有一个
+    public void AddBuff(IBuff<TUnit> buff)
     {
-        var mapper = BuffMappers.SingleOrDefault(b => b.Buff.InstanceId == buff.InstanceId);
-        if (mapper == null)
-        {
-            mapper = new BuffCombatMapper(buff, owner);
-            BuffMappers.Add(mapper);
-            return; //不增加Stack,因为buff本身生成的时候就包涵Stack了
-        }
-
-        mapper.Buff.AddStack();
+        var b = Buffs.SingleOrDefault(m => m.InstanceId == buff.InstanceId);
+        if (b == null) Buffs.Add(buff);
     }
 
-    public void RemoveBuff(Buff<TUnit> buff)
+    // 移除buff, 确保调用入口只有一个
+    public void RemoveBuff(IBuff<TUnit> buff)
     {
-        var mapper = BuffMappers.SingleOrDefault(b => b.Buff.InstanceId == buff.InstanceId);
-        if (mapper == null)
+        var b = Buffs.SingleOrDefault(b => b.InstanceId == buff.InstanceId);
+        if (b == null)
             throw new NullReferenceException($"buff[{buff.InstanceId}]!");
-        BuffMappers.Remove(mapper);
+        Buffs.Remove(b);
     }
 
-    public IReadOnlyList<Buff<TUnit>> GetBuffs(TUnit owner) => BuffMappers.Where(predicate: b => b.Owner.Equals(owner)).Select(b => b.Buff).ToList();
+    public IReadOnlyList<IBuff<TUnit>> GetBuffs(TUnit caster) => Buffs.Where(predicate: b => b.Caster.Equals(caster)).ToList();
 
-    public IReadOnlyList<Buff<TUnit>> GetAllBuffs() => BuffMappers.Select(b => b.Buff).ToList();
-
+    /// <summary>
+    /// 每回合开始时调用, 历遍所有buff, 调用OnRoundStart
+    /// </summary>
     public void OnRoundStart()
     {
-        foreach (var map in BuffMappers.ToArray()) map.Buff.OnRoundStart(map.Owner, AllUnits);
+        foreach (var buff in Buffs.ToArray()) buff.OnRoundStartTrigger(AllUnits);
     }
+    /// <summary>
+    /// 每回合结束时调用, 历遍所有buff, 调用OnRoundEnd
+    /// </summary>
     public void OnRoundEnd()
     {
-        foreach (var map in BuffMappers.ToArray()) map.Buff.OnRoundEnd(map.Owner, AllUnits);
+        foreach (var buff in Buffs.ToArray()) buff.OnRoundEndTrigger(AllUnits);
     }
-    public void OnCombatStart(TUnit unit)
+    /// <summary>
+    /// 战斗开始时调用, 历遍所有buff, 调用OnCombatStart
+    /// </summary>
+    public void OnCombatStart()
     {
-        foreach (var map in BuffMappers.Where(b => b.Owner.Equals(unit)).ToArray()) map.Buff.OnCombatStart(unit, AllUnits);
-    }
-    //buff与战斗单位的映射关系
-    private class BuffCombatMapper : IEquatable<BuffCombatMapper>
-    {
-        public Buff<TUnit> Buff { get; }
-        public TUnit Owner { get; }
-
-        public BuffCombatMapper(Buff<TUnit> buff, TUnit owner)
-        {
-            Buff = buff;
-            Owner = owner;
-        }
-
-        #region Equals
-        public bool Equals(BuffCombatMapper? other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Buff.InstanceId == other.Buff.InstanceId;
-        }
-        public override bool Equals(object? obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((BuffCombatMapper)obj);
-        }
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return Buff.InstanceId.GetHashCode() * 397;
-            }
-        }
-        public static bool operator ==(BuffCombatMapper? left, BuffCombatMapper? right) => Equals(left, right);
-        public static bool operator !=(BuffCombatMapper? left, BuffCombatMapper? right) => !Equals(left, right);
-        #endregion
+        foreach (var map in Buffs.ToArray()) map.OnCombatStartTrigger(AllUnits);
     }
 }
-public abstract class Buff<TUnit> where TUnit : ICombatUnit
+
+public interface IBuff<TUnit> where TUnit : ICombatUnit
 {
-    protected BuffManager<TUnit> _buffManager;
-    public int Stacks { get; private set; }
+    //buff唯一Id
+    int InstanceId { get; }
+    //buff名称(识别类型)
+    string TypeId { get; }
+    //发动者
+    TUnit Caster { get; }
+    //目标
+    TUnit Target { get; }
+    /// <summary>
+    /// buff持续回合数,默认为1,一般上每回合减1,为0时移除buff. 当然也有不递减的buff, 而只要被标记为0的时候就会被移除.
+    /// </summary>
+    int Lasting { get; }
+    void OnRoundStartTrigger(List<TUnit> units);
+    void OnRoundEndTrigger(List<TUnit> units);
+    void OnCombatStartTrigger(List<TUnit> units);
+    void AddLasting(int value = 1);
+    void SubLasting(int value = 1);
+    /// <summary>
+    /// 赋buff的入口
+    /// </summary>
+    /// <param name="target"></param>
+    void Apply(TUnit target);
+}
+
+public abstract class Buff<TUnit> : IBuff<TUnit> where TUnit : ICombatUnit
+{
+    private IBuffHandler<TUnit> BuffHandlerBase { get; }
     //buff唯一Id
     public int InstanceId { get; }
+    //buff名称(识别类型)
+    public abstract string TypeId { get; }
+    //发动者
+    public TUnit Caster { get; }
+    //目标
+    public TUnit Target { get; private set; }
 
-    public Buff(BuffManager<TUnit> buffManager, int stacks = 1)
+    /// <summary>
+    /// buff持续回合数,默认为1,一般上每回合减1,为0时移除buff. 当然也有不递减的buff, 而只要被标记为0的时候就会被移除.
+    /// </summary>
+    public int Lasting { get; private set; } = 1;
+
+    protected Buff(TUnit caster, IBuffHandler<TUnit> buffHandler, int lasting = 1)
     {
-        _buffManager = buffManager;
-        InstanceId = buffManager.GetBuffInstanceId();
-        Stacks = stacks;
+        BuffHandlerBase = buffHandler;
+        Caster = caster;
+        InstanceId = buffHandler.GetBuffInstanceId();
+        Lasting = lasting;
     }
 
-    public abstract void OnRoundStart(TUnit owner, List<TUnit> units);
+    public abstract void OnRoundStartTrigger(List<TUnit> units);
 
-    public abstract void OnRoundEnd(TUnit owner, List<TUnit> units);
+    public abstract void OnRoundEndTrigger(List<TUnit> units);
 
-    public abstract void OnCombatStart(TUnit owner, List<TUnit> units);
+    public abstract void OnCombatStartTrigger(List<TUnit> units);
 
-    public void AddStack()
+    /// <summary>
+    /// <see cref="Lasting"/>加1
+    /// </summary>
+    public void AddLasting(int value = 1)
     {
-        Stacks++;
+        Lasting = Math.Max(Lasting + value, 0);
     }
 
-    public void RemoveStack()
+    /// <summary>
+    /// <see cref="Lasting"/>减1,<see cref="Lasting"/>为0时移除buff
+    /// </summary>
+    public void SubLasting(int value = 1)
     {
-        Stacks--;
-        if (Stacks <= 0)
+        Lasting = Math.Max(Lasting - value, 0);
+        if (Lasting <= 0)
         {
-            _buffManager.RemoveBuff(this);
+            BuffHandlerBase.RemoveBuff(this);
+            OnRemoveBuff();
         }
     }
+
+    protected virtual void OnRemoveBuff()
+    {
+    }
+
+    /// <summary>
+    /// 赋buff的入口
+    /// </summary>
+    /// <param name="target"></param>
+    public void Apply(TUnit target)
+    {
+        Target = target;
+        BuffHandlerBase.AddBuff(this);
+        OnApplyBuff();
+    }
+
+    protected virtual void OnApplyBuff(){}
 }

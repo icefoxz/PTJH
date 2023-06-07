@@ -5,14 +5,14 @@ public static class CombatFormula
 {
     public static (bool isCritical, double criticalRatio, int criticalRan) CriticalJudgment(CombatArgs arg)
     {
-        var criticalRate = arg.Caster.CombatSet.GetCriticalRate(arg);
+        var criticalRate = arg.Caster.GetCombatSet().GetCriticalRate(arg);
         var criticalRan = Random.Range(0, 100);
         return (criticalRan <= criticalRate, criticalRate, criticalRan);
     }
     public static (bool isHardDamage, double rate, int ran) HardJudgment(CombatArgs arg, double hardFactor)
     {
-        var hardRate = (arg.Caster.Agility - arg.Target.Agility) / hardFactor;
-        hardRate += arg.Caster.CombatSet.GetHardRate(arg);
+        var hardRate = (arg.Caster.Agility.Value - arg.Target.Agility.Value) / hardFactor;
+        hardRate += arg.Caster.GetCombatSet().GetHardRate(arg);
         var ran = Random.Range(0, 100);
         var isHard = ran <= hardRate;
         return (isHard, hardRate, ran);
@@ -20,8 +20,8 @@ public static class CombatFormula
 
     public static (bool isDodged, double rate, int ran) DodgeJudgment(CombatArgs arg, double dodgeFactor)
     {
-        var dodgeRate = (arg.Caster.Agility - arg.Target.Agility) / dodgeFactor;
-        dodgeRate += arg.Caster.CombatSet.GetDodgeRate(arg);
+        var dodgeRate = (arg.Caster.Agility.Value - arg.Target.Agility.Value) / dodgeFactor;
+        dodgeRate += arg.Caster.GetCombatSet().GetDodgeRate(arg);
         //dodgeRate = Math.Min(dodgeRate, DodgeRateMax);
         var ran = Random.Range(0, 100);
         return (ran <= dodgeRate, dodgeRate, ran);
@@ -33,8 +33,8 @@ public static class CombatFormula
     /// <returns></returns>
     public static int HardDamage(CombatArgs arg)
     {
-        var dmg = arg.Caster.Damage;
-        var damage = dmg * (1 + arg.Caster.CombatSet.GetHardDamageRatio(arg));
+        var dmg = arg.Caster.GetDamage();
+        var damage = dmg * (1 + arg.Caster.GetCombatSet().GetHardDamageRatio(arg));
         var mp = MpDamage(arg);
         arg.Caster.AddMp(-mp);
         return (int)(mp + damage);
@@ -47,16 +47,16 @@ public static class CombatFormula
     /// <returns></returns>
     public static int CriticalDamage(CombatArgs arg)
     {
-        var mpMax = (int)arg.Caster.CombatSet.GetMpDamage(arg) * (1 + arg.Caster.CombatSet.GetCriticalDamageRatio(arg));
-        var mp = (int)Math.Min(mpMax, arg.Caster.Mp);
+        var mpMax = (int)arg.Caster.GetCombatSet().GetMpDamage(arg) * (1 + arg.Caster.GetCombatSet().GetCriticalDamageRatio(arg));
+        var mp = (int)Math.Min(mpMax, arg.Caster.Mp.Max);
         arg.Caster.AddMp(-mp);
         return mp;
     }
 
     public static int MpDamage(CombatArgs arg)
     {
-        var mp = (int)arg.Caster.CombatSet.GetMpDamage(arg);
-        mp = Math.Min(mp, arg.Caster.Mp);
+        var mp = (int)arg.Caster.GetCombatSet().GetMpDamage(arg);
+        mp = Math.Min(mp, arg.Caster.Mp.Max);
         arg.Caster.AddMp(-mp);
         return mp;
     }
@@ -65,14 +65,14 @@ public static class CombatFormula
     /// </summary>
     /// <param name="arg"></param>
     /// <returns></returns>
-    public static int GeneralDamage(CombatArgs arg) => arg.Caster.Damage + MpDamage(arg);
+    public static int GeneralDamage(CombatArgs arg) => arg.Caster.GetDamage() + MpDamage(arg);
 
     public static (int damage, int mpConsume) DamageReduction(int damage, CombatArgs arg)
     {
         if (damage == 0) return default;
-        var mp = arg.Target.Mp;
+        var mp = arg.Target.Mp.Value;
         var halfDamage = damage / 2;
-        var mpCounteract = arg.Target.CombatSet.GetMpCounteract(arg);
+        var mpCounteract = arg.Target.GetCombatSet().GetMpCounteract(arg);
         var mpConsume = (int)Math.Min(mp, mpCounteract);
         var finalDamage = Math.Max(halfDamage - mpConsume, 0) + halfDamage;
         return (finalDamage, mpConsume);

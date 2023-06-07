@@ -57,7 +57,7 @@ namespace Server.Controllers
         {
             dizi.SetEquipment(combat.Equipment);
             //状态调整
-            var conditionValue = BattleCfg.GetConditionValue(combat.HpRatio);
+            var conditionValue = BattleCfg.GetConditionValue((float)combat.HpRatio);
             var cons = new int[4];
             for (var i = 0; i < cons.Length; i++)
             {

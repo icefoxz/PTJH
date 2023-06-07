@@ -19,7 +19,7 @@ namespace Models
 
         //下列事件将在构造函数中注册
         #region StateHandler
-        private void OnRewardAction() => SendEvent(EventString.Dizi_Activity_Reward, Guid);
+        private void OnRewardAction() => EventUpdate(EventString.Dizi_Activity_Reward);
         private void OnAdjustAction(string adjust) => SendEvent(EventString.Dizi_Activity_Adjust, Guid, adjust);
         private void OnMessageAction(string message) => SendEvent(EventString.Dizi_Activity_Message, Guid, message);
         #endregion
@@ -34,8 +34,8 @@ namespace Models
         {
             State.StartAdventure(map, startTime, messageSecs, isProduction);
             Log("开始历练.");
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Adv_Start, Guid);
+            EventUpdate(EventString.Dizi_Params_StateUpdate);
+            EventUpdate(EventString.Dizi_Adv_Start);
         }
 
         internal void AdventureStoryLogging(DiziActivityLog story)
@@ -48,22 +48,22 @@ namespace Models
         {
             State.RecallFromAdventure(now, lastMile, reachingTime);
             Log($"停止历练, 里数: {lastMile}, 将{TimeSpan.FromMilliseconds(reachingTime - now).TotalSeconds}秒后到达宗门!");
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Adv_Recall, Guid);
+            EventUpdate(EventString.Dizi_Params_StateUpdate);
+            EventUpdate(EventString.Dizi_Adv_Recall);
         }
         internal void AdventureFinalize()
         {
             State.FinalizeAdventure();
             Log("历练结束!");
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Adv_Finalize, Guid);
+            EventUpdate(EventString.Dizi_Params_StateUpdate);
+            EventUpdate(EventString.Dizi_Adv_Finalize);
         }
 
         public void AdventureTerminate(long terminateTime, int lastMile)
         {
             Log("历练中断!");
             State.Terminate(terminateTime, lastMile);
-            SendEvent(EventString.Dizi_Adv_Terminate, Guid);
+            EventUpdate(EventString.Dizi_Adv_Terminate);
         }
     }
 
@@ -76,15 +76,15 @@ namespace Models
         internal void StartIdle(long startTime)
         {
             State.StartIdle(startTime);
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Idle_Start, Guid);
+            EventUpdate(EventString.Dizi_Params_StateUpdate);
+            EventUpdate(EventString.Dizi_Idle_Start);
         }
 
         internal void StopIdle()
         {
             State.StopIdleState();
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Idle_Stop, Guid);
+            EventUpdate(EventString.Dizi_Params_StateUpdate);
+            EventUpdate(EventString.Dizi_Idle_Stop);
         }
 
         internal void RegIdleStory(DiziActivityLog log)
@@ -101,15 +101,15 @@ namespace Models
         internal void StartLostState(long startTime, DiziActivityLog lastActivityLog)
         {
             State.StartLost(this, startTime, lastActivityLog);
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Lost_Start, Guid);
+            EventUpdate(EventString.Dizi_Params_StateUpdate);
+            EventUpdate(EventString.Dizi_Lost_Start);
         }
 
         internal void RestoreFromLost()
         {
             State.StartIdle(SysTime.UnixNow);
-            SendEvent(EventString.Dizi_Params_StateUpdate, Guid);
-            SendEvent(EventString.Dizi_Lost_End, Guid);
+            EventUpdate(EventString.Dizi_Params_StateUpdate);
+            EventUpdate(EventString.Dizi_Lost_End);
         }
     }
 

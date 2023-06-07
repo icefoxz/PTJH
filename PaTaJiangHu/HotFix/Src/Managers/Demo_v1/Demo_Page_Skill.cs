@@ -199,11 +199,11 @@ internal class Demo_Page_Skill : UiManagerBase
         public void Set(Dizi dizi)
         {
             var combatSet = dizi.GetCombatSet();
-            var criDmgRatio = combatSet.GetCriticalDamageRatio(CombatArgs.Instance(dizi, dizi));
-            var criRate = combatSet.GetCriticalRate(CombatArgs.Instance(dizi, dizi));
-            var hrdDmgRatio = combatSet.GetHardDamageRatio(CombatArgs.Instance(dizi, dizi));
-            var hrdRate = combatSet.GetHardRate(CombatArgs.Instance(dizi, dizi));
-            var dodRate = combatSet.GetDodgeRate(CombatArgs.Instance(dizi, dizi));
+            var criDmgRatio = combatSet.GetCriticalDamageRatio(CombatArgs.Instance(dizi, dizi, 0));
+            var criRate = combatSet.GetCriticalRate(CombatArgs.Instance(dizi, dizi, 0));
+            var hrdDmgRatio = combatSet.GetHardDamageRatio(CombatArgs.Instance(dizi, dizi, 0));
+            var hrdRate = combatSet.GetHardRate(CombatArgs.Instance(dizi, dizi, 0));
+            var dodRate = combatSet.GetDodgeRate(CombatArgs.Instance(dizi, dizi, 0));
             ListViewLeft.ClearList(u => u.Destroy());
             ListViewMid.ClearList(u => u.Destroy());
             ListViewRight.ClearList(u => u.Destroy());

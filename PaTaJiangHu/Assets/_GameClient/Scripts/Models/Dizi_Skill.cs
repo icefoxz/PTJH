@@ -18,25 +18,25 @@ namespace Models
         {
             Log(weapon == null ? $"卸下{_equipment.Weapon.Name}" : $"装备{weapon.Name}!");
             _equipment.SetWeapon(weapon);
-            SendEvent(EventString.Dizi_EquipmentUpdate);
+            EventUpdate(EventString.Dizi_EquipmentUpdate);
         }
         internal void SetArmor(IArmor armor)
         {
             Log(armor == null ? $"卸下{_equipment.Armor.Name}" : $"装备{armor.Name}!");
             _equipment.SetArmor(armor);
-            SendEvent(EventString.Dizi_EquipmentUpdate);
+            EventUpdate(EventString.Dizi_EquipmentUpdate);
         }
         internal void SetShoes(IShoes shoes)
         {
             Log(shoes == null ? $"卸下{_equipment.Shoes.Name}" : $"装备{shoes.Name}!");
             _equipment.SetShoes(shoes);
-            SendEvent(EventString.Dizi_EquipmentUpdate);
+            EventUpdate(EventString.Dizi_EquipmentUpdate);
         }
         internal void SetDecoration(IDecoration decoration)
         {
             Log(decoration == null ? $"卸下{_equipment.Decoration.Name}" : $"装备{decoration.Name}!");
             _equipment.SetDecoration(decoration);
-            SendEvent(EventString.Dizi_EquipmentUpdate);
+            EventUpdate(EventString.Dizi_EquipmentUpdate);
         }
 
         public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
@@ -47,14 +47,14 @@ namespace Models
         internal void SkillLevelUp(ISkill skill)
         {
             var level = Skill.LevelUp(skill);
-            SendEvent(EventString.Dizi_Skill_LevelUp);
+            EventUpdate(EventString.Dizi_Skill_LevelUp);
             Log($"技能{skill.Name}升级到{level}!");
         }
 
         internal void UseSkill(SkillType type, int index)
         {
             var skill = Skill.UseSkill(type, index);
-            SendEvent(EventString.Dizi_Skill_Update);
+            EventUpdate(EventString.Dizi_Skill_Update);
             Log($"使用{skill}");
         }
 
@@ -62,7 +62,7 @@ namespace Models
         {
             var skill = Skill.GetSkill(type, index);
             Skill.RemoveSkill(skill);
-            SendEvent(EventString.Dizi_Skill_Update);
+            EventUpdate(EventString.Dizi_Skill_Update);
             Log($"遗忘{skill.Name}");
         }
 
@@ -72,7 +72,7 @@ namespace Models
             _equipment.SetArmor(equipment.Armor);
             _equipment.SetShoes(equipment.Shoes);
             _equipment.SetDecoration(equipment.Decoration);
-            SendEvent(EventString.Dizi_EquipmentUpdate);
+            EventUpdate(EventString.Dizi_EquipmentUpdate);
         }
     }
 

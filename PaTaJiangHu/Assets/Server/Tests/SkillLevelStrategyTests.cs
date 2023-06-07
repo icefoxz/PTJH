@@ -14,7 +14,7 @@ public class SkillLevelStrategyTests : MonoBehaviour
         var level1CombatSet = LevelStrategy.GetCombatSet(1);
         var com1 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test1", hp: 100, mp: 100, strength: 20, agility: 20, teamId: 0, combat: level1CombatSet, null);
         var com2 = CombatArgs.InstanceCombatUnit(guid: Guid.NewGuid().ToString(), name: "Test2", hp: 100, mp: 100, strength: 30, agility: 30, teamId: 1, combat: level1CombatSet, null);
-        var arg = new CombatArgs(com1, com2);
+        var arg = new CombatArgs(com1, com2, 1);
         var dodgeRate = level1CombatSet.GetDodgeRate(arg);
         var criticalRate = level1CombatSet.GetCriticalRate(arg);
         var hardRate = level1CombatSet.GetHardRate(arg);

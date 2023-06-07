@@ -57,7 +57,7 @@ namespace Server.Configs.Skills
         public override SkillType SkillType => SkillType.Combat;
     }
 
-    public abstract class SkillFieldSo : AutoDashNamingObject, ISkill
+    public abstract class SkillFieldSo : AutoUnderscoreNamingObject, ISkill
     {
         [SerializeField] private ColorGrade 品级;
         [SerializeField] private Sprite 图标;
@@ -72,7 +72,7 @@ namespace Server.Configs.Skills
 
         private SkillLevelStrategySo LevelStrategy => 等级策略;
 
-        protected virtual IList<ICombatSet> CustomCombatSets()
+        protected virtual IList<ICombatSet> AdditionCombatSets()
         {
             CheckThis();
             return Array.Empty<ICombatSet>();
@@ -81,7 +81,7 @@ namespace Server.Configs.Skills
         public ICombatSet GetCombatSet(int level)
         {
             CheckThis();
-            var list = CustomCombatSets().ToList();
+            var list = AdditionCombatSets().ToList();
             list.Add(LevelStrategy.GetCombatSet(level));
             return list.Combine();
         }

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using ILRuntime.Runtime.Debugger.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 using Utls;
 
 /**
@@ -52,7 +54,7 @@ public class DiziBattle
         // 触发回合开始事件
         //OnRoundStart?.Invoke();
 
-        var round = new DiziCombatRound(Fighters.ToList(), BuffManager);
+        var round = new DiziCombatRound(Fighters.ToList(), BuffManager, Rounds.Count + 1);
         var info = round.Execute();
         Rounds.Add(info);
 

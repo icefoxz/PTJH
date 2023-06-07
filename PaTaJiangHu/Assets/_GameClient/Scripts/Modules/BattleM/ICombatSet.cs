@@ -14,6 +14,8 @@ public interface ICombatSet
     float GetMpDamage(CombatArgs arg);//内力消耗
     float GetMpCounteract(CombatArgs arg);//内力抵消
     float GetDodgeRate(CombatArgs arg);//闪避率
+    IEnumerable<CombatBuff> GetSelfBuffs(DiziCombatUnit caster, int round, BuffManager<DiziCombatUnit> buffManager);
+    IEnumerable<CombatBuff> GetTargetBuffs(DiziCombatUnit target, DiziCombatUnit caster,CombatArgs args, int round, BuffManager<DiziCombatUnit> buffManager);
 }
 
 public static class CombatExtension
@@ -32,6 +34,8 @@ public static class CombatExtension
         var mpDamage = new List<Func<CombatArgs, float>>();
         var mpCounteract = new List<Func<CombatArgs,float>>();
         var dodgeRate = new List<Func<CombatArgs, float>>();
+        var selfBuffs = new List<Func<DiziCombatUnit, int, BuffManager<DiziCombatUnit>, IEnumerable<CombatBuff>>>();
+        var targetBuffs = new List<Func<DiziCombatUnit, DiziCombatUnit, CombatArgs, int, BuffManager<DiziCombatUnit>, IEnumerable<CombatBuff>>>();
         foreach (var field in combats)
         {
             hardRate.Add(field.GetHardRate);
@@ -41,6 +45,8 @@ public static class CombatExtension
             mpDamage.Add(field.GetMpDamage);
             mpCounteract.Add(field.GetMpCounteract);
             dodgeRate.Add(field.GetDodgeRate);
+            selfBuffs.Add(field.GetSelfBuffs);
+            targetBuffs.Add(field.GetTargetBuffs);
         }
         return new CombatSet(
             hardRate: hardRate, 
@@ -49,6 +55,8 @@ public static class CombatExtension
             criticalDamageRatio: criticalMultiplier,
             mpDamage: mpDamage, 
             mpCounteract: mpCounteract, 
-            dodgeRate: dodgeRate);
+            dodgeRate: dodgeRate,
+            selfBuffs: selfBuffs,
+            targetBuffs: targetBuffs);
     }
 }

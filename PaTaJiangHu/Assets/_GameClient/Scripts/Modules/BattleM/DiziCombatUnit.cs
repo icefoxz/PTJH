@@ -2,21 +2,21 @@
 using System;
 using System.Linq;
 using System.Text;
+using DiziM;
 using Models;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
-using UnityEngine;
 using Utls;
+using UnityEngine;
 
 public interface IDiziCombatUnit : ICombatUnit
 {
     string Guid { get; }
-    int Mp { get; }
-    int MaxMp { get; }
-    int Strength { get; }
-    int Agility { get; }
-    ICombatSet CombatSet { get; }
+    ICombatCondition Mp { get; }
+    ICombatAttribute Strength { get; }
+    ICombatAttribute Agility { get; }
+    ICombatSet GetCombatSet();
     IDiziEquipment Equipment { get; }
 }
 
@@ -26,110 +26,85 @@ public interface IDiziCombatUnit : ICombatUnit
 public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
 {
     private DiziEquipment _equipment;
-    private string _name;
-    private int _strength;
-    private int _agility;
-    private int _maxHp;
-    private int _maxMp;
-
-    private int _hp;
-    private int _mp;
+    private ICombatSet _skillCombatSet;
+    private readonly List<CombatBuff> _buffs = new List<CombatBuff>();
+    public IReadOnlyList<CombatBuff> Buffs => _buffs;
 
     public string Guid { get; private set; }
-    /**
-     * 重写基本属性是为了调整对武器的加成作用
-     */
-    public override string Name => _name;
-    public override int MaxHp => (int)(_maxHp + _equipment.GetPropAddon(DiziProps.Hp));
-    public override int Damage => Strength; //暂时攻击力直接引用力量
-    public override int Speed => Agility; //暂时速度直接引用敏捷
-    public int MaxMp => (int)(_maxMp + _equipment.GetPropAddon(DiziProps.Mp));
-    public int Strength => _strength;
-    public int Agility => _agility;
 
-    //当前hp与mp是状态
-    public override int Hp => _hp;
-    public int Mp => _mp;
-
-    public ICombatSet CombatSet { get; private set; }
+    public ICombatAttribute Strength => GetAttribute(Combat.Str);
+    public ICombatAttribute Agility => GetAttribute(Combat.Agi);
+    public ICombatCondition Mp => GetCondition(Combat.Mp);
+    public ICombatSet GetCombatSet() => new[] { _skillCombatSet, Equipment.GetCombatSet() }.Combine();
 
     public IDiziEquipment Equipment => _equipment;
-    public int GetStrength() => (int)(Strength + _equipment.GetPropAddon(DiziProps.Strength));
-    public int GetAgility() => (int)(Agility + _equipment.GetPropAddon(DiziProps.Agility));
-    public int GetHp() => (int)(Hp + _equipment.GetPropAddon(DiziProps.Hp));
-    public int GetMp() => (int)(Mp + _equipment.GetPropAddon(DiziProps.Mp));
+    public override int GetDamage() => Strength.Value;
+    public override int GetSpeed() => Agility.Value;
 
-    internal DiziCombatUnit(string guid,int teamId, string name, int strength, int agility, int hp, int mp, ICombatSet set, IDiziEquipment equipment = null)
-        : base(teamId: teamId)
+    public DiziCombatUnit(string guid, int teamId, string name, int strength, int agility, int hp, int mp,
+        ICombatSet set, IDiziEquipment equipment = null)
+        : base(teamId: teamId, name: name, hp: hp)
     {
         Guid = guid;
-        _name = name;
-        _strength = strength;
-        _agility = agility;
-        _maxHp = hp;
-        _maxMp = mp;
-        CombatSet = set;
+        AddAttribute(Combat.Str, strength);
+        AddAttribute(Combat.Agi, agility);
+        AddCondition(Combat.Mp, mp);
+        _skillCombatSet = set;
         _equipment = equipment == null ? new DiziEquipment() : new DiziEquipment(equipment);
-        StatusFull();
-    }
-    //填满hp与mp
-    private void StatusFull()
-    {
-        _hp = MaxHp; //状态最后才赋值
-        _mp = MaxMp; //状态最后才赋值
+        UpdateCalculate();
+        Full();
     }
 
-    internal DiziCombatUnit(int teamId, Dizi dizi) 
-        : base(teamId: teamId)
+    private void Full()
+    {
+        Hp.Set(Hp.Max);
+        Mp.Set(Mp.Max);
+    }
+
+    public DiziCombatUnit(int teamId, Dizi dizi) : base(teamId, dizi.Name, dizi.Hp)
     {
         Guid = dizi.Guid;
-        _name = dizi.Name;
-        _strength = dizi.Strength;
-        _maxHp = dizi.Hp;
-        _maxMp = dizi.Mp;
-        _agility = dizi.Agility;
-        _strength = dizi.Strength;
-        CombatSet = dizi.GetCombatSet();
+        AddAttribute(Combat.Str, dizi.Strength);
+        AddAttribute(Combat.Agi, dizi.Agility);
+        AddCondition(Combat.Mp, dizi.Mp);
+        _skillCombatSet = dizi.GetCombatSet();
         _equipment = new DiziEquipment(dizi.Equipment);
-        StatusFull();
+        UpdateCalculate();
+        Full();
     }
 
-    internal DiziCombatUnit(int teamId, CombatNpcSo npc) : base(teamId: teamId)
+    internal DiziCombatUnit(int teamId, CombatNpcSo npc) : base(teamId,npc.name,npc.Hp)
     {
-        _name = npc.Name;
-        _strength = npc.Strength;
-        _agility = npc.Agility;
-        _maxHp = npc.Hp;
-        _maxMp = npc.Mp;
-        CombatSet = npc.GetCombatSet();
+        AddAttribute(Combat.Str, npc.Strength);
+        AddAttribute(Combat.Agi, npc.Agility);
+        AddCondition(Combat.Mp, npc.Mp);
+        _skillCombatSet = npc.GetCombatSet();
         _equipment = new DiziEquipment(npc.Equipment);
-        StatusFull();
+        UpdateCalculate();
+        Full();
     }
 
-    internal DiziCombatUnit(IDiziCombatUnit unit) : base(teamId: unit.TeamId)
+    public DiziCombatUnit(bool fullCondition, IDiziCombatUnit unit) : base(unit.TeamId, unit.Name, unit.Hp.Value, unit.Hp.Max,
+        unit.Hp.Base)
     {
-        _name = unit.Name;
-        _strength = unit.Strength;
-        _agility = unit.Agility;
-        _maxHp = unit.Hp;
-        _maxMp = unit.Mp;
-        CombatSet = unit.CombatSet;
+        AddAttribute(Combat.Str, unit.Strength.Value, unit.Strength.Base);
+        AddAttribute(Combat.Agi, unit.Agility.Value, unit.Agility.Base);
+        AddCondition(Combat.Mp, unit.Mp.Value, unit.Mp.Max, unit.Mp.Base);
+        _skillCombatSet = unit.GetCombatSet();
         _equipment = new DiziEquipment(unit.Equipment);
-        //DiziCombatUnit 接口是直接复制属性,不会重置状态
-        _hp = unit.Hp;
-        _maxMp = unit.Mp;
+        UpdateCalculate();
+        if (fullCondition) Full();
     }
 
-    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId: teamId)
+    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name,(int)s.Hp,s.MaxHp)
     {
-        _name = s.Name;
-        _maxMp = (int)s.Mp;
-        _maxHp = (int)s.Hp;
-        _agility = (int)s.Agility;
-        _strength = (int)s.Strength;
-        CombatSet = Server.Configs.Battles.CombatSet.Empty;
+        AddCondition(Combat.Mp, (int)s.Mp);
+        AddAttribute(Combat.Str, (int)s.Strength);
+        AddAttribute(Combat.Agi, (int)s.Agility);
+        _skillCombatSet = CombatSet.Empty;
         _equipment = new DiziEquipment();
-        StatusFull();
+        UpdateCalculate();
+        Full();
     }
     
     //伤害减免
@@ -141,38 +116,59 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         return finalDamage;
     }
 
-    public override string ToString() => $"{Name}:力[{Strength}],敏[{Agility}],血[{Hp}/{MaxMp}],内[{Mp}/{MaxMp}]|伤:{Damage},速:{Speed}";
+    public override string ToString() =>
+        $"{Name}:{Strength},{Agility},血[{Hp.Value}/{Hp.Max}],内[{Mp.Value}/{Mp.Max}]|伤:{GetDamage()},速:{GetSpeed()}";
 
     public void AddMp(int mp)
     {
-        _mp += mp;
-        Math.Clamp(value: _hp, min: 0, max: MaxMp);
-    }
-
-    public override int AddHp(int hp)
-    {
-        _hp += hp;
-        Math.Clamp(_hp, 0, MaxHp);
-        return hp;
+        if (mp == 0) return;
+        var value = Math.Clamp(value: Mp.Value + mp, min: 0, max: Mp.Max);
+        Mp.Set(value);
     }
 
     public void EquipmentDisarmed(IEquipment equipment)
     {
         _equipment.CombatDisarm(equipment);
-        UpdateConditionValues();
-    }
-
-    //更新状态值, 主要是装备变化时可以解除最大值
-    private void UpdateConditionValues()
-    {
-        AddHp(0);
-        AddMp(0);
+        UpdateCalculate();
     }
 
     public void EquipmentArmed(IEquipment equipment)
     {
         _equipment.CombatArm(equipment);
-        UpdateConditionValues();
+        UpdateCalculate();
+    }
+    public void BeforeStartRoundUpdate() => UpdateCalculate();
+    // 更新状态值, 主要是更新当前buff与装备带来的属性和状态变化
+    // 更新状态会调用配置, 所以调用入口尽量控制好更新节奏. 否则会是性能开销
+    private void UpdateCalculate()
+    {
+        var str = (int)(Strength.Base + _equipment.GetPropAddon(DiziProps.Strength) + Buffs.Sum(b => b.GetEffectValue(Combat.Str)));
+        Strength.Set(str);
+        var agi = (int)(Agility.Base + _equipment.GetPropAddon(DiziProps.Agility) + Buffs.Sum(b => b.GetEffectValue(Combat.Agi)));
+        Agility.Set(agi);
+        var hp = (int)(Hp.Base + _equipment.GetPropAddon(DiziProps.Hp) + Buffs.Sum(b => b.GetEffectValue(Combat.Hp)));
+        Hp.SetMax(hp, false);
+        var mp = (int)(Mp.Base + _equipment.GetPropAddon(DiziProps.Mp) + Buffs.Sum(b => b.GetEffectValue(Combat.Mp)));
+        Mp.SetMax(mp, false);
+    }
+
+    public IEnumerable<CombatBuff> GetSelfBuffs(int round, BuffManager<DiziCombatUnit> buffManager) =>
+        _skillCombatSet.GetSelfBuffs(this, round, buffManager);
+
+    public IEnumerable<CombatBuff> GetTargetBuffs(DiziCombatUnit target, CombatArgs args, int round,
+        BuffManager<DiziCombatUnit> buffManager) =>
+        _skillCombatSet.GetTargetBuffs(target, this, args, round, buffManager);
+
+    public void AddBuff(CombatBuff buff, bool forceUpdate = false)                                    
+    {
+        _buffs.Add(buff);
+        if (forceUpdate) UpdateCalculate();
+    }
+
+    public void RemoveBuff(CombatBuff buff, bool forceUpdate = false)
+    {
+        _buffs.Remove(buff);
+        if (forceUpdate) UpdateCalculate();
     }
 
     /// <summary>
@@ -258,19 +254,30 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
 /// </summary>
 public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>
 {
-    private int Combo { get; } = 1;
+    private int Round { get; }
+    private int Combo { get; }
+    protected BuffManager<DiziCombatUnit> BuffManager { get; }
+    public DiziAttackBehavior(int round, BuffManager<DiziCombatUnit> buffManager, int combo = 1)
+    {
+        Round = round;
+        BuffManager = buffManager;
+        Combo = combo;
+    }
 
     //攻击行为
-    public override DiziCombatPerformInfo[] Execute(DiziCombatUnit caster, DiziCombatUnit[] targets)
+    public override DiziCombatPerformInfo[] Execute(DiziCombatUnit caster, DiziCombatUnit[] targets) 
     {
         var infos = new List<DiziCombatPerformInfo>();
-        var combos = Combo;//获取连击信息
-        for (var i = 0; i < combos; i++)//连击次数
+        var combos = Combo; //获取连击信息
+        for (var i = 0; i < combos; i++) //连击次数
         {
-            foreach (var target in targets)//对所有执行目标历遍执行
+            foreach (var target in targets) //对所有执行目标历遍执行
             {
-                var arg = new CombatArgs(caster, target);
-                var (dmg, isDodge, isHard, isCritical) = GetDamage(arg);//获取伤害
+                var arg = new CombatArgs(caster, target, Round);
+                var targetBuffs = caster.GetTargetBuffs(target, arg, Round, BuffManager); //获取目标buff
+                foreach (var buff in targetBuffs) buff.Apply(target);
+
+                var (dmg, isDodge, isHard, isCritical) = GetDamage(arg); //获取伤害
                 var damage = (int)dmg;
 
                 //生成行动记录
@@ -284,18 +291,19 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
                 pfmInfo.SetCritical(isCritical);
 
                 //执行伤害
-                var finalDamage = target.TakeReductionDamage(damage, arg);//有计算减免的伤害
+                var finalDamage = target.TakeReductionDamage(damage, arg); //有计算减免的伤害
                 var canCounter = CounterJudgment(target);
-                if (canCounter) CounterAttack(new CombatArgs(target, caster), pfmInfo);//反击执行
+                if (canCounter) CounterAttack(new CombatArgs(target, caster, Round), pfmInfo); //反击执行
                 //生成反馈记录
                 var response = new CombatResponseInfo<DiziCombatUnit, DiziCombatInfo>();
                 response.Set(target);
-                if(!isDodge)
+                if (!isDodge)
                 {
                     WeaponCompare(caster, target, pfmInfo.Performer, response.Target); //武器对比
                     ArmorConsumption(caster, target, pfmInfo.Performer, response.Target); //护甲消耗
                     DecorationConsumption(caster, target, response.Target); //饰品消耗
                 }
+
                 ShoesConsumption(caster, target, response.Target); //鞋子消耗
                 //添加反馈记录
                 pfmInfo.AddResponse(info: response);
@@ -303,8 +311,10 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
                 response.RegDamage(damage: finalDamage, isDodge);
             }
         }
+
         return infos.ToArray();
     }
+
 
     //守方鞋子
     private void ShoesConsumption(DiziCombatUnit caster, DiziCombatUnit target, DiziCombatInfo targetInfo)
@@ -400,22 +410,22 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
     {
         var (damage, isDodge, isHard ,isCritical) = GetDamage(arg);
         if (!isDodge) arg.Target.TakeReductionDamage((int)damage, arg);
-        perform.SetCounterAttack(damage: arg.Caster.Damage, isDodged: isDodge, isCritical); //记录反击伤害
+        perform.SetCounterAttack(damage: arg.Caster.GetDamage(), isDodged: isDodge, isCritical); //记录反击伤害
         perform.SetHard(isHard);
     }
     //攻击伤害
     private (float damage, bool isDodge, bool isHard, bool isCritical) GetDamage(CombatArgs arg)
     {
         var (isDodge, dodgeRatio, dodgeRan) = CombatFormula.DodgeJudgment(arg, 1000);
-        var (ishard, hardRatio, hardRan) = CombatFormula.HardJudgment(arg, 1000);
+        var (isHard, hardRatio, hardRan) = CombatFormula.HardJudgment(arg, 1000);
         var (isCritical, criticalRatio, criticalRan) = CombatFormula.CriticalJudgment(arg);
 
         int damage;
-        if (ishard) damage = CombatFormula.HardDamage(arg);
+        if (isHard) damage = CombatFormula.HardDamage(arg);
         else 
         if (isCritical) damage = CombatFormula.CriticalDamage(arg);
         else damage = CombatFormula.GeneralDamage(arg);
-        return isDodge ? (0, true, ishard, isCritical) : (damage, false, ishard, isCritical);
+        return isDodge ? (0, true, ishard: isHard, isCritical) : (damage, false, ishard: isHard, isCritical);
     }
 
     //选择目标
@@ -429,15 +439,29 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
     }
 }
 
-public class DiziCombatRound : Round<DiziCombatUnit, DiziRoundInfo, DiziCombatPerformInfo, DiziCombatInfo>
+public class DiziCombatRound : Round<DiziCombatUnit, DiziRoundInfo, DiziCombatPerformInfo, DiziCombatInfo, Buff<DiziCombatUnit>>
 {
-    public DiziCombatRound(List<DiziCombatUnit> combatUnits, BuffManager<DiziCombatUnit> buffManager) : base(
-        combatUnits, buffManager)
+    private BuffManager<DiziCombatUnit> BuffManager { get; set; }
+    public DiziCombatRound(List<DiziCombatUnit> combatUnits, BuffManager<DiziCombatUnit> buffManager, int round) : base(
+        combatUnits, buffManager, round)
     {
+        BuffManager = buffManager;
+    }
+
+    protected override void BeforeRoundExecute(DiziCombatUnit[] sortedAliveCombatUnits)
+    {
+        foreach (var caster in sortedAliveCombatUnits)
+        {
+            var selfBuffs = caster.GetSelfBuffs(RoundIndex, BuffManager).ToArray(); //获取自身buff
+            foreach (var buff in selfBuffs) buff.Apply(caster); //添加buff
+        }
+
+        Array.ForEach(sortedAliveCombatUnits, unit => unit.BeforeStartRoundUpdate());
     }
 
     protected override CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>
-        ChooseBehavior(DiziCombatUnit unit) => new DiziAttackBehavior();
+        ChooseBehavior(DiziCombatUnit unit) =>
+        new DiziAttackBehavior(RoundIndex, BuffManager);
 }
 
 public record DiziCombatPerformInfo :CombatPerformInfo<DiziCombatUnit, DiziCombatInfo>
@@ -477,8 +501,8 @@ public record DiziCombatInfo : CombatUnitInfo<DiziCombatUnit>
         ArmorId = unit.Equipment.Armor?.Id ?? -1;
         ShoesId = unit.Equipment.Shoes?.Id ?? -1;
         DecorationId = unit.Equipment.Decoration?.Id ?? -1;
-        Mp = unit.Mp;
-        MaxMp = unit.MaxMp;
+        Mp = unit.Mp.Value;
+        MaxMp = unit.Mp.Max;
         base.Set(unit);
     }
 
@@ -498,5 +522,4 @@ public record DiziCombatInfo : CombatUnitInfo<DiziCombatUnit>
 
 public class DiziRoundInfo : RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>
 {
-
 }

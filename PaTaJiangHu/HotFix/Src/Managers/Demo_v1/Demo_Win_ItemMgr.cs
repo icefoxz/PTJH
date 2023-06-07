@@ -40,7 +40,8 @@ namespace HotFix_Project.Managers.Demo_v1
             });
             Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentUpdate, bag =>
             {
-                ItemWindow.UpdateItemList();
+                var guid = bag.Get<string>(0);
+                ItemWindow.UpdateItemList(guid);
             });
         }
         /// <summary>
@@ -103,8 +104,9 @@ namespace HotFix_Project.Managers.Demo_v1
             private int SelectedItemIndex { get; set; }
             private int SelectedType { get; set; }
             private bool IsDiziEquipped { get; set; }
-            public void UpdateItemList()
+            public void UpdateItemList(string guid)
             {
+                if (SelectedDiziGuid != guid) return;
                 var type = (ItemTypes)SelectedType;
                 ListItems(type);
                 for(int i = 0; i < ItemView.List.Count; i++)

@@ -5,7 +5,6 @@ using MyBox;
 using Server.Configs.Battles;
 using Server.Configs.Items;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Server.Configs.Skills
 {
@@ -53,14 +52,14 @@ namespace Server.Configs.Skills
                 return true;
             }
 
-            private string SetSpecial() => "特殊招式未支持";
-
             [ConditionalField(true, nameof(SetName))][SerializeField][ReadOnly] private string _name;
             [SerializeField] [Min(1)] private int 等级 = 1;
             [SerializeField] private CombatAdvancePropField[] 属性;
-            [SerializeField] private CombatDifferentialStrategySo[] 差值配置;
+            [SerializeField] private CombatCompareStrategySo[] 差值配置;
+            [SerializeField] private EffectBuffSoBase[] _buffs;
 
-            private CombatDifferentialStrategySo[] DifferentialStrategies => 差值配置;
+            private EffectBuffSoBase[] Buffs => _buffs;
+            private CombatCompareStrategySo[] DifferentialStrategies => 差值配置;
             private CombatAdvancePropField[] Fields => 属性;
             private int Level => 等级;
 
@@ -73,6 +72,8 @@ namespace Server.Configs.Skills
                 var mpDamageList = new List<Func<CombatArgs, float>>();
                 var mpCounteractList = new List<Func<CombatArgs, float>>();
                 var dodgeRateList = new List<Func<CombatArgs, float>>();
+                var selfBuffList = new List<Func<DiziCombatUnit, int, BuffManager<DiziCombatUnit>, IEnumerable<CombatBuff>>>();
+                var targetBuffList = new List<Func<DiziCombatUnit, DiziCombatUnit, CombatArgs, int, BuffManager<DiziCombatUnit>, IEnumerable<CombatBuff>>>();
 
                 //值叠加
                 foreach (var field in Fields)
@@ -86,21 +87,27 @@ namespace Server.Configs.Skills
                     mpCounteractList.Add(_ => field.MpCounteract);
                 }
 
+                foreach (var buff in Buffs)
+                {
+                    selfBuffList.Add(buff.InstanceSelfBuffs);
+                    targetBuffList.Add(buff.InstanceTargetBuffs);
+                }
+
                 //公式叠加
                 foreach (var strategy in DifferentialStrategies)
                 {
                     switch (strategy.Set)
                     {
-                        case CombatDifferentialStrategySo.Settings.HardRate:
+                        case CombatCompareStrategySo.Settings.HardRate:
                             hardRateList.Add(strategy.GetHardRate);
                             break;
-                        case CombatDifferentialStrategySo.Settings.HardDamageRate:
+                        case CombatCompareStrategySo.Settings.HardDamageRate:
                             hardDamageRatioList.Add(strategy.GetHardDamageRatio);
                             break;
-                        case CombatDifferentialStrategySo.Settings.CriticalRate:
+                        case CombatCompareStrategySo.Settings.CriticalRate:
                             criticalRateList.Add(strategy.GetCriticalRate);
                             break;
-                        case CombatDifferentialStrategySo.Settings.DogeRate:
+                        case CombatCompareStrategySo.Settings.DogeRate:
                             dodgeRateList.Add(strategy.GetDodgeRate);
                             break;
                         default:
@@ -115,14 +122,15 @@ namespace Server.Configs.Skills
                     criticalDamageRatio: criticalDamageRatioList,
                     mpDamage: mpDamageList,
                     mpCounteract: mpCounteractList,
-                    dodgeRate: dodgeRateList);
+                    dodgeRate: dodgeRateList,
+                    selfBuffs: selfBuffList,
+                    targetBuffs: targetBuffList);
             }
 
             public ISkillAttribute[] GetAttributes() => DifferentialStrategies.Select(d => d.GetCombatAttribute()).ToArray();
 
             public ISkillProp[] GetProps() => Fields.SelectMany(f => f.GetProps()).ToArray();
         }
-
     }
 
     /// <summary>
@@ -136,7 +144,6 @@ namespace Server.Configs.Skills
             [InspectorName("闪避")] Dodge,
             [InspectorName("重击")] Hard,
             [InspectorName("会心")] Critical,
-            [InspectorName("特殊")] Special,
         }
 
         private bool SetLevelName()
@@ -155,7 +162,7 @@ namespace Server.Configs.Skills
                 Settings.Dodge => SetDodgeText(),
                 Settings.Hard => SetHardText(),
                 Settings.Critical => SetCritical(),
-                Settings.Special => SetSpecial(),
+                //Settings.Special => SetSpecial(),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -166,7 +173,7 @@ namespace Server.Configs.Skills
             Settings.Dodge => "闪避",
             Settings.Hard => "重击",
             Settings.Critical => "会心",
-            Settings.Special => "特殊",
+            //Settings.Special => "特殊",
             _ => throw new ArgumentOutOfRangeException(nameof(set), set, null)
         };
 
@@ -263,6 +270,16 @@ namespace Server.Configs.Skills
             public string Value { get; } = Value;
         }
 
-        public ICombatSet GetCombatSet() => new CombatSet(HardRate, HardDamageRateAddOn, CriticalRate, CriticalDamageRateAddOn, MpDamage, MpCounteract, DodgeRate);
+        public ICombatSet GetCombatSet() => new CombatSet(
+            HardRate, 
+            HardDamageRateAddOn, 
+            CriticalRate,
+            CriticalDamageRateAddOn, 
+            MpDamage, 
+            MpCounteract, 
+            DodgeRate,
+            null,
+            null
+            );
     }
 }

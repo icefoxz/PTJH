@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Core;
 using Models;
@@ -161,6 +162,14 @@ public class TestBattle : MonoBehaviour
         public float GetMpDamage(CombatArgs arg) => Force.GetMpDamage(arg);
         public float GetMpCounteract(CombatArgs arg) => Force.GetMpCounteract(arg);
         public float GetDodgeRate(CombatArgs arg) => Dodge.GetDodgeRate(arg);
+        public IEnumerable<CombatBuff> GetSelfBuffs(DiziCombatUnit caster, int round, BuffManager<DiziCombatUnit> buffManager) =>
+            Com.Buffs.Concat(Force.Buffs).Concat(Dodge.Buffs)
+                .SelectMany(b => b.InstanceSelfBuffs(caster, round, buffManager));
+
+        public IEnumerable<CombatBuff> GetTargetBuffs(DiziCombatUnit target, DiziCombatUnit caster, CombatArgs args,
+            int round, BuffManager<DiziCombatUnit> buffManager) =>
+            Com.Buffs.Concat(Force.Buffs).Concat(Dodge.Buffs)
+                .SelectMany(b => b.InstanceTargetBuffs(target, caster, args, round, buffManager));
 
         public void SetInstanceId(int instanceId) => InstanceId = instanceId;
 
@@ -246,6 +255,8 @@ public class TestBattle : MonoBehaviour
         {
             [SerializeField] private float 重击率;
             [Range(0, 3)] [SerializeField] private float 重击伤害倍数;
+            [SerializeField] private EffectBuffSoBase[] _buffs;
+            public EffectBuffSoBase[] Buffs => _buffs;
             public float GetHardRate(CombatArgs arg) => 重击率;
             public float GetHardDamageRatio(CombatArgs arg) => 重击伤害倍数;
         }
@@ -255,6 +266,8 @@ public class TestBattle : MonoBehaviour
             [SerializeField] private float 抵消内力;
             [SerializeField] private float 会心率;
             [SerializeField] private float 会心倍率 = 3;
+            [SerializeField] private EffectBuffSoBase[] _buffs;
+            public EffectBuffSoBase[] Buffs => _buffs;
             public float GetCriticalRate(CombatArgs arg) => 会心率;
             public float GetMpDamage(CombatArgs arg) => 伤害内力;
             public float GetMpCounteract(CombatArgs arg) => 抵消内力;
@@ -263,6 +276,8 @@ public class TestBattle : MonoBehaviour
         [Serializable] private class DodgeSkill
         {
             [SerializeField] private float 闪避率;
+            [SerializeField] private EffectBuffSoBase[] _buffs;
+            public EffectBuffSoBase[] Buffs => _buffs;
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
         }
     }

@@ -14,7 +14,7 @@ namespace Server.Configs.Skills
         public override SkillType SkillType => SkillType.Force;
         private int MpUses => 内力使用;
 
-        protected override IList<ICombatSet> CustomCombatSets()
+        protected override IList<ICombatSet> AdditionCombatSets()
         {
             return new List<ICombatSet>
             {
@@ -24,14 +24,16 @@ namespace Server.Configs.Skills
                     criticalDamageRatio: null,
                     mpDamage: new List<Func<CombatArgs, float>> { MpUsesFromCaster }, 
                     mpCounteract: null, 
-                    dodgeRate: null)
+                    dodgeRate: null,
+                    selfBuffs: null,
+                    targetBuffs: null)
             };
         }
 
         private float MpUsesFromCaster(CombatArgs arg)
         {
             if (MpUses >= 0) return MpUses;
-            var mp = MathF.Abs(MpUses) * arg.Caster.MaxMp * 0.01f;
+            var mp = MathF.Abs(MpUses) * arg.Caster.Mp.Max * 0.01f;
             return mp;
         }
     }

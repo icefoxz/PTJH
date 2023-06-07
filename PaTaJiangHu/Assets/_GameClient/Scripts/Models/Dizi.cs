@@ -94,6 +94,8 @@ namespace Models
             StaminaService();
         }
 
+        protected void EventUpdate(string eventString) => SendEvent(eventString, Guid);
+
         private void StaminaService()
         {
             Game.CoService.RunCo(StaminaPolling(), null, Name);
@@ -153,7 +155,7 @@ namespace Models
         {
             if (!StaminaManager.StaminaUpdate(ticks)) return;
             Log($"体力更新 = {StaminaManager.Stamina.Con}");
-            SendEvent(EventString.Dizi_Params_StaminaUpdate, Guid);
+            EventUpdate(EventString.Dizi_Params_StaminaUpdate);
         }
 
         internal void LevelSet(int level)

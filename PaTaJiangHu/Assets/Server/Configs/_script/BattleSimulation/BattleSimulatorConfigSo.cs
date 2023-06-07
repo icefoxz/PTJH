@@ -42,9 +42,9 @@ namespace Server.Configs.BattleSimulation
             var enemyCombat = new DiziCombatUnit(enemy, 1);
             var battle = DiziBattle.AutoCount(playerCombat, enemyCombat, RoundLimit);
             var roundCount = battle.Rounds.Count;
-            var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,battle.IsPlayerWin,player,enemy,playerCombat.Hp);
+            var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,battle.IsPlayerWin,player,enemy,playerCombat.Hp.Value);
             return new Outcome(roundCount, battle.IsPlayerWin, player.Damage, enemy.Damage, player.MaxHp, enemy.MaxHp,
-                playerCombat.Hp, enemyCombat.Hp, combatMessages);
+                playerCombat.Hp.Value, enemyCombat.Hp.Value, combatMessages);
         }
 
         public int GetPower(float strength, float agility, float hp, float mp) => (int)((strength + agility) * (hp + mp) / 1000);

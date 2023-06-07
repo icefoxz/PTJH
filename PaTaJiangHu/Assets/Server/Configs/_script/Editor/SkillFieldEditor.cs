@@ -60,7 +60,7 @@ public abstract class SkillFieldSOEditor : Editor
         ISimCombat sim2 = new SimCombat("守", tStr, tAgi, tHp, tMp);
         var test1 = new DiziCombatUnit(sim1, 0);
         var test2 = new DiziCombatUnit(sim2, 1);
-        return new CombatArgs(test1, test2);
+        return new CombatArgs(test1, test2, 1);
     }
 
     private record SimCombat : ISimCombat
