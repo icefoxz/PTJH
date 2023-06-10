@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace Server.Configs.Battles
 {
-
     /// <summary>
     /// 装备类型
     /// </summary>

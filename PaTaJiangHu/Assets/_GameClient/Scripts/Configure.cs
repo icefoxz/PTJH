@@ -44,6 +44,14 @@ internal class Configure : MonoBehaviour
         internal RecruitConfigSo RecruitCfg => GetSo(招募配置);
     }
 
+    [SerializeField] private BattleConfig 战斗配置;
+    public BattleConfig BattleCfg => 战斗配置;
+    [Serializable]internal class BattleConfig
+    {
+        [SerializeField] private RestraintConfigSo 武功系数克制配置;
+        public RestraintConfigSo Restraint => 武功系数克制配置;
+    }
+
     //弟子配置
     [SerializeField] private DiziConfig 弟子配置;
     public DiziConfig DiziCfg => 弟子配置;
@@ -53,12 +61,12 @@ internal class Configure : MonoBehaviour
         [SerializeField] private LevelConfigSo 升级配置;
         [SerializeField] private PropStateConfigSo 属性状态配置;
         [SerializeField] private SkillConfigSo 技能配置;
-        [SerializeField] private BattleConfigSo 战斗配置;
+        [SerializeField] private DiziBattleConfigSo 战斗配置;
         internal StaminaConfigSo StaminaCfg => GetSo(体力配置);
         internal LevelConfigSo LevelConfigSo => GetSo(升级配置);
         internal PropStateConfigSo PropState => GetSo(属性状态配置);
         internal SkillConfigSo SkillCfg => GetSo(技能配置);
-        internal BattleConfigSo BattleCfg => GetSo(战斗配置);
+        internal DiziBattleConfigSo DiziBattleCfg => GetSo(战斗配置);
     }
 
     //弟子闲置配置

@@ -15,7 +15,7 @@ namespace Server.Controllers
         public bool TryConsumeForBattle(string diziGuid)
         {
             var dizi = Faction.GetDizi(diziGuid);
-            return ConsumeStamina(dizi.Guid, DiziCfg.BattleCfg.Before.StaminaCost);
+            return ConsumeStamina(dizi.Guid, DiziCfg.DiziBattleCfg.Before.StaminaCost);
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Server.Controllers
         /// <param name="stamina"></param>
         public bool ConsumeStamina(string diziGuid, int stamina)
         {
-            if (DiziCfg.BattleCfg.Before.StaminaCost > stamina) return false; 
+            if (DiziCfg.DiziBattleCfg.Before.StaminaCost > stamina) return false; 
             var dizi = Faction.GetDizi(diziGuid);
             var con = dizi.Stamina.Con;
             if (con.Value < stamina) XDebug.LogWarning($"体力 = {con} 不够消费 {stamina}!");

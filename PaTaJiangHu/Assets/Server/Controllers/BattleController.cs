@@ -16,7 +16,7 @@ namespace Server.Controllers
     {
         private IGame2DLand GameLand => Game.Game2DLand;
         private Faction Faction => Game.World.Faction;
-        private BattleConfigSo BattleCfg => Game.Config.DiziCfg.BattleCfg;
+        private DiziBattleConfigSo DiziBattleCfg => Game.Config.DiziCfg.DiziBattleCfg;
         private DiziController DiziController => Game.Controllers.Get<DiziController>();
 
         public void StartBattle(string guid, DiziBattle battle, Action<DiziBattle> battleResultAction)
@@ -57,7 +57,7 @@ namespace Server.Controllers
         {
             dizi.SetEquipment(combat.Equipment);
             //状态调整
-            var conditionValue = BattleCfg.GetConditionValue((float)combat.HpRatio);
+            var conditionValue = DiziBattleCfg.GetConditionValue((float)combat.HpRatio);
             var cons = new int[4];
             for (var i = 0; i < cons.Length; i++)
             {

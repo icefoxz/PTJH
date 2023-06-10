@@ -137,8 +137,8 @@ namespace Server.Configs.Skills
         [Serializable]
         private class PropBeforeRoundField
         {
-            [SerializeField] private float 值;
             [SerializeField] private DiziProps 属性;
+            [SerializeField] private float 值;
             [SerializeField] private bool 是百分比;
             public DiziProps Prop => 属性;
             public bool IsPercentage => 是百分比;

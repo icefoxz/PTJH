@@ -47,7 +47,8 @@ public static class CombatFormula
     /// <returns></returns>
     public static int CriticalDamage(CombatArgs arg)
     {
-        var mpMax = (int)arg.Caster.GetCombatSet().GetMpDamage(arg) * (1 + arg.Caster.GetCombatSet().GetCriticalDamageRatio(arg));
+        var mpMax = (int)arg.Caster.GetCombatSet().GetMpDamage(arg) *
+                    (1 + arg.Caster.GetCombatSet().GetCriticalDamageRatio(arg));
         var mp = (int)Math.Min(mpMax, arg.Caster.Mp.Max);
         arg.Caster.AddMp(-mp);
         return mp;
@@ -67,14 +68,15 @@ public static class CombatFormula
     /// <returns></returns>
     public static int GeneralDamage(CombatArgs arg) => arg.Caster.GetDamage() + MpDamage(arg);
 
-    public static (int damage, int mpConsume) DamageReduction(int damage, CombatArgs arg)
+    public static (int damage, int mpConsume) DamageReduction(int damage, CombatArgs arg, float mpFactor)
     {
         if (damage == 0) return default;
         var mp = arg.Target.Mp.Value;
-        var halfDamage = damage / 2;
+        var mpDamage  = damage * mpFactor;
+        var hpDamage = damage - mpDamage;
         var mpCounteract = arg.Target.GetCombatSet().GetMpCounteract(arg);
         var mpConsume = (int)Math.Min(mp, mpCounteract);
-        var finalDamage = Math.Max(halfDamage - mpConsume, 0) + halfDamage;
+        var finalDamage = (int)(Math.Max(mpDamage - mpConsume, 0) + hpDamage);
         return (finalDamage, mpConsume);
     }
 
@@ -84,7 +86,6 @@ public static class CombatFormula
     /// <param name="weapon"></param>
     /// <param name="comparer"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public static float WeaponBrokenJudgment(int weapon, int comparer)
     {
         return (comparer - weapon) / 500f;
@@ -96,7 +97,6 @@ public static class CombatFormula
     /// <param name="equipment"></param>
     /// <param name="comparer"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public static float ArmorBrokenJudgment(int equipment, int comparer)
     {
         return (comparer - equipment) / 500f;
@@ -108,7 +108,6 @@ public static class CombatFormula
     /// <param name="equipment"></param>
     /// <param name="comparer"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public static float EquipmentBrokenJudgment(int equipment, int comparer)
     {
         return (comparer - equipment) / 1.20f + 5;

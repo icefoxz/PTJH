@@ -38,6 +38,8 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public ICombatSet GetCombatSet() => new[] { _skillCombatSet, Equipment.GetCombatSet() }.Combine();
 
     public IDiziEquipment Equipment => _equipment;
+    public WeaponArmed Armed => Equipment.Weapon?.Armed ?? WeaponArmed.Unarmed;
+
     public override int GetDamage() => Strength.Value;
     public override int GetSpeed() => Agility.Value;
 
@@ -110,7 +112,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     //伤害减免
     public int TakeReductionDamage(int damage,CombatArgs arg)
     {
-        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage: damage, arg: arg);
+        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage: damage, arg: arg, 0.5f);
         AddMp(mp: -mpConsume);
         AddHp(hp: -finalDamage);
         return finalDamage;
@@ -257,10 +259,12 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
     private int Round { get; }
     private int Combo { get; }
     protected BuffManager<DiziCombatUnit> BuffManager { get; }
-    public DiziAttackBehavior(int round, BuffManager<DiziCombatUnit> buffManager, int combo = 1)
+    private Config.BattleConfig Config { get; }
+    internal DiziAttackBehavior(int round, BuffManager<DiziCombatUnit> buffManager, Config.BattleConfig config, int combo = 1)
     {
         Round = round;
         BuffManager = buffManager;
+        Config = config;
         Combo = combo;
     }
 
@@ -425,6 +429,10 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
         else 
         if (isCritical) damage = CombatFormula.CriticalDamage(arg);
         else damage = CombatFormula.GeneralDamage(arg);
+
+        var restraint = Config.Restraint; // 获取克制关系
+        var rate = restraint.ResolveRate(arg.Caster.Armed, arg.Target.Armed); // 获取克制倍率
+        damage = (int)(damage * rate); // 伤害乘以克制倍率
         return isDodge ? (0, true, ishard: isHard, isCritical) : (damage, false, ishard: isHard, isCritical);
     }
 
@@ -442,10 +450,12 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
 public class DiziCombatRound : Round<DiziCombatUnit, DiziRoundInfo, DiziCombatPerformInfo, DiziCombatInfo, Buff<DiziCombatUnit>>
 {
     private BuffManager<DiziCombatUnit> BuffManager { get; set; }
-    public DiziCombatRound(List<DiziCombatUnit> combatUnits, BuffManager<DiziCombatUnit> buffManager, int round) : base(
+    private Config.BattleConfig Config { get; }
+    internal DiziCombatRound(List<DiziCombatUnit> combatUnits, BuffManager<DiziCombatUnit> buffManager, int round, Config.BattleConfig config) : base(
         combatUnits, buffManager, round)
     {
         BuffManager = buffManager;
+        Config = config;
     }
 
     protected override void BeforeRoundExecute(DiziCombatUnit[] sortedAliveCombatUnits)
@@ -461,7 +471,7 @@ public class DiziCombatRound : Round<DiziCombatUnit, DiziRoundInfo, DiziCombatPe
 
     protected override CombatBehavior<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>
         ChooseBehavior(DiziCombatUnit unit) =>
-        new DiziAttackBehavior(RoundIndex, BuffManager);
+        new DiziAttackBehavior(RoundIndex, BuffManager, Config);
 }
 
 public record DiziCombatPerformInfo :CombatPerformInfo<DiziCombatUnit, DiziCombatInfo>

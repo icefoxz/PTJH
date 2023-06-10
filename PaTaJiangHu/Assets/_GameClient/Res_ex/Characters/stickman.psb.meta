@@ -27,7 +27,7 @@ ScriptedImporter:
     streamingMipmaps: 1
     streamingMipmapsPriority: 0
     vTOnly: 0
-    ignoreMasterTextureLimit: 0
+    ignoreMipmapLimit: 0
     nPOTScale: 1
     sRGBTexture: 1
     spriteMode: 2
@@ -91,6 +91,7 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
+    spritePosition: {x: 0, y: 0}
   mosaicSpriteImportData: []
   rigSpriteImportData:
   - name: legL
@@ -405,7 +406,8 @@ ScriptedImporter:
     - {x: 22, y: 23}
     - {x: 23, y: 24}
     tessellationDetail: 0
-    uvTransform: {x: -301, y: 561}
+    uvTransform: {x: 3, y: 604}
+    spritePosition: {x: 305, y: 44}
   - name: legR
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -751,7 +753,8 @@ ScriptedImporter:
     - {x: 25, y: 26}
     - {x: 26, y: 27}
     tessellationDetail: 0
-    uvTransform: {x: -234, y: -54}
+    uvTransform: {x: 310, y: 3}
+    spritePosition: {x: 546, y: 58}
   - name: hip
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -1216,7 +1219,8 @@ ScriptedImporter:
     - {x: 35, y: 36}
     - {x: 36, y: 37}
     tessellationDetail: 0
-    uvTransform: {x: -141, y: 100}
+    uvTransform: {x: 227, y: 311}
+    spritePosition: {x: 369, y: 212}
   - name: body
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -1595,7 +1599,8 @@ ScriptedImporter:
     - {x: 28, y: 29}
     - {x: 29, y: 30}
     tessellationDetail: 0
-    uvTransform: {x: -365, y: -114}
+    uvTransform: {x: 3, y: 311}
+    spritePosition: {x: 369, y: 426}
   - name: hand_L
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -1910,7 +1915,8 @@ ScriptedImporter:
     - {x: 23, y: 24}
     - {x: 24, y: 25}
     tessellationDetail: 0
-    uvTransform: {x: -403, y: 195}
+    uvTransform: {x: 227, y: 555}
+    spritePosition: {x: 631, y: 362}
   - name: hand_R
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -2245,7 +2251,8 @@ ScriptedImporter:
     - {x: 24, y: 25}
     - {x: 25, y: 26}
     tessellationDetail: 0
-    uvTransform: {x: -152, y: 397}
+    uvTransform: {x: 115, y: 761}
+    spritePosition: {x: 268, y: 365}
   - name: arm_R
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -2571,7 +2578,8 @@ ScriptedImporter:
     - {x: 24, y: 25}
     - {x: 25, y: 26}
     tessellationDetail: 0
-    uvTransform: {x: -290, y: 345}
+    uvTransform: {x: 3, y: 841}
+    spritePosition: {x: 294, y: 497}
   - name: arm_L
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -2895,7 +2903,8 @@ ScriptedImporter:
     - {x: 23, y: 24}
     - {x: 24, y: 25}
     tessellationDetail: 0
-    uvTransform: {x: -464, y: 108}
+    uvTransform: {x: 115, y: 604}
+    spritePosition: {x: 580, y: 497}
   - name: head
     originalName: 
     pivot: {x: 0.5, y: 0.5}
@@ -3221,7 +3230,8 @@ ScriptedImporter:
     - {x: 24, y: 25}
     - {x: 25, y: 26}
     tessellationDetail: 0
-    uvTransform: {x: -365, y: -690}
+    uvTransform: {x: 2, y: 3}
+    spritePosition: {x: 369, y: 694}
   characterData:
     bones:
     - name: hip
@@ -3438,6 +3448,7 @@ ScriptedImporter:
   platformSettings:
   - name: DefaultTexturePlatform
     overridden: 0
+    ignorePlatformSupport: 0
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -3449,6 +3460,7 @@ ScriptedImporter:
     androidETC2FallbackOverride: 0
   - name: Standalone
     overridden: 0
+    ignorePlatformSupport: 0
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -3460,6 +3472,7 @@ ScriptedImporter:
     androidETC2FallbackOverride: 0
   - name: Server
     overridden: 0
+    ignorePlatformSupport: 0
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -3471,6 +3484,7 @@ ScriptedImporter:
     androidETC2FallbackOverride: 0
   - name: Android
     overridden: 0
+    ignorePlatformSupport: 0
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -3491,6 +3505,7 @@ ScriptedImporter:
   keepDupilcateSpriteName: 1
   skeletonAssetReferenceID: 
   padding: 4
+  spriteSizeExpand: 0
   spriteCategoryList:
     categories: []
   spritePackingTag: 
@@ -3600,6 +3615,8 @@ ScriptedImporter:
   sharedRigPSDLayers: []
   pSDLayerImportSetting: []
   importFileNodeState: 1
+  platformSettingsDirtyTick: 0
+  spriteSizeExpandChanged: 0
   generateGOHierarchy: 0
   textureAssetName: 
   prefabAssetName: 

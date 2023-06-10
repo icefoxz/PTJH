@@ -1,4 +1,5 @@
 ﻿using ILRuntime.Runtime.Debugger.Protocol;
+using Server.Configs.BattleSimulation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,9 @@ public class DiziBattle
     public DiziCombatUnit[] Fighters { get; }
     public bool IsFinalized { get; private set; }
     private static int CombatUnitSeed { get; set; }
+    internal Config.BattleConfig Config => Game.Config.BattleCfg;
     public int RoundLimit { get; private set; }
+
 
     private DiziBattle(int roundLimit, params DiziCombatUnit[] combats)
     {
@@ -54,7 +57,7 @@ public class DiziBattle
         // 触发回合开始事件
         //OnRoundStart?.Invoke();
 
-        var round = new DiziCombatRound(Fighters.ToList(), BuffManager, Rounds.Count + 1);
+        var round = new DiziCombatRound(Fighters.ToList(), BuffManager, Rounds.Count + 1, Config);
         var info = round.Execute();
         Rounds.Add(info);
 
@@ -99,7 +102,7 @@ public class DiziBattle
     /// <param name="units"></param>
     /// <param name="roundLimit"></param>
     /// <returns></returns>
-    public static DiziBattle Instance(DiziCombatUnit[] units, int roundLimit = 20) => new(roundLimit, units);
+    internal static DiziBattle Instance(DiziCombatUnit[] units, int roundLimit = 20) => new(roundLimit, units);
 
     /// <summary>
     /// 自动战斗, 没有介入直接结束
@@ -108,7 +111,7 @@ public class DiziBattle
     /// <param name="enemyCombat"></param>
     /// <param name="roundLimit"></param>
     /// <returns></returns>
-    public static DiziBattle AutoCount(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
+    internal static DiziBattle AutoCount(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
     {
         var battle = new DiziBattle(roundLimit, playerCombat, enemyCombat);
         for (var i = 0; i < roundLimit; i++)
