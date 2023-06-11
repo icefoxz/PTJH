@@ -12,6 +12,7 @@ namespace Server.Controllers
     {
         private ChallengeCfgSo ChallengeStageCfg => Game.Config.ChallengeCfg;
         private Faction Faction => Game.World.Faction;
+        private Config.BattleConfig BattleCfg => Game.Config.BattleCfg;
         private BattleController BattleController => Game.Controllers.Get<BattleController>();
         private DiziController DiziController => Game.Controllers.Get<DiziController>();
         private RewardController RewardController => Game.Controllers.Get<RewardController>();
@@ -32,7 +33,7 @@ namespace Server.Controllers
             var diziCombat = new DiziCombatUnit(0, dizi);
             var npcCombat = npc.GetDiziCombat();
             Game.BattleCache.SetAvatars(new (CombatUnit, Sprite)[] { (npcCombat, npc.Icon) });
-            var battle = DiziBattle.Instance(new[] { diziCombat, npcCombat });
+            var battle = DiziBattle.Instance(BattleCfg, new[] { diziCombat, npcCombat });
             BattleController.StartBattle(guid, battle, BattleEndUpdateChallenge);
 
             void BattleEndUpdateChallenge(DiziBattle bat)

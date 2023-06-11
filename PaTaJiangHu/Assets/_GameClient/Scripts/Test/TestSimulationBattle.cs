@@ -7,8 +7,10 @@ using Utls;
 public class TestSimulationBattle : MonoBehaviour
 {
     [SerializeField] private BattleSimulatorConfigSo SimSo;
+    [SerializeField] private ConfigureSo 配置;
     [SerializeField] private Unit 玩家单位;
     [SerializeField] private Unit 敌人单位;
+    private ConfigureSo Config => 配置;
     private Unit Player => 玩家单位;
     private Unit Enemy => 敌人单位;
 
@@ -27,7 +29,7 @@ public class TestSimulationBattle : MonoBehaviour
     public void StartBattle()
     {
         var(player, enemy) = GetCombatUnit();
-        var outcome = SimSo.CountSimulationOutcome(player, enemy);
+        var outcome = SimSo.CountSimulationOutcome(player, enemy, Config.Config.BattleCfg);
         for (var i = 0; i < outcome.CombatMessages.Length; i++)
         {
             var message = outcome.CombatMessages[i];

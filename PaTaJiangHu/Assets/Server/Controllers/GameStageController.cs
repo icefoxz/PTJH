@@ -8,6 +8,7 @@ namespace Server.Controllers
     public class GameStageController : IGameController
     {
         private Config.GameStageCfg GameCfg => Game.Config.StageCfg;
+        private Config.BattleConfig BattleCfg => Game.Config.BattleCfg;
         private int ChallengeProgressIndex { get; set; }
         private Faction Faction => Game.World.Faction;
         private BattleController BattleController => Game.Controllers.Get<BattleController>();
@@ -29,7 +30,7 @@ namespace Server.Controllers
             var npc = stage.GetNpc(npcIndex);
             var diziCombat = new DiziCombatUnit(0, dizi);
             var npcCombat = npc.GetDiziCombat();
-            var battle = DiziBattle.Instance(new[] { diziCombat, npcCombat }, stage.RoundLimit);
+            var battle = DiziBattle.Instance(BattleCfg, new[] { diziCombat, npcCombat }, stage.RoundLimit);
             Game.BattleCache.SetAvatars(new (CombatUnit, Sprite)[] { (npcCombat, npc.Icon) });
             Game.BattleCache.SetBattle(battle);
             BattleController.StartBattle(guid, battle, OnBattleEnd);

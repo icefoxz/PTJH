@@ -7,13 +7,60 @@ using System.Collections.Generic;
 /// </summary>
 public interface ICombatSet
 {
-    float GetHardRate(CombatArgs arg);//重击触发率
-    float GetHardDamageRatio(CombatArgs arg);//重击倍率
-    float GetCriticalRate(CombatArgs arg);//会心触发率
-    float GetCriticalDamageRatio(CombatArgs arg);//会心倍率
-    float GetMpDamage(CombatArgs arg);//内力消耗
-    float GetMpCounteract(CombatArgs arg);//内力抵消
-    float GetDodgeRate(CombatArgs arg);//闪避率
+    /// <summary>
+    /// 重击触发率
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetHardRate(CombatArgs arg);
+    /// <summary>
+    /// 重击倍率
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetHardDamageRatioAddOn(CombatArgs arg);
+    /// <summary>
+    /// 会心触发率
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetCriticalRate(CombatArgs arg);
+    /// <summary>
+    /// 会心倍率
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetCriticalDamageRatioAddOn(CombatArgs arg);
+    /// <summary>
+    /// 内力伤害
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetMpUses(CombatArgs arg);
+    /// <summary>
+    /// 内力伤害比率加成
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetMpDamageConvertRateAddOn(CombatArgs arg);
+    /// <summary>
+    /// 内力护甲的占比, 正数为值, 负数为百分比
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetMpArmorRate(CombatArgs arg);
+    /// <summary>
+    /// 内力护甲转化率加成
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetMpArmorConvertRateAddOn(CombatArgs arg);
+    /// <summary>
+    /// 闪避率
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetDodgeRate(CombatArgs arg);
     IEnumerable<CombatBuff> GetSelfBuffs(DiziCombatUnit caster, int round, BuffManager<DiziCombatUnit> buffManager);
     IEnumerable<CombatBuff> GetTargetBuffs(DiziCombatUnit target, DiziCombatUnit caster,CombatArgs args, int round, BuffManager<DiziCombatUnit> buffManager);
 }
@@ -31,19 +78,23 @@ public static class CombatExtension
         var hardDamageRatio = new List<Func<CombatArgs, float>>();
         var criticalRate = new List<Func<CombatArgs, float>>();
         var criticalMultiplier = new List<Func<CombatArgs, float>>();
-        var mpDamage = new List<Func<CombatArgs, float>>();
-        var mpCounteract = new List<Func<CombatArgs,float>>();
+        var mpUses = new List<Func<CombatArgs, float>>();
+        var mpDamageCovertRateAddOn = new List<Func<CombatArgs, float>>();
+        var mpArmorRate = new List<Func<CombatArgs,float>>();
+        var mpArmorConvertRateAddon = new List<Func<CombatArgs, float>>();
         var dodgeRate = new List<Func<CombatArgs, float>>();
         var selfBuffs = new List<Func<DiziCombatUnit, int, BuffManager<DiziCombatUnit>, IEnumerable<CombatBuff>>>();
         var targetBuffs = new List<Func<DiziCombatUnit, DiziCombatUnit, CombatArgs, int, BuffManager<DiziCombatUnit>, IEnumerable<CombatBuff>>>();
         foreach (var field in combats)
         {
             hardRate.Add(field.GetHardRate);
-            hardDamageRatio.Add(field.GetHardDamageRatio);
+            hardDamageRatio.Add(field.GetHardDamageRatioAddOn);
             criticalRate.Add(field.GetCriticalRate);
-            criticalMultiplier.Add(field.GetCriticalDamageRatio);
-            mpDamage.Add(field.GetMpDamage);
-            mpCounteract.Add(field.GetMpCounteract);
+            criticalMultiplier.Add(field.GetCriticalDamageRatioAddOn);
+            mpUses.Add(field.GetMpUses);
+            mpDamageCovertRateAddOn.Add(field.GetMpDamageConvertRateAddOn);
+            mpArmorRate.Add(field.GetMpArmorRate);
+            mpArmorConvertRateAddon.Add(field.GetMpArmorConvertRateAddOn);
             dodgeRate.Add(field.GetDodgeRate);
             selfBuffs.Add(field.GetSelfBuffs);
             targetBuffs.Add(field.GetTargetBuffs);
@@ -53,8 +104,10 @@ public static class CombatExtension
             hardDamageRatio: hardDamageRatio, 
             criticalRate: criticalRate,
             criticalDamageRatio: criticalMultiplier,
-            mpDamage: mpDamage, 
-            mpCounteract: mpCounteract, 
+            mpUses: mpUses, 
+            mpDamageCovertRateAddOn: mpDamageCovertRateAddOn,
+            mpArmorRate: mpArmorRate, 
+            mpArmorConvertRateAddOn: mpArmorConvertRateAddon,
             dodgeRate: dodgeRate,
             selfBuffs: selfBuffs,
             targetBuffs: targetBuffs);

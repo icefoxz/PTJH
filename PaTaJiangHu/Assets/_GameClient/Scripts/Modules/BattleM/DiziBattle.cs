@@ -28,13 +28,14 @@ public class DiziBattle
     public DiziCombatUnit[] Fighters { get; }
     public bool IsFinalized { get; private set; }
     private static int CombatUnitSeed { get; set; }
-    internal Config.BattleConfig Config => Game.Config.BattleCfg;
+    internal Config.BattleConfig Config { get; }
     public int RoundLimit { get; private set; }
 
 
-    private DiziBattle(int roundLimit, params DiziCombatUnit[] combats)
+    private DiziBattle(int roundLimit, Config.BattleConfig config, params DiziCombatUnit[] combats)
     {
         RoundLimit = roundLimit;
+        Config = config;
         foreach (var unit in combats) unit.SetInstanceId(++CombatUnitSeed);
         BuffManager = new BuffManager<DiziCombatUnit>(combats.ToList());
         Rounds = new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>>();
@@ -102,7 +103,8 @@ public class DiziBattle
     /// <param name="units"></param>
     /// <param name="roundLimit"></param>
     /// <returns></returns>
-    internal static DiziBattle Instance(DiziCombatUnit[] units, int roundLimit = 20) => new(roundLimit, units);
+    internal static DiziBattle Instance(Config.BattleConfig config, DiziCombatUnit[] units, int roundLimit = 20) =>
+        new(roundLimit, config, units);
 
     /// <summary>
     /// 自动战斗, 没有介入直接结束
@@ -111,9 +113,9 @@ public class DiziBattle
     /// <param name="enemyCombat"></param>
     /// <param name="roundLimit"></param>
     /// <returns></returns>
-    internal static DiziBattle AutoCount(DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
+    internal static DiziBattle AutoCount(Config.BattleConfig config,DiziCombatUnit playerCombat, DiziCombatUnit enemyCombat, int roundLimit)
     {
-        var battle = new DiziBattle(roundLimit, playerCombat, enemyCombat);
+        var battle = new DiziBattle(roundLimit,config ,playerCombat, enemyCombat);
         for (var i = 0; i < roundLimit; i++)
         {
             if (battle.IsFinalized) break;

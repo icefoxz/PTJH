@@ -112,7 +112,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     //伤害减免
     public int TakeReductionDamage(int damage,CombatArgs arg)
     {
-        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage: damage, arg: arg, 0.5f);
+        var (finalDamage, mpConsume) = CombatFormula.DamageReduction(damage: damage, arg: arg);
         AddMp(mp: -mpConsume);
         AddHp(hp: -finalDamage);
         return finalDamage;
@@ -281,7 +281,7 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
                 var targetBuffs = caster.GetTargetBuffs(target, arg, Round, BuffManager); //获取目标buff
                 foreach (var buff in targetBuffs) buff.Apply(target);
 
-                var (dmg, isDodge, isHard, isCritical) = GetDamage(arg); //获取伤害
+                var (dmg, mpConsume, isDodge, isHard, isCritical) = GetDamage(arg); //获取伤害
                 var damage = (int)dmg;
 
                 //生成行动记录
@@ -294,10 +294,12 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
                 //设定伤害类型为会心
                 pfmInfo.SetCritical(isCritical);
 
+                //执行者消耗mp
+                caster.AddMp(-mpConsume);
                 //执行伤害
                 var finalDamage = target.TakeReductionDamage(damage, arg); //有计算减免的伤害
                 var canCounter = CounterJudgment(target);
-                if (canCounter) CounterAttack(new CombatArgs(target, caster, Round), pfmInfo); //反击执行
+                if (canCounter) CounterAttack(target, new CombatArgs(target, caster, Round), pfmInfo); //执行反击
                 //生成反馈记录
                 var response = new CombatResponseInfo<DiziCombatUnit, DiziCombatInfo>();
                 response.Set(target);
@@ -410,30 +412,31 @@ public class DiziAttackBehavior : CombatBehavior<DiziCombatUnit, DiziCombatPerfo
     protected virtual bool CounterJudgment(DiziCombatUnit tar) => tar.IsAlive && false;//暂时不支持Counter
 
     //反击
-    private void CounterAttack(CombatArgs arg, DiziCombatPerformInfo perform)
+    private void CounterAttack(DiziCombatUnit target,CombatArgs arg, DiziCombatPerformInfo perform)
     {
-        var (damage, isDodge, isHard ,isCritical) = GetDamage(arg);
-        if (!isDodge) arg.Target.TakeReductionDamage((int)damage, arg);
+        var (damage, mpConsume, isDodge, isHard, isCritical) = GetDamage(arg);
+        target.AddMp(-mpConsume);
+        if (!isDodge) arg.Target.TakeReductionDamage(damage, arg);
         perform.SetCounterAttack(damage: arg.Caster.GetDamage(), isDodged: isDodge, isCritical); //记录反击伤害
         perform.SetHard(isHard);
     }
     //攻击伤害
-    private (float damage, bool isDodge, bool isHard, bool isCritical) GetDamage(CombatArgs arg)
+    private (int damage, int mpConsume ,bool isDodge, bool isHard, bool isCritical) GetDamage(CombatArgs arg)
     {
         var (isDodge, dodgeRatio, dodgeRan) = CombatFormula.DodgeJudgment(arg, 1000);
         var (isHard, hardRatio, hardRan) = CombatFormula.HardJudgment(arg, 1000);
         var (isCritical, criticalRatio, criticalRan) = CombatFormula.CriticalJudgment(arg);
-
-        int damage;
-        if (isHard) damage = CombatFormula.HardDamage(arg);
-        else 
-        if (isCritical) damage = CombatFormula.CriticalDamage(arg);
-        else damage = CombatFormula.GeneralDamage(arg);
-
         var restraint = Config.Restraint; // 获取克制关系
-        var rate = restraint.ResolveRate(arg.Caster.Armed, arg.Target.Armed); // 获取克制倍率
-        damage = (int)(damage * rate); // 伤害乘以克制倍率
-        return isDodge ? (0, true, ishard: isHard, isCritical) : (damage, false, ishard: isHard, isCritical);
+        var damageRatio = restraint.ResolveRate(arg.Caster.Armed, arg.Target.Armed) * 0.01f; // 获取克制倍率
+        (int damage, int mpConsume) result;
+        if (isHard) result = CombatFormula.HardDamage(arg,damageRatio);
+        else 
+        if (isCritical) result = CombatFormula.CriticalDamage(arg,damageRatio);
+        else result = CombatFormula.GeneralDamage(arg,damageRatio);
+
+        return isDodge
+            ? (0, 0, true, isHard, isCritical)
+            : (result.damage, result.mpConsume, false, isHard, isCritical);
     }
 
     //选择目标

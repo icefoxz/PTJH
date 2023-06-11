@@ -36,11 +36,11 @@ namespace Server.Configs.BattleSimulation
         /// <param name="player"></param>
         /// <param name="enemy"></param>
         /// <returns></returns>
-        public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy)
+        public ISimulationOutcome CountSimulationOutcome(ISimCombat player, ISimCombat enemy, Config.BattleConfig config)
         {
             var playerCombat = new DiziCombatUnit(player, 0);
             var enemyCombat = new DiziCombatUnit(enemy, 1);
-            var battle = DiziBattle.AutoCount(playerCombat, enemyCombat, RoundLimit);
+            var battle = DiziBattle.AutoCount(config, playerCombat, enemyCombat, RoundLimit);
             var roundCount = battle.Rounds.Count;
             var combatMessages = BattleMessageSo.GetSimulationMessages(roundCount,battle.IsPlayerWin,player,enemy,playerCombat.Hp.Value);
             return new Outcome(roundCount, battle.IsPlayerWin, player.Damage, enemy.Damage, player.MaxHp, enemy.MaxHp,

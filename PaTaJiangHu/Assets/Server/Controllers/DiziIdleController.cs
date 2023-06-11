@@ -11,6 +11,7 @@ namespace Server.Controllers
         private Config.DiziIdle IdleCfg => Game.Config.Idle;
         private Config.Recruit RecruitCfg => Game.Config.RecruitCfg;
         private BattleSimulatorConfigSo BattleSimulation => Game.Config.AdvCfg.BattleSimulation;
+        private Config.BattleConfig BattleCfg => Game.Config.BattleCfg;
         private Faction Faction => Game.World.Faction;
 
         public async void QueryIdleStory(string guid)
@@ -24,7 +25,7 @@ namespace Server.Controllers
             var story = IdleCfg.IdleMapSo.TryGetStory(elapsedSecs);
             if (story == null) return;
             var handler = new StoryHandler(story,
-                new AdvEventMiddleware(BattleSimulation), lostStrategy);
+                new AdvEventMiddleware(BattleSimulation, BattleCfg), lostStrategy);
             await handler.Invoke(dizi, now, -1);//闲置状态没有里数概念,所以里数-1
             if (handler.IsLost)
             {

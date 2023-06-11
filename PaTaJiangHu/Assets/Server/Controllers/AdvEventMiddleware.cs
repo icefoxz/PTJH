@@ -26,8 +26,10 @@ namespace Server.Controllers
     /// </summary>
     internal class AdvEventMiddleware : AdvEventMiddlewareBase
     {
-        public AdvEventMiddleware(BattleSimulatorConfigSo simulator) : base(simulator)
+        private Config.BattleConfig BattleConfig { get; }
+        public AdvEventMiddleware(BattleSimulatorConfigSo simulator,Config.BattleConfig battleConfig) : base(simulator)
         {
+            BattleConfig = battleConfig;
         }
 
         public override IAdvArg Invoke(IAdvEvent advEvent, IRewardHandler rewardHandler, Dizi dizi)
@@ -51,7 +53,7 @@ namespace Server.Controllers
                     var diziSim = Simulator.GetSimulation(0, simName: dizi.Name, strength: dizi.Strength,
                         agility: dizi.Agility, hp: dizi.Hp, mp: dizi.Mp);
                     var npc = bs.GetNpc(Simulator);
-                    var outcome = Simulator.CountSimulationOutcome(diziSim, npc);
+                    var outcome = Simulator.CountSimulationOutcome(diziSim, npc, BattleConfig);
                     var staminaController = Game.Controllers.Get<StaminaController>();
                     XDebug.Log($"{dizi.Name}与{npc.Name}战斗! ");
                     XDebug.Log($"{dizi.Name}{(outcome.IsPlayerWin? "胜利":"失败")}! ");

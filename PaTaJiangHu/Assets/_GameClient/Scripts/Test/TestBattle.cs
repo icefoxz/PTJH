@@ -9,6 +9,7 @@ using Server.Configs.Items;
 using Server.Configs.Skills;
 using Server.Controllers;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Views;
 
@@ -16,6 +17,7 @@ public class TestBattle : MonoBehaviour
 {
     [SerializeField] private CombatChar[] _combatChars;
     [SerializeField] private Config.GameAnimConfig _animConfig;
+    [SerializeField] private ConfigureSo _configureSo;
     [SerializeField] private Game2DLand _game2DLand;
     [SerializeField] private CharacterUiSyncHandler _characterUiSyncHandler;
     [SerializeField] private CharacterOperator _testSceneObj;
@@ -23,7 +25,7 @@ public class TestBattle : MonoBehaviour
     [SerializeField] private Canvas _sceneCanvas;
 
     private static BattleCache _battleCache = new BattleCache();
-
+    private ConfigureSo ConfigureSo => _configureSo;
     private CombatChar[] CombatChars => _combatChars;
     private DiziBattle Battle { get; set; }
     private DiziBattleAnimator BattleAnim { get; set; }
@@ -94,7 +96,8 @@ public class TestBattle : MonoBehaviour
         StartRound();
     }
 
-    private DiziBattle NewBattle(DiziCombatUnit[] combatUnits) => DiziBattle.Instance(combatUnits);
+    private DiziBattle NewBattle(DiziCombatUnit[] combatUnits) =>
+        DiziBattle.Instance(ConfigureSo.Config.BattleCfg, combatUnits);
 
     public void StartRound()
     {
@@ -156,11 +159,15 @@ public class TestBattle : MonoBehaviour
         private DodgeSkill Dodge => 轻功;
 
         public float GetHardRate(CombatArgs arg) => Com.GetHardRate(arg);
-        public float GetHardDamageRatio(CombatArgs arg) => Com.GetHardDamageRatio(arg);
+        public float GetHardDamageRatioAddOn(CombatArgs arg) => Com.GetHardDamageRatio(arg);
         public float GetCriticalRate(CombatArgs arg) => Force.GetCriticalRate(arg);
-        public float GetCriticalDamageRatio(CombatArgs arg) => Force.GetCriticalMultiplier(arg);
-        public float GetMpDamage(CombatArgs arg) => Force.GetMpDamage(arg);
-        public float GetMpCounteract(CombatArgs arg) => Force.GetMpCounteract(arg);
+        public float GetCriticalDamageRatioAddOn(CombatArgs arg) => Force.GetCriticalMultiplier(arg);
+        public float GetMpUses(CombatArgs arg) => Force.GetMpDamage(arg);
+        public float GetMpDamageConvertRateAddOn(CombatArgs arg) => Force.GetMpDamageConvertRateAddOn;
+
+        public float GetMpArmorRate(CombatArgs arg) => Force.GetMpCounteract(arg);
+        public float GetMpArmorConvertRateAddOn(CombatArgs arg) => Force.GetMpArmorConvertRateAddOn;
+
         public float GetDodgeRate(CombatArgs arg) => Dodge.GetDodgeRate(arg);
         public IEnumerable<CombatBuff> GetSelfBuffs(DiziCombatUnit caster, int round, BuffManager<DiziCombatUnit> buffManager) =>
             Com.Buffs.Concat(Force.Buffs).Concat(Dodge.Buffs)
@@ -262,15 +269,20 @@ public class TestBattle : MonoBehaviour
         }
         [Serializable] private class ForceSkill
         {
-            [SerializeField] private float 伤害内力;
-            [SerializeField] private float 抵消内力;
+            [FormerlySerializedAs("伤害内力")][SerializeField] private float 内力使用;
+            [FormerlySerializedAs("抵消内力")][SerializeField] private float 内力护甲占比;
             [SerializeField] private float 会心率;
             [SerializeField] private float 会心倍率 = 3;
+            [SerializeField] private float 内力伤害转化率加成;
+            [SerializeField] private float 内力护甲消耗转化加成;
             [SerializeField] private EffectBuffSoBase[] _buffs;
             public EffectBuffSoBase[] Buffs => _buffs;
+            public float GetMpDamageConvertRateAddOn => 内力伤害转化率加成;
+            public float GetMpArmorConvertRateAddOn => 内力护甲消耗转化加成;
+
             public float GetCriticalRate(CombatArgs arg) => 会心率;
-            public float GetMpDamage(CombatArgs arg) => 伤害内力;
-            public float GetMpCounteract(CombatArgs arg) => 抵消内力;
+            public float GetMpDamage(CombatArgs arg) => 内力使用;
+            public float GetMpCounteract(CombatArgs arg) => 内力护甲占比;
             public float GetCriticalMultiplier(CombatArgs arg) => 会心倍率;
         }
         [Serializable] private class DodgeSkill

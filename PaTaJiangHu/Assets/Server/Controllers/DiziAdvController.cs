@@ -21,6 +21,7 @@ namespace Server.Controllers
         private int MinuteInMile => AdventureCfg.MinuteInMile;//多少分钟 = 1里
         private AdventureConfigSo AdventureCfg => Game.Config.AdvCfg.AdventureCfg;
         private BattleSimulatorConfigSo BattleSimulation => Game.Config.AdvCfg.BattleSimulation;
+        private Config.BattleConfig BattleCfg => Game.Config.BattleCfg;
         private AdventureMapSo[] AdvMaps => AdventureCfg.AdvMaps;//回城秒数
         private Faction Faction => Game.World.Faction;
         private RewardController RewardController => Game.Controllers.Get<RewardController>();
@@ -260,7 +261,7 @@ namespace Server.Controllers
             AdventureMapSo map)
         {
             var story = place.WeighPickStory(); //根据权重随机故事
-            var eventHandler = new AdvEventMiddleware(BattleSimulation); //生成事件处理器
+            var eventHandler = new AdvEventMiddleware(BattleSimulation, BattleCfg); //生成事件处理器
             var storyHandler = new StoryHandler(story, eventHandler, map.LostStrategy); //生成故事处理器
             await storyHandler.Invoke(dizi, nowTicks, updatedMiles);
             return storyHandler;

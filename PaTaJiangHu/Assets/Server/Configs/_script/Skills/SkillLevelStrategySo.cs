@@ -5,6 +5,7 @@ using MyBox;
 using Server.Configs.Battles;
 using Server.Configs.Items;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Server.Configs.Skills
 {
@@ -120,8 +121,10 @@ namespace Server.Configs.Skills
                     hardDamageRatio: hardDamageRatioList,
                     criticalRate: criticalRateList,
                     criticalDamageRatio: criticalDamageRatioList,
-                    mpDamage: mpDamageList,
-                    mpCounteract: mpCounteractList,
+                    mpUses: mpDamageList,
+                    mpDamageCovertRateAddOn: null,
+                    mpArmorRate: mpCounteractList,
+                    mpArmorConvertRateAddOn: null,
                     dodgeRate: dodgeRateList,
                     selfBuffs: selfBuffList,
                     targetBuffs: targetBuffList);
@@ -188,15 +191,15 @@ namespace Server.Configs.Skills
 
         #region Hard
 
-        [ConditionalField(nameof(_set), false, Settings.Hard)]
+        [FormerlySerializedAs("重击率")][ConditionalField(nameof(_set), false, Settings.Hard)]
         [SerializeField]
-        private float 重击率;
+        private float 重击触发率;
 
         [ConditionalField(nameof(_set), false, Settings.Hard)]
         [SerializeField]
         private float 重倍加成;
 
-        public float HardRate => 重击率;
+        public float HardRate => 重击触发率;
         public float HardDamageRateAddOn => 重倍加成 * 0.01f;
         private string[] SetHardText() => new[]{$"触发:{ResolveSymbol(HardRate)}%" ,
                                                      $"倍率:{ResolveSymbol(HardDamageRateAddOn)}"};
@@ -271,15 +274,17 @@ namespace Server.Configs.Skills
         }
 
         public ICombatSet GetCombatSet() => new CombatSet(
-            HardRate, 
-            HardDamageRateAddOn, 
-            CriticalRate,
-            CriticalDamageRateAddOn, 
-            MpDamage, 
-            MpCounteract, 
-            DodgeRate,
-            null,
-            null
+            hardRate: HardRate, 
+            hardDamageRatioAddOn: HardDamageRateAddOn, 
+            criticalRate: CriticalRate,
+            criticalDamageRatioAddOn: CriticalDamageRateAddOn, 
+            mpDamage: MpDamage, 
+            mpDamageCovertRate: 0,
+            mpArmorRate: MpCounteract, 
+            mpArmorConvertRate: 0,
+            dodgeRate: DodgeRate,
+            selfBuffs: null,
+            targetBuffs: null
             );
     }
 }

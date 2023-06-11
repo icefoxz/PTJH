@@ -26,58 +26,92 @@ public static class CombatFormula
         var ran = Random.Range(0, 100);
         return (ran <= dodgeRate, dodgeRate, ran);
     }
+
     /// <summary>
     /// 重击, 重击伤害=伤害*(1 + 重击伤害率) + 内力伤害
     /// </summary>
     /// <param name="arg"></param>
+    /// <param name="damageRatio"></param>
     /// <returns></returns>
-    public static int HardDamage(CombatArgs arg)
+    public static (int damage, int mpConsume) HardDamage(CombatArgs arg, float damageRatio)
     {
-        var dmg = arg.Caster.GetDamage();
-        var damage = dmg * (1 + arg.Caster.GetCombatSet().GetHardDamageRatio(arg));
-        var mp = MpDamage(arg);
-        arg.Caster.AddMp(-mp);
-        return (int)(mp + damage);
+        var damage = arg.Caster.GetDamage() * damageRatio * (1 + arg.Caster.GetCombatSet().GetHardDamageRatioAddOn(arg));
+        var (mpDamage, mpConsume) = GetMpDamage(arg);
+        var finalDamage = (int)(damage + mpDamage);
+        return (finalDamage, mpConsume);
     }
 
     /// <summary>
     /// 会心, 会心伤害=伤害*(1 + 倍率)(内力不足，会抽取仅剩内力)
     /// </summary>
     /// <param name="arg"></param>
+    /// <param name="damageRatio"></param>
     /// <returns></returns>
-    public static int CriticalDamage(CombatArgs arg)
+    public static (int damage, int mpConsume) CriticalDamage(CombatArgs arg, float damageRatio)
     {
-        var mpMax = (int)arg.Caster.GetCombatSet().GetMpDamage(arg) *
-                    (1 + arg.Caster.GetCombatSet().GetCriticalDamageRatio(arg));
-        var mp = (int)Math.Min(mpMax, arg.Caster.Mp.Max);
-        arg.Caster.AddMp(-mp);
-        return mp;
+        var dmg = arg.Caster.GetDamage();
+        var mpUses = (int)arg.Caster.GetCombatSet().GetMpUses(arg) *
+                    (1 + arg.Caster.GetCombatSet().GetCriticalDamageRatioAddOn(arg));
+        var mpConsume = (int)Math.Min(mpUses, arg.Caster.Mp.Value);
+        // 内力伤害转化率
+        var mpConvertAddOn = arg.Caster.GetCombatSet().GetMpDamageConvertRateAddOn(arg) * 0.01f;
+        var mpDamage = (int)(mpConsume * (1 + mpConvertAddOn));
+        var damage = (int)(dmg * damageRatio) + mpDamage;
+        return (damage, mpConsume);
     }
 
-    public static int MpDamage(CombatArgs arg)
+    // 一般Mp伤害, 内力不足，会抽取仅剩内力, 会心伤害不可以使用此公式, 因为涉及内力扣除
+    private static (int mpDamage,int mpConsume) GetMpDamage(CombatArgs arg)
     {
-        var mp = (int)arg.Caster.GetCombatSet().GetMpDamage(arg);
-        mp = Math.Min(mp, arg.Caster.Mp.Max);
-        arg.Caster.AddMp(-mp);
-        return mp;
+        var mpConsume = (int)arg.Caster.GetCombatSet().GetMpUses(arg);
+        mpConsume = Math.Min(mpConsume, arg.Caster.Mp.Value);
+        // 内力伤害转化率
+        var mpConvertAddOn = arg.Caster.GetCombatSet().GetMpDamageConvertRateAddOn(arg) * 0.01f; 
+        var mpDamage = mpConsume * (1 + mpConvertAddOn);
+        return (mpConsume, (int)mpDamage);
     }
+
     /// <summary>
     /// Damage+MpDamage
     /// </summary>
     /// <param name="arg"></param>
+    /// <param name="damageRatio"></param>
     /// <returns></returns>
-    public static int GeneralDamage(CombatArgs arg) => arg.Caster.GetDamage() + MpDamage(arg);
+    public static (int damage, int mpConsume) GeneralDamage(CombatArgs arg, float damageRatio)
+    {
+        var (mpDamage, mpConsume) = GetMpDamage(arg);
+        var damage = (int)(arg.Caster.GetDamage() * damageRatio + mpDamage);
+        return (damage, mpConsume);
+    }
 
-    public static (int damage, int mpConsume) DamageReduction(int damage, CombatArgs arg, float mpFactor)
+    /// <summary>
+    /// 内力护甲抵消策略
+    /// </summary>
+    /// <param name="damage"></param>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    public static (int damage, int mpConsume) DamageReduction(int damage, CombatArgs arg)
     {
         if (damage == 0) return default;
-        var mp = arg.Target.Mp.Value;
-        var mpDamage  = damage * mpFactor;
-        var hpDamage = damage - mpDamage;
-        var mpCounteract = arg.Target.GetCombatSet().GetMpCounteract(arg);
-        var mpConsume = (int)Math.Min(mp, mpCounteract);
-        var finalDamage = (int)(Math.Max(mpDamage - mpConsume, 0) + hpDamage);
-        return (finalDamage, mpConsume);
+        var maxMpArmor = arg.Target.Mp.Value;
+        var maxMpDamage = damage * arg.Target.GetCombatSet().GetMpArmorRate(arg) * 0.01f;
+        var mpConsume = 0f;
+        var mpShield = 0f;
+        if (maxMpArmor > maxMpDamage)//内力护甲大于内力(占比)分配伤害
+        {
+            //内力护甲基于伤害来计算消耗
+            mpConsume = maxMpDamage * (0.5f - arg.Target.GetCombatSet().GetMpArmorConvertRateAddOn(arg) * 0.01f);
+            mpShield = maxMpDamage;
+        }
+        else
+        {
+            //内力护甲基于护甲来计算伤害
+            mpConsume = maxMpArmor * (0.5f - arg.Target.GetCombatSet().GetMpArmorConvertRateAddOn(arg) * 0.01f);
+            mpShield = maxMpArmor;
+        }
+        
+        var finalDamage = damage - (int)mpShield;
+        return (finalDamage, (int)mpConsume);
     }
 
     /// <summary>

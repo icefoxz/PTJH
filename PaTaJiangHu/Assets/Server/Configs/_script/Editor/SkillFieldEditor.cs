@@ -44,11 +44,11 @@ public abstract class SkillFieldSOEditor : Editor
             var arg = GenSimCombat();
             var set = so.GetCombatSet(level);
             var hardRate = set.GetHardRate(arg);
-            var hardMul = 1 + set.GetHardDamageRatio(arg);
+            var hardMul = 1 + set.GetHardDamageRatioAddOn(arg);
             var criRate = set.GetCriticalRate(arg);
-            var criMul = 1 + set.GetCriticalDamageRatio(arg);
-            var mpDmg = set.GetMpDamage(arg);
-            var mpCou = set.GetMpCounteract(arg);
+            var criMul = 1 + set.GetCriticalDamageRatioAddOn(arg);
+            var mpDmg = set.GetMpUses(arg);
+            var mpCou = set.GetMpArmorRate(arg);
             var dodgeRate = set.GetDodgeRate(arg);
             Debug.Log($"{arg.Caster}, {arg.Target} \n重击率: {hardRate}, 重击倍: {hardMul}, 会心率: {criRate}, 会心倍: {criMul}, 内使用: {mpDmg}, 内抵消: {mpCou}, 闪避率: {dodgeRate}");
         }
