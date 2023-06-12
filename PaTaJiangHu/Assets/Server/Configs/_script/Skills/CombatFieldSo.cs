@@ -59,6 +59,8 @@ namespace Server.Configs.Skills
 
     public abstract class SkillFieldSo : AutoUnderscoreNamingObject, ISkill
     {
+        [SerializeField] private bool 打开测试;
+        public bool TestMode => 打开测试;
         [SerializeField] private ColorGrade 品级;
         [SerializeField] private Sprite 图标;
         [SerializeField] private BookSoBase 秘籍;

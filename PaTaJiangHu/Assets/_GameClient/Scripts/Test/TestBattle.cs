@@ -165,7 +165,9 @@ public class TestBattle : MonoBehaviour
         public float GetMpUses(CombatArgs arg) => Force.GetMpDamage(arg);
         public float GetMpDamageConvertRateAddOn(CombatArgs arg) => Force.GetMpDamageConvertRateAddOn;
 
-        public float GetMpArmorRate(CombatArgs arg) => Force.GetMpCounteract(arg);
+        public float GetDamageMpArmorRate(CombatArgs arg) => Force.GetMpCounteract(arg);
+        public float GetMpArmor(CombatArgs arg) => Force.GetMpArmor;
+
         public float GetMpArmorConvertRateAddOn(CombatArgs arg) => Force.GetMpArmorConvertRateAddOn;
 
         public float GetDodgeRate(CombatArgs arg) => Dodge.GetDodgeRate(arg);
@@ -270,19 +272,21 @@ public class TestBattle : MonoBehaviour
         [Serializable] private class ForceSkill
         {
             [FormerlySerializedAs("伤害内力")][SerializeField] private float 内力使用;
-            [FormerlySerializedAs("抵消内力")][SerializeField] private float 内力护甲占比;
+            [Range(0,100)][FormerlySerializedAs("抵消内力")][SerializeField] private float 护甲占比;
+            [SerializeField] private float 内力护体;
+            [SerializeField] private float 护甲转化率加成;
+            [SerializeField] private float 伤害转化率加成;
             [SerializeField] private float 会心率;
             [SerializeField] private float 会心倍率 = 3;
-            [SerializeField] private float 内力伤害转化率加成;
-            [SerializeField] private float 内力护甲消耗转化加成;
             [SerializeField] private EffectBuffSoBase[] _buffs;
             public EffectBuffSoBase[] Buffs => _buffs;
-            public float GetMpDamageConvertRateAddOn => 内力伤害转化率加成;
-            public float GetMpArmorConvertRateAddOn => 内力护甲消耗转化加成;
+            public float GetMpDamageConvertRateAddOn => 伤害转化率加成;
+            public float GetMpArmorConvertRateAddOn => 护甲转化率加成;
+            public float GetMpArmor => 内力护体;
 
             public float GetCriticalRate(CombatArgs arg) => 会心率;
             public float GetMpDamage(CombatArgs arg) => 内力使用;
-            public float GetMpCounteract(CombatArgs arg) => 内力护甲占比;
+            public float GetMpCounteract(CombatArgs arg) => 护甲占比;
             public float GetCriticalMultiplier(CombatArgs arg) => 会心倍率;
         }
         [Serializable] private class DodgeSkill

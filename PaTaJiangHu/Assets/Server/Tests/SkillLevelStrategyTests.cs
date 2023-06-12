@@ -20,7 +20,7 @@ public class SkillLevelStrategyTests : MonoBehaviour
         var hardRate = level1CombatSet.GetHardRate(arg);
         var hardDamageRatio = level1CombatSet.GetHardDamageRatioAddOn(arg);
         var mpdDamage = level1CombatSet.GetMpUses(arg);
-        var mpCounteract = level1CombatSet.GetMpArmorRate(arg);
+        var mpCounteract = level1CombatSet.GetDamageMpArmorRate(arg);
         print(
             $"闪避率:{dodgeRate}, 会心率:{criticalRate}, 重击率:{hardRate}, 倍率:{hardDamageRatio}, Mp伤:{mpdDamage}, Mp护罩:{mpCounteract}");
     }

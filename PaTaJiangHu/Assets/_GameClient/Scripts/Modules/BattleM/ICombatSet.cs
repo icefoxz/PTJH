@@ -44,11 +44,17 @@ public interface ICombatSet
     /// <returns></returns>
     float GetMpDamageConvertRateAddOn(CombatArgs arg);
     /// <summary>
-    /// 内力护甲的占比, 正数为值, 负数为百分比
+    /// 内力护甲的占比
     /// </summary>
     /// <param name="arg"></param>
     /// <returns></returns>
-    float GetMpArmorRate(CombatArgs arg);
+    float GetDamageMpArmorRate(CombatArgs arg);
+    /// <summary>
+    /// 内力护甲值
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    float GetMpArmor(CombatArgs arg);
     /// <summary>
     /// 内力护甲转化率加成
     /// </summary>
@@ -79,6 +85,7 @@ public static class CombatExtension
         var criticalRate = new List<Func<CombatArgs, float>>();
         var criticalMultiplier = new List<Func<CombatArgs, float>>();
         var mpUses = new List<Func<CombatArgs, float>>();
+        var mpArmor = new List<Func<CombatArgs, float>>();
         var mpDamageCovertRateAddOn = new List<Func<CombatArgs, float>>();
         var mpArmorRate = new List<Func<CombatArgs,float>>();
         var mpArmorConvertRateAddon = new List<Func<CombatArgs, float>>();
@@ -92,8 +99,9 @@ public static class CombatExtension
             criticalRate.Add(field.GetCriticalRate);
             criticalMultiplier.Add(field.GetCriticalDamageRatioAddOn);
             mpUses.Add(field.GetMpUses);
+            mpArmor.Add(field.GetMpArmor);
             mpDamageCovertRateAddOn.Add(field.GetMpDamageConvertRateAddOn);
-            mpArmorRate.Add(field.GetMpArmorRate);
+            mpArmorRate.Add(field.GetDamageMpArmorRate);
             mpArmorConvertRateAddon.Add(field.GetMpArmorConvertRateAddOn);
             dodgeRate.Add(field.GetDodgeRate);
             selfBuffs.Add(field.GetSelfBuffs);
@@ -105,8 +113,9 @@ public static class CombatExtension
             criticalRate: criticalRate,
             criticalDamageRatio: criticalMultiplier,
             mpUses: mpUses, 
+            mpArmor: mpArmor, 
             mpDamageCovertRateAddOn: mpDamageCovertRateAddOn,
-            mpArmorRate: mpArmorRate, 
+            damageMpArmorRate: mpArmorRate, 
             mpArmorConvertRateAddOn: mpArmorConvertRateAddon,
             dodgeRate: dodgeRate,
             selfBuffs: selfBuffs,

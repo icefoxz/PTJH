@@ -25,7 +25,7 @@ public abstract class SkillFieldSOEditor : Editor
 
         // Get a reference to the SkillFieldSO script
         var so = (SkillFieldSo)target;
-
+        if (!so.TestMode) return;
         // Create a label and an int field for the parameter
         EditorGUILayout.LabelField("测试 CombatSet 等级", EditorStyles.boldLabel);
         level = EditorGUILayout.IntField("技能等级", level);
@@ -48,7 +48,7 @@ public abstract class SkillFieldSOEditor : Editor
             var criRate = set.GetCriticalRate(arg);
             var criMul = 1 + set.GetCriticalDamageRatioAddOn(arg);
             var mpDmg = set.GetMpUses(arg);
-            var mpCou = set.GetMpArmorRate(arg);
+            var mpCou = set.GetDamageMpArmorRate(arg);
             var dodgeRate = set.GetDodgeRate(arg);
             Debug.Log($"{arg.Caster}, {arg.Target} \n重击率: {hardRate}, 重击倍: {hardMul}, 会心率: {criRate}, 会心倍: {criMul}, 内使用: {mpDmg}, 内抵消: {mpCou}, 闪避率: {dodgeRate}");
         }
