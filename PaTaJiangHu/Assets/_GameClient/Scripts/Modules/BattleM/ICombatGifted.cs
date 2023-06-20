@@ -18,13 +18,13 @@ public interface ICombatGifted
     /// </summary>
     float HardRateMax { get; }
     /// <summary>
-    /// 会心伤害比率(基础值3)
+    /// 会心伤害比率(基础值100)
     /// </summary>
-    float CritDamageRatioMax { get; }
+    float CritDamageRate { get; }
     /// <summary>
-    /// 重击伤害比率(基础值3)
+    /// 重击伤害比率(基础值100)
     /// </summary>
-    float HardDamageRatioMax { get; }
+    float HardDamageRate { get; }
     /// <summary>
     /// 内力伤害转化(基础值100)
     /// </summary>

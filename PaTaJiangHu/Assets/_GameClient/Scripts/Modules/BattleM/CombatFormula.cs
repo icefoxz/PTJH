@@ -41,8 +41,8 @@ public static class CombatFormula
     /// <returns></returns>
     public static (int damage, int mpConsume) HardDamage(CombatArgs arg, float damageRatio)
     {
-        var hardDamageRatio = (1 + arg.Caster.GetCombatSet().GetHardDamageRatioAddOn(arg));
-        var hardRatio = Math.Min(hardDamageRatio, arg.Caster.Gifted.HardDamageRatioMax); // 重击伤害率最大值
+        var hardRatio = (1 + arg.Caster.GetCombatSet().GetHardDamageRatioAddOn(arg) // 技能加成
+                           + arg.Caster.Gifted.HardDamageRate / 100f); // 天赋
         var damage = arg.Caster.GetDamage() * damageRatio * hardRatio;
         var (mpDamage, mpConsume) = GetMpDamage(arg);
         var finalDamage = (int)(damage + mpDamage);
@@ -57,8 +57,8 @@ public static class CombatFormula
     /// <returns></returns>
     public static (int damage, int mpConsume) CriticalDamage(CombatArgs arg, float damageRatio)
     {
-        var criticalDamageRatio = (1 + arg.Caster.GetCombatSet().GetCriticalDamageRatioAddOn(arg));
-        var criticalRatio = Math.Min(criticalDamageRatio, arg.Caster.Gifted.CritDamageRatioMax); // 会心伤害率最大值
+        var criticalRatio = (1 + arg.Caster.GetCombatSet().GetCriticalDamageRatioAddOn(arg) // 技能加成
+                               + arg.Caster.Gifted.CritDamageRate / 100f);// 天赋
         var dmg = arg.Caster.GetDamage();
         var mpUses = (int)arg.Caster.GetCombatSet().GetMpUses(arg) * criticalRatio;
         var mpConsume = (int)Math.Min(mpUses, arg.Caster.Mp.Value);

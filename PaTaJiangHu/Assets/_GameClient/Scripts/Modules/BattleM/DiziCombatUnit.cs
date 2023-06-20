@@ -270,8 +270,8 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         public float DodgeRateMax { get; }
         public float CritRateMax { get; }
         public float HardRateMax { get; }
-        public float CritDamageRatioMax { get; }
-        public float HardDamageRatioMax { get; }
+        public float CritDamageRate { get; }
+        public float HardDamageRate { get; }
         public float MpDamageRate { get; }
         public float MpArmorRate { get; }
 
@@ -280,8 +280,8 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
             DodgeRateMax = g.DodgeRateMax;
             CritRateMax = g.CritRateMax;
             HardRateMax = g.HardRateMax;
-            CritDamageRatioMax = g.CritDamageRatioMax;
-            HardDamageRatioMax = g.HardDamageRatioMax;
+            CritDamageRate = g.CritDamageRate;
+            HardDamageRate = g.HardDamageRate;
             MpDamageRate = g.MpDamageRate;
             MpArmorRate = g.MpArmorRate;
         }
