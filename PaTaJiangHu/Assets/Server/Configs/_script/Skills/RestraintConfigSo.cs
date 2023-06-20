@@ -16,7 +16,7 @@ namespace Server.Configs.Skills
     }
 }
 
-[CreateAssetMenu(fileName = "restraint", menuName = "配置/武功系数克制")]
+[CreateAssetMenu(fileName = "restraint", menuName = "战斗/武功系数克制")]
 [Serializable] internal class RestraintConfigSo : ScriptableObject
 {
     [SerializeField] private float 长兵对短兵百分比;

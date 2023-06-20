@@ -20,7 +20,7 @@ namespace Server.Configs.BattleSimulation
         string[] CombatMessages { get; }//战斗文本
     }
 
-    [CreateAssetMenu(fileName = "模拟战斗配置", menuName = "配置/简易战斗/模拟战斗配置")]
+    [CreateAssetMenu(fileName = "模拟战斗配置", menuName = "状态玩法/简易战斗/模拟战斗配置")]
     internal class BattleSimulatorConfigSo : ScriptableObject
     {
         [FormerlySerializedAs("_maps")][SerializeField] private ValueMapping<int>[] 体力扣除配置;

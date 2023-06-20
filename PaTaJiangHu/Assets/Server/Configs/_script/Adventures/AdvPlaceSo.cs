@@ -19,7 +19,7 @@ namespace Server.Configs.Adventures
     /// <summary>
     /// 故事地点, 根据权重从故事池中给出故事
     /// </summary>
-    [CreateAssetMenu(fileName = "id_地点名",menuName = "历练/地点")]
+    [CreateAssetMenu(fileName = "id_地点名",menuName = "状态玩法/历练/地点")]
     internal class AdvPlaceSo : AutoAtNamingObject, IAdvPlace
     {
         [SerializeField] private AdvStoryWeight[] 故事;

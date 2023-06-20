@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Server.Configs.BattleSimulation
 {
-    [CreateAssetMenu(fileName = "弟子战斗配置", menuName = "配置/弟子战斗配置")]
+    [CreateAssetMenu(fileName = "弟子战斗配置", menuName = "弟子/战斗配置")]
     internal class DiziBattleConfigSo : ScriptableObject
     {
         [SerializeField]private BeforeBattle 战斗前配置;

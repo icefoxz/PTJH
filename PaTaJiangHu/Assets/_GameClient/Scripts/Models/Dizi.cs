@@ -32,6 +32,8 @@ namespace Models
         public IConditionValue Injury => _injury;
         public IConditionValue Inner => _inner;
 
+        public ICombatGifted Gifted { get; }
+
         // 计算属性
         public int Strength => StrengthProp.TotalValue;
         public int Agility => AgilityProp.TotalValue;
@@ -64,7 +66,9 @@ namespace Models
             Gender gender,
             int level,
             int stamina,
-            Capable capable)
+            Capable capable, 
+            ICombatGifted gifted,
+            ICombatArmedAptitude armedAptitude)
         {
             // 初始化代码
             Guid = guid;
@@ -86,12 +90,14 @@ namespace Models
             AgilityProp = new DiziPropValue(Capable.Agility.Value, () => GetLevelBonus(DiziProps.Agility),
                 () => GetPropStateAddon(DiziProps.Agility), () => _equipment.GetPropAddon(DiziProps.Agility), null);
             HpProp = new DiziPropValue(Capable.Hp.Value, () => GetLevelBonus(DiziProps.Hp),
-                () => GetPropStateAddon(DiziProps.Hp), ()=> _equipment.GetPropAddon(DiziProps.Hp), null);
+                () => GetPropStateAddon(DiziProps.Hp), () => _equipment.GetPropAddon(DiziProps.Hp), null);
             MpProp = new DiziPropValue(Capable.Mp.Value, () => GetLevelBonus(DiziProps.Mp),
-                () => GetPropStateAddon(DiziProps.Mp), ()=> _equipment.GetPropAddon(DiziProps.Mp), null);
+                () => GetPropStateAddon(DiziProps.Mp), () => _equipment.GetPropAddon(DiziProps.Mp), null);
             StaminaManager = new DiziStaminaManager(this, stamina);
             State = new DiziStateHandler(this, OnMessageAction, OnAdjustAction, OnRewardAction);
             StaminaService();
+            Gifted = gifted;
+            _armedAptitude = new DiziArmedAptitude(armedAptitude);
         }
 
         protected void EventUpdate(string eventString) => SendEvent(eventString, Guid);

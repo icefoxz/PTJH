@@ -12,7 +12,7 @@ namespace Server.Configs.Adventures
     /// <summary>
     /// 故事
     /// </summary>
-    [CreateAssetMenu(fileName = "id_故事名", menuName = "历练/故事")]
+    [CreateAssetMenu(fileName = "id_故事名", menuName = "状态玩法/历练/故事")]
     internal class AdvStorySo : AdvStorySoBase, IAdvStory
     {
         [MustBeAssigned] [ConditionalField(true, nameof(RefreshAllEvent))] [SerializeField] private AdvEventSoBase 事件;

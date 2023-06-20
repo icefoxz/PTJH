@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "结束事件",menuName = "事件/结束事件")]
+    [CreateAssetMenu(fileName = "结束事件",menuName = "状态玩法/事件/结束事件")]
     internal class AdvQuitEventSo :  AdvEventSoBase
     {
         [SerializeField] private string 事件名 = "结束";

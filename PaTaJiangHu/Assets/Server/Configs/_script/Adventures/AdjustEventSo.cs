@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_调整事件名", menuName = "事件/调整事件")]
+    [CreateAssetMenu(fileName = "id_调整事件名", menuName = "状态玩法/事件/调整事件")]
     internal class AdjustEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名;

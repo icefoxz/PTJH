@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ConfigureSo", menuName = "配置/游戏配置")]
+[CreateAssetMenu(fileName = "ConfigureSo", menuName = "游戏配置/主配置")]
 internal class ConfigureSo : ScriptableObject
 {
     [SerializeField] private Config 游戏配置;

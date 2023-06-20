@@ -4,7 +4,7 @@ using Utls;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "ConsumeResourcesConfig", menuName = "资质/弟子消耗资源配置策略")]
+    [CreateAssetMenu(fileName = "ConsumeResourcesConfig", menuName = "弟子/产出/消耗资源配置策略")]
     internal class ConsumeResourcesConfigSo : ScriptableObject
     {
         [SerializeField] private int 最低值 = 20;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "AdventureCfg", menuName = "历练/配置")]
+    [CreateAssetMenu(fileName = "AdventureCfg", menuName = "状态玩法/历练/配置")]
     internal class AdventureConfigSo : ScriptableObject
     {
         [Header("一里多少分钟?")]

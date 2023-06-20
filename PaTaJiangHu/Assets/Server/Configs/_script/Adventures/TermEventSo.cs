@@ -72,7 +72,7 @@ namespace Server.Configs.Adventures
         IEnumerable<IStacking<IGameItem>> Items { get; }
     }
 
-    [CreateAssetMenu(fileName = "id_条件事件名", menuName = "事件/条件事件")]
+    [CreateAssetMenu(fileName = "id_条件事件名", menuName = "状态玩法/事件/条件事件")]
     internal class TermEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名;

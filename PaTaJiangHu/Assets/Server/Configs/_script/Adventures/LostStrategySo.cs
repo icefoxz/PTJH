@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "LostCfg", menuName = "失踪/配置")]
+    [CreateAssetMenu(fileName = "LostCfg", menuName = "状态玩法/失踪配置")]
     internal class LostStrategySo : AutoUnderscoreNamingObject, IIClause
     {
         [SerializeField][Range(0,100)] private int 战斗失败失踪百分比;

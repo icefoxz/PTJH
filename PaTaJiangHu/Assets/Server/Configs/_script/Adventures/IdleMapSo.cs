@@ -6,7 +6,7 @@ using Utls;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_闲置映像表", menuName = "闲置/闲置地图")]
+    [CreateAssetMenu(fileName = "id_闲置映像表", menuName = "状态玩法/闲置/闲置地图")]
     internal class IdleMapSo : AutoHashNamingObject
     {
         [SerializeField] private LostStrategySo 失踪策略;

@@ -7,7 +7,7 @@ using Utls;
 
 namespace Server.Configs.BattleSimulation
 {
-    [CreateAssetMenu(fileName = "模拟战斗文本配置", menuName = "配置/简易战斗/文本配置")]
+    [CreateAssetMenu(fileName = "模拟战斗文本配置", menuName = "状态玩法/简易战斗/文本配置")]
     internal class BattleSimulatorMessageSo : ScriptableObject
     {
         [Header("{0}=进攻者,{1}=反馈者,{2}=攻击部位")]

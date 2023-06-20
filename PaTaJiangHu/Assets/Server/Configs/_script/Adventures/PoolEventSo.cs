@@ -5,7 +5,7 @@ using Utls;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_池事件名", menuName = "事件/池事件")]
+    [CreateAssetMenu(fileName = "id_池事件名", menuName = "状态玩法/事件/池事件")]
     internal class PoolEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名;

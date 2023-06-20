@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "技能配置", menuName = "配置/弟子/技能配置")]
+    [CreateAssetMenu(fileName = "技能配置", menuName = "弟子/技能配置")]
     internal class SkillConfigSo : ScriptableObject
     {
         [SerializeField] private ForceFieldSo 默认内功;

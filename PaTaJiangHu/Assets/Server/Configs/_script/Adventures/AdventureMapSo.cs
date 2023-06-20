@@ -20,7 +20,7 @@ namespace Server.Configs.Adventures
         bool PossibleLost(ITerm term);
     }
 
-    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "历练/历练地图")]
+    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "状态玩法/历练/历练地图")]
     internal class AdventureMapSo : AutoHashNamingObject, IAutoAdvMap
     {
         [SerializeField] private int 执行令消耗;

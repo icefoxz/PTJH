@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Utls;
 
-[CreateAssetMenu(fileName = "挑战配置", menuName = "挑战/配置", order = 1)]
+[CreateAssetMenu(fileName = "挑战配置", menuName = "关卡玩法/挑战/配置", order = 1)]
 [Serializable]internal class ChallengeCfgSo : ScriptableObject
 {
     [SerializeField] private int 升级连续过关次数 = 3;

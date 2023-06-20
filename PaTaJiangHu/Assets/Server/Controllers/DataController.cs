@@ -13,7 +13,7 @@ namespace Server.Controllers
     /// </summary>
     public class DataController : IGameController
     {
-        private Config.DataCfg Data => Game.Config.Data;
+        private DataCfgSo Data => Game.Config.Data;
 
         public IMedicine GetMedicine(int id)
         {

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "LevelingConfig", menuName = "配置/弟子/升等配置")]
+    [CreateAssetMenu(fileName = "LevelingConfig", menuName = "弟子/升等配置")]
     internal class LevelConfigSo : ScriptableObject
     {
         [SerializeField] private int[] 升等经验;

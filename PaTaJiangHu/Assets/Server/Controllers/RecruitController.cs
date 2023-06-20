@@ -7,7 +7,6 @@ using NameM;
 using Server.Configs.Characters;
 using Server.Configs.Factions;
 using Utls;
-using Dizi = Models.Dizi;
 
 namespace Server.Controllers
 {
@@ -41,6 +40,8 @@ namespace Server.Controllers
             var randomGrade = Sys.Random.Next(allGrades.Length);
             var (strength, agility, hp, mp, stamina, bag) = GradeConfig.GenerateFromGrade(randomGrade);
             var cr = GradeConfig.GetRandomConsumeResource(randomGrade).ToDictionary(r=>r.Item1,r=>r.Item2);
+            var gifted = GradeConfig.GenerateGifted(randomGrade);
+            var aptitude = GradeConfig.GenerateArmedAptitude(randomGrade);
             //var combatSkill = GradeConfig.GenerateCombatSkill(randomGrade);
             //var forceSkill = GradeConfig.GenerateForceSkill(randomGrade);
             //var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
@@ -52,7 +53,7 @@ namespace Server.Controllers
                 herb: cr[ConsumeResources.Herb], pill: cr[ConsumeResources.Pill]);
             var guid = Guid.NewGuid().ToString();
             var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,
-                capable: capable);
+                capable: capable, gifted, aptitude);
             dizi.SetSkill(DiziSkill.Instance(
                 (GradeConfig.GenerateCombatSkill(randomGrade), 1),
                 (GradeConfig.GenerateForceSkill(randomGrade), 1),

@@ -8,7 +8,6 @@ using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
 using Utls;
-using UnityEngine;
 
 public interface IDiziCombatUnit : ICombatUnit
 {
@@ -18,6 +17,8 @@ public interface IDiziCombatUnit : ICombatUnit
     ICombatAttribute Agility { get; }
     ICombatSet GetCombatSet();
     IDiziEquipment Equipment { get; }
+    ICombatGifted Gifted { get; }
+    ICombatArmedAptitude ArmedAptitude { get; }
 }
 
 /// <summary>
@@ -38,13 +39,16 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public ICombatSet GetCombatSet() => new[] { _skillCombatSet, Equipment.GetCombatSet() }.Combine();
 
     public IDiziEquipment Equipment => _equipment;
+    public ICombatGifted Gifted { get; }
     public WeaponArmed Armed => Equipment.Weapon?.Armed ?? WeaponArmed.Unarmed;
+    public ICombatArmedAptitude ArmedAptitude { get; private set; }
 
-    public override int GetDamage() => Strength.Value;
+    public override int GetDamage() => (int)((1 + ArmedAptitude?.GetDamageRatio(Armed) ?? 0) * Strength.Value);
     public override int GetSpeed() => Agility.Value;
 
     public DiziCombatUnit(string guid, int teamId, string name, int strength, int agility, int hp, int mp,
-        ICombatSet set, IDiziEquipment equipment = null)
+        ICombatSet set, IDiziEquipment equipment = null, ICombatGifted gifted = null,
+        ICombatArmedAptitude aptitude = null)
         : base(teamId: teamId, name: name, hp: hp)
     {
         Guid = guid;
@@ -53,6 +57,8 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         AddCondition(Combat.Mp, mp);
         _skillCombatSet = set;
         _equipment = equipment == null ? new DiziEquipment() : new DiziEquipment(equipment);
+        ArmedAptitude = aptitude == null ? new CombatArmedAptitude() : new CombatArmedAptitude(aptitude);
+        Gifted = gifted ?? CombatGifted.Empty;
         UpdateCalculate();
         Full();
     }
@@ -71,6 +77,8 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         AddCondition(Combat.Mp, dizi.Mp);
         _skillCombatSet = dizi.GetCombatSet();
         _equipment = new DiziEquipment(dizi.Equipment);
+        ArmedAptitude = new CombatArmedAptitude(dizi.ArmedAptitude);
+        Gifted = dizi.Gifted;
         UpdateCalculate();
         Full();
     }
@@ -82,6 +90,8 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         AddCondition(Combat.Mp, npc.Mp);
         _skillCombatSet = npc.GetCombatSet();
         _equipment = new DiziEquipment(npc.Equipment);
+        ArmedAptitude = new CombatArmedAptitude();//npc没有武学天赋
+        Gifted = npc.Gifted;
         UpdateCalculate();
         Full();
     }
@@ -93,22 +103,26 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         AddAttribute(Combat.Agi, unit.Agility.Value, unit.Agility.Base);
         AddCondition(Combat.Mp, unit.Mp.Value, unit.Mp.Max, unit.Mp.Base);
         _skillCombatSet = unit.GetCombatSet();
+        Gifted = unit.Gifted;
+        ArmedAptitude = new CombatArmedAptitude(unit.ArmedAptitude);
         _equipment = new DiziEquipment(unit.Equipment);
         UpdateCalculate();
         if (fullCondition) Full();
     }
 
-    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name,(int)s.Hp,s.MaxHp)
+    public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name, (int)s.Hp, s.MaxHp)
     {
         AddCondition(Combat.Mp, (int)s.Mp);
         AddAttribute(Combat.Str, (int)s.Strength);
         AddAttribute(Combat.Agi, (int)s.Agility);
         _skillCombatSet = CombatSet.Empty;
         _equipment = new DiziEquipment();
+        ArmedAptitude = new CombatArmedAptitude();
+        Gifted = CombatGifted.Empty;
         UpdateCalculate();
         Full();
     }
-    
+
     //伤害减免
     public int TakeReductionDamage(int damage,CombatArgs arg)
     {
@@ -248,6 +262,34 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
             }
         }
         public ICombatSet GetCombatSet() => AllEquipments.Select(selector: e => e.GetCombatSet()).Combine();
+    }
+
+    private class CombatGifted : ICombatGifted 
+    {
+        public static readonly ICombatGifted Empty = new CombatGifted();
+        public float DodgeRateMax { get; }
+        public float CritRateMax { get; }
+        public float HardRateMax { get; }
+        public float CritDamageRatioMax { get; }
+        public float HardDamageRatioMax { get; }
+        public float MpDamageRate { get; }
+        public float MpArmorRate { get; }
+
+        public CombatGifted(ICombatGifted g)
+        {
+            DodgeRateMax = g.DodgeRateMax;
+            CritRateMax = g.CritRateMax;
+            HardRateMax = g.HardRateMax;
+            CritDamageRatioMax = g.CritDamageRatioMax;
+            HardDamageRatioMax = g.HardDamageRatioMax;
+            MpDamageRate = g.MpDamageRate;
+            MpArmorRate = g.MpArmorRate;
+        }
+
+        private CombatGifted()
+        {
+            
+        }
     }
 }
 

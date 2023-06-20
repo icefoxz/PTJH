@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Server.Configs.Factions
 {
-    [CreateAssetMenu(fileName = "RecruitConfig", menuName = "配置/招募配置")]
+    [CreateAssetMenu(fileName = "RecruitConfig", menuName = "弟子/招募配置")]
     internal class RecruitConfigSo : ScriptableObject
     {
         [SerializeField] private RecruitCost 招募成本;

@@ -12,7 +12,7 @@ using UnityEngine.Analytics;
 
 namespace Server.Configs.Battles
 {
-    [CreateAssetMenu(fileName = "id_战斗Npc", menuName = "历练/战斗Npc")]
+    [CreateAssetMenu(fileName = "id_战斗Npc", menuName = "状态玩法/历练/战斗Npc")]
     internal class CombatNpcSo : AutoDashNamingObject,IDiziEquipment
     {
         [SerializeField] private Gender 性别;
@@ -26,6 +26,7 @@ namespace Server.Configs.Battles
         [SerializeField] private DecorationFieldSo 挂件;
         [SerializeField] private SkillField[] 技能;
         [SerializeField] private Sprite 头像;
+        [SerializeField] private NpcGifted 战斗天赋;
 
         internal Gender Gender => 性别;
         internal int Strength => 力;
@@ -44,7 +45,6 @@ namespace Server.Configs.Battles
         public IDiziEquipment Equipment => this;
         public IShoes Shoes => 鞋子;
         public IDecoration Decoration => 挂件;
-
         IEnumerable<IEquipment> AllEquipments => new IEquipment[]
         {
             Weapon,
@@ -52,6 +52,7 @@ namespace Server.Configs.Battles
             Shoes,
             Decoration
         }.Where(e => e != null);
+        public ICombatGifted Gifted => 战斗天赋;
 
         public float GetPropAddon(DiziProps prop)=> AllEquipments.Sum(e => e.GetAddOn(prop));
 
@@ -110,6 +111,24 @@ namespace Server.Configs.Battles
             public CombatFieldSo Combat => 武功;
             public ForceFieldSo Force => 内功;
             public DodgeFieldSo Dodge => 轻功;
+        }
+        [Serializable]private class NpcGifted : ICombatGifted
+        {
+            [SerializeField] private float 闪避率上限加成;
+            [SerializeField] private float 会心率上限加成;
+            [SerializeField] private float 重击率上限加成;
+            [SerializeField] private float 会心伤害加成;
+            [SerializeField] private float 重击伤害加成;
+            [SerializeField] private float 内力伤害转化加成;
+            [SerializeField] private float 内力护甲转化加成;
+
+            public float DodgeRateMax => 闪避率上限加成;
+            public float CritRateMax => 会心率上限加成;
+            public float HardRateMax => 重击率上限加成;
+            public float CritDamageRatioMax => 会心伤害加成;
+            public float HardDamageRatioMax => 重击伤害加成;
+            public float MpDamageRate => 内力伤害转化加成;
+            public float MpArmorRate => 内力护甲转化加成;
         }
     }
 }

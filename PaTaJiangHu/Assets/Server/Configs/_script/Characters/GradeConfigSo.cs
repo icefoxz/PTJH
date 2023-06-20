@@ -12,7 +12,7 @@ using Random = UnityEngine.Random;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "GradeConfig", menuName = "资质/弟子生成配置")]
+    [CreateAssetMenu(fileName = "GradeConfig", menuName = "弟子/产出/品质配置")]
     internal class GradeConfigSo : ScriptableObject
     {
         public static string GetColorTitle(ColorGrade grade) => grade switch
@@ -44,7 +44,7 @@ namespace Server.Configs.Characters
         public ICombatSkill GenerateCombatSkill(int grade) => GradeConfigs((ColorGrade)grade).GenerateCombatSkill();
         public ISkill GenerateForceSkill(int grade) => GradeConfigs((ColorGrade)grade).GenerateForceSkill();
         public ISkill GenerateDodgeSkill(int grade) => GradeConfigs((ColorGrade)grade).GenerateDodgeSkill();
-
+        public ICombatGifted GenerateGifted(int grade) => GradeConfigs((ColorGrade)grade).GenerateGifted();
         public (GradeValue<int> strength, GradeValue<int> agility, GradeValue<int> hp, GradeValue<int> mp, int Stamina, int bagSlot)
             GenerateFromGrade(int grade)
         {
@@ -59,6 +59,7 @@ namespace Server.Configs.Characters
                 return (strength, agility, hp, mp, stamina, inventory);
             }
         }
+        public ICombatArmedAptitude GenerateArmedAptitude(int grade) => GradeConfigs((ColorGrade)grade).GenerateArmedAptitude();
 
         public int GetRestoreCost(ColorGrade grade) => GradeConfigs(grade).RestoreCost;
         public (ConsumeResources, int)[] GetRandomConsumeResource(int grade)
@@ -98,6 +99,8 @@ namespace Server.Configs.Characters
             [SerializeField] private CombatSkillGradeSo 初始武功配置;
             [SerializeField] private ForceSkillGradeSo 初始内功配置;
             [SerializeField] private DodgeSkillGradeSo 初始轻功配置;
+            [SerializeField] private DiziGiftedConfigSo 初始天赋配置;
+            [SerializeField] private MinMaxInt 武器资质;
             [SerializeField] private int 失踪时召唤成本 = 500;
 
             public int RestoreCost => 失踪时召唤成本;
@@ -107,8 +110,11 @@ namespace Server.Configs.Characters
             private CombatSkillGradeSo CombatSkillGradeSo => 初始武功配置;
             private ForceSkillGradeSo ForceSkillGradeSo => 初始内功配置;
             private DodgeSkillGradeSo DodgeSkillGradeSo => 初始轻功配置;
-
+            private DiziGiftedConfigSo DiziGiftedConfigSo => 初始天赋配置;
+            private MinMaxInt WeaponAptitude => 武器资质;
             private PentagonConfig Pentagon => 随机五维.RandomPick();
+
+            public ICombatGifted GenerateGifted() => DiziGiftedConfigSo.GenerateDiziGifted();
 
             public int GenerateProp(Props prop)
             {
@@ -144,10 +150,16 @@ namespace Server.Configs.Characters
             }
 
             private GradeValue<int> InstanceValueGrade((int value, DiziGrades grade) t) => new(t.value, (int)t.grade);
+
+            public ICombatArmedAptitude GenerateArmedAptitude()
+            {
+                var total = (int)(WeaponAptitude.Max * 4f / Random.Range(2f, 8f));
+                var ran = Sys.RandomValueGenerator.Generate(4, WeaponAptitude.Min, WeaponAptitude.Max, total);
+                return new CombatArmedAptitude(ran[0], ran[1], ran[2], ran[3]);
+            }
         }
 
-        [Serializable]
-        private class PentagonConfig
+        [Serializable] private class PentagonConfig
         {
             [SerializeField] private PentagonGradeSo 随1;
             [SerializeField] private PentagonGradeSo 随2;

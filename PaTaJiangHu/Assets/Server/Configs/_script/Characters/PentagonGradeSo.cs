@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "PentagonGrade", menuName = "配置/弟子/五维配置")]
+    [CreateAssetMenu(fileName = "PentagonGrade", menuName = "弟子/产出/五维配置")]
     public class PentagonGradeSo : ScriptableObject
     {
         public enum Elements

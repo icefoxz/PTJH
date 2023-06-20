@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_文本事件名", menuName = "事件/文本事件")]
+    [CreateAssetMenu(fileName = "id_文本事件名", menuName = "状态玩法/事件/文本事件")]
     internal class AdvTextEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名;

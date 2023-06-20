@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Server.Configs.Adventures
 {
-    [CreateAssetMenu(fileName = "id_模拟战斗事件名", menuName = "事件/模拟战斗事件")]
+    [CreateAssetMenu(fileName = "id_模拟战斗事件名", menuName = "状态玩法/事件/模拟战斗事件")]
     internal class BattleSimulationEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名 = "战斗";

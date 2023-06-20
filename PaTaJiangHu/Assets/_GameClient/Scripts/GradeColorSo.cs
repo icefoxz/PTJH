@@ -3,7 +3,7 @@ using Server.Configs.Characters;
 using Server.Controllers;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "GradeColorSo", menuName = "配置/品阶颜色")]
+[CreateAssetMenu(fileName = "GradeColorSo", menuName = "游戏配置/品阶颜色")]
 internal class GradeColorSo : ScriptableObject
 {
     [SerializeField] private Color 白;

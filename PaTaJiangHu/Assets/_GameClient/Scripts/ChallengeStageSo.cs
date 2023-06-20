@@ -25,7 +25,7 @@ public interface IChallengeNpc : ICombatNpc
     IGameChest Chest { get; }
 }
 
-[CreateAssetMenu(fileName = "id_挑战", menuName = "挑战/关卡")]
+[CreateAssetMenu(fileName = "id_挑战", menuName = "关卡玩法/挑战/关卡")]
 internal class ChallengeStageSo : AutoHashNamingObject,IChallengeStage
 {
     [SerializeField] private int 回合限制 = 20;

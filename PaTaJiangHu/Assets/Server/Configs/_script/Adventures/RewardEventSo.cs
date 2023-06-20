@@ -37,7 +37,7 @@ namespace Server.Configs.Adventures
         void SetReward(IGameReward reward);
     }
 
-    [CreateAssetMenu(fileName = "id_奖励件名", menuName = "事件/奖励事件")]
+    [CreateAssetMenu(fileName = "id_奖励件名", menuName = "状态玩法/事件/奖励事件")]
     internal class RewardEventSo : AdvEventSoBase
     {
         [SerializeField] private string 事件名 = "奖励";

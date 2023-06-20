@@ -12,8 +12,18 @@ namespace Models
     public partial class Dizi
     {
         private SkillConfigSo SkillConfig => Game.Config.DiziCfg.SkillCfg;
+        /// <summary>
+        /// 弟子的装备
+        /// </summary>
         public IDiziEquipment Equipment => _equipment;
         internal DiziEquipment _equipment;
+        private ICombatArmedAptitude _armedAptitude;
+        /// <summary>
+        /// 弟子的武功资质
+        /// </summary>
+        public ICombatArmedAptitude ArmedAptitude => _armedAptitude;
+        public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
+
         internal void SetWeapon(IWeapon weapon)
         {
             Log(weapon == null ? $"卸下{_equipment.Weapon.Name}" : $"装备{weapon.Name}!");
@@ -38,8 +48,6 @@ namespace Models
             _equipment.SetDecoration(decoration);
             EventUpdate(EventString.Dizi_EquipmentUpdate);
         }
-
-        public DiziSkill Skill { get; private set; } = DiziSkill.Empty();
 
         public ICombatSet GetCombatSet() => new[] { SkillConfig.GetCombatSet(this),Equipment.GetCombatSet() }.Combine();
         internal void SetSkill(DiziSkill skill) => Skill = skill;
@@ -73,6 +81,53 @@ namespace Models
             _equipment.SetShoes(equipment.Shoes);
             _equipment.SetDecoration(equipment.Decoration);
             EventUpdate(EventString.Dizi_EquipmentUpdate);
+        }
+
+        private class DiziArmedAptitude : ICombatArmedAptitude
+        {
+            public DiziArmedAptitude(ICombatArmedAptitude a)
+            {
+                Unarmed = a.Unarmed;
+                Sword = a.Sword;
+                Blade = a.Blade;
+                Staff = a.Staff;
+            }
+
+            public float Unarmed { get; private set; }
+            public float Sword { get; private set; }
+            public float Blade { get; private set; }
+            public float Staff { get; private set; }
+
+            public float GetDamageRatio(WeaponArmed armed) =>
+                armed switch
+                {
+                    WeaponArmed.Unarmed => Unarmed,
+                    WeaponArmed.Sword => Sword,
+                    WeaponArmed.Blade => Blade,
+                    WeaponArmed.Staff => Staff,
+                    _ => throw new ArgumentOutOfRangeException(nameof(armed), armed, null)
+                } / 100f;
+
+            public void SetArmedAptitude(WeaponArmed armed, float value)
+            {
+                switch (armed)
+                {
+                    case WeaponArmed.Unarmed:
+                        Unarmed = value;
+                        break;
+                    case WeaponArmed.Sword:
+                        Sword = value;
+                        break;
+                    case WeaponArmed.Blade:
+                        Blade = value;
+                        break;
+                    case WeaponArmed.Staff:
+                        Staff = value;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(armed), armed, null);
+                }
+            }
         }
     }
 

@@ -7,7 +7,7 @@ using Utls;
 
 namespace Server.Configs.Characters
 {
-    [CreateAssetMenu(fileName = "propStateConfig", menuName = "配置/弟子/属性状态配置")]
+    [CreateAssetMenu(fileName = "propStateConfig", menuName = "弟子/UI/属性状态配置")]
     internal class PropStateConfigSo : ScriptableObject
     {
         [SerializeField] private ConfigField 状态属性设定;

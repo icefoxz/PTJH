@@ -39,7 +39,7 @@ namespace Server.Configs.ChallengeStages
         int Exp { get; }
     }
 
-    [CreateAssetMenu(fileName = "id_关卡", menuName = "关卡/关卡")]
+    [CreateAssetMenu(fileName = "id_关卡", menuName = "关卡玩法/成就/关卡")]
     internal class GameStageSo : AutoAtNamingObject
     {
         [SerializeField] private int 回合限制 = 20;
