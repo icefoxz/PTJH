@@ -12,15 +12,15 @@ namespace Server.Configs.Battles
         [SerializeField] private GiftedDodgeSo[] 闪避率;
         [SerializeField] private GiftedCritRateSo[] 会心触发率;
         [SerializeField] private GiftedHardRateSo[] 重击触发率;
-        [SerializeField] private GiftedCritDamageRatioSo[] 会心伤害比率;
-        [SerializeField] private GiftedHardDamageRatioSo[] 重击伤害比率;
+        [SerializeField] private GiftedCritDamageRateSo[] 会心伤害比率;
+        [SerializeField] private GiftedHardDamageRateSo[] 重击伤害比率;
         [SerializeField] private GiftedMpDamageRateSo[] 内力伤害转化率;
         [SerializeField] private GiftedMpArmorConvertSo[] 内力抵消转化率;
         private GiftedDodgeSo[] GiftedDodgeSos => 闪避率;
         private GiftedCritRateSo[] GiftedCritRateSos => 会心触发率;
         private GiftedHardRateSo[] GiftedHardRateSos => 重击触发率;
-        private GiftedCritDamageRatioSo[] GiftedCritDamageRatioSos => 会心伤害比率;
-        private GiftedHardDamageRatioSo[] GiftedHardDamageRatioSos => 重击伤害比率;
+        private GiftedCritDamageRateSo[] GiftedCritDamageRateSos => 会心伤害比率;
+        private GiftedHardDamageRateSo[] GiftedHardDamageRateSos => 重击伤害比率;
         private GiftedMpDamageRateSo[] GiftedMpDamageRateSos => 内力伤害转化率;
         private GiftedMpArmorConvertSo[] GiftedMpArmorConvertSos => 内力抵消转化率;
 
@@ -29,16 +29,16 @@ namespace Server.Configs.Battles
             var dodgeRateMax = 100 + GetRandomFromArray(GiftedDodgeSos);
             var critRateMax = 100 + GetRandomFromArray(GiftedCritRateSos);
             var hardRateMax = 100 + GetRandomFromArray(GiftedHardRateSos);
-            var critDamageRatioMax = 3 + GetRandomFromArray(GiftedCritDamageRatioSos)/100f;
-            var hardDamageRatioMax = 3 + GetRandomFromArray(GiftedHardDamageRatioSos)/100f;
+            var critDamageRateAddOn = 100 + GetRandomFromArray(GiftedCritDamageRateSos);
+            var hardDamageRateAddOn = 100 + GetRandomFromArray(GiftedHardDamageRateSos);
             var mpDamageRate = 100 + GetRandomFromArray(GiftedMpDamageRateSos);
             var mpArmorRate = 100 + GetRandomFromArray(GiftedMpArmorConvertSos);
             return new CombatGifted(
                 dodgeRateMax: dodgeRateMax, 
                 critRateMax: critRateMax, 
                 hardRateMax: hardRateMax, 
-                critDamageRatioMax: critDamageRatioMax, 
-                hardDamageRatioMax: hardDamageRatioMax, 
+                critDamageRateMax: critDamageRateAddOn, 
+                hardDamageRateMax: hardDamageRateAddOn, 
                 mpDamageRate: mpDamageRate,
                 mpArmorRate: mpArmorRate);
         }
@@ -51,8 +51,8 @@ namespace Server.Configs.Battles
             public float DodgeRateMax { get; }
             public float CritRateMax { get; }
             public float HardRateMax { get; }
-            public float CritDamageRatioMax { get; }
-            public float HardDamageRatioMax { get; }
+            public float CritDamageRate { get; }
+            public float HardDamageRate { get; }
             public float MpDamageRate { get; }
             public float MpArmorRate { get; }
 
@@ -60,16 +60,16 @@ namespace Server.Configs.Battles
                 float dodgeRateMax, 
                 float critRateMax, 
                 float hardRateMax, 
-                float critDamageRatioMax, 
-                float hardDamageRatioMax, 
+                float critDamageRateMax, 
+                float hardDamageRateMax, 
                 float mpDamageRate, 
                 float mpArmorRate)
             {
                 DodgeRateMax = dodgeRateMax;
                 CritRateMax = critRateMax;
                 HardRateMax = hardRateMax;
-                CritDamageRatioMax = critDamageRatioMax;
-                HardDamageRatioMax = hardDamageRatioMax;
+                CritDamageRate = critDamageRateMax;
+                HardDamageRate = hardDamageRateMax;
                 MpDamageRate = mpDamageRate;
                 MpArmorRate = mpArmorRate;
             }

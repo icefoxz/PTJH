@@ -100,7 +100,7 @@ namespace Server.Configs.Characters
             [SerializeField] private ForceSkillGradeSo 初始内功配置;
             [SerializeField] private DodgeSkillGradeSo 初始轻功配置;
             [SerializeField] private DiziGiftedConfigSo 初始天赋配置;
-            [SerializeField] private MinMaxInt 武器资质;
+            [SerializeField] private MinMaxInt 武学资质;
             [SerializeField] private int 失踪时召唤成本 = 500;
 
             public int RestoreCost => 失踪时召唤成本;
@@ -111,7 +111,7 @@ namespace Server.Configs.Characters
             private ForceSkillGradeSo ForceSkillGradeSo => 初始内功配置;
             private DodgeSkillGradeSo DodgeSkillGradeSo => 初始轻功配置;
             private DiziGiftedConfigSo DiziGiftedConfigSo => 初始天赋配置;
-            private MinMaxInt WeaponAptitude => 武器资质;
+            private MinMaxInt WeaponAptitude => 武学资质;
             private PentagonConfig Pentagon => 随机五维.RandomPick();
 
             public ICombatGifted GenerateGifted() => DiziGiftedConfigSo.GenerateDiziGifted();

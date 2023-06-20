@@ -125,8 +125,8 @@ namespace Server.Configs.Battles
             public float DodgeRateMax => 闪避率上限加成;
             public float CritRateMax => 会心率上限加成;
             public float HardRateMax => 重击率上限加成;
-            public float CritDamageRatioMax => 会心伤害加成;
-            public float HardDamageRatioMax => 重击伤害加成;
+            public float CritDamageRate => 会心伤害加成;
+            public float HardDamageRate => 重击伤害加成;
             public float MpDamageRate => 内力伤害转化加成;
             public float MpArmorRate => 内力护甲转化加成;
         }
