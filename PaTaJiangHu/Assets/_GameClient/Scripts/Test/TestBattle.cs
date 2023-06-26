@@ -137,6 +137,7 @@ public class TestBattle : MonoBehaviour
         [SerializeField] private ArmorField 防具;
         [SerializeField] private ShoesField 鞋子;
         [SerializeField] private DecorationField 装饰;
+        [SerializeField] private CombatGifted 天赋;
         public CharacterOperator Op => _op;
 
         public int InstanceId { get; private set; }
@@ -182,7 +183,10 @@ public class TestBattle : MonoBehaviour
 
         public void SetInstanceId(int instanceId) => InstanceId = instanceId;
 
-        public DiziCombatUnit GetCombatUnit() => new(string.Empty, TeamId, Name, Strength, Agility, Hp, Mp, this, this);
+        public DiziCombatUnit GetCombatUnit() =>
+            new(string.Empty, TeamId, Name, Strength, Agility, Hp, Mp, this, this, Gifted, Gifted);
+
+        private CombatGifted  Gifted => 天赋;
 
         #region Equipment
         public IWeapon Weapon => 武器;
@@ -295,6 +299,46 @@ public class TestBattle : MonoBehaviour
             [SerializeField] private EffectBuffSoBase[] _buffs;
             public EffectBuffSoBase[] Buffs => _buffs;
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
+        }
+
+
+        [Serializable]private class CombatGifted : ICombatGifted,ICombatArmedAptitude
+        {
+            [SerializeField] private float 闪避上限;
+            [SerializeField] private float 会心上限;
+            [SerializeField] private float 重击上限;
+            [SerializeField] private float 会心倍率加成;
+            [SerializeField] private float 重击倍率加成;
+            [SerializeField] private float 内力伤害转化加成;
+            [SerializeField] private float 内力护甲转化加成;
+            [SerializeField] private float 拳脚伤害加成;
+            [SerializeField] private float 剑法伤害加成;
+            [SerializeField] private float 刀法伤害加成;
+            [SerializeField] private float 棍法伤害加成;
+
+            public float DodgeRateMax => 闪避上限;
+            public float CritRateMax => 会心上限;
+            public float HardRateMax => 重击上限;
+            public float CritDamageRate => 会心倍率加成;
+            public float HardDamageRate => 重击倍率加成;
+            public float MpDamageRate => 内力伤害转化加成;
+            public float MpArmorRate => 内力护甲转化加成;
+            public float Unarmed => 拳脚伤害加成;
+            public float Sword => 剑法伤害加成;
+            public float Blade => 刀法伤害加成;
+            public float Staff => 棍法伤害加成;
+
+            public float GetDamageRatio(WeaponArmed armed)
+            {
+                return armed switch
+                {
+                    WeaponArmed.Unarmed => Unarmed,
+                    WeaponArmed.Sword => Sword,
+                    WeaponArmed.Blade => Blade,
+                    WeaponArmed.Staff => Staff,
+                    _ => 0
+                };
+            }
         }
     }
 

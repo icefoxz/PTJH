@@ -196,12 +196,13 @@ namespace Server.Configs.Skills
         [SerializeField]
         private float 重击触发率;
 
+        [FormerlySerializedAs("重倍加成")]
         [ConditionalField(nameof(_set), false, Settings.Hard)]
         [SerializeField]
-        private float 重倍加成;
+        private float 重倍率加成;
 
         public float HardRate => 重击触发率;
-        public float HardDamageRateAddOn => 重倍加成 * 0.01f;
+        public float HardDamageRateAddOn => 重倍率加成 * 0.01f;
         private string[] SetHardText() => new[]{$"触发:{ResolveSymbol(HardRate)}%" ,
                                                      $"倍率:{ResolveSymbol(HardDamageRateAddOn)}"};
 
