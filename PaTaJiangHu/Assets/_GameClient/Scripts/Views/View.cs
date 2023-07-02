@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Utls;
 
 namespace Views
 {
@@ -27,6 +28,7 @@ namespace Views
         void Show();
         void Hide();
         void Display(bool isShow);
+        void ResetRectToZero();
     }
 
     public interface IPage : IView
@@ -93,5 +95,6 @@ namespace Views
         public void Show() => Display(true);
         public void Hide() => Display(false);
         public void Display(bool isShow) => gameObject.SetActive(isShow);
+        public void ResetRectToZero() => RectTransform.ResetToZero();
     }
 }

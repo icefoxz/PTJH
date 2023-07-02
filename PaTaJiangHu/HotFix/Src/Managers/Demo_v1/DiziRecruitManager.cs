@@ -37,11 +37,7 @@ internal class DiziRecruitManager : UiManagerBase
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziGenerated, bag => DiziRecruitPage.SetDizi(bag));
         Game.MessagingManager.RegEvent(EventString.Recruit_DiziInSlot,
             bag => CurrentDiziIndex = bag.Get<int[]>(0)[0]);
-        Game.MessagingManager.RegEvent(EventString.Page_DiziRecruit, bag =>
-        {
-            Game.MainUi.MainPage.HideAll(MainPageLayout.Sections.Game);
-            MainUiAgent.Show(this, true);
-        });
+        Game.MessagingManager.RegEvent(EventString.Page_DiziRecruit, bag => MainUiAgent.Show(this));
     }
 
     public override void Show() => DiziRecruitPage.Display(true);

@@ -10,29 +10,25 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
 {
-    internal class Demo_Game_ViewMgr : MainPageBase
+    internal class Page_main_adventureView 
     {
         private Game_View GameView { get; set; }
-        protected override MainPageLayout.Sections MainPageSection => MainPageLayout.Sections.Game;
-        protected override string ViewName => "demo_game_view";
-        protected override bool IsDynamicPixel => true;
-        public Demo_Game_ViewMgr(MainUiAgent uiAgent) : base(uiAgent) { }
+        
         private ICoroutineInstance UpdateCo { get; set; }
         private Dizi SelectedDizi { get; set; }
 
-        protected override void Build(IView view)
+        public Page_main_adventureView(IView v)
         {
-            GameView = new Game_View(view);
+            GameView = new Game_View(v);
+            v.ResetRectToZero();
         }
-        protected override void RegEvents()
-        {
-        }
-        public override void Show() => GameView.Display(true);
-        public override void Hide() => GameView.Display(false);
+        
+        public void Show() => GameView.Display(true);
+        public void Hide() => GameView.Display(false);
 
         public void Set(Dizi dizi)
         {
-            UpdateCo ??= Game.CoService.RunCo(UpdateTime(), () => UpdateCo = null, nameof(Demo_Game_ViewMgr));
+            UpdateCo ??= Game.CoService.RunCo(UpdateTime(), () => UpdateCo = null, nameof(Page_main_adventureView));
             SelectedDizi = dizi;
             UpdateState(dizi);
         }
@@ -50,7 +46,6 @@ namespace HotFix_Project.Managers.Demo_v1
             GameView.Set(map, occasion, mile, stateText, GetTimeText(state.DiziState.CurrentProgressTime));
             GameView.UpdateBag(dizi);
         }
-
 
         private IEnumerator UpdateTime()
         {
@@ -90,7 +85,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 Text_status = v.GetObject<Text>("text_status");
                 Text_time = v.GetObject<Text>("text_time");
             }
-            public void Set(string map, string place, string mile, string status,string time)
+            public void Set(string map, string place, string mile, string status, string time)
             {
                 Text_mapTitle.text = map;
                 Text_placeTitle.text = place;
@@ -124,12 +119,12 @@ namespace HotFix_Project.Managers.Demo_v1
             private class View_diziBag : UiBase
             {
                 public enum BagStates
-                    {
-                        None,
-                        Empty,
-                        Content,
-                        Disable
-                    }
+                {
+                    None,
+                    Empty,
+                    Content,
+                    Disable
+                }
                 #region 60_Bags
                 private BagElement Bag_0 { get; }
                 private BagElement Bag_1 { get; }
@@ -160,7 +155,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 private BagElement Bag_26 { get; }
                 private BagElement Bag_27 { get; }
                 private BagElement Bag_28 { get; }
-                private BagElement Bag_29 { get; }                
+                private BagElement Bag_29 { get; }
                 private BagElement Bag_30 { get; }
                 private BagElement Bag_31 { get; }
                 private BagElement Bag_32 { get; }
@@ -170,7 +165,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 private BagElement Bag_36 { get; }
                 private BagElement Bag_37 { get; }
                 private BagElement Bag_38 { get; }
-                private BagElement Bag_39 { get; }                
+                private BagElement Bag_39 { get; }
                 private BagElement Bag_40 { get; }
                 private BagElement Bag_41 { get; }
                 private BagElement Bag_42 { get; }
@@ -315,7 +310,7 @@ namespace HotFix_Project.Managers.Demo_v1
 
                 public View_bagCount(IView v) : base(v, true)
                 {
-                    Text_bagValue= v.GetObject<Text>("text_bagValue");
+                    Text_bagValue = v.GetObject<Text>("text_bagValue");
                     Text_bagMax = v.GetObject<Text>("text_bagMax");
                 }
 

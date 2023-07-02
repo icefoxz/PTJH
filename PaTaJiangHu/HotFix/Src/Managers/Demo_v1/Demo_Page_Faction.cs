@@ -11,7 +11,7 @@ using Views;
 namespace HotFix_Project.Managers.Demo_v1;
 
 //门派
-internal class Demo_Page_Faction : UiManagerBase
+internal class Demo_Page_Faction : PageUiManagerBase
 {
     private Faction_page FactionPage { get; set; }
     private Demo_v1Agent Agent { get; }
@@ -20,10 +20,7 @@ internal class Demo_Page_Faction : UiManagerBase
         Agent = uiAgent;
     }
 
-    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Page;
     protected override string ViewName => "demo_page_faction";
-    protected override bool IsDynamicPixel => true;
-
     protected override void Build(IView view)
     {
         FactionPage = new Faction_page(view, Agent, true);
@@ -40,10 +37,6 @@ internal class Demo_Page_Faction : UiManagerBase
             FactionPage.UpdateChallengeUi();
         });
     }
-
-    public override void Show() => FactionPage.Display(true);
-
-    public override void Hide() => FactionPage.Display(false);
 
     private class Faction_page : UiBase
     {

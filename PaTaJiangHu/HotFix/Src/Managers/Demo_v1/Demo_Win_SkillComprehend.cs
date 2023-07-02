@@ -27,9 +27,7 @@ internal class Demo_Win_SkillComprehend : WinUiManagerBase
     {
         Agent = uiAgent;
     }
-    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
     protected override string ViewName => "demo_win_skillComprehend";
-    protected override bool IsDynamicPixel => true;
 
     private Dizi SelectedDizi { get; set; }
     private ISkill Skill{ get; set; }

@@ -96,7 +96,9 @@ public class EventString
     public const string Battle_Reponder_Update = "Battle_Reponder_Update";//反馈者信息更新
     public const string Battle_Init = "Battle_Init";//战斗开始
     public const string Battle_RoundUpdate = "Battle_RoundUpdate";//战斗回合更新
-    public const string Battle_End = "Battle_Reset";//战斗场地清除
+    public const string Battle_SpecialUpdate = "Battle_SpecialUpdate";//战斗特殊事件更新, 如武器破损
+    public const string Battle_End = "Battle_End";//战斗结束
+    public const string Battle_Finalized = "Battle_Finalized";// 战斗场地清除
 
     //窗口
     public const string Win_PopUp = "Win_PopUp";//弹窗ui

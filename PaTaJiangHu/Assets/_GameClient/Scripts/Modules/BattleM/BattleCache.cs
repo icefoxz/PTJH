@@ -10,7 +10,22 @@ public class BattleCache
 {
     private DiziBattle Battle { get; set; }
     public Dictionary<CombatUnit, Sprite> Avatars { get; private set; }
-    public void SetBattle(DiziBattle battle)=> Battle = battle;
+    public void SetBattle(DiziBattle battle)
+    {
+        if (Battle != null)
+        {
+            Battle.DiziDisarmedEvent -= OnDiziDisarmed_SendEvent;
+        }
+        Battle = battle;
+        Battle.DiziDisarmedEvent += OnDiziDisarmed_SendEvent;
+    }
+
+    private void OnDiziDisarmed_SendEvent(int instanceId)
+    {
+        var guid = Battle.Fighters.First(f => f.InstanceId == instanceId).Guid;
+        Game.MessagingManager.Send(EventString.Battle_SpecialUpdate, guid);
+    }
+
     public void SetAvatars((CombatUnit, Sprite)[] args) => Avatars = args.ToDictionary(a => a.Item1, a => a.Item2);
     public CombatResponseInfo<DiziCombatUnit, DiziCombatInfo> GetLastResponse(int performerId,int performIndex)
     {

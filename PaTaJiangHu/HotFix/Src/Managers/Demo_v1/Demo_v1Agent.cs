@@ -18,32 +18,25 @@ internal class Demo_v1Agent : MainUiAgent
         Main,
         Skills,
         Faction,
+        Battle
     }
 
-    //main
-    private Demo_View_PagesMgr Demo_View_PageMgr { get; }
-    private Demo_View_Faction_InfoMgr Demo_View_Faction_InfoMgr { get; }
-    private Demo_Dizi_InfoMgr Demo_Dizi_InfoMgr { get; }
-    private Demo_View_DiziListMgr Demo_View_DiziListMgr { get; }
-    private Demo_View_ConsumeResMgr Demo_View_ConsumeResMgr { get; }
-    private Demo_View_ConPropsMgr Demo_View_ConPropsMgr { get; }
-    private Demo_View_DiziActivityMgr Demo_View_DiziActivityMgr { get; }
+    //test recruitManger
     private DiziRecruitManager DiziRecruitManager { get; }
-    private Demo_View_EquipmentMgr Demo_View_EquipmentMgr { get; }
-    private Demo_View_AdventureMapsMgr Demo_View_AdventureMapsMgr { get; }
-    private Demo_Game_ViewMgr Demo_Game_ViewMgr { get; }
-    private Demo_View_ChallengeStageSelectorMgr Demo_View_ChallengeStageSelectorMgr { get; }
-    private Demo_Game_BattleBannerMgr Demo_Game_BattleBannerMgr { get; }
+
+    // Page buttons
+    private Demo_View_PagesMgr Demo_View_PageMgr { get; }
+
+    // top
+    private Demo_View_Faction_InfoMgr Demo_View_Faction_InfoMgr { get; }
 
     //page
+    private Demo_Page_Main Demo_Page_Main { get; }
     private Demo_Page_Skill Demo_Page_Skill { get; }
     private Demo_Page_Faction Demo_Page_Faction { get; }
+    private Demo_Page_Battle Demo_Page_Battle { get; }
 
     //window
-    /// <summary>
-    /// 注意: 这是一个统一奖励窗口. 自动从<see cref="RewardBoard"/>获取信息并显示.
-    /// 所以请调用<see cref="Demo_Win_RewardMgr.Show"/>方法显示即可
-    /// </summary>
     private Demo_Win_RewardMgr Demo_Win_RewardMgr { get; }
     private Demo_Win_ItemMgr Demo_Win_ItemMgr { get; }
     private Demo_Win_SkillComprehend Demo_Win_SkillComprehend { get; }
@@ -51,9 +44,6 @@ internal class Demo_v1Agent : MainUiAgent
     private Demo_Win_ChallengeMgr Demo_Win_ChallengeMgr { get; }
 
     private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
-    private BattleController BattleController => Game.Controllers.Get<BattleController>();
-    private SkillController SkillController => Game.Controllers.Get<SkillController>();
-    private GameStageController GameStageController => Game.Controllers.Get<GameStageController>();
     private IGame2DLand Game2D => Game.Game2DLand;
 
     internal Demo_v1Agent(IMainUi mainUi) : base(mainUi)
@@ -61,25 +51,17 @@ internal class Demo_v1Agent : MainUiAgent
         //注册战斗事件,实现战斗特效生成
         EffectView.OnInstance += OnEffectInstance;
 
-        //页面管理器
+        //页面管理器 btm btns
         Demo_View_PageMgr = new Demo_View_PagesMgr(this);
 
-        //main板块管理器
+        //top
         Demo_View_Faction_InfoMgr = new Demo_View_Faction_InfoMgr(this);
-        Demo_Dizi_InfoMgr = new Demo_Dizi_InfoMgr(this);
-        Demo_View_DiziListMgr = new Demo_View_DiziListMgr(this);
-        Demo_View_ConsumeResMgr = new Demo_View_ConsumeResMgr(this);
-        Demo_View_ConPropsMgr = new Demo_View_ConPropsMgr(this);
-        Demo_View_DiziActivityMgr = new Demo_View_DiziActivityMgr(this);
-        Demo_View_EquipmentMgr = new Demo_View_EquipmentMgr(this);
-        Demo_View_AdventureMapsMgr = new Demo_View_AdventureMapsMgr(this);
-        Demo_Game_ViewMgr = new Demo_Game_ViewMgr(this);
-        Demo_Game_BattleBannerMgr = new Demo_Game_BattleBannerMgr(this);
-        Demo_View_ChallengeStageSelectorMgr = new Demo_View_ChallengeStageSelectorMgr(this);
 
         //Page
+        Demo_Page_Main = new Demo_Page_Main(this);
         Demo_Page_Skill = new Demo_Page_Skill(this);
         Demo_Page_Faction = new Demo_Page_Faction(this);
+        Demo_Page_Battle = new Demo_Page_Battle(this);
         DiziRecruitManager = new DiziRecruitManager(this);
 
         //窗口 Windows
@@ -90,6 +72,7 @@ internal class Demo_v1Agent : MainUiAgent
         Demo_Win_ChallengeMgr = new Demo_Win_ChallengeMgr(this);
 
         CloseAllPages();
+        MainUi.ShowGame();
     }
 
     private Faction Faction => Game.World.Faction;
@@ -106,103 +89,58 @@ internal class Demo_v1Agent : MainUiAgent
 
     private Dizi SelectedDizi { get; set; }
 
+    // 门派页面
     internal void FactionPage_Show() => ShowPage(Pages.Faction);
-    internal void DiziPage_Show(string guid)
+    // 弟子活动页面
+    internal void MainPage_Show(string guid)
     {
         if (!string.IsNullOrWhiteSpace(guid)) SelectedDizi = Game.World.Faction.GetDizi(guid);
         ShowPage(Pages.Main);
     }
-
+    // 弟子技能页面
     internal void SkillPage_Show(string guid)
     {
         if (!string.IsNullOrWhiteSpace(guid)) SelectedDizi = Game.World.Faction.GetDizi(guid);
         ShowPage(Pages.Skills);
     }
-
+    // 页面Ui布置
     private void ShowPage(Pages page)
     {
+        var dizi = SelectedDizi;
+        if (dizi == null) //如果没有缓存弟子,就会获取门派中的第一个弟子
+        {
+            dizi = Game.World.Faction.DiziList.FirstOrDefault();
+            if (dizi == null)
+            {
+                XDebug.LogWarning("当前门派并没有弟子!");
+                return;
+            }
+        }
         switch (page)
         {
             case Pages.Main:
-                SetDiziView(Pages.Main);
-                Show(new UiManagerBase[]
-                {
-                    Demo_View_ConsumeResMgr,
-                    Demo_View_ConPropsMgr,
-                    Demo_View_DiziActivityMgr,
-                    Demo_View_EquipmentMgr,
-                    Demo_Dizi_InfoMgr,
-                }, true);
+                Demo_Page_Main.Set(dizi);
+                Demo_Page_Main.Show();
+                Game2D.PlayDizi(dizi.Guid);
                 Game2D.SwitchPage(CameraFocus.Focus.DiziView);
                 break;
             case Pages.Skills:
-                SetDiziView(Pages.Skills);
-                Show(new UiManagerBase[]
-                {
-                    Demo_Page_Skill,
-                }, true);
+                Demo_Page_Skill.SetDizi(dizi);
+                Demo_Page_Skill.Show();
                 break;
             case Pages.Faction:
-                Show(new UiManagerBase[]
-                {
-                    Demo_Page_Faction,
-                }, true);
+                Demo_Page_Faction.Show();
                 Game2D.SwitchPage(CameraFocus.Focus.FactionView);
+                break;
+            case Pages.Battle:
+                //Game2D
+                Demo_Page_Battle.Show();
+                Game2D.PlayDizi(dizi.Guid);
+                Game2D.SwitchPage(CameraFocus.Focus.DiziView);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(page), page, null);
         }
-        // 弟子信息(相关板块)显示, 作为主页上整合显示所有板块的方法
-        void SetDiziView(Pages p)
-        {
-            var dizi = SelectedDizi;
-            if (dizi == null) //如果没有缓存弟子,就会获取门派中的第一个弟子
-            {
-                dizi = Game.World.Faction.DiziList.FirstOrDefault();
-                if (dizi == null)
-                {
-                    XDebug.LogWarning("当前门派并没有弟子!");
-                    return;
-                }
-            }
-
-            //main
-            Game2D.PlayDizi(dizi.Guid);
-
-            Demo_View_ConsumeResMgr.Set(dizi);
-            Demo_View_ConPropsMgr.Set(dizi);
-            Demo_View_DiziActivityMgr.Set(dizi);
-            Demo_View_EquipmentMgr.Set(dizi);
-            Demo_Dizi_InfoMgr.Set(dizi);
-            Demo_Game_ViewMgr.Set(dizi);
-            Demo_View_AdventureMapsMgr.Hide();
-
-            //skill
-            Demo_Page_Skill.SetDizi(dizi);
-        }
-
-    }
-
-    /// <summary>
-    /// 历练地图选择
-    /// </summary>
-    /// <param name="guid"></param>
-    /// <param name="mapType"></param>
-    internal void Dizi_AdvMapSelection(string guid,int mapType)
-    {
-        ShowPage(Pages.Main);
-        Demo_View_AdventureMapsMgr.Set(guid, mapType);
-        Demo_View_AdventureMapsMgr.Show();
-    }
-
-    /// <summary>
-    /// 获取挑战关卡并打开选择窗口
-    /// </summary>
-    internal void Dizi_ChallengeShowStage()
-    {
-        ShowPage(Pages.Main);
-        Show(Demo_View_ChallengeStageSelectorMgr, false);
-        Demo_View_ChallengeStageSelectorMgr.UpdateChallengeSelector();
     }
 
     /// <summary>
@@ -213,20 +151,8 @@ internal class Demo_v1Agent : MainUiAgent
     {
         ShowPage(Pages.Main);
         ChallengeController.ChallengeStart(SelectedDizi.Guid, challengeIndex);
-        Demo_Game_ViewMgr.Hide();
     }
-
-    /// <summary>
-    /// 战斗结束,ui转场
-    /// </summary>
-    public void BattleFinalize()
-    {
-        BattleController.FinalizeBattle();
-        Demo_Game_ViewMgr.Show();
-        Demo_Game_ViewMgr.Set(SelectedDizi);
-        Demo_Game_BattleBannerMgr.Reset();
-    }
-
+    
     /// <summary>
     /// 领悟技能(有目标技能)
     /// </summary>
@@ -272,4 +198,6 @@ internal class Demo_v1Agent : MainUiAgent
     public void Win_ChallengeWindow() => Demo_Win_ChallengeMgr.ShowChallengeWindow();
 
     public void Win_ChallengeReward() => ChallengeController.GetReward();
+
+    public void Redirect_MainPage_ChallengeSelector() => ShowPage(Pages.Main);
 }

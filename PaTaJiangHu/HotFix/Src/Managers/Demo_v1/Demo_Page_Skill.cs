@@ -14,7 +14,7 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1;
 
-internal class Demo_Page_Skill : UiManagerBase
+internal class Demo_Page_Skill : PageUiManagerBase
 {
     private Demo_v1Agent Agent { get; set; }
     private View_diziInfo view_diziInfo { get; set; }
@@ -28,10 +28,7 @@ internal class Demo_Page_Skill : UiManagerBase
         Agent = uiAgent;
     }
 
-    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Page;
     protected override string ViewName => "demo_page_skill";
-    protected override bool IsDynamicPixel => true;
-
     protected override void Build(IView v)
     {
         view_diziInfo = new View_diziInfo(v.GetObject<View>("view_diziInfo"), true);
@@ -61,6 +58,12 @@ internal class Demo_Page_Skill : UiManagerBase
     private SkillType _selectedSkill;
     private int _selectedIndex;
     private Dizi _selectedDizi;
+
+    //弟子武功天赋的差值校正, 主要是让-15%~15%的值转化成0-30,以避免出现负数
+    private static float DiziAptitudeAlign(float aptitude)
+    {
+        return aptitude + 15;
+    }
 
     private void SkillSelected(SkillType skill, int index)
     {
@@ -131,10 +134,6 @@ internal class Demo_Page_Skill : UiManagerBase
         _selectedIndex = isSkillAvailable ? _selectedIndex : -1;
     }
 
-    public override void Show() => View.Show();
-
-    public override void Hide() => View.Hide();
-
     private class View_diziInfo : UiBase
     {
         private Image img_diziIcon { get; }
@@ -144,6 +143,7 @@ internal class Demo_Page_Skill : UiManagerBase
         private Element_prop element_propAgility { get; }
         private Element_prop element_propHp { get; }
         private Element_prop element_propMp { get; }
+        private View_gifted view_gifted { get; }
 
         public View_diziInfo(IView v, bool display) : base(v, display)
         {
@@ -154,6 +154,7 @@ internal class Demo_Page_Skill : UiManagerBase
             element_propAgility = new Element_prop(v.GetObject<View>("element_propAgility"), true);
             element_propHp = new Element_prop(v.GetObject<View>("element_propHp"), true);
             element_propMp = new Element_prop(v.GetObject<View>("element_propMp"), true);
+            view_gifted = new View_gifted(v.GetObject<View>("view_gifted"), true);
         }
 
         public void Set(Dizi dizi)
@@ -165,6 +166,7 @@ internal class Demo_Page_Skill : UiManagerBase
             element_propAgility.Set((int)dizi.AgilityProp.LeveledValue, dizi.AgilityProp.SkillBonus());
             element_propHp.Set((int)dizi.HpProp.LeveledValue, dizi.HpProp.SkillBonus());
             element_propMp.Set((int)dizi.MpProp.LeveledValue, dizi.MpProp.SkillBonus());
+            view_gifted.Set(dizi.Gifted);
         }
         private class Element_prop : UiBase
         {
@@ -182,15 +184,50 @@ internal class Demo_Page_Skill : UiManagerBase
                 text_skillValue.text = skillValue.ToString();
             }
         }
+
+        private class View_gifted : UiBase
+        {
+            private Text text_dodgeRateMax { get; } 
+            private Text text_critRateMax { get; }
+            private Text text_hardRateMax { get; }
+            private Text text_critDmgRatio { get; }
+            private Text text_hardDmgRatio { get; }
+            private Text text_mpConvertRatio { get; }
+            private Text text_mpCounteractRatio { get; }
+
+            public View_gifted(IView v, bool display) : base(v, display)
+            {
+                text_dodgeRateMax = v.GetObject<Text>("text_dodgeRateMax");
+                text_critRateMax = v.GetObject<Text>("text_critRateMax");
+                text_hardRateMax = v.GetObject<Text>("text_hardRateMax");
+                text_critDmgRatio = v.GetObject<Text>("text_critDmgRatio");
+                text_hardDmgRatio = v.GetObject<Text>("text_hardDmgRatio");
+                text_mpConvertRatio = v.GetObject<Text>("text_mpConvertRatio");
+                text_mpCounteractRatio = v.GetObject<Text>("text_mpCounteractRatio");
+            }
+
+            public void Set(ICombatGifted g)
+            {
+                text_dodgeRateMax.text = g.DodgeRateMax.ToString();
+                text_critRateMax.text = g.CritRateMax.ToString();
+                text_hardRateMax.text = g.HardRateMax.ToString();
+                text_critDmgRatio.text = (1 + g.CritDamageRate/100).ToString();
+                text_hardDmgRatio.text = (1 + g.HardDamageRate / 100).ToString();
+                text_mpConvertRatio.text = (g.MpDamageRate/100).ToString();
+                text_mpCounteractRatio.text = (g.MpArmorRate/100).ToString();
+            }
+        }
     }
 
     private class View_diziProps : UiBase
     {
+        private View_aptitude view_aptitude { get; }
         private ListBoardUi<Prefab_propInfo> ListViewLeft { get; }
         private ListBoardUi<Prefab_propInfo> ListViewMid { get; }
         private ListBoardUi<Prefab_propInfo> ListViewRight { get; }
         public View_diziProps(IView v, bool display) : base(v, display)
         {
+            view_aptitude = new View_aptitude(v.GetObject<View>("view_aptitude"), true);
             ListViewLeft = new ListBoardUi<Prefab_propInfo>(v, "prefab_propInfo", "obj_listLeft");
             ListViewMid = new ListBoardUi<Prefab_propInfo>(v, "prefab_propInfo", "obj_listMid");
             ListViewRight = new ListBoardUi<Prefab_propInfo>(v, "prefab_propInfo", "obj_listRight");
@@ -207,11 +244,12 @@ internal class Demo_Page_Skill : UiManagerBase
             ListViewLeft.ClearList(u => u.Destroy());
             ListViewMid.ClearList(u => u.Destroy());
             ListViewRight.ClearList(u => u.Destroy());
-            SetList(ListViewLeft, "重击率", $"{hrdRate:F1}%");
+            SetList(ListViewLeft, "重击率", $"{hrdRate:0.#}%");
             SetList(ListViewLeft, "重击伤害倍数", $"{1 + hrdDmgRatio}");
-            SetList(ListViewMid, "会心率", $"{criRate:F1}%");
+            SetList(ListViewMid, "会心率", $"{criRate:0.#}%");
             SetList(ListViewMid, "会心伤害倍数", $"{1 + criDmgRatio}");
-            SetList(ListViewRight, "闪避率", $"{dodRate:F1}%");
+            SetList(ListViewRight, "闪避率", $"{dodRate:0.#}%");
+            view_aptitude.Set(dizi.ArmedAptitude);
         }
 
         private void SetList(ListBoardUi<Prefab_propInfo> list,string label,string value)
@@ -235,6 +273,49 @@ internal class Demo_Page_Skill : UiManagerBase
             {
                 text_label.text = label;
                 text_value.text = value;
+            }
+        }
+
+        private class View_aptitude : UiBase
+        {
+            private Element_row element_rowUnarmed { get; }
+            private Element_row element_rowSword { get; }
+            private Element_row element_rowBlade { get; }
+            private Element_row element_rowStaff { get; }
+
+            public View_aptitude(IView v, bool display) : base(v, display)
+            {
+                element_rowUnarmed = new Element_row(v.GetObject<View>("element_rowUnarmed"), true);
+                element_rowSword = new Element_row(v.GetObject<View>("element_rowSword"), true);
+                element_rowBlade = new Element_row(v.GetObject<View>("element_rowBlade"), true);
+                element_rowStaff = new Element_row(v.GetObject<View>("element_rowStaff"), true);
+            }
+
+            public void Set(ICombatArmedAptitude armedAptitude)
+            {
+                var aptitude = armedAptitude;
+                element_rowUnarmed.Set("拳", DiziAptitudeAlign(aptitude.Unarmed));
+                element_rowSword.Set("剑", DiziAptitudeAlign(aptitude.Sword));
+                element_rowBlade.Set("刀", DiziAptitudeAlign(aptitude.Blade));
+                element_rowStaff.Set("棍", DiziAptitudeAlign(aptitude.Staff));
+            }
+
+            private class Element_row : UiBase
+            {
+                private Text text_label { get; }
+                private Text text_value { get; }
+
+                public Element_row(IView v, bool display) : base(v, display)
+                {
+                    text_label = v.GetObject<Text>("text_label");
+                    text_value = v.GetObject<Text>("text_value");
+                }
+
+                public void Set(string label, float value)
+                {
+                    text_label.text = label;
+                    text_value.text = value.ToString();
+                }
             }
         }
     }

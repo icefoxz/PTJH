@@ -79,6 +79,10 @@ namespace Server.Controllers
         /// <summary>
         /// 清扫战场, 所有战斗后必须调用, 否则会战斗演示一直存在
         /// </summary>
-        public void FinalizeBattle() => GameLand.FinalizeBattle();
+        public void FinalizeBattle()
+        {
+            GameLand.FinalizeBattle();
+            Game.MessagingManager.Send(EventString.Battle_Finalized, string.Empty);
+        }
     }
 }

@@ -3,21 +3,6 @@
 namespace HotFix_Project.Managers;
 
 /// <summary>
-/// 基于MainPage的UiManagerBase 扩展类
-/// </summary>
-internal abstract class MainPageBase : UiManagerBase
-{
-    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.MainPage;
-    protected abstract MainPageLayout.Sections MainPageSection { get; }
-
-    protected MainPageBase(MainUiAgent uiAgent) : base(uiAgent)
-    {
-    }
-
-    protected override void RegUiManager() => MainUiAgent.SetToMainPage(this, View, MainPageSection, IsDynamicPixel);
-}
-
-/// <summary>
 /// 所有Ui manager都必须继承的基础类, 主要用于注册与实现Ui上开关的统一调用
 /// </summary>
 internal abstract class UiManagerBase
@@ -66,6 +51,9 @@ internal abstract class UiManagerBase
 
 internal abstract class WinUiManagerBase : UiManagerBase
 {
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
+    protected override bool IsDynamicPixel => true;
+
     protected WinUiManagerBase(MainUiAgent uiAgent) : base(uiAgent)
     {
     }
@@ -79,5 +67,22 @@ internal abstract class WinUiManagerBase : UiManagerBase
     public override void Show()
     {
         MainUiAgent.ShowWindow(View);
+    }
+}
+
+internal abstract class PageUiManagerBase : UiManagerBase
+{
+    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Page;
+    protected override bool IsDynamicPixel => true;
+    protected PageUiManagerBase(MainUiAgent uiAgent) : base(uiAgent)
+    {
+    }
+
+    public override void Hide() => View.Hide();
+
+    public override void Show()
+    {
+        MainUiAgent.CloseAllPages();
+        View.Show();
     }
 }

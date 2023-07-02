@@ -7,12 +7,14 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
 {
+    /// <summary>
+    /// 注意: 这是一个统一奖励窗口. 自动从<see cref="GameWorld.RewardBoard"/>获取信息并显示.
+    /// 所以请调用<see cref="Demo_Win_RewardMgr.Show"/>方法显示即可
+    /// </summary>
     internal class Demo_Win_RewardMgr : WinUiManagerBase
     {
-        private Win_Reward RewardWindow { get; set; } 
-        protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
+        private Win_Reward RewardWindow { get; set; }
         protected override string ViewName => "demo_win_reward";
-        protected override bool IsDynamicPixel => true;
         public Demo_Win_RewardMgr(Demo_v1Agent uiAgent) : base(uiAgent) { }
         protected override void Build(IView view)
         {

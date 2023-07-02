@@ -13,6 +13,7 @@ namespace Utls
 {
     public class ObjectBag
     {
+        private const char SerializeSeparator = '␇';
         private static Type StringType => typeof(string);
         private static Type IntType => typeof(int);
         private static Type FloatType => typeof(float);
@@ -68,7 +69,8 @@ namespace Utls
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
-            return string.Join('␇', bag);
+
+            return string.Join(SerializeSeparator, bag);
         }
 
         public static ObjectBag DeSerialize(string dataText) => new(dataText);
@@ -79,24 +81,7 @@ namespace Utls
         public char GetChar(int index) => char.Parse(GetValue(index));
         public long GetLong(int index) => long.Parse(GetValue(index));
         public bool GetBool(int index) => GetInt(index) == 1;
-
-        public string GetString(int index)
-        {
-            //var value = GetValue(index);
-            //var type = typeof(T);
-            //if (type == StringType) return value as T;
-            //if (type == IntType) return GetInt(index) as T;
-            //if (type == FloatType) return GetFloat(index) as T;
-            //if (type == DoubleType) return GetDouble(index) as T;
-            //if (type == CharType) return GetChar(index) as T;
-            //if (type == LongType) return GetLong(index) as T;
-            //if (type == BoolType) return GetBool(index) as T;
-            //var result = Json.Deserialize<T>(value);
-            //if (result == null) XDebug.LogWarning($"ObjectBag.Get: {value}\n Convert is null!");
-            //return result;
-            return GetValue(index);
-        }
-
+        public string GetString(int index) => GetValue(index);
 
         private string GetValue(int index) => Bag[index];
     }

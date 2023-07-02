@@ -18,7 +18,6 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
         UiAgent = uiAgent;
     }
 
-    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
     protected override string ViewName => "demo_win_challenge";
     protected override bool IsDynamicPixel => true;
 
@@ -27,7 +26,7 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
         win_challenge = new Win_challenge(v: view, onCloseAction: () => Hide(),
             onChallengeRedirection: () =>
             {
-                UiAgent.DiziPage_Show(null);
+                UiAgent.MainPage_Show(null);
                 Hide();
             }, onChallengeAbandon: () =>
             {
@@ -49,7 +48,7 @@ internal class Demo_Win_ChallengeMgr : WinUiManagerBase
                 newChallenge.Image, newChallenge.StageCount,
                 newChallenge.About, () =>
                 {
-                    UiAgent.Dizi_ChallengeShowStage();
+                    UiAgent.Redirect_MainPage_ChallengeSelector();
                     Hide();
                 });
             return;

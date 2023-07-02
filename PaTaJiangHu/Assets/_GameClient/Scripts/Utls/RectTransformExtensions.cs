@@ -23,5 +23,11 @@ namespace Utls
         {
             rt.offsetMin = new Vector2(rt.offsetMin.x, bottom);
         }
+
+        public static void ResetToZero(this RectTransform rt)
+        {
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+        }
     }
 }

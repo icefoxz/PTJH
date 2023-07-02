@@ -14,9 +14,7 @@ internal class Demo_Win_ItemSelector : WinUiManagerBase
     {
     }
 
-    protected override MainUiAgent.Sections Section => MainUiAgent.Sections.Window;
     protected override string ViewName => "demo_win_itemSelector";
-    protected override bool IsDynamicPixel => true;
 
     private event Action<int> OnConfirm;
     protected override void Build(IView view) => win_itemSelector = new Win_itemSelector(view, id=>

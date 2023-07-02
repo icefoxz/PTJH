@@ -16,8 +16,6 @@ internal class MainUiAgent
         UiMappers = new List<UiMapper>();
     }
 
-    protected MainPageManager MainPageMgr { get; } = new MainPageManager();
-    protected List<UiManagerBase> MainPageUis { get; } = new List<UiManagerBase>();
     protected List<UiMapper> UiMappers { get; }
     protected IMainUi MainUi { get; }
 
@@ -27,8 +25,8 @@ internal class MainUiAgent
         Page,
         Bottom,
         Window,
-        Panel,
-        MainPage
+        Game,
+        Panel
     }
 
     private void RegPage<T>(Sections section, T manager) where T : UiManagerBase
@@ -57,76 +55,30 @@ internal class MainUiAgent
             case Sections.Panel:
                 MainUi.SetPanel(view);
                 break;
-            case Sections.MainPage:
-                XDebug.LogError($"{view.name}注册异常! MainPage 不应该直接注册UiManager, 因为需要独立注册上中下, 所以得另处理!");
+            case Sections.Game:
+                MainUi.SetGame(view);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
 
-    public void SetToMainPage(UiManagerBase manager, IView view, MainPageLayout.Sections section, bool isFixPixel)
-    {
-        MainPageUis.Add(manager);
-        MainPageMgr.Reg(section, manager);
-        RegPage(Sections.MainPage, manager);
-        var mainPage = Game.MainUi.MainPage;
-        mainPage.Set(view, section, isFixPixel);
-    }
-
-    public void Show<T>(Action<T> mgrAction,bool hideSameSection) where T : UiManagerBase
-    {
-        var type = typeof(T);
-        var map = UiMappers.First(m => m.Key == type.Name);
-        mgrAction?.Invoke((T)map.Manager);
-        OnShowUi(map.Section, hideSameSection, map);
-    }
-    public void Show(UiManagerBase manager,bool hideSameSection)
+    public void Show(UiManagerBase manager)
     {
         var map = UiMappers.FirstOrDefault(m => m.Manager == manager);
-        OnShowUi(map.Section, hideSameSection, map);
-    }
-    public void Show(UiManagerBase[] managers, bool hideSameSection )
-    {
-        var maps = UiMappers.Where(m => managers.Contains(m.Manager)).ToArray();
-        if(!maps.Any())
-            throw new Exception($"{string.Join(",",managers.Select(m=>m.View.name))}没有找到对应的UiManager");
-        var section = maps.First().Section;
-        OnShowUi(section, hideSameSection, maps);
-    }
-
-    public void Show(Type type, bool hideSameSection)
-    {
-        var map = UiMappers.FirstOrDefault(m => m.Key == type.Name);
-        OnShowUi(map.Section, hideSameSection, map);
+        OnShowUi(map.Section, map);
     }
 
     public void ShowWindow(IView view) => MainUi.ShowWindow(view);
 
-    private void OnShowUi(Sections section, bool hideSameSection, params UiMapper[] maps)
+    private void OnShowUi(Sections section, params UiMapper[] maps)
     {
-        switch (section)
-        {
-            case Sections.Top:
-            case Sections.Bottom:
-            case Sections.Panel:
-            case Sections.Window:
-            case Sections.Page:
-                if (hideSameSection) CloseAllUi(section, maps);
-                MainUi.HideMainPage();
-                foreach (var mapper in maps) mapper.Manager.Show();
-                break;
-            case Sections.MainPage:
-                if (hideSameSection) CloseAllUi(Sections.Page, maps);
-                MainUi.ShowMainPage();
-                MainPageMgr.Show(maps);
-                break; //MainPage
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        if (section is Sections.Page) 
+            CloseAllUi(section, maps);
+        foreach (var mapper in maps) mapper.Manager.Show();
     }
 
-    protected void CloseAllPages() => CloseAllUi(Sections.Page);
+    public void CloseAllPages() => CloseAllUi(Sections.Page);
     private void CloseAllUi(Sections section, params UiMapper[] skipsMaps)
     {
         foreach (var mapper in UiMappers.Where(m => m.Section == section).ToList())
@@ -147,34 +99,6 @@ internal class MainUiAgent
             Section = section;
             Key = key;
             Manager = manager;
-        }
-    }
-
-    protected class MainPageManager
-    {
-        private Dictionary<MainPageLayout.Sections, List<UiManagerBase>> Data { get; } =
-            new Dictionary<MainPageLayout.Sections, List<UiManagerBase>>();
-        private Dictionary<UiManagerBase, MainPageLayout.Sections> Nav { get; } =
-            new Dictionary<UiManagerBase, MainPageLayout.Sections>();
-
-        public void Show(UiMapper[] mappers)
-        {
-            var first = mappers.First();
-            var maps = mappers.Select(m => m.Manager).ToArray();
-            var section = Nav[first.Manager];
-            foreach (var manager in Data[section])
-            {
-                if(maps.Contains(manager)) manager.Show();
-            }
-        }
-
-        public void Reg(MainPageLayout.Sections section, UiManagerBase manager)
-        {
-            if (!Data.ContainsKey(section))
-                Data.Add(section, new List<UiManagerBase>());
-            if (!Nav.ContainsKey(manager))
-                Nav.Add(manager, section);
-            Data[section].Add(manager);
         }
     }
 

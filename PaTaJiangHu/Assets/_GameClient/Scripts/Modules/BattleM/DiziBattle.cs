@@ -30,20 +30,27 @@ public class DiziBattle
     private static int CombatUnitSeed { get; set; }
     internal Config.BattleConfig Config { get; }
     public int RoundLimit { get; private set; }
-
+    public event Action<int> DiziDisarmedEvent;
 
     private DiziBattle(int roundLimit, Config.BattleConfig config, params DiziCombatUnit[] combats)
     {
         RoundLimit = roundLimit;
         Config = config;
-        foreach (var unit in combats) unit.SetInstanceId(++CombatUnitSeed);
+        foreach (var unit in combats)
+        {
+            unit.SetInstanceId(++CombatUnitSeed);
+            unit.DiziDisarmed += OnDiziDisarmed;
+        }
         BuffManager = new BuffManager<DiziCombatUnit>(combats.ToList());
         Rounds = new List<RoundInfo<DiziCombatUnit, DiziCombatPerformInfo, DiziCombatInfo>>();
         Fighters = combats;
     }
 
+    private void OnDiziDisarmed(int instanceId) => DiziDisarmedEvent?.Invoke(instanceId);
+
     private void Finalize(bool isPlayerWin)
     {
+        Array.ForEach(Fighters, f => f.DiziDisarmed -= OnDiziDisarmed);
         IsPlayerWin = isPlayerWin;
         IsFinalized = true;
     }

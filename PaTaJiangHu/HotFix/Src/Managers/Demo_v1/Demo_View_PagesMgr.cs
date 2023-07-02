@@ -7,7 +7,6 @@ using Views;
 
 namespace HotFix_Project.Managers.Demo_v1
 {
-    
     internal class Demo_View_PagesMgr : UiManagerBase
     {
         private View_Pages View_pages { get; set; }
@@ -28,7 +27,7 @@ namespace HotFix_Project.Managers.Demo_v1
                 {
                     DemoAgent.SkillPage_Show(null);
                 }, //MainUiAgent.Show<TreasureHouseManager>(m=> m.Show()),
-                onXiuxingPage: () => { DemoAgent.DiziPage_Show(null); },
+                onXiuxingPage: () => { DemoAgent.MainPage_Show(null); },
                 onFactionPage: () =>
                 {
                     DemoAgent.FactionPage_Show();
@@ -39,6 +38,8 @@ namespace HotFix_Project.Managers.Demo_v1
 
         protected override void RegEvents()
         {
+            Game.MessagingManager.RegEvent(EventString.Battle_Init, bag => View_pages.SetActive(false));
+            Game.MessagingManager.RegEvent(EventString.Battle_Finalized, bag => View_pages.SetActive(true));
         }
 
         public override void Show() => View_pages.Display(true);
@@ -51,17 +52,33 @@ namespace HotFix_Project.Managers.Demo_v1
             private Element FactionElement { get; }
             private Element RecruitElement { get; }
 
+            private bool IsActive { get; set; }
             public View_Pages(IView v,
                 Action onShengongPage,
                 Action onXiuxingPage,
                 Action onFactionPage,
                 Action onRecruitPage) : base(v, true)
             {
-                FactionElement = new Element(v.GetObject<View>("element_faction"), () => onFactionPage?.Invoke());
-                ShengongElement = new Element(v.GetObject<View>("element_shengong"), () => onShengongPage?.Invoke());
-                XiuxingElement = new Element(v.GetObject<View>("element_xiuxing"), () => onXiuxingPage?.Invoke());
-                RecruitElement = new Element(v.GetObject<View>("element_recruit"), () => onRecruitPage?.Invoke());
+                FactionElement = new Element(v.GetObject<View>("element_faction"), () =>
+                {
+                    if (IsActive) onFactionPage?.Invoke();
+                });
+                ShengongElement = new Element(v.GetObject<View>("element_shengong"), () =>
+                {
+                    if (IsActive) onShengongPage?.Invoke();
+                });
+                XiuxingElement = new Element(v.GetObject<View>("element_xiuxing"), () =>
+                {
+                    if (IsActive) onXiuxingPage?.Invoke();
+                });
+                RecruitElement = new Element(v.GetObject<View>("element_recruit"), () =>
+                {
+                    if (IsActive) onRecruitPage?.Invoke();
+                });
+                IsActive = true;
             }
+
+            public void SetActive(bool isActive) => IsActive = isActive;
 
             private class Element : UiBase
             {

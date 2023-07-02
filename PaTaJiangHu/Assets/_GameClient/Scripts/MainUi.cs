@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using MyBox;
 using UnityEngine;
 using UnityEngine.UI;
 using Utls;
@@ -12,26 +13,20 @@ public interface IMainUi : ISingletonDependency
     void SetMid(IView view, bool resetPosition = false);
     void SetBtm(IView view, bool resetPosition = false);
     void SetWindow(IView view, bool resetPos);
+    void SetGame(IView view);
     void SetPanel(IView view);
     void ShowTop();
-    void ShowMid();
     void ShowBtm();
+    void ShowGame();
     void ShowWindow(IView v);
     void ShowPanel();
     void HideTop();
-    void HideMid();
     void HideBtm();
+    void HideGame();
     void HideWindows();
     void HidePanel();
-    void HideMainPage();
-    void ShowMainPage(); 
-    void HideAllLayout();
-    void ShowAllLayout();
-    void HideAll();
-    void ShowAll();
     void Hide();
     void Show();
-    void ResetUi();
 }
 
 /// <summary>
@@ -42,13 +37,14 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     [SerializeField] private RectTransform _topUi;
     [SerializeField] private RectTransform _midUi;
     [SerializeField] private RectTransform _btmUi;
+    [SerializeField] private RectTransform _gameUi;
     [SerializeField] private RectTransform _window;
     [SerializeField] private Transform _windowPanel;
     [SerializeField] private Image _panel;
-    [SerializeField] private MainPageLayout _mainPage;
     [SerializeField] private GameObject _pool;
 
     public RectTransform TopUi => _topUi;
+    public RectTransform GameUi => _gameUi;
     public RectTransform MidUi => _midUi;
     public RectTransform BtmUi => _btmUi;
     public RectTransform Window => _window;
@@ -56,7 +52,6 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     public GameObject Pool => _pool;
 
     public Image Panel => _panel;
-    public MainPageLayout MainPage => _mainPage;
     private Dictionary<RectTransform,IView> _uiMap;
     private Dictionary<IView, View> _windowMap = new Dictionary<IView, View>();
     public IReadOnlyDictionary<IView, View> WindowMap => _windowMap;
@@ -67,6 +62,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         {
             { _panel.rectTransform, null },
             { _topUi, null },
+            { _gameUi, null },
             { _midUi, null },
             { _btmUi, null },
         };
@@ -81,12 +77,13 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
         _windowMap.Add(view, view.GetView());
         SetUi(Window, view, resetPos);
     }
-
+    public void SetGame(IView view) => SetUi(GameUi, view);
     public void SetPanel(IView view) => SetUi(Panel.rectTransform, view);
 
     public void ShowTop() => Display(true, TopUi);
     public void ShowMid() => Display(true, MidUi);
     public void ShowBtm() => Display(true, BtmUi);
+    public void ShowGame() => Display(true, GameUi);
     public void ShowWindow(IView v)
     {
         var view = WindowMap[v];
@@ -96,8 +93,8 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
 
     public void ShowPanel() => Display(true, Panel);
     public void HideTop() => Display(false, TopUi);
-    public void HideMid() => Display(false, MidUi);
     public void HideBtm() => Display(false, BtmUi);
+    public void HideGame() => Display(false, GameUi);
     public void HideWindows()
     {
         HideLayoutChildren(Window);
@@ -107,17 +104,10 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
 
     public void HidePanel() => Display(false, Panel);
 
-    public void HideMainPage() => Display(false, _mainPage);
-    public void ShowMainPage() => Display(true, _mainPage);
-
-    public void HideAllLayout() => Display(false, TopUi, MidUi, BtmUi);
-    public void ShowAllLayout() => Display(true, TopUi, MidUi, BtmUi);
-    public void HideAll() => Display(false, TopUi, MidUi, BtmUi, Panel, Window);
-    public void ShowAll() => Display(true, TopUi, MidUi, BtmUi, Panel, Window);
-
     public void Hide() => Display(false, this);
     public void Show() => Display(true, this);
 
+    private void ShowAllLayout() => Display(true, TopUi, MidUi, GameUi, BtmUi);
     public void ResetUi()
     {
         ResetAllLayoutChildren();
@@ -129,14 +119,9 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
     private void ResetAllLayoutChildren()
     {
         HideLayoutChildren(TopUi);
-        MainPage.HideAll(MainPageLayout.Sections.Top);
-        MainPage.HideAll(MainPageLayout.Sections.Game);
-        MainPage.HideAll(MainPageLayout.Sections.Btm);
-        //HideLayoutChildren(MainPage.Top);//MidUi
-        //HideLayoutChildren(MainPage.Game);//MidUi
-        //HideLayoutChildren(MainPage.Btm);//MidUi
         HideLayoutChildren(MidUi);
         HideLayoutChildren(BtmUi);
+        HideLayoutChildren(GameUi);
         HideLayoutChildren(Panel.transform);
     }
 
@@ -166,10 +151,7 @@ public class MainUi : DependencySingleton<IMainUi>, IMainUi
             if (resetPos)
             {
                 var rect = (RectTransform)(view.GameObject.transform);
-                rect.SetTop(0);
-                rect.SetBottom(0);
-                rect.SetLeft(0);
-                rect.SetRight(0);
+                rect.ResetToZero();
                 //((RectTransform)(view.GameObject.transform)).rect.size.Set(0, 0);
             }
 

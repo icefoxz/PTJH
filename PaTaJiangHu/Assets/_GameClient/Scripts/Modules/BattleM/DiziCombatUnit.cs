@@ -32,6 +32,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public IReadOnlyList<CombatBuff> Buffs => _buffs;
 
     public string Guid { get; private set; }
+    public event Action<int> DiziDisarmed;
 
     public ICombatAttribute Strength => GetAttribute(Combat.Str);
     public ICombatAttribute Agility => GetAttribute(Combat.Agi);
@@ -146,6 +147,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     {
         _equipment.CombatDisarm(equipment);
         UpdateCalculate();
+        DiziDisarmed?.Invoke(InstanceId);
     }
 
     public void EquipmentArmed(IEquipment equipment)
