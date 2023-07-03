@@ -65,14 +65,22 @@ internal class Demo_Page_Main : PageUiManagerBase
             main_consumeRes = new Page_main_consumeRes(view,
                 onResourceClick: (guid, res) => FactionController.ConsumeResourceByStep(guid, res),
                 onSilverAction: (guid, silver) => DiziController.UseSilver(guid, silver));
+            Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => main_consumeRes.Update(bag.GetString(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => main_consumeRes.Update(bag.GetString(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => main_consumeRes.Update(bag.GetString(0)));
         });
         b.GetRes("page_main_equipment", rect_top, (_, view) =>
         {
             main_equipment = new Page_main_equipment(view, onItemSelection: Agent.Win_EquipmentManagement);
+            Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => main_equipment.Update(bag.GetString(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => main_equipment.Update(bag.GetString(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentUpdate, bag => main_equipment.Update(bag.Get<string>(0)));
         });
         b.GetRes("page_main_conProps", rect_top, (_, view) =>
         {
             main_conProps = new Page_main_conprops(view);
+            Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentUpdate, bag => main_conProps.Update(bag.Get<string>(0)));
+            Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => main_conProps.Update(bag.Get<string>(0)));
         });
         b.GetRes("page_main_diziActivity", rect_btm, (_, view) =>
         {
@@ -83,6 +91,28 @@ internal class Demo_Page_Main : PageUiManagerBase
                 onDiziBuyBackAction: guid => XDebug.LogWarning("当前弟子买回互动"),
                 onDiziReturnAction: guid => DiziAdvController.AdventureFinalize(guid),
                 onChallengeAction: UpdateChallengeSelector);
+            Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
+            {
+                var guid = b.GetString(0);
+                main_diziActivity.ActivityUpdate(guid);
+            });
+            Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Message, b =>
+            {
+                var guid = b.GetString(0);
+                var message = b.GetString(1);
+                main_diziActivity.AdventureLogUpdate(guid);
+            });
+            Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Adjust, b =>
+            {
+                var guid = b.GetString(0);
+                var adjust = b.GetString(1);
+                main_diziActivity.AdventureLogUpdate(guid);
+            });
+            Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Reward, b =>
+            {
+                var guid = b.GetString(0);
+                main_diziActivity.AdventureLogUpdate(guid);
+            });
         });
         b.GetRes("page_main_adventureMaps", rect_btm, (_, view) =>
         {
@@ -96,6 +126,13 @@ internal class Demo_Page_Main : PageUiManagerBase
             {
                 Agent.MainPage_Show(dizi.Guid);
             });
+            Game.MessagingManager.RegEvent(EventString.Faction_Init, bag => main_diziList.SetElements());
+            Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b => main_diziList.SetElements());
+            Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag =>
+            {
+                main_diziList.UpdateList();
+                main_diziList.SetElements();
+            });
         });
         b.GetRes("page_main_challengeStageSelector", rect_btm, (_, view) =>
         {
@@ -108,43 +145,6 @@ internal class Demo_Page_Main : PageUiManagerBase
 
     protected override void RegEvents()
     {
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => main_consumeRes.Update(bag.GetString(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, bag => main_equipment.Update(bag.GetString(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => main_consumeRes.Update(bag.GetString(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Finalize, bag => main_equipment.Update(bag.GetString(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentUpdate, bag => main_equipment.Update(bag.Get<string>(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_EquipmentUpdate, bag => main_conProps.Update(bag.Get<string>(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => main_consumeRes.Update(bag.GetString(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_ConditionUpdate, bag => main_conProps.Update(bag.Get<string>(0)));
-        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
-        {
-            var guid = b.GetString(0);
-            main_diziActivity.ActivityUpdate(guid);
-        });
-        Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Message, b =>
-        {
-            var guid = b.GetString(0);
-            var message = b.GetString(1);
-            main_diziActivity.AdventureLogUpdate(guid);
-        });
-        Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Adjust, b =>
-        {
-            var guid = b.GetString(0);
-            var adjust = b.GetString(1);
-            main_diziActivity.AdventureLogUpdate(guid);
-        });
-        Game.MessagingManager.RegEvent(EventString.Dizi_Activity_Reward, b =>
-        {
-            var guid = b.GetString(0);
-            main_diziActivity.AdventureLogUpdate(guid);
-        });
-        Game.MessagingManager.RegEvent(EventString.Faction_Init, bag => main_diziList.SetElements());
-        Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b => main_diziList.SetElements());
-        Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag =>
-        {
-            main_diziList.UpdateList();
-            main_diziList.SetElements();
-        });
         Game.MessagingManager.RegEvent(EventString.Faction_Challenge_Update, _ => UpdateChallengeSelector());
         Game.MessagingManager.RegEvent(EventString.Faction_Challenge_BattleEnd, _ => UpdateChallengeSelector());
     }
