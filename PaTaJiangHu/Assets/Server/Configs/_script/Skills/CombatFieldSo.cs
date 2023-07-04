@@ -9,11 +9,23 @@ using UnityEngine;
 
 namespace Server.Configs.Skills
 {
-    public interface ICombatSkill : ISkill
+    // 技能等级映射
+    public interface ISkillMap<out T> where T : ISkillInfo
+    {
+        int Level { get; }
+        T Skill { get; }
+    }
+
+    public interface ICombatSkill : ISkill, ICombatSkillInfo
+    {
+    }
+
+    public interface ICombatSkillInfo : ISkillInfo
     {
         WeaponArmed Armed { get; }
     }
-    public interface ISkill
+
+    public interface ISkillInfo
     {
         int Id { get; }
         string Name { get; }
@@ -21,7 +33,11 @@ namespace Server.Configs.Skills
         ColorGrade Grade { get; }
         Sprite Icon { get; }
         string About { get; }
-        int MaxLevel();
+        int MaxLevel { get; }
+    }
+
+    public interface ISkill : ISkillInfo
+    {
         ICombatSet GetCombatSet(int level);
         ISkillAttribute[] GetAttributes(int level);
         ISkillProp[] GetProps(int level);
@@ -100,10 +116,13 @@ namespace Server.Configs.Skills
             return LevelStrategy.GetProps(level);
         }
 
-        public int MaxLevel()
+        public int MaxLevel
         {
-            CheckThis();
-            return LevelStrategy.MaxLevel();
+            get
+            {
+                CheckThis();
+                return LevelStrategy.MaxLevel();
+            }
         }
 
         private void CheckThis([CallerMemberName] string methodName = null)

@@ -1209,7 +1209,7 @@ internal class Demo_Page_Main : PageUiManagerBase
                 var index = i;
                 var n = npcs[i];
                 var ui = ChallengeList.Instance(v => new ChallengePrefab(v, () => SetSelected(index)));
-                ui.SetNpc(n.NpcName, stage.Name, n.Level, n.Icon, n.IsBoss);
+                ui.SetNpc(n.Name, stage.Name, n.Level, n.Icon, n.IsBoss);
                 if (i == 0)
                 {
                     //预选第一个

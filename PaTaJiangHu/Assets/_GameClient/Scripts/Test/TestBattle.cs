@@ -184,7 +184,10 @@ public class TestBattle : MonoBehaviour
         public void SetInstanceId(int instanceId) => InstanceId = instanceId;
 
         public DiziCombatUnit GetCombatUnit() =>
-            new(string.Empty, TeamId, Name, Strength, Agility, Hp, Mp, this, this, Gifted, Gifted);
+            new(string.Empty, TeamId, Name, Strength, Agility, Hp, Mp, this, 
+                new SkillMap<ISkillInfo>(1, Force),
+                new SkillMap<ICombatSkillInfo>(1, Com), 
+                new SkillMap<ISkillInfo>(1, Dodge), this, Gifted, Gifted);
 
         private CombatGifted  Gifted => 天赋;
 
@@ -229,6 +232,17 @@ public class TestBattle : MonoBehaviour
         }
         #endregion
 
+        private class SkillMap<T> : ISkillMap<T> where T : ISkillInfo 
+        {
+            public int Level { get; }
+            public T Skill { get; }
+
+            public SkillMap(int level, T skill)
+            {
+                Level = level;
+                Skill = skill;
+            }
+        }
         [Serializable]private class WeaponField : EuipmentBase, IWeapon
         {
             [SerializeField] private WeaponArmed 类型;
@@ -264,7 +278,7 @@ public class TestBattle : MonoBehaviour
             public override EquipKinds EquipKind { get; } = EquipKinds.Decoration;
         }
         
-        [Serializable] private class CombatSkill
+        [Serializable] private class CombatSkill : ICombatSkillInfo
         {
             [SerializeField] private float 重击率;
             [Range(0, 3)] [SerializeField] private float 重击伤害倍数;
@@ -272,8 +286,16 @@ public class TestBattle : MonoBehaviour
             public EffectBuffSoBase[] Buffs => _buffs;
             public float GetHardRate(CombatArgs arg) => 重击率;
             public float GetHardDamageRatio(CombatArgs arg) => 重击伤害倍数;
+            public int Id { get; } = 0;
+            public string Name { get; } = "测试技能";
+            public SkillType SkillType { get; } = SkillType.Force;
+            public ColorGrade Grade { get; } = ColorGrade.A;
+            public Sprite Icon { get; } = null;
+            public string About { get; } = "测试技能";
+            public int MaxLevel { get; } = 10;
+            public WeaponArmed Armed { get; } = WeaponArmed.Unarmed;
         }
-        [Serializable] private class ForceSkill
+        [Serializable] private class ForceSkill : ISkillInfo
         {
             [FormerlySerializedAs("伤害内力")][SerializeField] private float 内力使用;
             [Range(0,100)][FormerlySerializedAs("抵消内力")][SerializeField] private float 护甲占比;
@@ -292,13 +314,28 @@ public class TestBattle : MonoBehaviour
             public float GetMpDamage(CombatArgs arg) => 内力使用;
             public float GetMpCounteract(CombatArgs arg) => 护甲占比;
             public float GetCriticalMultiplier(CombatArgs arg) => 会心倍率;
+            public int Id { get; } = 0;
+            public string Name { get; } = "测试内功";
+            public SkillType SkillType { get; } = SkillType.Force;
+            public ColorGrade Grade { get; } = ColorGrade.A;
+            public Sprite Icon { get; } = null;
+            public string About { get; } = "测试内功";
+            public int MaxLevel { get; } = 10;
         }
-        [Serializable] private class DodgeSkill
+
+        [Serializable] private class DodgeSkill : ISkillInfo
         {
             [SerializeField] private float 闪避率;
             [SerializeField] private EffectBuffSoBase[] _buffs;
             public EffectBuffSoBase[] Buffs => _buffs;
             public float GetDodgeRate(CombatArgs arg) => 闪避率;
+            public int Id { get; } = 0;
+            public string Name { get; } = "测试轻功";
+            public SkillType SkillType { get; } = SkillType.Dodge;
+            public ColorGrade Grade { get; } = ColorGrade.A;
+            public Sprite Icon { get; } = null;
+            public string About { get; } = "测试轻功";
+            public int MaxLevel { get; } = 10;
         }
 
 

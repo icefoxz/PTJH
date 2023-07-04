@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Server.Configs.Skills
 {
-    public interface ISkillLevelMap
+    public interface ISkillLevelConfig
     {
         int Level { get; }
         float Rate { get; }
@@ -18,7 +18,7 @@ namespace Server.Configs.Skills
     internal class SkillLevelingSo : AutoBacktickNamingObject
     {
         [SerializeField] private LevelMap[] _levelMap;
-        [Serializable] private class LevelMap : ISkillLevelMap
+        [Serializable] private class LevelMap : ISkillLevelConfig
         {
             public bool SetName()
             {
@@ -37,6 +37,6 @@ namespace Server.Configs.Skills
             public int MinCost => 领悟分钟;
             public int BookCost => 消耗秘籍数;
         }
-        public ISkillLevelMap GetLevelMap(int level) => _levelMap.SingleOrDefault(l => l.Level == level);
+        public ISkillLevelConfig GetLevelMap(int level) => _levelMap.SingleOrDefault(l => l.Level == level);
     }
 }

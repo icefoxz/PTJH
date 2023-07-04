@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Models;
 using MyBox;
 using Server.Configs.BattleSimulation;
+using Server.Configs.ChallengeStages;
 using Server.Configs.Characters;
 using Server.Configs.Items;
 using Server.Configs.Skills;
@@ -29,19 +31,19 @@ namespace Server.Configs.Battles
         [SerializeField] private NpcGifted 战斗天赋;
 
         internal Gender Gender => 性别;
-        internal int Strength => 力;
-        internal int Agility => 敏;
-        internal int Hp => _hp;
-        internal int Mp => _mp;
-        internal Sprite Icon => 头像;
+        public int Strength => 力;
+        public int Agility => 敏;
+        public int Hp => _hp;
+        public int Mp => _mp;
+        public Sprite Icon => 头像;
 
         private SkillField[] Skills => 技能;
-        internal WeaponFieldSo Weapon => 武器;
-        internal ArmorFieldSo Armor => 防具;
+        private WeaponFieldSo Weapon => 武器;
+        private ArmorFieldSo Armor => 防具;
         
         IArmor IDiziEquipment.Armor => Armor;
         IWeapon IDiziEquipment.Weapon => Weapon;
-        internal WeaponArmed Armed => Weapon?.Armed ?? WeaponArmed.Unarmed;
+        private WeaponArmed Armed => Weapon?.Armed ?? WeaponArmed.Unarmed;
         public IDiziEquipment Equipment => this;
         public IShoes Shoes => 鞋子;
         public IDecoration Decoration => 挂件;
@@ -65,17 +67,41 @@ namespace Server.Configs.Battles
             return cfg.GetSimulation(1, Name, Strength + strAddon, Agility + agiAddon, Hp + hpAddon, Mp + mpAddon);
         }
 
+        public ISkillMap<ISkillInfo> GetDodgeSkillInfo()
+        {
+            var d = GetSkill(SkillType.Dodge);
+            return new SkillMap<ISkill>(d.Level, d.Dodge);
+        }
+        public ISkillMap<ISkillInfo> GetForceSkillinfo()
+        {
+            var f = GetSkill(SkillType.Force);
+            return new SkillMap<ISkill>(f.Level, f.Force);
+        }
+        public ISkillMap<ICombatSkillInfo> GetCombatSkillInfo()
+        {
+            var c = GetSkill(SkillType.Combat);
+            return new SkillMap<ICombatSkillInfo>(c.Level, c.Combat);
+        }
+
         public ICombatSet GetCombatSet()
         {
-            var f = Skills.First(s => s.SkillType == SkillType.Force);
-            var d = Skills.First(s => s.SkillType == SkillType.Dodge);
-            var c = Skills.First(s => s.SkillType == SkillType.Combat && s.Combat.Armed == Armed);
+            var f = GetSkill(SkillType.Force);
+            var d = GetSkill(SkillType.Dodge);
+            var c = GetSkill(SkillType.Combat);
             return new[]
             {
                 c.Combat.GetCombatSet(c.Level),
                 f.Force.GetCombatSet(f.Level),
                 d.Dodge.GetCombatSet(d.Level)
             }.Combine();
+        }
+
+        // 目前获取技能的方式是第一个符合条件的技能, 所以如果技能有多个, 只会获取第一个是主手武器的技能
+        private SkillField GetSkill(SkillType skillType)
+        {
+            return skillType == SkillType.Combat
+                ? Skills.First(s => s.SkillType == skillType && s.Combat.Armed == Armed)
+                : Skills.First(s => s.SkillType == skillType);
         }
 
         [Serializable]private class SkillField
@@ -129,6 +155,17 @@ namespace Server.Configs.Battles
             public float HardDamageRate => 重击伤害加成;
             public float MpDamageRate => 内力伤害转化加成;
             public float MpArmorRate => 内力护甲转化加成;
+        }
+        private record SkillMap<T> : ISkillMap<T> where T : ISkillInfo
+        {
+            public int Level { get; }
+            public T Skill { get; }
+
+            public SkillMap(int level, T skill)
+            {
+                Level = level;
+                Skill = skill;
+            }
         }
     }
 }

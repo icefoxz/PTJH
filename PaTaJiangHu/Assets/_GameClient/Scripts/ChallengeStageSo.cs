@@ -5,6 +5,8 @@ using Server.Configs.Fields;
 using Server.Configs.Items;
 using System;
 using System.Linq;
+using Models;
+using Server.Configs.Skills;
 using UnityEngine;
 
 /// <summary>
@@ -48,7 +50,7 @@ internal class ChallengeStageSo : AutoHashNamingObject,IChallengeStage
                 _name = "未设置NPC!";
                 return false;
             }
-            _name = string.Join(',', Npcs.Select(n => n.NpcName));
+            _name = string.Join(',', Npcs.Select(n => n.Name));
             return true;
         }
 
@@ -79,12 +81,20 @@ internal class ChallengeStageSo : AutoHashNamingObject,IChallengeStage
         [SerializeField] private DiziRewardField 弟子奖励;
 
         public IDiziReward DiziReward => 弟子奖励;
+        public int Hp => _npc.Hp;
+        public int Mp => _npc.Mp;
+        public int Strength => _npc.Strength;
+        public int Agility => _npc.Agility;
+        public IDiziEquipment Equipment => _npc.Equipment;
+        public ISkillMap<ISkillInfo> ForceSkillInfo => _npc.GetForceSkillinfo();
+        public ISkillMap<ICombatSkillInfo> CombatSkillInfo => _npc.GetCombatSkillInfo();
+        public ISkillMap<ISkillInfo> DodgeSkillInfo => _npc.GetForceSkillinfo();
         public bool IsBoss => Boss;
-        public string NpcName => _npc.Name;
+        public string Name => _npc.Name;
         public int Level => 等级;
         public Sprite Icon => _npc.Icon;
         public IGameChest Chest => 宝箱?.GetChest();
-
+        public ICombatSet GetCombatSet()=> _npc.GetCombatSet();
         private CombatNpcSo Npc => _npc;
         public DiziCombatUnit GetDiziCombat() => new(teamId: 1, npc: Npc);
     }

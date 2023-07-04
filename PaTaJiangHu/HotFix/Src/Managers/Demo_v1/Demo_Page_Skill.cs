@@ -236,11 +236,13 @@ internal class Demo_Page_Skill : PageUiManagerBase
         public void Set(Dizi dizi)
         {
             var combatSet = dizi.GetCombatSet();
-            var criDmgRatio = combatSet.GetCriticalDamageRatioAddOn(CombatArgs.Instance(dizi, dizi, 0));
-            var criRate = combatSet.GetCriticalRate(CombatArgs.Instance(dizi, dizi, 0));
-            var hrdDmgRatio = combatSet.GetHardDamageRatioAddOn(CombatArgs.Instance(dizi, dizi, 0));
-            var hrdRate = combatSet.GetHardRate(CombatArgs.Instance(dizi, dizi, 0));
-            var dodRate = combatSet.GetDodgeRate(CombatArgs.Instance(dizi, dizi, 0));
+            var self = CombatArgs.InstanceCombatUnit(dizi);
+            var arg = CombatArgs.Instance(self, self, 0);
+            var criDmgRatio = combatSet.GetCriticalDamageRatioAddOn(arg);
+            var criRate = combatSet.GetCriticalRate(arg);
+            var hrdDmgRatio = combatSet.GetHardDamageRatioAddOn(arg);
+            var hrdRate = combatSet.GetHardRate(arg);
+            var dodRate = combatSet.GetDodgeRate(arg);
             ListViewLeft.ClearList(u => u.Destroy());
             ListViewMid.ClearList(u => u.Destroy());
             ListViewRight.ClearList(u => u.Destroy());
@@ -406,21 +408,21 @@ internal class Demo_Page_Skill : PageUiManagerBase
                 {
                     var skill = diziSkill.GetSkill(skillType, index);
                     isUseable = !diziSkill.Force?.IsThis(skill)?? true;
-                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel();
+                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel;
                     break;
                 }
                 case SkillType.Combat:
                 {
                     var skill = diziSkill.GetSkill(skillType, index);
                     isUseable = !diziSkill.Combat?.IsThis(skill) ?? true;
-                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel();
+                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel;
                     break;
                 }
                 case SkillType.Dodge:
                 {
                     var skill = diziSkill.GetSkill(skillType, index);
                     isUseable = !diziSkill.Dodge?.IsThis(skill) ?? true;
-                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel();
+                    isUpgradable = diziSkill.GetLevel(skill) < skill.MaxLevel;
                     break;
                 }
                 default:
@@ -588,7 +590,7 @@ internal class Demo_Page_Skill : PageUiManagerBase
             public void SetSkill(ISkill skill, int level)
             {
                 element_levelCurrent.SetSkill(skill, level, true);
-                if (skill.MaxLevel() > level)
+                if (skill.MaxLevel > level)
                     element_levelNext.SetSkill(skill, level + 1, false);
                 else element_levelNext.Display(false);
                 Display(true);

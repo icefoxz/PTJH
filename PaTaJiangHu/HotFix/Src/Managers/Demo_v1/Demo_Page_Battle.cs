@@ -22,22 +22,20 @@ internal class Demo_Page_Battle : PageUiManagerBase
         UiAgent = uiAgent;
     }
 
-    private View_skill view_skill { get; set; }
-    private View_equipment view_equipment { get; set; }
-    private View_props view_props { get; set; }
     private Game_BattleBanner view_battleBanner { get; set; }
     private View_BattleFinalize view_battleFinalize { get; set; }
+    private Element_combatInfo element_combatInfoPlayer { get; set; }
+    private Element_combatInfo element_combatInfoEnemy { get; set; }
 
     private BattleController BattleController => Game.Controllers.Get<BattleController>();
 
     protected override void Build(IView view)
     {
-        view_skill = new View_skill(view.GetObject<View>("view_skill"), true);
-        view_equipment = new View_equipment(view.GetObject<View>("view_equipment"), true);
-        view_props = new View_props(view.GetObject<View>("view_props"), true);
         view_battleBanner = new Game_BattleBanner(view.GetObject<View>("game_battleBanner"), true);
         view_battleFinalize =
             new View_BattleFinalize(view.GetObject<View>("view_battleFinalize"), BattleController.FinalizeBattle);
+        element_combatInfoPlayer = new Element_combatInfo(view.GetObject<View>("element_combatInfoPlayer"), true);
+        element_combatInfoEnemy = new Element_combatInfo(view.GetObject<View>("element_combatInfoEnemy"), true);
     }
 
     protected override void RegEvents()
@@ -63,14 +61,14 @@ internal class Demo_Page_Battle : PageUiManagerBase
         {
             var round = bag.GetInt(0);
             var maxRound = bag.GetInt(1);
-            var dizi = Game.BattleCache.GetFighters(0).FirstOrDefault();
-            RoundUpdate(round, maxRound, dizi);
+            RoundUpdate(round, maxRound);
         });
-        
-        Game.MessagingManager.RegEvent(EventString.Battle_SpecialUpdate, b => UpdateDiziUi(b.Get<string>(0)));
+
+        Game.MessagingManager.RegEvent(EventString.Battle_SpecialUpdate,
+            b => UpdateCombatUis());
         Game.MessagingManager.RegEvent(EventString.Battle_End, b =>
         {
-            UpdateDiziUi(SelectedDiziGuid);
+            UpdateCombatUis();
             view_battleFinalize.Set(b.GetBool(0));
         });
         Game.MessagingManager.RegEvent(EventString.Battle_Finalized, _ =>
@@ -80,27 +78,24 @@ internal class Demo_Page_Battle : PageUiManagerBase
         });
     }
 
-    private string SelectedDiziGuid { get; set; }
-
-    private void UpdateDiziUi(string diziGuid)
+    private void UpdateCombatUis()
     {
-        var dizi = Game.World.Faction.GetDizi(diziGuid);
-        view_skill.Set(dizi);
-        view_equipment.Set(dizi);
-        view_props.Set(dizi);
+        var dizi = Game.BattleCache.GetFighters(0).First();
+        var npc = Game.BattleCache.GetFighters(1).First();
+        element_combatInfoPlayer.Set(dizi);
+        element_combatInfoEnemy.Set(npc);
         Show();
     }
 
-    private void RoundUpdate(int round, int maxRound, DiziCombatUnit dizi)
+    private void RoundUpdate(int round, int maxRound)
     {
         view_battleBanner.SetRound(round, maxRound);
-        UpdateDiziUi(dizi.Guid);
+        UpdateCombatUis();
     }
 
     private void Set(string guid, int diziInstanceId, int maxRound)
     {
-        SelectedDiziGuid = guid;
-        UpdateDiziUi(guid);
+        UpdateCombatUis();
         view_battleBanner.InitBattle(guid, diziInstanceId, maxRound);
     }
 
@@ -110,163 +105,194 @@ internal class Demo_Page_Battle : PageUiManagerBase
         Hide();
     }
 
-    private class View_skill : UiBase
+    private class Element_combatInfo : UiBase
     {
-        private Element_skill element_skillCombat { get; }
-        private Element_skill element_skillForce { get; }
-        private Element_skill element_skillDodge { get; }
-
-        public View_skill(IView v, bool display) : base(v, display)
+        private View_skill view_skill { get; set; }
+        private View_equipment view_equipment { get; set; }
+        private View_props view_props { get; set; }
+        public Element_combatInfo(IView v, bool display) : base(v, display)
         {
-            element_skillCombat = new Element_skill(v.GetObject<View>("element_skillCombat"), true);
-            element_skillForce = new Element_skill(v.GetObject<View>("element_skillForce"), true);
-            element_skillDodge = new Element_skill(v.GetObject<View>("element_skillDodge"), true);
+            view_skill = new View_skill(v.GetObject<View>("view_skill"), true);
+            view_equipment = new View_equipment(v.GetObject<View>("view_equipment"), true);
+            view_props = new View_props(v.GetObject<View>("view_props"), true);
         }
 
-        public void Set(Dizi dizi)
+        public void Set(IDiziCombatUnit unit)
         {
-            var combatSkill = dizi.Skill.Combat;
-            var forceSkill = dizi.Skill.Force;
-            var dodgeSkill = dizi.Skill.Dodge;
-            element_skillCombat.Set(combatSkill.Level, combatSkill.Skill.Name, combatSkill.Skill.Icon);
-            element_skillForce.Set(forceSkill.Level, forceSkill.Skill.Name, forceSkill.Skill.Icon);
-            element_skillDodge.Set(dodgeSkill.Level, dodgeSkill.Skill.Name, dodgeSkill.Skill.Icon);
+            view_skill.Set(unit);
+            view_equipment.Set(unit);
+            view_props.Set(unit);
         }
 
-        private class Element_skill : UiBase
+        private class View_skill : UiBase
         {
-            private Text text_level { get; }
-            private Image img_ico { get; }
-            private Text text_name { get; }
-            private GameObject obj_content { get; }
+            private Element_skill element_skillCombat { get; }
+            private Element_skill element_skillForce { get; }
+            private Element_skill element_skillDodge { get; }
 
-            public Element_skill(IView v, bool display) : base(v, display)
+            public View_skill(IView v, bool display) : base(v, display)
             {
-                text_level = v.GetObject<Text>("text_level");
-                img_ico = v.GetObject<Image>("img_ico");
-                text_name = v.GetObject<Text>("text_name");
-                obj_content = v.GetObject("obj_content");
+                element_skillCombat = new Element_skill(v.GetObject<View>("element_skillCombat"), true);
+                element_skillForce = new Element_skill(v.GetObject<View>("element_skillForce"), true);
+                element_skillDodge = new Element_skill(v.GetObject<View>("element_skillDodge"), true);
             }
 
-            public void Set(int level, string name, Sprite ico)
+            public void Set(IDiziCombatUnit unit)
             {
-                text_level.text = level.ToString();
-                text_name.text = name;
-                img_ico.sprite = ico;
-                obj_content.SetActive(true);
+                var combatSkill = unit.CombatInfo;
+                var forceSkill = unit.ForceInfo;
+                var dodgeSkill = unit.DodgeInfo;
+                element_skillCombat.Set(combatSkill.Level, combatSkill.Skill.Name, combatSkill.Skill.Icon);
+                element_skillForce.Set(forceSkill.Level, forceSkill.Skill.Name, forceSkill.Skill.Icon);
+                element_skillDodge.Set(dodgeSkill.Level, dodgeSkill.Skill.Name, dodgeSkill.Skill.Icon);
+            }
+
+            private class Element_skill : UiBase
+            {
+                private Text text_level { get; }
+                private Image img_ico { get; }
+                private Text text_name { get; }
+                private GameObject obj_content { get; }
+
+                public Element_skill(IView v, bool display) : base(v, display)
+                {
+                    text_level = v.GetObject<Text>("text_level");
+                    img_ico = v.GetObject<Image>("img_ico");
+                    text_name = v.GetObject<Text>("text_name");
+                    obj_content = v.GetObject("obj_content");
+                }
+
+                public void Set(int level, string name, Sprite ico)
+                {
+                    text_level.text = level.ToString();
+                    text_name.text = name;
+                    img_ico.sprite = ico;
+                    obj_content.SetActive(true);
+                }
+            }
+        }
+
+        private class View_equipment : UiBase
+        {
+            private Element_quip element_equipWeapon { get; }
+            private Element_quip element_equipArmor { get; }
+            private Element_quip element_equipShoes { get; }
+            private Element_quip element_equipDecoration { get; }
+
+            public View_equipment(IView v, bool display) : base(v, display)
+            {
+                element_equipWeapon = new Element_quip(v.GetObject<View>("element_equipWeapon"), true);
+                element_equipArmor = new Element_quip(v.GetObject<View>("element_equipArmor"), true);
+                element_equipShoes = new Element_quip(v.GetObject<View>("element_equipShoes"), true);
+                element_equipDecoration = new Element_quip(v.GetObject<View>("element_equipDecoration"), true);
+            }
+
+            public void Set(IDiziCombatUnit dizi)
+            {
+                var weapon = dizi.Equipment.Weapon;
+                if (weapon != null)
+                    element_equipWeapon.Set(weapon.Name, weapon.About, weapon.Icon);
+                element_equipWeapon.Display(weapon != null);
+                var armor = dizi.Equipment.Armor;
+                if (armor != null)
+                    element_equipArmor.Set(armor.Name, armor.About, armor.Icon);
+                element_equipArmor.Display(armor != null);
+                var shoes = dizi.Equipment.Shoes;
+                if (shoes != null)
+                    element_equipShoes.Set(shoes.Name, shoes.About, shoes.Icon);
+                element_equipShoes.Display(shoes != null);
+                var decoration = dizi.Equipment.Decoration;
+                if (decoration != null)
+                    element_equipDecoration.Set(decoration.Name, decoration.About, decoration.Icon);
+                element_equipDecoration.Display(decoration != null);
+            }
+
+            private class Element_quip : UiBase
+            {
+                private Text text_title { get; }
+                private Text text_short { get; }
+                private Image img_ico { get; }
+
+                public Element_quip(IView v, bool display) : base(v, display)
+                {
+                    text_title = v.GetObject<Text>("text_title");
+                    text_short = v.GetObject<Text>("text_short");
+                    img_ico = v.GetObject<Image>("img_ico");
+                }
+
+                public void Set(string title, string shortDesc, Sprite ico)
+                {
+                    text_title.text = title;
+                    text_short.text = shortDesc;
+                    img_ico.sprite = ico;
+                }
+
+                public void Display(bool display)
+                {
+                    text_title.gameObject.SetActive(display);
+                    text_short.gameObject.SetActive(display);
+                    img_ico.gameObject.SetActive(display);
+                }
+            }
+        }
+
+        private class View_props : UiBase
+        {
+            private ListViewUi<Prefab_propInfo> PropListView { get; }
+
+            public View_props(IView v, bool display) : base(v, display)
+            {
+                PropListView = new ListViewUi<Prefab_propInfo>(v.GetObject<View>("prefab_propInfo"),
+                    v.GetObject<RectTransform>("tran_props"));
+            }
+
+            public void Set(IDiziCombatUnit dizi)
+            {
+                var combatSet = dizi.GetCombatSet();
+                var self = CombatArgs.InstanceCombatUnit(dizi, true);
+                var arg = CombatArgs.Instance(self, self, 0);
+                var criDmgRatio = combatSet.GetCriticalDamageRatioAddOn(arg);
+                var criRate = combatSet.GetCriticalRate(arg);
+                var hrdDmgRatio = combatSet.GetHardDamageRatioAddOn(arg);
+                var hrdRate = combatSet.GetHardRate(arg);
+                var dodRate = combatSet.GetDodgeRate(arg);
+
+                PropListView.ClearList(u => u.Destroy());
+
+                SetList(PropListView, "重击率", $"{hrdRate:0.#}%");
+                SetList(PropListView, "重击伤害倍数", $"{1 + hrdDmgRatio}");
+                SetList(PropListView, "会心率", $"{criRate:0.#}%");
+                SetList(PropListView, "会心伤害倍数", $"{1 + criDmgRatio}");
+                SetList(PropListView, "闪避率", $"{dodRate:0.#}%");
+
+                void SetList(ListBoardUi<Prefab_propInfo> list, string label, string value)
+                {
+                    var ui = list.Instance(v => new Prefab_propInfo(v, true));
+                    ui.Set(label, value);
+                }
+            }
+
+            private class Prefab_propInfo : UiBase
+            {
+                private Text text_label { get; }
+                private Text text_value { get; }
+
+                public Prefab_propInfo(IView v, bool display) : base(v, display)
+                {
+                    text_label = v.GetObject<Text>("text_label");
+                    text_value = v.GetObject<Text>("text_value");
+                }
+
+                public void Set(string label, string value)
+                {
+                    text_label.text = label;
+                    text_value.text = value;
+                    gameObject.SetActive(true);
+                }
             }
         }
     }
-    private class View_equipment : UiBase
-    {
-        private Element_quip element_equipWeapon { get; }
-        private Element_quip element_equipArmor { get; }
-        private Element_quip element_equipShoes { get; }
-        private Element_quip element_equipDecoration { get; }
-        public View_equipment(IView v, bool display) : base(v, display)
-        {
-            element_equipWeapon = new Element_quip(v.GetObject<View>("element_equipWeapon"), true);
-            element_equipArmor = new Element_quip(v.GetObject<View>("element_equipArmor"), true);
-            element_equipShoes = new Element_quip(v.GetObject<View>("element_equipShoes"), true);
-            element_equipDecoration = new Element_quip(v.GetObject<View>("element_equipDecoration"), true);
-        }
 
-        public void Set(Dizi dizi)
-        {
-            var weapon = dizi.Equipment.Weapon;
-            if(weapon != null)
-                element_equipWeapon.Set(weapon.Name, weapon.About, weapon.Icon);
-            element_equipWeapon.Display(weapon != null);
-            var armor = dizi.Equipment.Armor;
-            if(armor != null)
-                element_equipArmor.Set(armor.Name, armor.About, armor.Icon);
-            element_equipArmor.Display(armor != null);
-            var shoes = dizi.Equipment.Shoes;
-            if(shoes != null)
-                element_equipShoes.Set(shoes.Name, shoes.About, shoes.Icon);
-            element_equipShoes.Display(shoes != null);
-            var decoration = dizi.Equipment.Decoration;
-            if(decoration != null)
-                element_equipDecoration.Set(decoration.Name, decoration.About, decoration.Icon);
-            element_equipDecoration.Display(decoration != null);
-        }
-
-        private class Element_quip : UiBase
-        {
-            private Text text_title { get; }
-            private Text text_short { get; }
-            private Image img_ico { get; }
-
-            public Element_quip(IView v, bool display) : base(v, display)
-            {
-                text_title = v.GetObject<Text>("text_title");
-                text_short = v.GetObject<Text>("text_short");
-                img_ico = v.GetObject<Image>("img_ico");
-            }
-
-            public void Set(string title, string shortDesc, Sprite ico)
-            {
-                text_title.text = title;
-                text_short.text = shortDesc;
-                img_ico.sprite = ico;
-            }
-
-            public void Display(bool display)
-            {
-                text_title.gameObject.SetActive(display);
-                text_short.gameObject.SetActive(display);
-                img_ico.gameObject.SetActive(display);
-            }
-        }
-    }
-    private class View_props : UiBase
-    {
-        private ListViewUi<Prefab_propInfo> PropListView { get; }
-        public View_props(IView v, bool display) : base(v, display)
-        {
-            PropListView = new ListViewUi<Prefab_propInfo>(v.GetObject<View>("prefab_propInfo"),
-                v.GetObject<RectTransform>("tran_props"));
-        }
-
-        public void Set(Dizi dizi)
-        {
-            var combatSet = dizi.GetCombatSet();
-            var criDmgRatio = combatSet.GetCriticalDamageRatioAddOn(CombatArgs.Instance(dizi, dizi, 0));
-            var criRate = combatSet.GetCriticalRate(CombatArgs.Instance(dizi, dizi, 0));
-            var hrdDmgRatio = combatSet.GetHardDamageRatioAddOn(CombatArgs.Instance(dizi, dizi, 0));
-            var hrdRate = combatSet.GetHardRate(CombatArgs.Instance(dizi, dizi, 0));
-            var dodRate = combatSet.GetDodgeRate(CombatArgs.Instance(dizi, dizi, 0));
-            PropListView.ClearList(u => u.Destroy());
-            
-            SetList(PropListView, "重击率", $"{hrdRate:0.#}%");
-            SetList(PropListView, "重击伤害倍数", $"{1 + hrdDmgRatio}");
-            SetList(PropListView, "会心率", $"{criRate:0.#}%");
-            SetList(PropListView, "会心伤害倍数", $"{1 + criDmgRatio}");
-            SetList(PropListView, "闪避率", $"{dodRate:0.#}%");
-            void SetList(ListBoardUi<Prefab_propInfo> list, string label, string value)
-            {
-                var ui = list.Instance(v => new Prefab_propInfo(v, true));
-                ui.Set(label, value);
-            }
-        }
-
-        private class Prefab_propInfo : UiBase
-        {
-            private Text text_label { get; }
-            private Text text_value { get; }
-            public Prefab_propInfo(IView v, bool display) : base(v, display)
-            {
-                text_label = v.GetObject<Text>("text_label");
-                text_value = v.GetObject<Text>("text_value");
-            }
-            public void Set(string label, string value)
-            {
-                text_label.text = label;
-                text_value.text = value;
-                gameObject.SetActive(true);
-            }
-        }
-    }
     private class Game_BattleBanner : UiBase
     {
         private View_RoundInfo view_roundInfo { get; }

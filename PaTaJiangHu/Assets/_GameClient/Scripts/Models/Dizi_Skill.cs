@@ -208,7 +208,7 @@ namespace Models
         public ForceSkillMap Force { get; private set; }
         public DodgeSkillMap Dodge { get; private set; }
 
-        public DiziSkill(CombatSkillMap combat, ForceSkillMap force, DodgeSkillMap dodge) : this(
+        private DiziSkill(CombatSkillMap combat, ForceSkillMap force, DodgeSkillMap dodge) : this(
             new List<CombatSkillMap> { combat },
             new List<ForceSkillMap> { force },
             new List<DodgeSkillMap> { dodge })
@@ -218,7 +218,7 @@ namespace Models
             Force = force;
         }
 
-        public DiziSkill(List<CombatSkillMap> combatSkills, List<ForceSkillMap> forceSkills, List<DodgeSkillMap> dodgeSkills)
+        private DiziSkill(List<CombatSkillMap> combatSkills, List<ForceSkillMap> forceSkills, List<DodgeSkillMap> dodgeSkills)
         {
             _dodgeSkills = dodgeSkills;
             _combatSkills = combatSkills;
@@ -340,21 +340,23 @@ namespace Models
             public abstract ICombatSet GetCombatSet(int level);
             public abstract bool IsThis(ISkill skill);
         }
-        public abstract class SkillMap<TSkill> : SkillMap where TSkill : ISkill
+
+        public abstract class SkillMap<TSkill> : SkillMap, ISkillMap<TSkill> where TSkill : ISkill
         {
             public TSkill Skill { get; private set; }
-            public override int MaxLevel => Skill.MaxLevel();
+            public override int MaxLevel => Skill.MaxLevel;
 
             protected SkillMap(TSkill skill, int level = 1)
             {
                 Skill = skill;
                 Level = level;
             }
+
             public override ISkillProp[] GetProps(int level) => Skill.GetProps(level);
             public override ISkillProp[] GetProps() => GetProps(Level);
             public override ISkillAttribute[] GetAttributes(int level) => Skill.GetAttributes(level);
             public override ISkillAttribute[] GetAttributes() => GetAttributes(Level);
-            public override ICombatSet GetCombatSet()=> GetCombatSet(Level);
+            public override ICombatSet GetCombatSet() => GetCombatSet(Level);
             public override ICombatSet GetCombatSet(int level) => Skill.GetCombatSet(level);
             public override bool IsThis(ISkill skill) => Skill.Id == skill.Id && Skill.SkillType == skill.SkillType;
 

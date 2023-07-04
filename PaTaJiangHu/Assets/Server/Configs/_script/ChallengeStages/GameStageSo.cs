@@ -1,9 +1,11 @@
 ﻿using System;
+using Models;
 using MyBox;
 using Server.Configs.Adventures;
 using Server.Configs.Battles;
 using Server.Configs.Fields;
 using Server.Configs.Items;
+using Server.Configs.Skills;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -20,7 +22,7 @@ namespace Server.Configs.ChallengeStages
     /// </summary>
     public interface INpc
     {
-        string NpcName { get; }
+        string Name { get; }
         int Level { get; }
         Sprite Icon { get; }
     }
@@ -32,6 +34,15 @@ namespace Server.Configs.ChallengeStages
         bool IsBoss { get; }
         DiziCombatUnit GetDiziCombat();
         IDiziReward DiziReward { get; }
+        int Hp { get; }
+        int Mp { get; }
+        int Strength { get; }
+        int Agility { get; }
+        IDiziEquipment Equipment { get; }
+        ICombatSet GetCombatSet();
+        ISkillMap<ISkillInfo> ForceSkillInfo { get; }
+        ISkillMap<ICombatSkillInfo> CombatSkillInfo { get; }
+        ISkillMap<ISkillInfo> DodgeSkillInfo { get; }
     }
     //对单个弟子的奖励
     public interface IDiziReward
@@ -78,9 +89,17 @@ namespace Server.Configs.ChallengeStages
 
             public IGameReward Reward => 奖励;
             public IDiziReward DiziReward => 弟子奖励;
-
+            public int Hp => _npc.Hp;
+            public int Mp => _npc.Mp;
+            public int Strength => _npc.Strength;
+            public int Agility => _npc.Agility;
+            public IDiziEquipment Equipment => _npc.Equipment;
+            public ICombatSet GetCombatSet() => _npc.GetCombatSet();
+            public ISkillMap<ISkillInfo> ForceSkillInfo => _npc.GetForceSkillinfo();
+            public ISkillMap<ICombatSkillInfo> CombatSkillInfo => _npc.GetCombatSkillInfo();
+            public ISkillMap<ISkillInfo> DodgeSkillInfo => _npc.GetDodgeSkillInfo();
             public bool IsBoss => Boss;
-            public string NpcName => _npc.Name;
+            public string Name => _npc.Name;
             public int Level => 等级;
             public Sprite Icon => _npc.Icon;
             public string Faction => 所属势力;

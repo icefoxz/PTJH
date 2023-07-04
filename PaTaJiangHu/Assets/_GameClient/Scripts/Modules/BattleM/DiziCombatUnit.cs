@@ -7,6 +7,7 @@ using Models;
 using Server.Configs.Battles;
 using Server.Configs.BattleSimulation;
 using Server.Configs.Characters;
+using Server.Configs.Skills;
 using Utls;
 
 public interface IDiziCombatUnit : ICombatUnit
@@ -19,6 +20,9 @@ public interface IDiziCombatUnit : ICombatUnit
     IDiziEquipment Equipment { get; }
     ICombatGifted Gifted { get; }
     ICombatArmedAptitude ArmedAptitude { get; }
+    ISkillMap<ISkillInfo> ForceInfo { get; }
+    ISkillMap<ICombatSkillInfo> CombatInfo { get; }
+    ISkillMap<ISkillInfo> DodgeInfo { get; }
 }
 
 /// <summary>
@@ -43,12 +47,20 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public ICombatGifted Gifted { get; }
     public WeaponArmed Armed => Equipment.Weapon?.Armed ?? WeaponArmed.Unarmed;
     public ICombatArmedAptitude ArmedAptitude { get; private set; }
+    public ISkillMap<ISkillInfo> ForceInfo { get; }
+    public ISkillMap<ICombatSkillInfo> CombatInfo { get; }
+    public ISkillMap<ISkillInfo> DodgeInfo { get; }
 
     public override int GetDamage() => (int)((1 + ArmedAptitude?.GetDamageRatio(Armed) ?? 0) * Strength.Value);
     public override int GetSpeed() => Agility.Value;
 
     public DiziCombatUnit(string guid, int teamId, string name, int strength, int agility, int hp, int mp,
-        ICombatSet set, IDiziEquipment equipment = null, ICombatGifted gifted = null,
+        ICombatSet set, 
+        ISkillMap<ISkillInfo> forceInfo, 
+        ISkillMap<ICombatSkillInfo> combatInfo, 
+        ISkillMap<ISkillInfo> dodgeInfo, 
+        IDiziEquipment equipment = null, 
+        ICombatGifted gifted = null,
         ICombatArmedAptitude aptitude = null)
         : base(teamId: teamId, name: name, hp: hp)
     {
@@ -57,6 +69,9 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         AddAttribute(Combat.Agi, agility);
         AddCondition(Combat.Mp, mp);
         _skillCombatSet = set;
+        ForceInfo = forceInfo;
+        CombatInfo = combatInfo;
+        DodgeInfo = dodgeInfo;
         _equipment = equipment == null ? new DiziEquipment() : new DiziEquipment(equipment);
         ArmedAptitude = aptitude == null ? new CombatArmedAptitude() : new CombatArmedAptitude(aptitude);
         Gifted = gifted ?? CombatGifted.Empty;
@@ -64,14 +79,11 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Full();
     }
 
-    private void Full()
-    {
-        Hp.Set(Hp.Max);
-        Mp.Set(Mp.Max);
-    }
-
     public DiziCombatUnit(int teamId, Dizi dizi) : base(teamId, dizi.Name, dizi.Hp)
     {
+        ForceInfo = dizi.Skill.Force;
+        CombatInfo = dizi.Skill.Combat;
+        DodgeInfo = dizi.Skill.Dodge;
         Guid = dizi.Guid;
         AddAttribute(Combat.Str, dizi.Strength);
         AddAttribute(Combat.Agi, dizi.Agility);
@@ -84,14 +96,18 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Full();
     }
 
-    internal DiziCombatUnit(int teamId, CombatNpcSo npc) : base(teamId,npc.name,npc.Hp)
+    internal DiziCombatUnit(int teamId, CombatNpcSo npc, string guid = "Npc") : base(teamId, npc.name, npc.Hp)
     {
+        Guid = guid;
+        ForceInfo = npc.GetForceSkillinfo();
+        CombatInfo = npc.GetCombatSkillInfo();
+        DodgeInfo = npc.GetDodgeSkillInfo();
         AddAttribute(Combat.Str, npc.Strength);
         AddAttribute(Combat.Agi, npc.Agility);
         AddCondition(Combat.Mp, npc.Mp);
         _skillCombatSet = npc.GetCombatSet();
         _equipment = new DiziEquipment(npc.Equipment);
-        ArmedAptitude = new CombatArmedAptitude();//npc没有武学天赋
+        ArmedAptitude = new CombatArmedAptitude(); //npc没有武学天赋
         Gifted = npc.Gifted;
         UpdateCalculate();
         Full();
@@ -100,6 +116,9 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
     public DiziCombatUnit(bool fullCondition, IDiziCombatUnit unit) : base(unit.TeamId, unit.Name, unit.Hp.Value, unit.Hp.Max,
         unit.Hp.Base)
     {
+        ForceInfo = unit.ForceInfo;
+        CombatInfo = unit.CombatInfo;
+        DodgeInfo = unit.DodgeInfo;
         AddAttribute(Combat.Str, unit.Strength.Value, unit.Strength.Base);
         AddAttribute(Combat.Agi, unit.Agility.Value, unit.Agility.Base);
         AddCondition(Combat.Mp, unit.Mp.Value, unit.Mp.Max, unit.Mp.Base);
@@ -111,6 +130,7 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         if (fullCondition) Full();
     }
 
+    // 注意简易战斗是没有提供SkillInfo, 所以读取不到技能信息
     public DiziCombatUnit(ISimCombat s, int teamId) : base(teamId, s.Name, (int)s.Hp, s.MaxHp)
     {
         AddCondition(Combat.Mp, (int)s.Mp);
@@ -124,6 +144,12 @@ public class DiziCombatUnit : CombatUnit, IDiziCombatUnit
         Full();
     }
 
+    //满状态
+    private void Full()
+    {
+        Hp.Set(Hp.Max);
+        Mp.Set(Mp.Max);
+    }
     //伤害减免
     public int TakeReductionDamage(int damage,CombatArgs arg)
     {

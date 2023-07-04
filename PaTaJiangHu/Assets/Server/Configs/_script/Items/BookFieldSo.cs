@@ -9,7 +9,7 @@ namespace Server.Configs.Items
     public interface IBook : IGameItem
     {
         ColorGrade Grade { get; }
-        ISkillLevelMap GetLevelMap(int nextLevel);
+        ISkillLevelConfig GetLevelMap(int nextLevel);
         ISkill GetSkill();
     }
 
@@ -36,11 +36,11 @@ namespace Server.Configs.Items
         /// <param name="nextLevel"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public override ISkillLevelMap GetLevelMap(int nextLevel)
+        public override ISkillLevelConfig GetLevelMap(int nextLevel)
         {
             if (nextLevel < 1)
                 throw new NotImplementedException("等级不可为<=1");
-            if (nextLevel > SkillFieldSo.MaxLevel())
+            if (nextLevel > SkillFieldSo.MaxLevel)
                 throw new NotImplementedException("等级不可超过最大等级");
             return SkillLeveling.GetLevelMap(nextLevel);
         }
@@ -54,7 +54,7 @@ namespace Server.Configs.Items
         public ItemType Type => ItemType.Book;
         public abstract ColorGrade Grade { get; }
         public abstract Sprite Icon { get; }
-        public abstract ISkillLevelMap GetLevelMap(int nextLevel);
+        public abstract ISkillLevelConfig GetLevelMap(int nextLevel);
         public abstract ISkill GetSkill();
     }
 }
