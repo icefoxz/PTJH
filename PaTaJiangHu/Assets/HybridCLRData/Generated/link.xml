@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="AOT">
+    <type fullname="AOT._AOT.Core.GameControllerServiceContainer" preserve="all" />
+    <type fullname="AOT._AOT.Core.IGameItem" preserve="all" />
+    <type fullname="AOT._AOT.Core.IStacking`1" preserve="all" />
+    <type fullname="AOT._AOT.Core.Systems.Coroutines.ICoroutineInstance" preserve="all" />
+    <type fullname="AOT._AOT.Core.Systems.Coroutines.ICoroutineService" preserve="all" />
+    <type fullname="AOT._AOT.Core.Systems.Messaging.MessagingManager" preserve="all" />
+    <type fullname="AOT._AOT.Core.Systems.Messaging.UnityEventExtension" preserve="all" />
+    <type fullname="AOT._AOT.Test_LoadDll" preserve="all" />
+    <type fullname="AOT._AOT.Utls.ObjectBag" preserve="all" />
+    <type fullname="AOT._AOT.Utls.XDebug" preserve="all" />
+    <type fullname="AOT._AOT.Views.Abstract.EffectView" preserve="all" />
+    <type fullname="AOT._AOT.Views.Abstract.IEffectView" preserve="all" />
+    <type fullname="AOT._AOT.Views.Abstract.IView" preserve="all" />
+    <type fullname="AOT._AOT.Views.Abstract.View" preserve="all" />
+    <type fullname="AOT._AOT.Views.BaseUis.RectExtension" preserve="all" />
+    <type fullname="AOT._AOT.Views.BaseUis.ScrollContentAligner" preserve="all" />
+    <type fullname="AOT._AOT.Views.IMainUi" preserve="all" />
+    <type fullname="AOT._AOT.Views.MainUi" preserve="all" />
+  </assembly>
+  <assembly fullname="GameClient">
+    <type fullname="GameClient.Args.CombatArgs" preserve="all" />
+    <type fullname="GameClient.Args.DiziCombatInfo" preserve="all" />
+    <type fullname="GameClient.Args.DiziCombatUnit" preserve="all" />
+    <type fullname="GameClient.Controllers.BattleController" preserve="all" />
+    <type fullname="GameClient.Controllers.ChallengeStageController" preserve="all" />
+    <type fullname="GameClient.Controllers.DiziAdvController" preserve="all" />
+    <type fullname="GameClient.Controllers.DiziController" preserve="all" />
+    <type fullname="GameClient.Controllers.FactionController" preserve="all" />
+    <type fullname="GameClient.Controllers.RecruitController" preserve="all" />
+    <type fullname="GameClient.Controllers.SkillController" preserve="all" />
+    <type fullname="GameClient.GameScene.CameraFocus" preserve="all" />
+    <type fullname="GameClient.GameScene.CameraFocus/Focus" preserve="all" />
+    <type fullname="GameClient.GameScene.IGame2DLand" preserve="all" />
+    <type fullname="GameClient.Models.BattleCache" preserve="all" />
+    <type fullname="GameClient.Models.Capable" preserve="all" />
+    <type fullname="GameClient.Models.Dizi" preserve="all" />
+    <type fullname="GameClient.Models.DiziPropValue" preserve="all" />
+    <type fullname="GameClient.Models.DiziSkill" preserve="all" />
+    <type fullname="GameClient.Models.DiziSkill/CombatSkillMap" preserve="all" />
+    <type fullname="GameClient.Models.DiziSkill/DodgeSkillMap" preserve="all" />
+    <type fullname="GameClient.Models.DiziSkill/ForceSkillMap" preserve="all" />
+    <type fullname="GameClient.Models.DiziSkill/SkillMap" preserve="all" />
+    <type fullname="GameClient.Models.DiziSkill/SkillMap`1" preserve="all" />
+    <type fullname="GameClient.Models.DiziStateHandler" preserve="all" />
+    <type fullname="GameClient.Models.DiziStateHandler/States" preserve="all" />
+    <type fullname="GameClient.Models.Faction" preserve="all" />
+    <type fullname="GameClient.Models.GameWorld" preserve="all" />
+    <type fullname="GameClient.Models.IDiziStamina" preserve="all" />
+    <type fullname="GameClient.Models.IDiziState" preserve="all" />
+    <type fullname="GameClient.Models.RewardBoard" preserve="all" />
+    <type fullname="GameClient.Modules.Adventure.ActivityFragment" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.CombatResponseInfo`2" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.CombatUnit" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.CombatUnitInfo`1" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.IBook" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ICombatArmedAptitude" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ICombatAttribute" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ICombatGifted" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ICombatSet" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ICombatSkill" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ICombatSkillInfo" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.IDiziCombatUnit" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ISkill" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ISkillAttribute" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ISkillInfo" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ISkillLevelConfig" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ISkillMap`1" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.ISkillProp" preserve="all" />
+    <type fullname="GameClient.Modules.BattleM.SkillType" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.ColorGrade" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IAdvPackage" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IArmor" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.ICombatCondition" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.ICombatNpc" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IConditionValue" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IDecoration" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IDiziEquipment" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IEquipment" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IGameReward" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.INpc" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IShoes" preserve="all" />
+    <type fullname="GameClient.Modules.DiziM.IWeapon" preserve="all" />
+    <type fullname="GameClient.SoScripts.Adventures.IAdjustment" preserve="all" />
+    <type fullname="GameClient.SoScripts.Adventures.IAdjustment/Types" preserve="all" />
+    <type fullname="GameClient.SoScripts.Adventures.IAutoAdvMap" preserve="all" />
+    <type fullname="GameClient.SoScripts.IChallengeNpc" preserve="all" />
+    <type fullname="GameClient.SoScripts.IChallengeStage" preserve="all" />
+    <type fullname="GameClient.SoScripts.IGameChest" preserve="all" />
+    <type fullname="GameClient.SoScripts.Items.IComprehendItem" preserve="all" />
+    <type fullname="GameClient.System.AppLaunch" preserve="all" />
+    <type fullname="GameClient.System.Game" preserve="all" />
+    <type fullname="GameClient.System.UiBuilder" preserve="all" />
+  </assembly>
+  <assembly fullname="System">
+    <type fullname="System.CodeDom.Compiler.GeneratedCodeAttribute" preserve="all" />
+    <type fullname="System.ComponentModel.EditorBrowsableAttribute" preserve="all" />
+    <type fullname="System.ComponentModel.EditorBrowsableState" preserve="all" />
+  </assembly>
+  <assembly fullname="System.Core">
+    <type fullname="System.Linq.Enumerable" preserve="all" />
+    <type fullname="System.Linq.IGrouping`2" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.Color" preserve="all" />
+    <type fullname="UnityEngine.Component" preserve="all" />
+    <type fullname="UnityEngine.Coroutine" preserve="all" />
+    <type fullname="UnityEngine.Debug" preserve="all" />
+    <type fullname="UnityEngine.GameObject" preserve="all" />
+    <type fullname="UnityEngine.Object" preserve="all" />
+    <type fullname="UnityEngine.RectTransform" preserve="all" />
+    <type fullname="UnityEngine.Sprite" preserve="all" />
+    <type fullname="UnityEngine.Transform" preserve="all" />
+    <type fullname="UnityEngine.Vector3" preserve="all" />
+    <type fullname="UnityEngine.WaitForEndOfFrame" preserve="all" />
+    <type fullname="UnityEngine.WaitForSeconds" preserve="all" />
+    <type fullname="UnityEngine.WaitUntil" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UI">
+    <type fullname="UnityEngine.UI.Button" preserve="all" />
+    <type fullname="UnityEngine.UI.Graphic" preserve="all" />
+    <type fullname="UnityEngine.UI.Image" preserve="all" />
+    <type fullname="UnityEngine.UI.ScrollRect" preserve="all" />
+    <type fullname="UnityEngine.UI.Scrollbar" preserve="all" />
+    <type fullname="UnityEngine.UI.Selectable" preserve="all" />
+    <type fullname="UnityEngine.UI.Slider" preserve="all" />
+    <type fullname="UnityEngine.UI.Text" preserve="all" />
+  </assembly>
+  <assembly fullname="mscorlib">
+    <type fullname="System.Action" preserve="all" />
+    <type fullname="System.Action`1" preserve="all" />
+    <type fullname="System.Action`2" preserve="all" />
+    <type fullname="System.Action`3" preserve="all" />
+    <type fullname="System.ArgumentException" preserve="all" />
+    <type fullname="System.ArgumentNullException" preserve="all" />
+    <type fullname="System.ArgumentOutOfRangeException" preserve="all" />
+    <type fullname="System.Array" preserve="all" />
+    <type fullname="System.Byte" preserve="all" />
+    <type fullname="System.Collections.Generic.Dictionary`2" preserve="all" />
+    <type fullname="System.Collections.Generic.ICollection`1" preserve="all" />
+    <type fullname="System.Collections.Generic.IEnumerable`1" preserve="all" />
+    <type fullname="System.Collections.Generic.IEnumerator`1" preserve="all" />
+    <type fullname="System.Collections.Generic.IReadOnlyCollection`1" preserve="all" />
+    <type fullname="System.Collections.Generic.IReadOnlyList`1" preserve="all" />
+    <type fullname="System.Collections.Generic.KeyValuePair`2" preserve="all" />
+    <type fullname="System.Collections.Generic.List`1" preserve="all" />
+    <type fullname="System.Collections.Generic.List`1/Enumerator" preserve="all" />
+    <type fullname="System.Collections.IEnumerator" preserve="all" />
+    <type fullname="System.Delegate" preserve="all" />
+    <type fullname="System.Diagnostics.DebuggableAttribute" preserve="all" />
+    <type fullname="System.Diagnostics.DebuggableAttribute/DebuggingModes" preserve="all" />
+    <type fullname="System.Diagnostics.DebuggerHiddenAttribute" preserve="all" />
+    <type fullname="System.Enum" preserve="all" />
+    <type fullname="System.Func`1" preserve="all" />
+    <type fullname="System.Func`2" preserve="all" />
+    <type fullname="System.Func`3" preserve="all" />
+    <type fullname="System.IDisposable" preserve="all" />
+    <type fullname="System.Int32" preserve="all" />
+    <type fullname="System.InvalidOperationException" preserve="all" />
+    <type fullname="System.NotImplementedException" preserve="all" />
+    <type fullname="System.NotSupportedException" preserve="all" />
+    <type fullname="System.NullReferenceException" preserve="all" />
+    <type fullname="System.Object" preserve="all" />
+    <type fullname="System.ParamArrayAttribute" preserve="all" />
+    <type fullname="System.Reflection.MemberInfo" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.CallerMemberNameAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.CompilationRelaxationsAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.CompilerGeneratedAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.IteratorStateMachineAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.RuntimeCompatibilityAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.RuntimeHelpers" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.TupleElementNamesAttribute" preserve="all" />
+    <type fullname="System.RuntimeFieldHandle" preserve="all" />
+    <type fullname="System.Single" preserve="all" />
+    <type fullname="System.String" preserve="all" />
+    <type fullname="System.Threading.Interlocked" preserve="all" />
+    <type fullname="System.TimeSpan" preserve="all" />
+    <type fullname="System.Type" preserve="all" />
+    <type fullname="System.ValueTuple`2" preserve="all" />
+    <type fullname="System.ValueTuple`3" preserve="all" />
+    <type fullname="System.ValueTuple`4" preserve="all" />
+    <type fullname="System.ValueTuple`5" preserve="all" />
+    <type fullname="System.ValueType" preserve="all" />
+  </assembly>
+</linker>

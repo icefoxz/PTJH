@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: AddressableAssetSettings
   m_EditorClassIdentifier: 
   m_DefaultGroup: 39e1ba8c2fd46074ca1e17afeb5e3958
-  m_CachedHash:
+  m_currentHash:
     serializedVersion: 2
-    Hash: 00000000000000000000000000000000
+    Hash: 9e0da2aa9e43326982fff16052bd265f
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
@@ -32,17 +32,22 @@ MonoBehaviour:
   m_ShaderBundleNaming: 0
   m_ShaderBundleCustomNaming: 
   m_MonoScriptBundleNaming: 0
+  m_CheckForContentUpdateRestrictionsOption: 0
   m_MonoScriptBundleCustomNaming: 
   m_RemoteCatalogBuildPath:
     m_Id: 10b8f60f1989811489733f5267126d95
   m_RemoteCatalogLoadPath:
     m_Id: b9f0ece62c357ba4ea4c68587bc8f28e
+  m_ContentStateBuildPathProfileVariableName: 
+  m_CustomContentStateBuildPath: 
   m_ContentStateBuildPath: 
   m_BuildAddressablesWithPlayerBuild: 0
   m_overridePlayerVersion: 
   m_GroupAssets:
   - {fileID: 11400000, guid: 628279966f095f549a2858efe6c77f64, type: 2}
   - {fileID: 11400000, guid: 9c96ef88cf8e19b47837b35ba404148d, type: 2}
+  - {fileID: 11400000, guid: 290f4370f14f87d4b92665ee9a4eae9d, type: 2}
+  - {fileID: 11400000, guid: 587e9046d8283e5468581c550f6fee02, type: 2}
   - {fileID: 11400000, guid: 6d05fc977ea9d3843a098704dc128c06, type: 2}
   - {fileID: 11400000, guid: dd01efe8ffea98d489b51448b72f3195, type: 2}
   - {fileID: 11400000, guid: 35dd2eaed1e77f14bbaf732a5de4a563, type: 2}
@@ -51,7 +56,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 52366c4c0e304cb4d848cc1e1d58cd7e, type: 2}
   - {fileID: 11400000, guid: 17696a61640ea7d4e801ab08e8ab8b72, type: 2}
   - {fileID: 11400000, guid: 10fac3b9116e9f346a6ce53ff5ff33ad, type: 2}
-  - {fileID: 11400000, guid: 587e9046d8283e5468581c550f6fee02, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -107,11 +111,13 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
+    - AOT
+    - HotUpdate
+    - Views
     - Art
     - Audio
     - Anim
     - Prefab
-    - HotFix
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 0d87816dae4d1a740903dc980af49fd4, type: 2}
@@ -188,3 +194,4 @@ MonoBehaviour:
     m_NextInstanceId: 6
     m_RegisteredServiceTypeRefs:
     - UnityEditor.AddressableAssets.HostingServices.HttpHostingService, Unity.Addressables.Editor
+    m_PingTimeoutInMilliseconds: 5000

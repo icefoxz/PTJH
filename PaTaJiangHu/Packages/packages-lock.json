@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.code-philosophy.hybridclr": {
+      "version": "https://github.com/focus-creative-games/hybridclr_unity.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "058270c658e2b9dd593e04f0330314b426698430"
+    },
     "com.domybest.mybox": {
       "version": "https://github.com/Deadcows/MyBox.git",
       "depth": 0,
@@ -9,13 +16,6 @@
       },
       "hash": "a587ed2ede07a2b401d27089117d238b4ce7ebf7"
     },
-    "com.ourpalm.ilruntime": {
-      "version": "2.1.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://registry.npmjs.org"
-    },
     "com.unity.2d.animation": {
       "version": "8.0.2",
       "depth": 1,
@@ -23,8 +23,21 @@
       "dependencies": {
         "com.unity.2d.common": "7.0.0",
         "com.unity.2d.sprite": "1.0.0",
+        "com.unity.collections": "1.1.0",
         "com.unity.modules.animation": "1.0.0",
         "com.unity.modules.uielements": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.2d.aseprite": {
+      "version": "1.0.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.2d.sprite": "1.0.0",
+        "com.unity.2d.common": "6.0.6",
+        "com.unity.mathematics": "1.2.6",
+        "com.unity.modules.animation": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
@@ -81,6 +94,9 @@
       "depth": 1,
       "source": "builtin",
       "dependencies": {}
+        "com.unity.modules.tilemap": "1.0.0",
+        "com.unity.modules.uielements": "1.0.0"
+      }
     },
     "com.unity.2d.tilemap.extras": {
       "version": "3.0.2",
@@ -108,6 +124,15 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.ai.navigation": {
+      "version": "1.1.3",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.ai": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
     "com.unity.assetbundlebrowser": {
       "version": "https://github.com/Unity-Technologies/AssetBundles-Browser.git",
       "depth": 0,
@@ -121,6 +146,16 @@
       "source": "registry",
       "dependencies": {
         "com.unity.mathematics": "1.2.1"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.collections": {
+      "version": "1.2.4",
+      "depth": 2,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.burst": "1.6.6",
+        "com.unity.test-framework": "1.1.31"
       },
       "url": "https://packages.unity.com"
     },
@@ -143,6 +178,7 @@
         "com.unity.2d.spriteshape": "8.0.0",
         "com.unity.2d.tilemap": "1.0.0",
         "com.unity.2d.tilemap.extras": "3.0.2"
+        "com.unity.2d.aseprite": "1.0.0"
       }
     },
     "com.unity.ide.rider": {

@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using _GameClient.Models;
-using Core;
-using Server.Configs.Battles;
+using AOT._AOT.Core;
+using GameClient.Models;
+using GameClient.Modules.DiziM;
 using UnityEngine;
-using Dizi = Models.Dizi;
 
 // 门派数据So
 internal class FactionDataSo : ScriptableObject, IFaction
