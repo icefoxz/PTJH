@@ -169,7 +169,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: 0.00000047683716, y: 0, z: 0}
     m_Extent: {x: 0.21386722, y: 0.23144534, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &2321505558942693821
@@ -816,7 +815,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: -0.0028680563, y: -0.0002850145, z: 0}
     m_Extent: {x: 0.10162398, y: 0.22530061, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &3267795273876410443
@@ -922,7 +920,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: -0.013286635, y: 0.014755785, z: 0}
     m_Extent: {x: 0.09065802, y: 0.14393674, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &3745444116298694520
@@ -1028,7 +1025,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: -0.0006643832, y: 0.010411143, z: 0}
     m_Extent: {x: 0.29244447, y: 0.29296887, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &3986290980849765945
@@ -1200,7 +1196,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: -0.0005247295, y: 0.0056088865, z: 0}
     m_Extent: {x: 0.21076563, y: 0.28312254, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &4870807439780498922
@@ -1252,6 +1247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _character: {fileID: 4870807440052520034}
+  _originRenderer: {fileID: 446304631562511799}
   _anim: {fileID: 4870807440052520035}
   _collider: {fileID: 5950245629482345120}
   _renderers:
@@ -1264,7 +1260,6 @@ MonoBehaviour:
   - {fileID: 5529284811322282558}
   - {fileID: 7597115788523608798}
   - {fileID: 6182962302207047183}
-  _originRenderer: {fileID: 446304631562511799}
 --- !u!50 &468419546646147409
 Rigidbody2D:
   serializedVersion: 4
@@ -1282,6 +1277,12 @@ Rigidbody2D:
   m_AngularDrag: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
@@ -1332,7 +1333,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -1348,6 +1349,25 @@ CapsuleCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
@@ -1442,7 +1462,7 @@ SpriteRenderer:
   m_SpriteSortPoint: 0
 --- !u!95 &4870807440052520035
 Animator:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1459,7 +1479,8 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4935763018798749051
 GameObject:
   m_ObjectHideFlags: 0
@@ -1732,7 +1753,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: -0.016391777, y: 0.024745695, z: 0}
     m_Extent: {x: 0.113148846, y: 0.1055751, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &6028421705086719767
@@ -1937,7 +1957,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: 0.00027666986, y: -0.000000461936, z: 0}
     m_Extent: {x: 0.13937205, y: 0.20898476, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &8073939765123902645
@@ -2108,7 +2127,6 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: -0.03195766, y: 0.0071265846, z: 0}
     m_Extent: {x: 0.048557226, y: 0.15976445, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
 --- !u!1 &9195230491256976698
@@ -2215,6 +2233,5 @@ MonoBehaviour:
   m_Bounds:
     m_Center: {x: -0.015658848, y: 0.017447978, z: 0}
     m_Extent: {x: 0.052299477, y: 0.13451132, z: 0}
-  m_UseBatching: 1
   m_AlwaysUpdate: 1
   m_AutoRebind: 0
