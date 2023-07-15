@@ -27,6 +27,7 @@ namespace AOT._AOT.Views
         void HidePanel();
         void Hide();
         void Show();
+        void SetToast(IView view);
     }
 
     /// <summary>
@@ -39,6 +40,7 @@ namespace AOT._AOT.Views
         [SerializeField] private RectTransform _btmUi;
         [SerializeField] private RectTransform _gameUi;
         [SerializeField] private RectTransform _window;
+        [SerializeField] private RectTransform _toast;
         [SerializeField] private Transform _windowPanel;
         [SerializeField] private Image _panel;
         [SerializeField] private GameObject _pool;
@@ -48,6 +50,7 @@ namespace AOT._AOT.Views
         public RectTransform MidUi => _midUi;
         public RectTransform BtmUi => _btmUi;
         public RectTransform Window => _window;
+        public RectTransform Toast => _toast;
         public Transform WindowPanel => _windowPanel;
         public GameObject Pool => _pool;
 
@@ -79,6 +82,7 @@ namespace AOT._AOT.Views
         }
         public void SetGame(IView view) => SetUi(GameUi, view);
         public void SetPanel(IView view) => SetUi(Panel.rectTransform, view);
+        public void SetToast(IView view) => SetUi(Toast, view, true);
 
         public void ShowTop() => Display(true, TopUi);
         public void ShowMid() => Display(true, MidUi);
@@ -123,6 +127,7 @@ namespace AOT._AOT.Views
             HideLayoutChildren(BtmUi);
             HideLayoutChildren(GameUi);
             HideLayoutChildren(Panel.transform);
+            HideLayoutChildren(Toast);
         }
 
         private static void HideLayoutChildren(Transform tran)

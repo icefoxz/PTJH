@@ -27,7 +27,8 @@ namespace HotUpdate._HotUpdate
             Bottom,
             Window,
             Game,
-            Panel
+            Panel,
+            Toast
         }
 
         private void RegPage<T>(Sections section, T manager) where T : UiManagerBase
@@ -58,6 +59,9 @@ namespace HotUpdate._HotUpdate
                     break;
                 case Sections.Game:
                     MainUi.SetGame(view);
+                    break;
+                case Sections.Toast:
+                    MainUi.SetToast(view);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -8,6 +8,7 @@ using GameClient.GameScene;
 using GameClient.Models;
 using GameClient.Modules.BattleM;
 using GameClient.System;
+using HotUpdate._HotUpdate.Common;
 using HotUpdate._HotUpdate.UiEffects;
 
 namespace HotUpdate._HotUpdate.Demo_v1
@@ -45,6 +46,10 @@ namespace HotUpdate._HotUpdate.Demo_v1
         private Demo_Win_ItemSelector Demo_Win_ItemSelector { get; }
         private Demo_Win_ChallengeMgr Demo_Win_ChallengeMgr { get; }
 
+        //通用窗口, 一般上都是直接调用,不需要这里调用
+        private Win_Info Win_Info { get; }
+        private ToastManager ToastManager { get; }
+
         private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
         private IGame2DLand Game2D => Game.Game2DLand;
 
@@ -72,6 +77,9 @@ namespace HotUpdate._HotUpdate.Demo_v1
             Demo_Win_SkillComprehend = new Demo_Win_SkillComprehend(this);
             Demo_Win_ItemSelector = new Demo_Win_ItemSelector(this);
             Demo_Win_ChallengeMgr = new Demo_Win_ChallengeMgr(this);
+
+            Win_Info = new Win_Info(this);
+            ToastManager = new ToastManager(this);
 
             CloseAllPages();
             MainUi.ShowGame();
