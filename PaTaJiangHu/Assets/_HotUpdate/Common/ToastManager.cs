@@ -81,7 +81,7 @@ namespace HotUpdate._HotUpdate.Common
             public void Set(string message, Sprite icon, Action onclickAction)
             {
                 text_message.text = message;
-                img_icon.sprite = icon;
+                if (icon) img_icon.sprite = icon;
                 btn_click.onClick.RemoveAllListeners();
                 if (onclickAction != null) btn_click.OnClickAdd(onclickAction);
                 gameObject.SetActive(true);

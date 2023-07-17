@@ -48,6 +48,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
 
         //通用窗口, 一般上都是直接调用,不需要这里调用
         private Win_Info Win_Info { get; }
+        private Win_Confirm Win_Confirm { get; }
         private ToastManager ToastManager { get; }
 
         private ChallengeStageController ChallengeController => Game.Controllers.Get<ChallengeStageController>();
@@ -79,6 +80,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
             Demo_Win_ChallengeMgr = new Demo_Win_ChallengeMgr(this);
 
             Win_Info = new Win_Info(this);
+            Win_Confirm = new Win_Confirm(this);
             ToastManager = new ToastManager(this);
 
             CloseAllPages();
