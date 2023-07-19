@@ -1,5 +1,5 @@
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Utls;
 using GameClient.System;
 using UnityEngine;
 

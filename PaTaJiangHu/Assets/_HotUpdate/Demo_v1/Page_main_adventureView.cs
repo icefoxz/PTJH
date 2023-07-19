@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using AOT._AOT.Core.Systems.Coroutines;
-using AOT._AOT.Views.Abstract;
+using AOT.Core.Systems.Coroutines;
+using AOT.Views.Abstract;
 using GameClient.Models;
 using GameClient.System;
 using UnityEngine;
@@ -35,7 +35,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
 
         private void UpdateState(Dizi dizi)
         {
-            if (SelectedDizi == null) return;
+            if (SelectedDizi?.State?.DiziState == null) return;
             var state = dizi.State;
             var map = state.DiziState.CurrentMapName;
             var stateText = state.DiziState.StateLabel;

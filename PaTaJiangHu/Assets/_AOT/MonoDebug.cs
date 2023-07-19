@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AOT._AOT
+namespace AOT
 {
     public class MonoDebug : MonoBehaviour
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace GameClient.Modules.DiziM
+namespace AOT.Core.Dizi
 {
     public class ConValue : IGameCondition
     {

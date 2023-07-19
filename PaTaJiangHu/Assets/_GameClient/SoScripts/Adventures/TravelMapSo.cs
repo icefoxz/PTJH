@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using MyBox;
 using UnityEngine;
 

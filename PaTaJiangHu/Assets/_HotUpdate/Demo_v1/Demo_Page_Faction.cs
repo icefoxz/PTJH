@@ -1,9 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
-using AOT._AOT.Core;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Utls;
-using AOT._AOT.Views.Abstract;
+using AOT.Core;
+using AOT.Core.Systems.Messaging;
+using AOT.Utls;
+using AOT.Views.Abstract;
+using GameClient.Controllers;
+using GameClient.Models;
 using GameClient.System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,25 +28,33 @@ namespace HotUpdate._HotUpdate.Demo_v1
 
         protected override void Build(IView view)
         {
-            FactionPage = new Faction_page(view, Agent, true);
+            FactionPage = new Faction_page(view ,Agent, true);
         }
 
         protected override void RegEvents()
         {
             Game.MessagingManager.RegEvent(EventString.Faction_Challenge_Update,
-                _ => { FactionPage.UpdateChallengeUi(); });
-            Game.MessagingManager.RegEvent(EventString.Faction_Init, _ => { FactionPage.UpdateChallengeUi(); });
+                _ => { FactionPage.UpdateChallengeUi(); }); //更新挑战UI
+            Game.MessagingManager.RegEvent(EventString.Faction_Init, _ => FactionPage.UpdateChallengeUi()); // 门派初始化
+            Game.MessagingManager.RegEvent(EventString.Recruit_VisitorDizi, _ => FactionPage.ShowVisitor()); // 显示拜访者
+            Game.MessagingManager.RegEvent(EventString.Recruit_VisitorRemove, _ => FactionPage.CloseVisitorUi()); // 关闭拜访者UI
         }
 
         private class Faction_page : UiBase
         {
             private View_challenge view_challenge { get; }
+            private Button btn_diziHouse { get; }
+            private View_visitor view_visitor { get; }
+            
             private Demo_v1Agent Agent { get; }
 
-            public Faction_page(IView v, Demo_v1Agent agent, bool display) : base(v, display)
+            public Faction_page(IView v,Demo_v1Agent agent, bool display) : base(v, display)
             {
-                view_challenge = new View_challenge(v.GetObject<View>("view_challenge"));
                 Agent = agent;
+                view_challenge = new View_challenge(v.GetObject<View>("view_challenge"));
+                view_visitor = new View_visitor(v.GetObject<View>("view_visitor"), Agent.ShowVisitor, false);
+                btn_diziHouse = v.GetObject<Button>("btn_diziHouse");
+                btn_diziHouse.OnClickAdd(agent.ShowDiziHouse);
             }
 
             /** 根据不同的状态,点击效果会不一样.
@@ -74,11 +84,8 @@ namespace HotUpdate._HotUpdate.Demo_v1
 
                 view_challenge.UpdateStage(action);
             }
-
             private void NewChallenge() => Agent.Win_ChallengeWindow();
-
             private void DoChallenge() => Agent.Win_ChallengeWindow();
-
             private void OpenChest()
             {
                 Agent.Win_ChallengeReward();
@@ -149,6 +156,20 @@ namespace HotUpdate._HotUpdate.Demo_v1
                     text_stageMax.text = stageMax.ToString();
                     text_level.text = level.ToString();
                     img_icon.sprite = icon;
+                }
+            }
+
+            public void ShowVisitor() => view_visitor.Display(true);
+            public void CloseVisitorUi() => view_visitor.Display(false);
+
+            // 弟子到访, 点击弹出弟子到访窗口, 暂时仅作为一个按键操作
+            private class View_visitor : UiBase
+            {
+                private Button btn_visitor { get; }
+                public View_visitor(IView v, Action onVisitorAction, bool display) : base(v, display)
+                {
+                    btn_visitor = v.GetObject<Button>("btn_visitor");
+                    btn_visitor.OnClickAdd(onVisitorAction);
                 }
             }
         }

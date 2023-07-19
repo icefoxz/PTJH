@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AOT._AOT.Core
+namespace AOT.Core
 {
     /// <summary>
     /// 游戏逻辑控制器, 主要控制与模型和数据的交互

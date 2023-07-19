@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     public static class RectExtension
     {

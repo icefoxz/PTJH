@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
-using AOT._AOT.Utls;
-using AOT._AOT.Views;
-using AOT._AOT.Views.Abstract;
+using AOT.Utls;
+using AOT.Views;
+using AOT.Views.Abstract;
 using GameClient.Controllers;
 using GameClient.GameScene;
 using GameClient.Models;
@@ -13,7 +13,7 @@ using HotUpdate._HotUpdate.UiEffects;
 
 namespace HotUpdate._HotUpdate.Demo_v1
 {
-//Demo_v1 的Ui代理
+    //Demo_v1 的Ui代理
     internal class Demo_v1Agent : MainUiAgent
     {
         public enum Pages
@@ -45,6 +45,8 @@ namespace HotUpdate._HotUpdate.Demo_v1
         private Demo_Win_SkillComprehend Demo_Win_SkillComprehend { get; }
         private Demo_Win_ItemSelector Demo_Win_ItemSelector { get; }
         private Demo_Win_ChallengeMgr Demo_Win_ChallengeMgr { get; }
+        private Demo_Win_DiziHouse Demo_Win_DiziHouse { get; }
+        private Demo_Win_VisitorDizi Demo_Win_VisitorDizi { get; }
 
         //通用窗口, 一般上都是直接调用,不需要这里调用
         private Win_Info Win_Info { get; }
@@ -78,6 +80,8 @@ namespace HotUpdate._HotUpdate.Demo_v1
             Demo_Win_SkillComprehend = new Demo_Win_SkillComprehend(this);
             Demo_Win_ItemSelector = new Demo_Win_ItemSelector(this);
             Demo_Win_ChallengeMgr = new Demo_Win_ChallengeMgr(this);
+            Demo_Win_DiziHouse = new Demo_Win_DiziHouse(this);
+            Demo_Win_VisitorDizi = new Demo_Win_VisitorDizi(this);
 
             Win_Info = new Win_Info(this);
             Win_Confirm = new Win_Confirm(this);
@@ -108,24 +112,44 @@ namespace HotUpdate._HotUpdate.Demo_v1
         // 弟子活动页面
         internal void MainPage_Show(string guid)
         {
-            if (!string.IsNullOrWhiteSpace(guid)) SelectedDizi = Game.World.Faction.GetDizi(guid);
+            ResolveValidDizi(guid);
             ShowPage(Pages.Main);
         }
+
+        private void ResolveValidDizi(string guid)
+        {
+            if (!string.IsNullOrWhiteSpace(guid))
+            {
+                SelectedDizi = Faction.GetDizi(guid);
+
+                // Check if the selected Dizi is no longer in the Faction.DiziList
+                if (!Faction.DiziList.Any(dizi => dizi.Guid == guid))
+                    // If DiziList is not empty, select the first Dizi, otherwise set SelectedDizi to null
+                    SelectedDizi = Faction.DiziList.FirstOrDefault();
+            }
+            else
+            {
+                // If the input guid is null or whitespace, select the first Dizi from the Faction.DiziList or null if it's empty
+                SelectedDizi = Faction.DiziList.FirstOrDefault();
+            }
+        }
+
 
         // 弟子技能页面
         internal void SkillPage_Show(string guid)
         {
-            if (!string.IsNullOrWhiteSpace(guid)) SelectedDizi = Game.World.Faction.GetDizi(guid);
+            ResolveValidDizi(guid);
             ShowPage(Pages.Skills);
         }
 
         // 页面Ui布置
         private void ShowPage(Pages page)
         {
+            ResolveValidDizi(SelectedDizi?.Guid);
             var dizi = SelectedDizi;
             if (dizi == null) //如果没有缓存弟子,就会获取门派中的第一个弟子
             {
-                dizi = Game.World.Faction.DiziList.FirstOrDefault();
+                dizi = Faction.DiziList.FirstOrDefault();
                 if (dizi == null)
                 {
                     XDebug.LogWarning("当前门派并没有弟子!");
@@ -217,5 +241,13 @@ namespace HotUpdate._HotUpdate.Demo_v1
         public void Win_ChallengeReward() => ChallengeController.GetReward();
 
         public void Redirect_MainPage_ChallengeSelector() => ShowPage(Pages.Main);
+
+        public void ShowDiziHouse()=> Demo_Win_DiziHouse.Show();
+
+        public void ShowVisitor()
+        {
+            var visitor = Game.World.Recruiter.CurrentVisitor;
+            Demo_Win_VisitorDizi.Set(visitor.Dizi, visitor.Set);
+        }
     }
 }

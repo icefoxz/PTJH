@@ -1,4 +1,4 @@
-﻿using AOT._AOT.Core;
+﻿using AOT.Core;
 using GameClient.System;
 
 namespace GameClient.Models
@@ -14,7 +14,14 @@ namespace GameClient.Models
         /// 玩家门派
         /// </summary>
         public Faction Faction => _faction;
+        /// <summary>
+        /// 奖励板, 用于存放或展示奖励信息
+        /// </summary>
         public RewardBoard RewardBoard { get; } = new RewardBoard();
+        /// <summary>
+        /// 招募器, 用于招募角色
+        /// </summary>
+        public Recruiter Recruiter { get; } = new Recruiter();
 
         public void SetFaction(Faction faction)
         {

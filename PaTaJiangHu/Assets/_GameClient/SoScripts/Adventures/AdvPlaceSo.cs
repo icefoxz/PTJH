@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.SoScripts.Items;
 using UnityEngine;
 

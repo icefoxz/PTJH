@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using AOT._AOT.Core;
+using AOT.Core;
 using GameClient.SoScripts.Adventures;
 using GameClient.System;
 using UnityEngine;

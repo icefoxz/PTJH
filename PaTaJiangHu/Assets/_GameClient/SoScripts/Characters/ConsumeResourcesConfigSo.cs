@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using UnityEngine;
 
 namespace GameClient.SoScripts.Characters

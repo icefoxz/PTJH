@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.Models;
 using GameClient.SoScripts.Items;
 using GameClient.System;
 using MyBox;
 using UnityEditor;
 using UnityEngine;
-using Dizi = GameClient.Models.Dizi;
 
 namespace GameClient.Test
 {
+    // 事件编辑
     internal class Hack_Faction : MonoBehaviour
     {
         [SerializeField] private ItemToAdd<WeaponFieldSo>[] _weapons;
@@ -27,6 +27,10 @@ namespace GameClient.Test
         private ItemToAdd<MedicineFieldSo>[] Medicines => _medicines;
         private ItemToAdd<BookFieldSo>[] Books => _books;
 
+        private void Awake()
+        {
+            Game.StartGame += TestFaction;
+        }
         public static void TestFaction()
         {
             XDebug.Log("测试门派...初始化!");

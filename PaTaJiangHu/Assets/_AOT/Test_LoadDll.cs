@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AOT._AOT
+namespace AOT
 {
     public class Test_LoadDll : MonoBehaviour
     {

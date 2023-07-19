@@ -1,4 +1,4 @@
-﻿namespace AOT._AOT.Core
+﻿namespace AOT.Core
 {
     public enum AdvEquipmentTypes
     {

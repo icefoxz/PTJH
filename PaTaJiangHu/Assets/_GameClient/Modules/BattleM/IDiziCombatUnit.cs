@@ -1,4 +1,5 @@
-﻿using GameClient.Modules.DiziM;
+﻿using AOT.Core.Dizi;
+using GameClient.Modules.DiziM;
 
 namespace GameClient.Modules.BattleM
 {

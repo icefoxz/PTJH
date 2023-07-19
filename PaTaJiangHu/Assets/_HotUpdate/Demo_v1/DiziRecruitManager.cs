@@ -1,8 +1,8 @@
 ﻿using System;
-using AOT._AOT.Core;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Utls;
-using AOT._AOT.Views.Abstract;
+using AOT.Core;
+using AOT.Core.Systems.Messaging;
+using AOT.Utls;
+using AOT.Views.Abstract;
 using GameClient.Controllers;
 using GameClient.System;
 using UnityEngine;
@@ -28,7 +28,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
 
         protected override void Build(IView view)
         {
-            DiziRecruitPage = new View_diziRecruitPage(view, () => RecruitController.GenerateDizi(),
+            DiziRecruitPage = new View_diziRecruitPage(view, () => RecruitController.NewDizi(),
                 () => RecruitController.RecruitDizi(CurrentDiziIndex));
         }
 

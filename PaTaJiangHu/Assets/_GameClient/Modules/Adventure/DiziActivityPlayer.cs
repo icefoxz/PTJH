@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using AOT._AOT.Core.Systems.Coroutines;
+using AOT.Core.Systems.Coroutines;
 using GameClient.Controllers;
 using GameClient.Models;
 using GameClient.Modules.DiziM;

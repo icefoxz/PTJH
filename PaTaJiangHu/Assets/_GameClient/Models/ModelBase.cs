@@ -1,4 +1,4 @@
-﻿using AOT._AOT.Utls;
+﻿using AOT.Utls;
 using GameClient.System;
 
 namespace GameClient.Models

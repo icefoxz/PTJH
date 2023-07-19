@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public static class GameLinqExtension
     {

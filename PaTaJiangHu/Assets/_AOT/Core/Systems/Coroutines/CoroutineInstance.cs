@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace AOT._AOT.Core.Systems.Coroutines
+namespace AOT.Core.Systems.Coroutines
 {
     public interface ICoroutineInstance
     {
@@ -10,6 +10,7 @@ namespace AOT._AOT.Core.Systems.Coroutines
         int GetInstanceID();
         Coroutine Instance { get; }
         string name { get; set; }
+        GameObject GameObject { get; }
     }
 
     public class CoroutineInstance : MonoBehaviour, ICoroutineInstance
@@ -36,5 +37,6 @@ namespace AOT._AOT.Core.Systems.Coroutines
         }
 
         public Coroutine Instance => Coroutine;
+        public GameObject GameObject => gameObject;
     }
 }

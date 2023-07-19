@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace AOT._AOT.Views.Abstract
+namespace AOT.Views.Abstract
 {
     public interface IEffectView : IView
     {

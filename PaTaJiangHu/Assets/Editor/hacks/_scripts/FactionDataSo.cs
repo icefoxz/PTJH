@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using AOT._AOT.Core;
+using AOT.Core;
 using GameClient.Models;
 using GameClient.Modules.DiziM;
 using UnityEngine;
 
 // 门派数据So
-internal class FactionDataSo : ScriptableObject, IFaction
+internal class FactionDataSo : ScriptableObject, IFactionCommand
 {
     [SerializeField] private int 银两;
     [SerializeField] private int 元宝;
@@ -30,6 +30,6 @@ internal class FactionDataSo : ScriptableObject, IFaction
         throw new NotImplementedException();
     }
 
-    private event Action<IFaction> OnFactionUpdate;//注册唯一的门派信息更新消息事件
-    public void RegUpdater(Action<IFaction> onUpdateAction) => OnFactionUpdate = onUpdateAction;
+    private event Action<IFactionCommand> OnFactionUpdate;//注册唯一的门派信息更新消息事件
+    public void RegUpdater(Action<IFactionCommand> onUpdateAction) => OnFactionUpdate = onUpdateAction;
 }

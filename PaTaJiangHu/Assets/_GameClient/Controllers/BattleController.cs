@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using AOT._AOT.Core;
+using AOT.Core;
 using GameClient.Args;
 using GameClient.GameScene;
 using GameClient.Models;

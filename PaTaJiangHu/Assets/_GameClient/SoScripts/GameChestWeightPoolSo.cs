@@ -1,5 +1,5 @@
 using System;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using UnityEngine;
 
 namespace GameClient.SoScripts

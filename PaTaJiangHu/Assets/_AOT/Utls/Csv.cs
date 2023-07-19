@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     /// <summary>
     /// Csv 读取文件

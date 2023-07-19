@@ -1,6 +1,6 @@
 ﻿using System;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Views.Abstract;
+using AOT.Core.Systems.Messaging;
+using AOT.Views.Abstract;
 using UnityEngine;
 using UnityEngine.UI;
 

@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
-using AOT._AOT;
-using AOT._AOT.Core.Systems;
-using AOT._AOT.Utls;
-using AOT._AOT.Views;
+using AOT;
+using AOT.Core.Systems;
+using AOT.Utls;
+using AOT.Views;
 using GameClient.GameScene;
 using GameClient.SoScripts;
 using UnityEngine;

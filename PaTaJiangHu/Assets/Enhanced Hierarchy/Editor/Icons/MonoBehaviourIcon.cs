@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
 
 namespace EnhancedHierarchy.Icons {
     public sealed class MonoBehaviourIcon : IconBase {
+        private const string UnityEngineUiNamespace = "UnityEngine.UI";
 
         private static readonly Dictionary<Type, string> monoBehaviourNames = new Dictionary<Type, string>();
         private static readonly StringBuilder goComponents = new StringBuilder(500);
@@ -26,13 +28,21 @@ namespace EnhancedHierarchy.Icons {
             if (!EnhancedHierarchy.IsGameObject)
                 return;
 
-            var components = EnhancedHierarchy.Components;
+            var components = GetHierarchyWithUGuiFiltered();
 
-            for (var i = 0; i < components.Count; i++)
-                if (components[i] is MonoBehaviour) {
-                    hasMonoBehaviour = true;
-                    break;
-                }
+            foreach (var component in components)
+            {
+                if (component.c is not MonoBehaviour) continue;
+                hasMonoBehaviour = true;
+                break;
+            }
+        }
+
+        private static IEnumerable<(Type, Component c)> GetHierarchyWithUGuiFiltered()
+        {
+            return EnhancedHierarchy.Components
+                .Select(c => (c.GetType(), c))
+                .Where(t => t.Item1.Namespace != null && !t.Item1.Namespace.StartsWith(UnityEngineUiNamespace));
         }
 
         public override void DoGUI(Rect rect) {
@@ -41,11 +51,13 @@ namespace EnhancedHierarchy.Icons {
 
             if (Utility.ShouldCalculateTooltipAt(rect) && Preferences.Tooltips) {
                 goComponents.Length = 0;
-                var components = EnhancedHierarchy.Components;
+                var components = GetHierarchyWithUGuiFiltered();
 
-                for (var i = 0; i < components.Count; i++)
-                    if (components[i] is MonoBehaviour)
-                        goComponents.AppendLine(GetComponentName(components[i]));
+                foreach (var component in components)
+                {
+                    if (component.c is MonoBehaviour)
+                        goComponents.AppendLine(GetComponentName(component.c));
+                }
 
                 tempTooltipContent.tooltip = goComponents.ToString().TrimEnd('\n', '\r');
             } else

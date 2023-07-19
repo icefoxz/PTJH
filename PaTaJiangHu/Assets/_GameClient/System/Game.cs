@@ -1,19 +1,18 @@
 using System;
 using System.Collections;
-using AOT._AOT;
-using AOT._AOT.Core;
-using AOT._AOT.Core.Systems;
-using AOT._AOT.Core.Systems.Coroutines;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Core.Systems.Updaters;
-using AOT._AOT.Utls;
-using AOT._AOT.Views;
+using AOT;
+using AOT.Core;
+using AOT.Core.Dizi;
+using AOT.Core.Systems;
+using AOT.Core.Systems.Coroutines;
+using AOT.Core.Systems.Messaging;
+using AOT.Core.Systems.Updaters;
+using AOT.Utls;
+using AOT.Views;
 using GameClient.Controllers;
 using GameClient.GameScene;
 using GameClient.Models;
-using GameClient.Modules.DiziM;
 using GameClient.SoScripts;
-using GameClient.Test;
 using UnityEngine;
 
 namespace GameClient.System
@@ -53,9 +52,10 @@ namespace GameClient.System
         public static MainUi MainUi { get; private set; }
         public static IGame2DLand Game2DLand { get; private set; }
         public static GameWorld World { get; private set; }
-        public static Config Config { get; set; }
+        internal static Config Config { get; set; }
         public static bool IsInit { get; private set; }
         public static BattleCache BattleCache { get; private set; } = new BattleCache();
+        public static event Action StartGame;
 
         internal void Init(Res res, LoadDll hotUpdate, MainUi mainUi, Game2DLand game2DLand, Config config)
         {
@@ -102,7 +102,7 @@ namespace GameClient.System
             IEnumerator StartAfterSec(float innerSec)
             {
                 yield return new WaitForSeconds(innerSec);
-                Hack_Faction.TestFaction();
+                StartGame?.Invoke();
             }
         }
 

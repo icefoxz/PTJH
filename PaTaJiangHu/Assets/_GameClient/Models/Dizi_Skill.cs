@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Core;
+using AOT.Core;
 using GameClient.Args;
 using GameClient.Modules.BattleM;
 using GameClient.Modules.DiziM;

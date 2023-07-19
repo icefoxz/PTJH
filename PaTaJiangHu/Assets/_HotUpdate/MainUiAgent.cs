@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Views;
-using AOT._AOT.Views.Abstract;
+using AOT.Views;
+using AOT.Views.Abstract;
 
 namespace HotUpdate._HotUpdate
 {
@@ -75,6 +75,7 @@ namespace HotUpdate._HotUpdate
         }
 
         public void ShowWindow(IView view) => MainUi.ShowWindow(view);
+        public void DisplayWindowPanel(bool display) => MainUi.DisplayWindowPanel(display);
 
         private void OnShowUi(Sections section, params UiMapper[] maps)
         {

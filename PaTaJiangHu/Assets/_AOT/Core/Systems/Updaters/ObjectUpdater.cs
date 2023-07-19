@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AOT._AOT.Core.Systems.Updaters
+namespace AOT.Core.Systems.Updaters
 {
     /// <summary>
     /// 以<see cref="object"/>为key的更新器，每次更新会执行所有列表里的<see cref="Action"/>方法。

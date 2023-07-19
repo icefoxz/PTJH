@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using AOT.Core.Systems.Coroutines;
 using GameClient.Controllers;
 using GameClient.System;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace GameClient.Models
     {
         private Dizi _dizi;
         private DiziStamina _stamina;
+        private ICoroutineInstance _staminaService;
 
         public DiziStaminaManager(Dizi dizi, int initialStamina)
         {
@@ -22,7 +24,7 @@ namespace GameClient.Models
 
         private void StartStaminaService()
         {
-            Game.CoService.RunCo(StaminaPolling(), null, _dizi.Name);
+            _staminaService = Game.CoService.RunCo(StaminaPolling(), _dizi.Name, "体力服务器");
 
             IEnumerator StaminaPolling()
             {
@@ -40,6 +42,12 @@ namespace GameClient.Models
             _stamina.Update(ticks);
             var updatedValue = _stamina.Con.Value;
             return lastValue != updatedValue;
+        }
+
+        internal void StopStaminaService()
+        {
+            _staminaService?.StopCo();
+            _staminaService = null;
         }
     }
 }

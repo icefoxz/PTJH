@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     /// <summary>
     /// 弹窗信息条

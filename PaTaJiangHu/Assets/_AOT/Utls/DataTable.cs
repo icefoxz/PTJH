@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public class DataTable : MonoBehaviour
     {

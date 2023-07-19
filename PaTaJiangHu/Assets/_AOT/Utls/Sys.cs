@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using Random = System.Random;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public static class Sys
     {

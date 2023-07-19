@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Views.Abstract;
+using AOT.Views.Abstract;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
-namespace AOT._AOT.Views
+namespace AOT.Views
 {
     public class ToastHandler : MonoBehaviour
     {

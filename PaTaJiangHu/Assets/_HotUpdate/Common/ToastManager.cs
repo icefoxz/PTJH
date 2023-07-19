@@ -1,8 +1,8 @@
 ﻿using System;
-using AOT._AOT.Core;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Views;
-using AOT._AOT.Views.Abstract;
+using AOT.Core;
+using AOT.Core.Systems.Messaging;
+using AOT.Views;
+using AOT.Views.Abstract;
 using GameClient.Models;
 using GameClient.System;
 using UnityEngine;

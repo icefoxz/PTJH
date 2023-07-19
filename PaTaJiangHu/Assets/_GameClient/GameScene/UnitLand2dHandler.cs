@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AOT._AOT.Views.BaseUis;
+using AOT.Views.BaseUis;
 using GameClient.GameScene.Background;
 using GameClient.Models;
 using GameClient.SoScripts;
@@ -61,7 +61,7 @@ namespace GameClient.GameScene
             switch (dizi.State.Current)
             {
                 case DiziStateHandler.States.Idle:
-                case DiziStateHandler.States.Auto:
+                case DiziStateHandler.States.None:
                     ParallaxBackgroundController.StopAll();
                     break;
                 case DiziStateHandler.States.Lost:

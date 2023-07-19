@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Utls;
 using GameClient.Controllers;
 using GameClient.Models.States;
 using GameClient.SoScripts.Adventures;
+using GameClient.System;
 
 namespace GameClient.Models
 {
@@ -109,6 +110,31 @@ namespace GameClient.Models
             State.StartIdle(SysTime.UnixNow);
             EventUpdate(EventString.Dizi_Params_StateUpdate);
             EventUpdate(EventString.Dizi_Lost_End);
+        }
+
+        //弟子被驱逐, 所有状态都会被清除
+        internal void Dismiss()
+        {
+            switch (State.Current)
+            {
+                case DiziStateHandler.States.None: break;
+                case DiziStateHandler.States.Lost: break;
+                case DiziStateHandler.States.Idle:
+                    StopIdle();
+                    break;
+                case DiziStateHandler.States.AdvProgress:
+                case DiziStateHandler.States.AdvProduction:
+                case DiziStateHandler.States.AdvReturning:
+                case DiziStateHandler.States.AdvWaiting:
+                    AdventureTerminate(SysTime.UnixNow, 0);
+                    break;
+                case DiziStateHandler.States.Battle:
+                    throw new InvalidOperationException("战斗状态, 不允许驱逐!");
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            StaminaManager.StopStaminaService();
+            Game.CoService.RemoveCoParent(Name);
         }
     }
 

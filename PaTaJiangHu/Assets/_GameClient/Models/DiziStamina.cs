@@ -1,4 +1,5 @@
 ﻿using System;
+using AOT.Core.Dizi;
 using GameClient.Controllers;
 using GameClient.Modules.DiziM;
 

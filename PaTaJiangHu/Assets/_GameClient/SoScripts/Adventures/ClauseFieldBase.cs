@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
-using AOT._AOT.Utls;
+using AOT.Core.Dizi;
+using AOT.Utls;
 using GameClient.Modules.DiziM;
 using MyBox;
 using UnityEngine;

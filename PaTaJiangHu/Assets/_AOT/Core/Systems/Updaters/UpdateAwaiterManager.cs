@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AOT._AOT.Core.Systems.Updaters
+namespace AOT.Core.Systems.Updaters
 {
     /// <summary>
     /// 帧回调器，类似协程等待，但执行比协程快

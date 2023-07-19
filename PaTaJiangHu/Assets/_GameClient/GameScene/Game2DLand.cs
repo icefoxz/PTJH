@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using AOT._AOT.Core;
+using AOT.Core;
 using GameClient.Args;
 using GameClient.GameScene.Background;
 using GameClient.Models;

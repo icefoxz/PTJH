@@ -1,5 +1,5 @@
 ﻿using System;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Adventures;
 using GameClient.SoScripts.BattleSimulation;

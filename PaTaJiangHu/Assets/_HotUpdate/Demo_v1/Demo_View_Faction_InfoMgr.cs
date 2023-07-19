@@ -1,5 +1,5 @@
-﻿using AOT._AOT.Core;
-using AOT._AOT.Views.Abstract;
+﻿using AOT.Core;
+using AOT.Views.Abstract;
 using GameClient.System;
 using UnityEngine;
 using UnityEngine.UI;

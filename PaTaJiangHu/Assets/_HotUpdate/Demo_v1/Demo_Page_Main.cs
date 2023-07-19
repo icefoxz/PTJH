@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Core;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Utls;
-using AOT._AOT.Views.Abstract;
-using AOT._AOT.Views.BaseUis;
+using AOT.Core;
+using AOT.Core.Systems.Messaging;
+using AOT.Utls;
+using AOT.Views.Abstract;
+using AOT.Views.BaseUis;
 using GameClient.Controllers;
 using GameClient.Models;
 using GameClient.Modules.DiziM;
@@ -708,7 +708,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 {
                     DiziStateHandler.States.Lost => View_Buttons.Modes.Lost,
                     DiziStateHandler.States.Idle => View_Buttons.Modes.Idle,
-                    DiziStateHandler.States.Auto => View_Buttons.Modes.Idle,
+                    DiziStateHandler.States.None => View_Buttons.Modes.Idle,
                     DiziStateHandler.States.AdvProgress => View_Buttons.Modes.Adventure,
                     DiziStateHandler.States.AdvProduction => View_Buttons.Modes.Adventure,
                     DiziStateHandler.States.AdvReturning => View_Buttons.Modes.Returning,

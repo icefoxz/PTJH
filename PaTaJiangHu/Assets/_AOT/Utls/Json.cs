@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UnityEngine;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public static class Json
     {

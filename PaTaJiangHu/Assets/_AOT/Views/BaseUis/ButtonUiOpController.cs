@@ -1,4 +1,4 @@
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     /// <summary>
     /// 最基础的<see cref="ButtonUi"/>控制器

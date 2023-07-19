@@ -1,6 +1,6 @@
 ﻿using System;
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Utls;
 using GameClient.Models;
 using GameClient.SoScripts.Adventures;
 using GameClient.SoScripts.Factions;
@@ -55,6 +55,13 @@ namespace GameClient.Controllers
             Faction.AddConsumeResource(ConsumeResources.Wine, res.Wine);
             Faction.AddConsumeResource(ConsumeResources.Herb, res.Herb);
             Faction.AddConsumeResource(ConsumeResources.Pill, res.Pill);
+        }
+
+        public void DismissDizi(string guid)
+        {
+            var dizi = Faction.GetDizi(guid);
+            dizi.Dismiss();
+            Faction.RemoveDizi(dizi);
         }
     }
 }

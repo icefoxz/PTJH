@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     /// <summary>
     /// 最简单的选项控制器，一般仅仅处理生成与销毁的方法。

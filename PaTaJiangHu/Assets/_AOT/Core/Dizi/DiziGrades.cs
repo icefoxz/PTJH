@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GameClient.Modules.DiziM
+namespace AOT.Core.Dizi
 {
     public enum DiziGrades
     {

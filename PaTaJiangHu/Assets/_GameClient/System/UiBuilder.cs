@@ -1,5 +1,5 @@
 using System;
-using AOT._AOT.Views.Abstract;
+using AOT.Views.Abstract;
 using UnityEngine;
 
 namespace GameClient.System

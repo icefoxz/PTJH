@@ -1,4 +1,4 @@
-﻿using AOT._AOT.Views.Abstract;
+﻿using AOT.Views.Abstract;
 using GameClient.System;
 
 namespace HotUpdate._HotUpdate
@@ -66,6 +66,8 @@ namespace HotUpdate._HotUpdate
             View.Hide();
             MainUiAgent.HideWindows();
         }
+
+        protected void HidePanel() => MainUiAgent.DisplayWindowPanel(false);
 
         public override void Show()
         {

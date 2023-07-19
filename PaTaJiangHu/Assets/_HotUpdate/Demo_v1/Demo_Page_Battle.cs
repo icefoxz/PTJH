@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using AOT._AOT.Core;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Views.Abstract;
+using AOT.Core;
+using AOT.Core.Systems.Messaging;
+using AOT.Views.Abstract;
 using GameClient.Args;
 using GameClient.Controllers;
 using GameClient.Models;

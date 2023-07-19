@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.Models;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Adventures;

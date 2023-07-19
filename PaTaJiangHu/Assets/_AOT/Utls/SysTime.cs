@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     /// <summary>
     /// 基础毫秒的Unix时间戳系统
@@ -83,8 +83,14 @@ namespace AOT._AOT.Utls
         /// <summary>
         /// 跟现在时间比较差值
         /// </summary>
-        /// <param name="startTime"></param>
+        /// <param name="unixTime"></param>
         /// <returns></returns>
-        public static TimeSpan CompareUnixNow(long startTime)=> TimeSpan.FromMilliseconds(UnixNow - startTime);
+        public static TimeSpan CompareUnixNow(long unixTime)
+        {
+            var now = UnixNow;
+            return unixTime > now
+                ? TimeSpan.FromMilliseconds(unixTime - now)
+                : TimeSpan.FromMilliseconds(now - unixTime);
+        }
     }
 }

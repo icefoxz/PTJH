@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.Modules.BattleM;
 using UnityEngine;
 

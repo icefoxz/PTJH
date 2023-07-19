@@ -1,4 +1,4 @@
-using AOT._AOT.Core;
+using AOT.Core;
 using UnityEngine;
 
 namespace GameClient.SoScripts.Items

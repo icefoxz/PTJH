@@ -1,4 +1,4 @@
-using GameClient.Modules.Data;
+using AOT.Core.Data;
 using MyBox;
 using UnityEditor;
 using UnityEngine;

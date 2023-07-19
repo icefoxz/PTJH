@@ -1,5 +1,5 @@
-using AOT._AOT.Views.Abstract;
-using AOT._AOT.Views.BaseUis;
+using AOT.Views.Abstract;
+using AOT.Views.BaseUis;
 using GameClient.Args;
 using GameClient.Modules.BattleM;
 using GameClient.System;

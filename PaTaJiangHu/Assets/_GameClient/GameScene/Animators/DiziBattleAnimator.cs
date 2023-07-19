@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Core;
-using AOT._AOT.Views.BaseUis;
+using AOT.Core;
+using AOT.Views.BaseUis;
 using GameClient.Args;
 using GameClient.GameScene.Background;
 using GameClient.Modules.BattleM;
@@ -17,13 +17,13 @@ namespace GameClient.GameScene.Animators
     /// <summary>
     /// 弟子战斗演示器
     /// </summary>
-    internal class DiziBattleAnimator
+    public class DiziBattleAnimator
     {
         private DiziCombatAnimator CombatAnimator { get; }
         private Dictionary<int, CharacterOperator> OpMap { get; }
         private MonoBehaviour Mono { get; }
         private CharacterUiSyncHandler UiHandler { get; set; }
-        public DiziBattleAnimator(DiziCombatVisualConfigSo combatVisualCfg, 
+        internal DiziBattleAnimator(DiziCombatVisualConfigSo combatVisualCfg, 
             Dictionary<int, CharacterOperator> opMap,
             CharacterUiSyncHandler uiHandler,
             MonoBehaviour mono,

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using AOT._AOT.Core.Systems.Coroutines;
+using AOT.Core.Systems.Coroutines;
 using GameClient.System;
 using UnityEngine;
 

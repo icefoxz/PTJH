@@ -2,7 +2,7 @@
 using System.Linq;
 using MyBox;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public interface IMinMax
     {

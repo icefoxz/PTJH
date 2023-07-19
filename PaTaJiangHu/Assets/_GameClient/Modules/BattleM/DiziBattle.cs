@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.Args;
 using GameClient.SoScripts;
 

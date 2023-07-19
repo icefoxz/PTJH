@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Views.Abstract;
+using AOT.Views.Abstract;
 using GameClient.Args;
 using GameClient.GameScene.Background;
 using GameClient.Modules.BattleM;

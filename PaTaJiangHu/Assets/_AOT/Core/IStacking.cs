@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace AOT._AOT.Core
+namespace AOT.Core
 {
     /// <summary>
     /// 游戏物品大类(功能性, 不细化)

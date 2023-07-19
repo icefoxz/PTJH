@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using AOT._AOT.Core;
+using AOT.Core;
 using GameClient.Models;
 using GameClient.Modules.DiziM;
 using GameClient.System;

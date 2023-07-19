@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using UnityEngine;
 
-namespace AOT._AOT.Views.Abstract
+namespace AOT.Views.Abstract
 {
     /// <summary>
     /// 基于Unity的通用Ui整合标准

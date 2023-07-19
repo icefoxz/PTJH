@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Utls;
 using GameClient.Controllers;
 using GameClient.Modules.Adventure;
 using GameClient.Modules.DiziM;

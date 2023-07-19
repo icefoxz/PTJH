@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public static class XDebug
     {

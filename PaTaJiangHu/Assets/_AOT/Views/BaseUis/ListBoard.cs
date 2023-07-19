@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     public class ListBoard : PrefabController<ButtonUi>
     {

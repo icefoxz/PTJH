@@ -1,13 +1,13 @@
 using System;
 using System.Collections;
 using System.Threading.Tasks;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Events;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace AOT._AOT.Core.Systems
+namespace AOT.Core.Systems
 {
     /// <summary>
     /// 资源接口

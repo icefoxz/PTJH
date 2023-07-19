@@ -1,4 +1,4 @@
-namespace AOT._AOT.Core
+namespace AOT.Core
 {
     public class Global
     {
@@ -33,6 +33,8 @@ namespace AOT._AOT.Core
         //招募
         public const string Recruit_DiziGenerated = "Recruit_DiziGenerated";
         public const string Recruit_DiziInSlot = "Recruit_DiziInSlot";
+        public const string Recruit_VisitorDizi = "Faction_VisitorDizi"; // 门派访客(弟子招募)
+        public const string Recruit_VisitorRemove = "Recruit_VisitorRemove";
 
         //弟子dizi
         public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";//弟子体力更新
@@ -91,7 +93,8 @@ namespace AOT._AOT.Core
         public const string Faction_FunctionItemUpdate = "Faction_FunctionItemUpdate";//门派功能道具更新
         public const string Faction_Challenge_Update = "Faction_Challenge_Update";//门派挑战进度更新
         public const string Faction_Challenge_BattleEnd = "Faction_Challenge_BattleEnd";//门派挑战战斗结束
-        public const string Faction_Stage_update = "Faction_Stage_update";//门派关卡更新
+        public const string Faction_Stage_update = "Faction_Stage_update"; //门派关卡更新
+        public const string Faction_Level_Update = "Faction_Level_Update"; //门派等级更新
 
         //战斗演示
         public const string Battle_Performer_update = "Battle_Performer_update";//进攻者信息更新
@@ -104,5 +107,9 @@ namespace AOT._AOT.Core
 
         //窗口
         public const string Win_PopUp = "Win_PopUp";//弹窗ui
+
+        public const string Info_Trade_Failed_Silver = "Info_Trade_Failed_Silver"; // 交易失败，银两不足
+        public const string Info_Trade_Failed_YuanBao = "Info_Trade_Failed_YuanBao"; // 交易失败，元宝不足
+        public const string Info_DiziAdd_LimitReached = "Info_DiziAdd_LimitReached"; // 弟子添加失败，门派弟子数量已达上限
     }
 }

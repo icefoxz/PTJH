@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using AOT._AOT.Core.Systems.Coroutines;
-using AOT._AOT.Views.Abstract;
+using System.Runtime.CompilerServices;
+using AOT.Core.Systems.Coroutines;
+using AOT.Views.Abstract;
 using GameClient.System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,9 +31,9 @@ namespace HotUpdate._HotUpdate
             Display(display);
         }
 
-        protected void WhileActiveUpdatePerSec(Action action)
+        protected void WhileActiveUpdatePerSec(Action action, [CallerMemberName]string methodName = null)
         {
-            ServiceCo ??= Game.CoService.RunCo(UpdatePerSec(), null, gameObject?.name);
+            ServiceCo ??= Game.CoService.RunCo(UpdatePerSec(), gameObject?.name, methodName);
             Events.Add(action);
         }
 

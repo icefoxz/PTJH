@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public class ObjectPool<T> where T : Component
     {

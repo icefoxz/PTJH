@@ -1,4 +1,5 @@
 using System;
+using AOT.Core.Dizi;
 using GameClient.Modules.BattleM;
 using GameClient.Modules.DiziM;
 using UnityEngine;

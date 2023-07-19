@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Core;
+using AOT.Core;
+using AOT.Core.Data;
+using AOT.Core.Dizi;
 using GameClient.Modules.BattleM;
-using GameClient.Modules.Data;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Items;
 using MyBox;

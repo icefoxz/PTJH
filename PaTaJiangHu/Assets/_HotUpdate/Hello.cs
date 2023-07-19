@@ -1,4 +1,4 @@
-using AOT._AOT;
+using AOT;
 using UnityEngine;
 
 namespace HotUpdate._HotUpdate

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     public class ConfirmationWindow : BaseUi
     {

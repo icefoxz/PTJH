@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     /// <summary>
     /// 一般按键的控制器，主要是统一设定<see cref="Set"/>方式，子类可以透过<see cref="AdditionInit"/>追加初始化

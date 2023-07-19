@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Views.Abstract;
+using AOT.Views.Abstract;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     public class ScrollContentAligner : MonoBehaviour
     {

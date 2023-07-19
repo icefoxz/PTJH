@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.SoScripts.Characters;
 using UnityEngine;
 

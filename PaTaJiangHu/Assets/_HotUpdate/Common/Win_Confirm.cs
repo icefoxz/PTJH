@@ -1,6 +1,6 @@
 ﻿using System;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Views.Abstract;
+using AOT.Core.Systems.Messaging;
+using AOT.Views.Abstract;
 using HotUpdate._HotUpdate.Demo_v1;
 using UnityEngine.UI;
 
@@ -26,7 +26,11 @@ namespace HotUpdate._HotUpdate.Common
         public static void Show(string title, string content, Action onConfirmAction,Action onCancelAction)
         {
             OnCancelAction = onCancelAction;
-            Instance._commonWinConfirm.Set(title, content, onConfirmAction);
+            Instance._commonWinConfirm.Set(title, content, () =>
+            {
+                onConfirmAction?.Invoke();
+                Instance.Hide();
+            });
             Instance.Show();
         }
 

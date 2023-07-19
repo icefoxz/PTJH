@@ -1,4 +1,4 @@
-﻿namespace GameClient.Modules.Data
+﻿namespace AOT.Core.Data
 {
     public interface IIdElement
     {

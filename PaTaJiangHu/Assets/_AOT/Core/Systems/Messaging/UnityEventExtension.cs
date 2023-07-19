@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace AOT._AOT.Core.Systems.Messaging
+namespace AOT.Core.Systems.Messaging
 {
     public static class UnityEventExtension
     {

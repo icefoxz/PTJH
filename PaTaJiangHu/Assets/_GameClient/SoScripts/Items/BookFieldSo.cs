@@ -1,5 +1,6 @@
 using System;
-using AOT._AOT.Core;
+using AOT.Core;
+using AOT.Core.Dizi;
 using GameClient.Modules.BattleM;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Skills;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
-using AOT._AOT.Core;
+using AOT.Core;
+using AOT.Core.Dizi;
 using GameClient.Modules.BattleM;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Adventures;
@@ -96,26 +97,11 @@ namespace GameClient.Models
                 () => GetPropStateAddon(DiziProps.Mp), () => _equipment.GetPropAddon(DiziProps.Mp), null);
             StaminaManager = new DiziStaminaManager(this, stamina);
             State = new DiziStateHandler(this, OnMessageAction, OnAdjustAction, OnRewardAction);
-            StaminaService();
             Gifted = gifted;
             _armedAptitude = new DiziArmedAptitude(armedAptitude);
         }
 
         protected void EventUpdate(string eventString) => SendEvent(eventString, Guid);
-
-        private void StaminaService()
-        {
-            Game.CoService.RunCo(StaminaPolling(), null, Name);
-
-            IEnumerator StaminaPolling()
-            {
-                while (true)
-                {
-                    yield return new WaitForSeconds(1);
-                    StaminaUpdate(Stamina.ZeroTicks);
-                }
-            }
-        }
 
         /// <summary>
         /// 计算状态后的数值

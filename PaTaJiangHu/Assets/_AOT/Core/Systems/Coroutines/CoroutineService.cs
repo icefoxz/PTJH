@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using UnityEngine;
 
-namespace AOT._AOT.Core.Systems.Coroutines
+namespace AOT.Core.Systems.Coroutines
 {
     public interface ICoroutineService : ISingletonDependency
     {
@@ -17,8 +18,9 @@ namespace AOT._AOT.Core.Systems.Coroutines
         /// <param name="parentName">GameObject父件,如果没有改父件将创建一个</param>
         /// <param name="method"></param>
         /// <returns></returns>
-        ICoroutineInstance RunCo(IEnumerator enumerator, Action onFinishCallback = null, string parentName = null,
-            [CallerMemberName] string method = null);
+        ICoroutineInstance RunCo(IEnumerator enumerator, Action onFinishCallback = null, string parentName = null, [CallerMemberName] string method = null);
+        ICoroutineInstance RunCo(IEnumerator enumerator, string parentName, [CallerMemberName] string method = null);
+        void RemoveCoParent(string name);
     }
 
     public class CoroutineService : DependencySingleton<ICoroutineService>, ICoroutineService
@@ -61,6 +63,17 @@ namespace AOT._AOT.Core.Systems.Coroutines
             return co;
         }
 
+        public ICoroutineInstance RunCo(IEnumerator enumerator, string parentName, string method = null) =>
+            RunCo(enumerator, null, parentName, method);
+
+        public void RemoveCoParent(string name)
+        {
+            var go = _parent.FirstOrDefault(p => p.Key == name).Value;
+            if (go == null) return;
+            _parent.Remove(name);
+            Destroy(go);
+        }
+
         private CoroutineInstance InstanceCo(string parentName)
         {
             var parent = transform;
@@ -82,7 +95,7 @@ namespace AOT._AOT.Core.Systems.Coroutines
         private void StopCo(CoroutineInstance co)
         {
             _map.Remove(co.GetInstanceID());
-            Destroy(co.gameObject);
+            Destroy(co.GameObject);
             //_pool.Release(co);
         }
     }

@@ -1,8 +1,8 @@
 ﻿using System;
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Core.Dizi;
+using AOT.Utls;
 using GameClient.Models;
-using GameClient.Modules.DiziM;
 using GameClient.SoScripts;
 using GameClient.SoScripts.BattleSimulation;
 using GameClient.System;
@@ -59,17 +59,36 @@ namespace GameClient.Controllers
             dizi.StartLostState(now, lastLog);
         }
 
+        private bool FactionTryTrade(int silver, int yuanBao)
+        {
+            if (Faction.Silver < silver)
+            {
+                SendEvent(EventString.Info_Trade_Failed_Silver, silver);
+                return false;
+            }
+
+            if (Faction.YuanBao < yuanBao)
+            {
+                SendEvent(EventString.Info_Trade_Failed_YuanBao, silver);
+                return false;
+            }
+
+            Faction.AddYuanBao(-yuanBao);
+            Faction.AddSilver(-silver);
+            return true;
+        }
+
+        private void SendEvent(string eventName, params object[] args) =>
+            Game.MessagingManager.SendParams(eventName, args);
+
         public void RestoreDizi(string guid)
         {
             var dizi = Faction.GetDizi(guid);
             var restoreCost = RecruitCfg.GradeCfg.GetRestoreCost((ColorGrade)dizi.Capable.Grade);
-            if (Faction.YuanBao < restoreCost)
+            if (FactionTryTrade(0, -restoreCost))
             {
-                XDebug.Log($"门派元宝:{Faction.YuanBao}, 不足!需要支付{restoreCost}以召唤回{dizi}.");
-                return;
+                dizi.RestoreFromLost();
             }
-            Faction.AddYuanBao(-restoreCost);
-            dizi.RestoreFromLost();
         }
     }
 }

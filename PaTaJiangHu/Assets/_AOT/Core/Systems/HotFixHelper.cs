@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using AOT._AOT.Core.Systems.Updaters;
+using AOT.Core.Systems.Updaters;
 
-namespace AOT._AOT.Core.Systems
+namespace AOT.Core.Systems
 {
     /// <summary>
     /// 热更受限的代码帮助器。尤其是在异步调用。必须让主程序执行

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Utls;
 using GameClient.Args;
 using GameClient.Models;
 using GameClient.Modules.BattleM;

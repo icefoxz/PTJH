@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using AOT._AOT.Utls;
+using AOT.Utls;
 
-namespace AOT._AOT.Core.Systems.Messaging
+namespace AOT.Core.Systems.Messaging
 {
     /// <summary>
     /// 事件消息系统

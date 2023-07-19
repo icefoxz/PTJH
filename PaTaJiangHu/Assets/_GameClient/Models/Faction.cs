@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Utls;
 using GameClient.Controllers;
 using GameClient.Modules.BattleM;
 using GameClient.Modules.DiziM;
@@ -13,22 +13,14 @@ using GameClient.System;
 
 namespace GameClient.Models
 {
-    public interface IFaction
+    public interface IFactionCommand
     {
-        int Silver { get; }
-        int YuanBao { get; }
-        int ActionLing { get; }
-        int ActionLingMax { get; }
-        IReadOnlyList<Dizi> DiziList { get; }
-        IReadOnlyList<IWeapon> Weapons { get; }
-        IReadOnlyList<IArmor> Armors { get; }
-        Dizi GetDizi(string guid);
     }
 
     /// <summary>
     /// 门派模型
     /// </summary>
-    public partial class Faction : ModelBase, IFaction
+    public partial class Faction : ModelBase, IFactionCommand
     {
         protected override string LogPrefix { get; } = "门派";
         private List<IBook> _books = new();
@@ -42,6 +34,7 @@ namespace GameClient.Models
         private Dictionary<IFunctionItem,int> _funcItems = new();
         private Dictionary<IMedicine,int> Medicines { get; } = new();
 
+        public int Level { get; private set; }
         public int Silver { get; private set; }
         public int YuanBao { get; private set; }
         public int Food { get; private set; }
@@ -67,6 +60,8 @@ namespace GameClient.Models
         public IReadOnlyDictionary<IFunctionItem, int> FuncItems => _funcItems;
         public IReadOnlyList<IGameItem> AdvProps => _advItems;
 
+        private FactionConfigSo Config => Game.Config.FactionCfg;
+
         public IStacking<IGameItem>[] GetAllSupportedAdvItems() => Medicines
             .Where(m => m.Key.Kind == MedicineKinds.StaminaDrug)
             .Select(m => new Stacking<IGameItem>(m.Key, m.Value))
@@ -84,9 +79,10 @@ namespace GameClient.Models
             return items;
         }
 
-        internal Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap,
+        public Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap,
             int food = 0, int wine = 0, int pill = 0, int herb = 0)
         {
+            Level = 1;
             DiziMap = diziMap.ToDictionary(d => d.Guid.ToString(), d => d);
             Silver = silver;
             YuanBao = yuanBao;
@@ -98,13 +94,34 @@ namespace GameClient.Models
             Herb = herb;
         }
 
-        internal void AddDizi(Dizi dizi)
+        internal void Upgrade(int step = 1)
         {
+            Level += step;
+            SendEvent(EventString.Faction_Level_Update);
+        }
+
+        internal void SetLevel(int level)
+        {
+            Level = level;
+            SendEvent(EventString.Faction_Level_Update);
+        }
+
+        internal bool TryAddDizi(Dizi dizi)
+        {
+            var limit = Config.GetDiziLimit(Level);
+            if (DiziMap.Count >= limit)
+            {
+                Log($"弟子数量已达上限{limit}");
+                SendEvent(EventString.Info_DiziAdd_LimitReached);
+                return false;
+            }
             DiziMap.Add(dizi.Guid, dizi);
             _diziList.Add(dizi);
+            dizi.StartIdle(SysTime.UnixNow);
             Log($"添加弟子{dizi.Name}");
             SendEvent(EventString.Faction_DiziAdd, dizi.Guid);
             SendEvent(EventString.Faction_DiziListUpdate, string.Empty);
+            return true;
         }
 
         internal void RemoveDizi(Dizi dizi)
@@ -112,9 +129,10 @@ namespace GameClient.Models
             Log($"移除弟子{dizi.Name}");
             DiziMap.Remove(dizi.Guid);
             _diziList.Remove(dizi);
+            SendEvent(EventString.Faction_DiziListUpdate, string.Empty);
         }
 
-        internal void AddSilver(int silver)
+        public void AddSilver(int silver)
         {
             if (silver == 0) return;
             var last = Silver;
@@ -123,7 +141,7 @@ namespace GameClient.Models
             SendEvent(EventString.Faction_SilverUpdate, Silver);
         }
 
-        internal void AddYuanBao(int yuanBao)
+        public void AddYuanBao(int yuanBao)
         {
             if (yuanBao == 0) return;
             var last = YuanBao;

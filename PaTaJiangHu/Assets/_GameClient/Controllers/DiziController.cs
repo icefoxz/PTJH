@@ -1,6 +1,6 @@
 ﻿using System;
-using AOT._AOT.Core;
-using AOT._AOT.Utls;
+using AOT.Core;
+using AOT.Utls;
 using GameClient.Models;
 using GameClient.SoScripts;
 using GameClient.SoScripts.Adventures;
@@ -189,11 +189,31 @@ namespace GameClient.Controllers
 
         public void UseSilver(string guid, int amount)
         {
-            if(Faction.Silver <amount) 
-                XDebug.LogError($"门派银两({Faction.Silver})小于消费银两({amount})!");
-            Faction.AddSilver(-amount);
-            AddDiziCon(guid, IAdjustment.Types.Silver, amount);
+            if(FactionTryTrade(0, -amount))
+                AddDiziCon(guid, IAdjustment.Types.Silver, amount);
         }
+
+        private bool FactionTryTrade(int silver, int yuanBao)
+        {
+            if (Faction.Silver < silver)
+            {
+                SendEvent(EventString.Info_Trade_Failed_Silver, silver);
+                return false;
+            }
+
+            if (Faction.YuanBao < yuanBao)
+            {
+                SendEvent(EventString.Info_Trade_Failed_YuanBao, silver);
+                return false;
+            }
+
+            Faction.AddYuanBao(-yuanBao);
+            Faction.AddSilver(-silver);
+            return true;
+        }
+
+        private void SendEvent(string eventName, params object[] args) =>
+            Game.MessagingManager.SendParams(eventName, args);
 
         /// <summary>
         /// 把失踪的弟子召唤回来

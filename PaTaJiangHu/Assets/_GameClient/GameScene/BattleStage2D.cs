@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Views.BaseUis;
+using AOT.Views.BaseUis;
 using GameClient.Args;
 using GameClient.GameScene.Animators;
 using GameClient.GameScene.Background;

@@ -1,5 +1,5 @@
 using System;
-using AOT._AOT.Views.Abstract;
+using AOT.Views.Abstract;
 using GameClient.GameScene.Animators;
 using UnityEngine;
 

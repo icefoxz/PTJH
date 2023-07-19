@@ -1,5 +1,6 @@
 ﻿using System;
-using AOT._AOT.Utls;
+using AOT.Core.Dizi;
+using AOT.Utls;
 using GameClient.Modules.DiziM;
 
 namespace GameClient.Models

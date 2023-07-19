@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AOT._AOT.Utls;
+using AOT.Core.Dizi;
+using AOT.Utls;
 using GameClient.Modules.BattleM;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Battles;

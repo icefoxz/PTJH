@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.Controllers;
 using GameClient.Models.States;
 using GameClient.Modules.Adventure;
@@ -54,9 +54,9 @@ namespace GameClient.Models
         public enum States
         {
             /// <summary>
-            /// 自动状态，初始状态, 并且会自动转换发呆状态
+            /// 候着状态
             /// </summary>
-            Auto,
+            None,
             /// <summary>
             /// 失踪状态
             /// </summary>
@@ -109,7 +109,7 @@ namespace GameClient.Models
                 }
                 if (DiziState is LostState) return States.Lost;
                 if (DiziState is BattleState) return States.Battle;
-                return States.Auto;
+                return States.None;
             }
         }
         /// <summary>
@@ -190,7 +190,7 @@ namespace GameClient.Models
                 RewardMethod(r);
                 rewardAction?.Invoke();
             };
-            DiziState = new AutoState(this);
+            DiziState = new NoneState(this);
         }
         private void RewardMethod(IGameReward reward) => LastReward = reward;
 

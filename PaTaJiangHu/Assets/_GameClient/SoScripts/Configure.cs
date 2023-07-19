@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
-using AOT._AOT.Utls;
+using AOT.Utls;
 using GameClient.GameScene.Background;
 using GameClient.SoScripts.Adventures;
 using GameClient.SoScripts.BattleSimulation;
@@ -43,7 +43,7 @@ namespace GameClient.SoScripts
             [SerializeField] private GradeConfigSo 资质配置;
             [SerializeField] private RecruitConfigSo 招募配置;
             internal GradeConfigSo GradeCfg => GetSo(资质配置);
-            internal RecruitConfigSo RecruitCfg => GetSo(招募配置);
+            internal RecruitConfigSo Config => GetSo(招募配置);
         }
 
         [SerializeField] private BattleConfig 战斗配置;
@@ -105,11 +105,8 @@ namespace GameClient.SoScripts
         [SerializeField] private ChallengeCfgSo 挑战关卡配置;
         internal ChallengeCfgSo ChallengeCfg => 挑战关卡配置;
 
-        //[SerializeField] private FactionConfig 门派配置;
-        //public FactionConfig FactionCfg => 门派配置;
-        //[Serializable] internal class FactionConfig
-        //{
-        //}
+        [SerializeField] private FactionConfigSo 门派配置;
+        internal FactionConfigSo FactionCfg => 门派配置;
 
         //数据配置
         [SerializeField] private DataConfigSo 游戏数据;

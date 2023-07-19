@@ -1,7 +1,7 @@
 ﻿using System;
-using AOT._AOT.Core;
-using AOT._AOT.Core.Systems.Messaging;
-using AOT._AOT.Views.Abstract;
+using AOT.Core;
+using AOT.Core.Systems.Messaging;
+using AOT.Views.Abstract;
 using GameClient.System;
 using HotUpdate._HotUpdate.Demo_v1;
 using UnityEngine.UI;
@@ -25,10 +25,21 @@ namespace HotUpdate._HotUpdate.Common
             Instance._commonWinInfo.Set(title, content);
             Instance.Show();
         }
+
+        public override void Hide()
+        {
+            View.Hide();
+            HidePanel();
+            // 信息窗口不需要关闭其它窗口(实现窗口叠加), 所以不调用base.Hide()
+        }
+
         protected override void Build(IView view) => _commonWinInfo = new Common_win_info(view, Hide);
         protected override void RegEvents()
         {
             Game.MessagingManager.RegEvent(EventString.Faction_Init, _ => Show("测试", "测试门派初始化!"));
+            Game.MessagingManager.RegEvent(EventString.Info_Trade_Failed_Silver, _ => Show("交易失败", "银两不足!"));
+            Game.MessagingManager.RegEvent(EventString.Info_Trade_Failed_YuanBao, _ => Show("交易失败", "元宝不足!"));
+            Game.MessagingManager.RegEvent(EventString.Info_DiziAdd_LimitReached, _ => Show("招募失败", "当前弟子已达上限!"));
         }
         private class Common_win_info : UiBase 
         {

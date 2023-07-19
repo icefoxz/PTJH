@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using AOT._AOT.Utls;
-using AOT._AOT.Views.Abstract;
+using AOT.Utls;
+using AOT.Views.Abstract;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AOT._AOT.Views
+namespace AOT.Views
 {
     public interface IMainUi : ISingletonDependency
     {
@@ -28,6 +28,7 @@ namespace AOT._AOT.Views
         void Hide();
         void Show();
         void SetToast(IView view);
+        void DisplayWindowPanel(bool display);
     }
 
     /// <summary>
@@ -83,6 +84,7 @@ namespace AOT._AOT.Views
         public void SetGame(IView view) => SetUi(GameUi, view);
         public void SetPanel(IView view) => SetUi(Panel.rectTransform, view);
         public void SetToast(IView view) => SetUi(Toast, view, true);
+        public void DisplayWindowPanel(bool display) => WindowPanel.gameObject.SetActive(display);
 
         public void ShowTop() => Display(true, TopUi);
         public void ShowMid() => Display(true, MidUi);

@@ -1,5 +1,5 @@
 using System;
-using GameClient.Modules.DiziM;
+using AOT.Core.Dizi;
 using UnityEngine;
 
 namespace GameClient.SoScripts
@@ -23,6 +23,7 @@ namespace GameClient.SoScripts
         private Color A => 红; //"红",
         private Color S => 金; //"金",
 
+        public Color GetColor(int grade) => GetColor((ColorGrade)grade);
         public Color GetColor(ColorGrade grade)
         {
             return grade switch

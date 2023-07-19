@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AOT._AOT.Utls
+namespace AOT.Utls
 {
     public class RandomValueGenerator
     {

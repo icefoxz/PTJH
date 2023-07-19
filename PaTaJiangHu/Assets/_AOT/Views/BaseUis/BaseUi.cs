@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AOT._AOT.Views.BaseUis
+namespace AOT.Views.BaseUis
 {
     /// <summary>
     /// UiBase 接口，主要是为了分离<see cref="MonoBehaviour"/>的各种方法封装起来，避免外部调用到
