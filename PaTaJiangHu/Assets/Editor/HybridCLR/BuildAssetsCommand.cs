@@ -107,8 +107,11 @@ namespace HybridCLR.Editor
                     Debug.LogError($"ab中添加AOT补充元数据dll:{srcDllPath} 时发生错误,文件不存在。裁剪后的AOT dll在BuildPlayer时才能生成，因此需要你先构建一次游戏App后再打包。");
                     continue;
                 }
-                string dllBytesPath = $"{aotAssembliesDstDir}/{dll}.dll.bytes";
+
+                var dllByte = $"{dll}.dll.bytes";
+                string dllBytesPath = $"{aotAssembliesDstDir}/{dllByte}";
                 File.Copy(srcDllPath, dllBytesPath, true);
+                CopyToAddressableDllPath(srcDllPath, dllByte);
                 Debug.Log($"[CopyAOTAssembliesToStreamingAssets] copy AOT dll {srcDllPath} -> {dllBytesPath}");
             }
         }
@@ -122,13 +125,23 @@ namespace HybridCLR.Editor
             foreach (var dll in SettingsUtil.HotUpdateAssemblyFilesExcludePreserved)
             {
                 string dllPath = $"{hotfixDllSrcDir}/{dll}";
-                string dllBytesPath = $"{hotfixAssembliesDstDir}/{dll}.bytes";
+                var dllBytes = $"{dll}.bytes";
+                string dllBytesPath = $"{hotfixAssembliesDstDir}/{dllBytes}";
                 File.Copy(dllPath, dllBytesPath, true);
                 Debug.Log($"[CopyHotUpdateAssembliesToStreamingAssets] copy hotfix dll {dllPath} -> {dllBytesPath}");
-                var abAssetsPath = $"{AbAssetsPath}/{dll}.bytes";
+                var abAssetsPath = $"{AbAssetsPath}/{dllBytes}";
                 File.Copy(dllPath, abAssetsPath, true);
                 Debug.Log($"[CopyHotUpdateAssembliesToAbAssets] copy hotfix dll {dllPath} -> {dllBytesPath}");
+                CopyToAddressableDllPath(abAssetsPath, dllBytes);
             }
+        }
+
+        // 附加路径(Addressables)
+        private static void CopyToAddressableDllPath(string sourcePath, string dllBytes)
+        {
+            var abAssetsPath = $"{AbAssetsPath}/Dlls/{dllBytes}";
+            File.Copy(sourcePath, abAssetsPath, true);
+            Debug.Log($"[CopyToAddressableDllPath] copy dll {sourcePath} -> {abAssetsPath}");
         }
 
         public static void CopyAssetBundlesToStreamingAssets(BuildTarget target)
@@ -141,7 +154,7 @@ namespace HybridCLR.Editor
             {
                 string srcAb = ToRelativeAssetPath($"{outputDir}/{ab}");
                 string dstAb = ToRelativeAssetPath($"{streamingAssetPathDst}/{ab}");
-                Debug.Log($"[CopyAssetBundlesToStreamingAssets] copy assetbundle {srcAb} -> {dstAb}");
+                Debug.Log($"[CopyAssetBundlesToStreamingAssets] copy assetBundle {srcAb} -> {dstAb}");
                 AssetDatabase.CopyAsset(srcAb, dstAb);
                 //var srcAbPath = $"{outputDir}/{ab}";
                 //var dstAbPath = $"{streamingAssetPathDst}/{ab}";
