@@ -43,7 +43,7 @@ namespace GameClient.Modules.DiziM
     public interface IAdvPackage
     {
         int Grade { get; }
-        IStacking<IGameItem>[] AllItems { get; }
+        IGameItem[] AllItems { get; }
         IAdvResPackage Package { get; }
     }
 
@@ -62,7 +62,7 @@ namespace GameClient.Modules.DiziM
     public interface IGameReward
     {
         IAdvPackage[] Packages { get; }
-        IStacking<IGameItem>[] AllItems { get; }
+        IGameItem[] AllItems { get; }
     }
 
     public interface IRewardHandler

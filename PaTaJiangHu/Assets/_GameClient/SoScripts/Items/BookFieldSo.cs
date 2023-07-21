@@ -2,7 +2,6 @@ using System;
 using AOT.Core;
 using AOT.Core.Dizi;
 using GameClient.Modules.BattleM;
-using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Skills;
 using UnityEngine;
 
@@ -41,6 +40,34 @@ namespace GameClient.SoScripts.Items
         }
 
         public override ISkill GetSkill()=> SkillFieldSo;
+
+        public IBook Instance()=> new Book(Id, Name, About, Grade, Icon, GetLevelMap, GetSkill);
+
+        private record Book : IBook
+        {
+            public int Id { get; }
+            public string Name { get; }
+            public string About { get; }
+            public ColorGrade Grade { get; }
+            public Sprite Icon { get; }
+            public ItemType Type => ItemType.Book;
+            private Func<int,ISkillLevelConfig> GetLevelMapFunc { get; }
+            private Func<ISkill> GetSkillFunc { get; }
+
+            public Book(int id, string name, string about, ColorGrade grade, Sprite icon, Func<int, ISkillLevelConfig> getLevelMapFunc, Func<ISkill> getSkillFunc)
+            {
+                Id = id;
+                Name = name;
+                About = about;
+                Grade = grade;
+                Icon = icon;
+                GetLevelMapFunc = getLevelMapFunc;
+                GetSkillFunc = getSkillFunc;
+            }
+
+            public ISkillLevelConfig GetLevelMap(int nextLevel)=> GetLevelMapFunc(nextLevel);
+            public ISkill GetSkill() => GetSkillFunc();
+        }
     }
 
     public abstract class BookSoBase : AutoUnderscoreNamingObject, IBook

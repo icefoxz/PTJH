@@ -17,31 +17,16 @@ namespace GameClient.Models
     {
     }
 
+
     /// <summary>
     /// 门派模型
     /// </summary>
     public partial class Faction : ModelBase, IFactionCommand
     {
         protected override string LogPrefix { get; } = "门派";
-        private List<IBook> _books = new();
-        private List<IWeapon> _weapons= new();
-        private List<IArmor> _armors = new();
-        private List<IShoes> _shoes = new();
-        private List<IDecoration> _decorations = new();
-        private List<IAdvPackage> _packages = new();
-        private List<IGameItem> _advItems = new();
         private List<Dizi> _diziList = new();
-        private Dictionary<IFunctionItem,int> _funcItems = new();
-        private Dictionary<IMedicine,int> Medicines { get; } = new();
 
         public int Level { get; private set; }
-        public int Silver { get; private set; }
-        public int YuanBao { get; private set; }
-        public int Food { get; private set; }
-        public int Wine { get; private set; }
-        public int Pill { get; private set; }
-        public int Herb { get; private set; }
-
         public int ActionLing { get; private set; }
         public int ActionLingMax { get; }
         public int MaxDizi => DiziMap.Count;
@@ -49,35 +34,9 @@ namespace GameClient.Models
         /// key = dizi.Guid, value = dizi
         /// </summary>
         private Dictionary<string,Dizi> DiziMap { get; }
-        public IReadOnlyList<IWeapon> Weapons => _weapons;
-        public IReadOnlyList<IArmor> Armors => _armors;
-        public IReadOnlyList<IShoes> Shoes => _shoes;
-        public IReadOnlyList<IDecoration> Decorations => _decorations;
-
         public IReadOnlyList<Dizi> DiziList => _diziList;
-        public IReadOnlyList<IAdvPackage> Packages => _packages;
-        public IReadOnlyList<IBook> Books => _books;
-        public IReadOnlyDictionary<IFunctionItem, int> FuncItems => _funcItems;
-        public IReadOnlyList<IGameItem> AdvProps => _advItems;
 
         private FactionConfigSo Config => Game.Config.FactionCfg;
-
-        public IStacking<IGameItem>[] GetAllSupportedAdvItems() => Medicines
-            .Where(m => m.Key.Kind == MedicineKinds.StaminaDrug)
-            .Select(m => new Stacking<IGameItem>(m.Key, m.Value))
-            .Concat(AdvProps.Select(p => new Stacking<IGameItem>(p, 1))).ToArray();
-
-        public (IMedicine med, int amount)[] GetAllMedicines() => Medicines.Select(m => (m.Key, m.Value)).ToArray();
-        public IBook GetBook(int bookId) => Books.FirstOrDefault(b => b.Id == bookId);
-        public IStacking<IComprehendItem>[] GetAllComprehendItems(int supportedLevel)
-        {
-            var items = FuncItems
-                .Where(f => f.Key.FunctionType == FunctionItemType.Comprehend)
-                .Cast<KeyValuePair<IComprehendItem, int>>()
-                .Where(f => f.Key.IsLevelAvailable(supportedLevel))
-                .Select(f => new Stacking<IComprehendItem>(f.Key, f.Value)).ToArray();
-            return items;
-        }
 
         public Faction(int silver, int yuanBao, int actionLing,int actionLingMax, List<Dizi> diziMap,
             int food = 0, int wine = 0, int pill = 0, int herb = 0)
@@ -123,7 +82,6 @@ namespace GameClient.Models
             SendEvent(EventString.Faction_DiziListUpdate, string.Empty);
             return true;
         }
-
         internal void RemoveDizi(Dizi dizi)
         {
             Log($"移除弟子{dizi.Name}");
@@ -131,137 +89,26 @@ namespace GameClient.Models
             _diziList.Remove(dizi);
             SendEvent(EventString.Faction_DiziListUpdate, string.Empty);
         }
+        public Dizi GetDizi(string guid)
+        {
+            if (string.IsNullOrEmpty(guid)) return null;
+            if(DiziMap.TryGetValue(guid, out var dizi)) return dizi;
+            LogWarning($"找不到弟子 = {guid}");
+            return null;
+        }
+    }
 
-        public void AddSilver(int silver)
-        {
-            if (silver == 0) return;
-            var last = Silver;
-            Silver += silver;
-            Log($"银两【{last}】增加了{silver},总:【{Silver}】");
-            SendEvent(EventString.Faction_SilverUpdate, Silver);
-        }
-
-        public void AddYuanBao(int yuanBao)
-        {
-            if (yuanBao == 0) return;
-            var last = YuanBao;
-            YuanBao += yuanBao;
-            Log($"元宝【{last}】增加了{yuanBao},总:【{YuanBao}】");
-            SendEvent(EventString.Faction_YuanBaoUpdate, YuanBao);
-        }
-
-        internal void AddLing(int ling)
-        {
-            if (ling == 0) return;
-            var last = ActionLing;
-            ActionLing += ling;
-            ActionLing = Math.Clamp(ActionLing, 0, ActionLingMax);
-            Log($"行动令【{last}】增加了{ling},总:【{ActionLing}】");
-            SendEvent(EventString.Faction_Params_ActionLingUpdate, ActionLing, 100, 0, 0);
-        }
-
-        internal void AddWeapon(IWeapon weapon)
-        {
-            if(weapon == null) LogError("Weapon = null!");
-            _weapons.Add(weapon);
-            Log($"添加武器【{weapon.Name}】");
-        }
-        internal void RemoveWeapon(IWeapon weapon)
-        {
-            if(weapon == null) LogError("Weapon = null!");
-            _weapons.Remove(weapon);
-            Log($"移除武器【{weapon.Name}】");
-        }
-
-        internal void AddArmor(IArmor armor)
-        {
-            if(armor == null) LogError("armor = null!");
-            _armors.Add(armor);
-            Log($"添加防具【{armor.Name}】");
-        }
-
-        internal void RemoveArmor(IArmor armor)
-        {
-            if(armor == null) LogError("armor = null!");
-            _armors.Remove(armor);
-            Log($"移除防具【{armor.Name}】");
-        }
-
-        internal void AddShoes(IShoes shoes)
-        {
-            if(shoes == null) LogError("shoes = null!");
-            _shoes.Add(shoes);
-            Log($"添加鞋子【{shoes.Name}】");
-        }
-
-        internal void RemoveShoes(IShoes shoes)
-        {
-            if(shoes == null) LogError("shoes = null!");
-            _shoes.Remove(shoes);
-            Log($"移除鞋子【{shoes.Name}】");
-        }
-
-        internal void AddDecoration(IDecoration decoration)
-        {
-            if(decoration == null) LogError("decoration = null!");
-            _decorations.Add(decoration);
-            Log($"添加饰品【{decoration.Name}】");
-        }
-
-        internal void RemoveDecoration(IDecoration decoration)
-        {
-            if(decoration == null) LogError("decoration = null!");
-            _decorations.Remove(decoration);
-            Log($"移除饰品【{decoration.Name}】");
-        }
-
-        #region Dictionary Items
-        internal void AddMedicine(IMedicine med, int amount)
-        {
-            if(med == null) LogError("med = null!");
-            DictionaryAdd(Medicines, med, amount);
-            if(amount > 0) Log($"添加药品【{med.Name}】x{amount}, 总: {Medicines[med]}");
-        }
-
-        internal void RemoveMedicine(IMedicine med,int amount)
-        {
-            if (med == null) LogError("med = null!");
-            DictionaryRemove(Medicines, med, amount);
-            if(amount > 0) Log($"移除药品【{med.Name}】");
-        }
-
-        internal void AddFunctionItem(IFunctionItem item, int amount)
-        {
-            if (item == null) LogError("functionItem = null!");
-            DictionaryAdd(_funcItems, item, amount);
-            SendEvent(EventString.Faction_FunctionItemUpdate, string.Empty);
-            Log($"添加功能道具: {item.Id}.{item.Name}");
-        }
-
-        internal void RemoveFunctionItem(IFunctionItem item, int amount)
-        {
-            if (item == null) LogError("item = null!");
-            DictionaryRemove(_funcItems, item, amount);
-            SendEvent(EventString.Faction_FunctionItemUpdate, string.Empty);
-            Log($"移除功能道具: {item.Id}.{item.Name}");
-        }
-
-        private void DictionaryAdd<T>(Dictionary<T, int> dict, T key, int value) where T : IGameItem
-        {
-            if (value == 0) return;
-            dict.TryAdd(key, 0);
-            dict[key] += value;
-        }
-
-        private void DictionaryRemove<T>(Dictionary<T, int> dict, T key, int value) where T : IGameItem
-        {
-            if (value == 0) return;
-            if (!dict.ContainsKey(key))
-                LogError($"找不到{key.Name},Id = {key.Id}");
-            if (dict[key] < value) LogError($"{key.Name}:{dict[key]} < {value}! ");
-            dict[key] -= value;
-        }
-        #endregion
+    /// <summary>
+    /// 门派资源的方法集
+    /// </summary>
+    public partial class Faction
+    {
+        public int Silver { get; private set; }
+        public int YuanBao { get; private set; }
+        public int Food { get; private set; }
+        public int Wine { get; private set; }
+        public int Pill { get; private set; }
+        public int Herb { get; private set; }
 
         internal void AddConsumeResource(ConsumeResources resource, int value)
         {
@@ -294,64 +141,118 @@ namespace GameClient.Models
             }
             Log($"增加资源{resource}:{lastValue} => {value} : {lastValue + value}");
         }
-
-        public Dizi GetDizi(string guid)
+        public void AddSilver(int silver)
         {
-            if (string.IsNullOrEmpty(guid)) return null;
-            if(DiziMap.TryGetValue(guid, out var dizi)) return dizi;
-            LogWarning($"找不到弟子 = {guid}");
-            return null;
+            if (silver == 0) return;
+            var last = Silver;
+            Silver += silver;
+            Log($"银两【{last}】增加了{silver},总:【{Silver}】");
+            SendEvent(EventString.Faction_SilverUpdate, Silver);
         }
 
+        public void AddYuanBao(int yuanBao)
+        {
+            if (yuanBao == 0) return;
+            var last = YuanBao;
+            YuanBao += yuanBao;
+            Log($"元宝【{last}】增加了{yuanBao},总:【{YuanBao}】");
+            SendEvent(EventString.Faction_YuanBaoUpdate, YuanBao);
+        }
+
+        internal void AddLing(int ling)
+        {
+            if (ling == 0) return;
+            var last = ActionLing;
+            ActionLing += ling;
+            ActionLing = Math.Clamp(ActionLing, 0, ActionLingMax);
+            Log($"行动令【{last}】增加了{ling},总:【{ActionLing}】");
+            SendEvent(EventString.Faction_Params_ActionLingUpdate, ActionLing, 100, 0, 0);
+        }
+
+        public int GetResource(ConsumeResources resourceType) =>
+            resourceType switch
+            {
+                ConsumeResources.Food => Food,
+                ConsumeResources.Wine => Wine,
+                ConsumeResources.Herb => Herb,
+                ConsumeResources.Pill => Pill,
+                _ => throw new ArgumentOutOfRangeException(nameof(resourceType), resourceType, null)
+            };
+    }
+
+    /// <summary>
+    /// 门派获取物品的方法集
+    /// </summary>
+    public partial class Faction
+    {
+        private Inventory _inventory = new();
+        public IReadOnlyList<IWeapon> Weapons => _inventory.GetAllWeapons();
+        public IReadOnlyList<IArmor> Armors => _inventory.GetAllArmors();
+        public IReadOnlyList<IShoes> Shoes => _inventory.GetAllShoes();
+        public IReadOnlyList<IDecoration> Decorations => _inventory.GetAllDecorations();
+        public IReadOnlyList<IAdvPackage> Packages => _inventory.GetAllPackages();
+        public IReadOnlyList<IBook> Books => _inventory.GetAllBooks();
+        public IReadOnlyList<IFunctionItem> FuncItems => _inventory.GetAllFuncItems();
+        public IReadOnlyList<IMedicine> GetAllMedicines() => _inventory.GetAllMedicines();
+        public IReadOnlyList<IGameItem> GetAllSupportedAdvItems() => _inventory.GetAllSupportedAdvItems();
+        public IBook GetBook(int bookId) => Books.FirstOrDefault(b => b.Id == bookId);
+        public IComprehendItem[] GetAllComprehendItems(int supportedLevel)
+        {
+            var items = FuncItems
+                .Where(f => f.FunctionType == FunctionItemType.Comprehend)
+                .Cast<IComprehendItem>()
+                .Where(f => f.IsLevelAvailable(supportedLevel))
+                .ToArray();
+            return items;
+        }
+        public IBook[] GetBooksForSkill(SkillType type) => _inventory.GetBooksForSkill(type);
         /// <summary>
         /// 给门派加物件
         /// </summary>
         /// <param name="gi"></param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        internal void AddGameItem(IStacking<IGameItem> gi)
+        internal void AddGameItem(IGameItem gi)
         {
             var data = Game.Controllers.Get<DataController>();
-            switch (gi.Item.Type)
+            switch (gi.Type)
             {
                 case ItemType.Medicine:
-                    AddMedicine(data.GetMedicine(gi.Item.Id),gi.Amount);
+                    AddMedicine(data.GetMedicine(gi.Id));
                     break;
                 case ItemType.Equipment:
-                    var equipment = gi.Item as IEquipment;
-                    if (equipment == null) XDebug.LogError($"物件{gi.Item.Id}.{gi.Item.Name} 未继承<IEquipment>");
-                    for (var i = 0; i < gi.Amount; i++)
+                    var equipment = gi as IEquipment;
+                    if (equipment == null) XDebug.LogError($"物件{gi.Id}.{gi.Name} 未继承<IEquipment>");
+                    switch (equipment.EquipKind)
                     {
-                        switch (equipment.EquipKind)
-                        {
-                            case EquipKinds.Weapon:
-                                var weapon = data.GetWeapon(gi.Item.Id);
-                                AddWeapon(weapon);
-                                break;
-                            case EquipKinds.Armor:
-                                var armor = data.GetArmor(gi.Item.Id);
-                                AddArmor(armor);
-                                break;
-                            case EquipKinds.Shoes:
-                                var shoes = data.GetShoes(gi.Item.Id);
-                                AddShoes(shoes);
-                                break;
-                            case EquipKinds.Decoration:
-                                var decoration = data.GetDecoration(gi.Item.Id);
-                                AddDecoration(decoration);
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
+                        case EquipKinds.Weapon:
+                            var weapon = data.GetWeapon(gi.Id);
+                            AddWeapon(weapon);
+                            break;
+                        case EquipKinds.Armor:
+                            var armor = data.GetArmor(gi.Id);
+                            AddArmor(armor);
+                            break;
+                        case EquipKinds.Shoes:
+                            var shoes = data.GetShoes(gi.Id);
+                            AddShoes(shoes);
+                            break;
+                        case EquipKinds.Decoration:
+                            var decoration = data.GetDecoration(gi.Id);
+                            AddDecoration(decoration);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
+
                     break;
                 case ItemType.Book:
-                    AddBook(data.GetBook(gi.Item.Id));
+                    AddBook(data.GetBook(gi.Id));
                     break;
                 case ItemType.AdvProps:
-                    AddAdvItem(data.GetAdvProp(gi.Item.Id));
+                    AddAdvItem(data.GetAdvProp(gi.Id));
                     break;
                 case ItemType.FunctionItem:
-                    AddFunctionItem(data.GetFunctionItem(gi.Item.Id), gi.Amount);
+                    AddFunctionItem(data.GetFunctionItem(gi.Id));
                     break;
                 case ItemType.StoryProps:
                 default:
@@ -402,7 +303,7 @@ namespace GameClient.Models
                     RemoveAdvItem(data.GetAdvProp(gi.Id));
                     break;
                 case ItemType.FunctionItem:
-                    RemoveFunctionItem(data.GetFunctionItem(gi.Id), amount);
+                    RemoveFunctionItem(data.GetFunctionItem(gi.Id));
                     break;
                 case ItemType.StoryProps:
                 default:
@@ -421,7 +322,7 @@ namespace GameClient.Models
         internal void AddPackages(ICollection<IAdvPackage> packages)
         {
             if (packages == null) LogError("package = null!");
-            _packages.AddRange(packages);
+            _inventory.AddRange(packages);
             SendEvent(EventString.Faction_AdvPackageUpdate, string.Empty);
             Log($"添加包裹x{packages.Count}");
         }
@@ -429,7 +330,7 @@ namespace GameClient.Models
         internal void AddBook(IBook book)
         {
             if (book == null) LogError("book = null!");
-            _books.Add(book);
+            _inventory.AddItem(book);
             Log($"添加书籍: {book.Id}.{book.Name}");
             SendEvent(EventString.Faction_BookUpdate, string.Empty);
         }
@@ -445,35 +346,96 @@ namespace GameClient.Models
         internal void RemovePackages(IAdvPackage package)
         {
             if (package == null) LogError("package = null!");
-            _packages.Remove(package);
+            _inventory.RemoveItem(package);
             SendEvent(EventString.Faction_AdvPackageUpdate, string.Empty);
             Log($"移除包裹: 品级【{package.Grade}】");
         }
         internal void RemoveBook(IBook book)
         {
             if (book == null) LogError("book = null!");
-            _books.Remove(book);
+            _inventory.RemoveItem(book);
             SendEvent(EventString.Faction_BookUpdate, string.Empty);
             Log($"移除书籍: {book.Id}.{book.Name}");
         }
 
-        public int GetResource(ConsumeResources resourceType) =>
-            resourceType switch
-            {
-                ConsumeResources.Food => Food,
-                ConsumeResources.Wine => Wine,
-                ConsumeResources.Herb => Herb,
-                ConsumeResources.Pill => Pill,
-                _ => throw new ArgumentOutOfRangeException(nameof(resourceType), resourceType, null)
-            };
-    }
+        internal void AddWeapon(IWeapon weapon)
+        {
+            if(weapon == null) LogError("Weapon = null!");
+            _inventory.AddItem(weapon);
+            Log($"添加武器【{weapon.Name}】");
+        }
+        internal void RemoveWeapon(IWeapon weapon)
+        {
+            if(weapon == null) LogError("Weapon = null!");
+            _inventory.RemoveItem(weapon);
+            Log($"移除武器【{weapon.Name}】");
+        }
+        internal void AddArmor(IArmor armor)
+        {
+            if(armor == null) LogError("armor = null!");
+            _inventory.AddItem(armor);
+            Log($"添加防具【{armor.Name}】");
+        }
+        internal void RemoveArmor(IArmor armor)
+        {
+            if(armor == null) LogError("armor = null!");
+            _inventory.RemoveItem(armor);
+            Log($"移除防具【{armor.Name}】");
+        }
+        internal void AddShoes(IShoes shoes)
+        {
+            if(shoes == null) LogError("shoes = null!");
+            _inventory.AddItem(shoes);
+            Log($"添加鞋子【{shoes.Name}】");
+        }
+        internal void RemoveShoes(IShoes shoes)
+        {
+            if(shoes == null) LogError("shoes = null!");
+            _inventory.RemoveItem(shoes);
+            Log($"移除鞋子【{shoes.Name}】");
+        }
+        internal void AddDecoration(IDecoration decoration)
+        {
+            if(decoration == null) LogError("decoration = null!");
+            _inventory.AddItem(decoration);
+            Log($"添加饰品【{decoration.Name}】");
+        }
+        internal void RemoveDecoration(IDecoration decoration)
+        {
+            if(decoration == null) LogError("decoration = null!");
+            _inventory.RemoveItem(decoration);
+            Log($"移除饰品【{decoration.Name}】");
+        }
 
-    /// <summary>
-    /// 门派获取物品的方法集
-    /// </summary>
-    public partial class Faction
-    {
-        public IBook[] GetBooksForSkill(SkillType type) => _books.Where(x => x.GetSkill().SkillType == type).ToArray();
+        internal void AddMedicine(IMedicine med)
+        {
+            if(med == null) LogError("med = null!");
+            _inventory.AddItem(med);
+            Log($"添加药品【{med.Name}】");
+        }
+
+        internal void RemoveMedicine(IMedicine med,int amount)
+        {
+            if (med == null) LogError("med = null!");
+            _inventory.AddItem(med);
+            if(amount > 0) Log($"移除药品【{med.Name}】");
+        }
+
+        internal void AddFunctionItem(IFunctionItem item)
+        {
+            if (item == null) LogError("functionItem = null!");
+            _inventory.AddItem(item);
+            SendEvent(EventString.Faction_FunctionItemUpdate, string.Empty);
+            Log($"添加功能道具: {item.Id}.{item.Name}");
+        }
+
+        internal void RemoveFunctionItem(IFunctionItem item)
+        {
+            if (item == null) LogError("item = null!");
+            _inventory.AddItem(item);
+            SendEvent(EventString.Faction_FunctionItemUpdate, string.Empty);
+            Log($"移除功能道具: {item.Id}.{item.Name}");
+        }
     }
 
     /// <summary>
@@ -586,5 +548,95 @@ namespace GameClient.Models
             Challenge.SetPassCount(count);
             SendEvent(EventString.Faction_Challenge_Update);
         }
+    }
+
+    public class Inventory
+    {
+        private ItemList<IWeapon> Weapons { get; } = new ItemList<IWeapon>();
+        private ItemList<IArmor> Armors { get; } = new ItemList<IArmor>();
+        private ItemList<IShoes> Shoes { get; } = new ItemList<IShoes>();
+        private ItemList<IDecoration> Decorations { get; } = new ItemList<IDecoration>();
+        private ItemList<IAdvPackage> Packages { get; } = new ItemList<IAdvPackage>();
+        private ItemList<IBook> Books { get; } = new ItemList<IBook>();
+        private ItemList<IGameItem> AdvItems { get; } = new ItemList<IGameItem>();
+        private ItemList<IMedicine> Medicines { get; } = new ItemList<IMedicine>();
+        private ItemList<IFunctionItem> FuncItems { get; } = new ItemList<IFunctionItem>();
+
+        public void AddItem<T>(T item) where T : IGameItem
+        {
+            switch (item)
+            {
+                case IWeapon weapon:
+                    Weapons.Add(weapon);
+                    break;
+                case IArmor armor:
+                    Armors.Add(armor);
+                    break;
+                case IShoes shoes:
+                    Shoes.Add(shoes);
+                    break;
+                case IDecoration decoration:
+                    Decorations.Add(decoration);
+                    break;
+                case IBook book:
+                    Books.Add(book);
+                    break;
+                case IFunctionItem functionItem:
+                    FuncItems.Add(functionItem);
+                    break;
+                case IMedicine medicine:
+                    Medicines.Add(medicine);
+                    break;
+                case IGameItem advItem:
+                    AdvItems.Add(advItem);
+                    break;
+                default:
+                    throw new Exception($"Unsupported item type: {item.GetType().Name}");
+            }
+        }
+        public void AddItem(IAdvPackage item) => Packages.Add(item);
+        public void AddRange(IEnumerable<IAdvPackage> packages) => Packages.AddRange(packages);
+        public bool RemoveItem<T>(T item) where T : IGameItem
+        {
+            switch (item)
+            {
+                case IWeapon weapon:
+                    return Weapons.Remove(weapon);
+                case IArmor armor:
+                    return Armors.Remove(armor);
+                case IShoes shoes:
+                    return Shoes.Remove(shoes);
+                case IDecoration decoration:
+                    return Decorations.Remove(decoration);
+                case IBook book:
+                    return Books.Remove(book);
+                case IFunctionItem functionItem:
+                    return FuncItems.Remove(functionItem);
+                case IMedicine medicine:
+                    return Medicines.Remove(medicine);
+                case IGameItem advItem:
+                    return AdvItems.Remove(advItem);
+                default:
+                    throw new Exception($"Unsupported item type: {item.GetType().Name}");
+            }
+        }
+
+        public bool RemoveItem(IAdvPackage item) => Packages.Remove(item);
+        public IReadOnlyList<IWeapon> GetAllWeapons() => Weapons.GetAllItems().ToList();
+        public IReadOnlyList<IArmor> GetAllArmors() => Armors.GetAllItems().ToList();
+        public IReadOnlyList<IShoes> GetAllShoes() => Shoes.GetAllItems().ToList();
+        public IReadOnlyList<IDecoration> GetAllDecorations() => Decorations.GetAllItems().ToList();
+        public IReadOnlyList<IAdvPackage> GetAllPackages() => Packages.GetAllItems().ToList();
+        public IReadOnlyList<IBook> GetAllBooks() => Books.GetAllItems().ToList();
+        public IReadOnlyList<IFunctionItem> GetAllFuncItems() => FuncItems.GetAllItems().ToList();
+        public IReadOnlyList<IMedicine> GetAllMedicines() => Medicines.GetAllItems().ToList();
+        public IReadOnlyList<IGameItem> GetAllAdvItems() => AdvItems.GetAllItems().ToList();
+        public IReadOnlyList<IGameItem> GetAllSupportedAdvItems()
+        {
+            return Medicines.Where(m => m.Kind == MedicineKinds.StaminaDrug)
+                //.Concat(AdvProps.Select(p => new Stacking<IGameItem>(p, 1)))
+                .ToArray();
+        }
+        public IBook[] GetBooksForSkill(SkillType type)=> Books.Where(x => x.GetSkill().SkillType == type).ToArray();
     }
 }

@@ -34,16 +34,16 @@ namespace GameClient.SoScripts.Fields
         [SerializeField] private FunctionPropItem[] 功能道具;
 
         public IAdvPackage[] Packages => 奖励包;
-        public IStacking<IGameItem>[] Weapons => 武器;
-        public IStacking<IGameItem>[] Armor => 防具;
-        public IStacking<IGameItem>[] Medicines => 丹药;
-        public IStacking<IGameItem>[] Book => 秘籍;
-        public IStacking<IGameItem>[] StoryProps => 故事道具;
-        public IStacking<IGameItem>[] FunctionProps => 功能道具;
-        public IStacking<IGameItem>[] Shoes => 鞋子;
-        public IStacking<IGameItem>[] Decoration => 挂件;
+        public IGameItem[] Weapons => 武器;
+        public IGameItem[] Armor => 防具;
+        public IGameItem[] Medicines => 丹药;
+        public IGameItem[] Book => 秘籍;
+        public IGameItem[] StoryProps => 故事道具;
+        public IGameItem[] FunctionProps => 功能道具;
+        public IGameItem[] Shoes => 鞋子;
+        public IGameItem[] Decoration => 挂件;
 
-        public IStacking<IGameItem>[] AllItems => Weapons
+        public IGameItem[] AllItems => Weapons
             .Concat(Armor)
             .Concat(Shoes)
             .Concat(Decoration)
@@ -75,10 +75,10 @@ namespace GameClient.SoScripts.Fields
 
         private bool ChangeElementName()
         {
-            var weaponText = GetText("武器", Weapons?.Sum(w => w.Amount) ?? 0);
-            var armorText = GetText("防具", Armor?.Sum(w => w.Amount) ?? 0);
-            var medicineText = GetText("丹药", Medicines?.Sum(w => w.Amount) ?? 0);
-            var bookText = GetText("秘籍", Book?.Sum(w => w.Amount) ?? 0);
+            var weaponText = GetText("武器", Weapons?.Length ?? 0);
+            var armorText = GetText("防具", Armor?.Length ?? 0);
+            var medicineText = GetText("丹药", Medicines?.Length ?? 0);
+            var bookText = GetText("秘籍", Book?.Length ?? 0);
             var list = new List<string> { weaponText, armorText, medicineText, bookText };
             _name = string.Join(',', list.Where(s => !string.IsNullOrWhiteSpace(s)));
             return true;
@@ -96,14 +96,14 @@ namespace GameClient.SoScripts.Fields
         [SerializeField] private MedicineItem[] 丹药;
         [SerializeField] private BookItem[] 秘籍;
         private ConsumeResourceField[] Resources => 资源;
-        public IStacking<IGameItem>[] Weapons => 武器;
-        public IStacking<IGameItem>[] Armor => 防具;
-        public IStacking<IGameItem>[] Medicines => 丹药;
-        public IStacking<IGameItem>[] Book => 秘籍;
+        public IGameItem[] Weapons => 武器;
+        public IGameItem[] Armor => 防具;
+        public IGameItem[] Medicines => 丹药;
+        public IGameItem[] Book => 秘籍;
 
         public int Grade => 品级;
 
-        public IStacking<IGameItem>[] AllItems => Weapons
+        public IGameItem[] AllItems => Weapons
             .Concat(Armor)
             .Concat(Medicines)
             .Concat(Book)
@@ -280,18 +280,15 @@ namespace GameClient.SoScripts.Fields
     }
 
     [Serializable]
-    internal abstract class GameItemField : IStacking<IGameItem>, IGameItem
+    internal abstract class GameItemField : IGameItem
     {
         [HideInInspector][SerializeField] private string _name;
 
-        [SerializeField] private int 数量 = 1;
         public int Id => Gi?.Id ?? 0;
         public string Name => Gi.Name;
         public string About => Gi.About;
 
         public IGameItem Item => this;
-        public int Amount => 数量;
-
         public abstract ItemType Type { get; }
         public abstract Sprite Icon { get; }
         protected abstract ScriptableObject So { get; }
@@ -316,7 +313,7 @@ namespace GameClient.SoScripts.Fields
                     id = Gi.Id;
                 }
             }
-            _name = $"{id}.{title}:{Amount}";
+            _name = $"{id}.{title}";
         }
     }
 }

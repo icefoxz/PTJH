@@ -169,7 +169,7 @@ namespace GameClient.Controllers
 
         public void UseMedicine(string guid, int index)
         {
-            var (med,_) = Faction.GetAllMedicines()[index];
+            var med = Faction.GetAllMedicines()[index];
             Faction.RemoveMedicine(med, 1);
             var dizi = Faction.GetDizi(guid);
             foreach (var treatment in med.Treatments)

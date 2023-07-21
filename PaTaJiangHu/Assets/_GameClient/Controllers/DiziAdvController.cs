@@ -64,12 +64,12 @@ namespace GameClient.Controllers
         public void SetDiziAdvItem(string guid,int itemIndex,int slot)
         {
             var dizi = Faction.GetDizi(guid);
-            var stackings = Faction.GetAllSupportedAdvItems();
-            var stack = stackings[itemIndex];
-            Faction.RemoveAdvItem(stack.Item);
+            var items = Faction.GetAllSupportedAdvItems();
+            var item = items[itemIndex];
+            Faction.RemoveAdvItem(item);
             var replaceItem = dizi.AdvItems[slot];
             if (replaceItem != null) Faction.AddAdvItem(replaceItem.Item);
-            dizi.SetAdvItem(slot, stack.Item);
+            dizi.SetAdvItem(slot, item);
         }
 
         public void RemoveDiziAdvItem(string guid, int itemIndex, int slot)

@@ -28,7 +28,7 @@ namespace GameClient.Models
     //弟子模型,处理历练事件
     public partial class Dizi
     {
-        public IEnumerable<IStacking<IGameItem>> Items => State.Adventure?.GetItems() ?? Array.Empty<IStacking<IGameItem>>();
+        public IEnumerable<IGameItem> Items => State.Adventure?.GetItems() ?? Array.Empty<IGameItem>();
         //public AutoAdventure Adventure => State.Adventure;
         internal void AdventureStart(IAutoAdvMap map, long startTime, int messageSecs, bool isProduction)
         {

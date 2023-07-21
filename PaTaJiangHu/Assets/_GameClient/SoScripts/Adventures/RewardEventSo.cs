@@ -39,7 +39,7 @@ namespace GameClient.SoScripts.Adventures
             if (Exp > 0) messages.Insert(0, $"{diziName}获得经验【{Exp}】");
             return messages;
         }
-        private string GenerateLogFromItem(GameItemField item, string diziName) => $"{diziName}获得【{item.Name}】x{item.Amount}。";
+        private string GenerateLogFromItem(GameItemField item, string diziName) => $"{diziName}获得【{item.Name}】。";
 
         public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => new[] { Next };

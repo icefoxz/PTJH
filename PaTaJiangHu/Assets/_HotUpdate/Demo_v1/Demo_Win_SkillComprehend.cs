@@ -142,7 +142,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 SetComprehensible(bookCost >= upgrade.BookCost);
             }
 
-            public void SetAdditionItems(IStacking<IComprehendItem>[] arg) => view_additionItem.SetItems(arg);
+            public void SetAdditionItems(IComprehendItem[] arg) => view_additionItem.SetItems(arg);
 
             private void SetComprehensible(bool isComprehensible)
             {
@@ -177,23 +177,19 @@ namespace HotUpdate._HotUpdate.Demo_v1
                     ItemMap = new Dictionary<Prefab_item, bool>();
                 }
 
-                public void SetItems(IStacking<IComprehendItem>[] arg)
+                public void SetItems(IComprehendItem[] arg)
                 {
                     ClearItems();
                     foreach (var a in arg)
                     {
-                        var item = a.Item;
-                        var amount = a.Amount;
-                        for (var i = 0; i < amount; i++)
+                        var item = a;
+                        var ui = ItemView.Instance(v => new Prefab_item(v, item.Id));
+                        ItemMap.Add(ui, false);
+                        ui.Set(item.Name, item.Icon, () =>
                         {
-                            var ui = ItemView.Instance(v => new Prefab_item(v, item.Id));
-                            ItemMap.Add(ui, false);
-                            ui.Set(item.Name, item.Icon, () =>
-                            {
-                                ItemMap[ui] = !ItemMap[ui];
-                                ui.SetSelected(ItemMap[ui]);
-                            });
-                        }
+                            ItemMap[ui] = !ItemMap[ui];
+                            ui.SetSelected(ItemMap[ui]);
+                        });
                     }
                 }
 

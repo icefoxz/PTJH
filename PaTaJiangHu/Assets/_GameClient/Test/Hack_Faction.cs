@@ -44,8 +44,8 @@ namespace GameClient.Test
             AddItem(Armors, i => faction.AddArmor(i.Instance()));
             AddItem(Shoes, i => faction.AddShoes(i.Instance()));
             AddItem(Decorations, i => faction.AddDecoration(i.Instance()));
-            AddItem(Books, i => faction.AddBook(i));
-            Medicines.ForEach(i => faction.AddMedicine(i.Item, i.Amount));
+            AddItem(Books, i => faction.AddBook(i.Instance()));
+            AddItem(Medicines, i => faction.AddMedicine(i.Instance()));
         }
 
         private void AddItem<T>(ItemToAdd<T>[] items, Action<T> addAction) where T : ScriptableObject

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using AOT.Core;
 using AOT.Core.Systems.Messaging;
 using AOT.Views.Abstract;
@@ -52,8 +53,8 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 ItemPrefab.ClearList(ui => ui.Destroy());
                 foreach( var rewards in Game.World.RewardBoard.Rewards)
                 {
-                    foreach (var item in rewards.AllItems)
-                        InstancePrefab().Set(item.Item.Name, item.Item.About, item.Amount);
+                    foreach (var group in rewards.AllItems.GroupBy(i => (i.Type, i.Id, i.Name, i.About), i => i))
+                        InstancePrefab().Set(group.Key.Name, group.Key.About, group.Count());
                     foreach (var package in rewards.Packages)
                         InstancePrefab().Set($"{package.Grade}阶包裹", package.Grade.ToString() ,1);
                 }

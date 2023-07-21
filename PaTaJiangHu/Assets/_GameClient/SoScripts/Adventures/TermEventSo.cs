@@ -68,7 +68,7 @@ namespace GameClient.SoScripts.Adventures
         /// 品阶
         /// </summary>
         int Grade { get; }
-        IEnumerable<IStacking<IGameItem>> Items { get; }
+        IEnumerable<IGameItem> Items { get; }
     }
 
     [CreateAssetMenu(fileName = "id_条件事件名", menuName = "状态玩法/事件/条件事件")]

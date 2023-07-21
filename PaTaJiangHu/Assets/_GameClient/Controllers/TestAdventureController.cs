@@ -181,7 +181,9 @@ namespace GameClient.Controllers
             internal RewardEvent(AdvStorySo storySo, RewardEventSo so) : base(storySo, so)
             {
                 var r = so.Reward;
-                Rewards = r.AllItems.Select(i => $"{i.Item.Name} x{i.Amount}").ToArray();
+                Rewards = r.AllItems.GroupBy(i => (i.Type, i.Id, i.Name))
+                    .Select(i => $"{i.Key.Name} x{i.Count()}")
+                    .ToArray();
             }
 
             public RewardEvent()
@@ -231,7 +233,7 @@ namespace GameClient.Controllers
             public int Hp { get; }
             public int Mp { get; }
             public int Grade { get; }
-            public IEnumerable<IStacking<IGameItem>> Items { get; }
+            public IEnumerable<IGameItem> Items { get; }
         }
 
         [Serializable] internal class AdvConfig

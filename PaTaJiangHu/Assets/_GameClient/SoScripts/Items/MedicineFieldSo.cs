@@ -60,6 +60,7 @@ namespace GameClient.SoScripts.Items
         public Sprite Icon => 图标;
         public string About => 说明;
         public ItemType Type => ItemType.Medicine;
+        public IMedicine Instance()=> new Medicine(Id, Name, Kind, Grade, Treatments, About, Icon);
 
         [Serializable]
         private class TreatmentMap : ITreatment
@@ -105,7 +106,7 @@ namespace GameClient.SoScripts.Items
             }
         }
 
-        private class Medicine : IMedicine
+        private record Medicine : IMedicine
         {
             public int Id { get; }
             public Sprite Icon { get; }

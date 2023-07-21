@@ -80,7 +80,7 @@ namespace GameClient.Models.States
         private Dizi Dizi { get; }
         public IAutoAdvMap Map { get; }
         private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
-        public IEnumerable<IStacking<IGameItem>> GetItems() => Rewards.SelectMany(i => i.AllItems);
+        public IEnumerable<IGameItem> GetItems() => Rewards.SelectMany(i => i.AllItems);
 
         public IReadOnlyList<IGameReward> Rewards => _rewards;
         private readonly List<IGameReward> _rewards = new List<IGameReward>();

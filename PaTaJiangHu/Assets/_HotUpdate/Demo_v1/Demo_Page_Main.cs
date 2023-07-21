@@ -832,13 +832,8 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 public void SetReward(IGameReward reward)
                 {
                     TextHandlerView.Display(false);
-                    var list = new List<(string, int)>();
-                    for (var i = 0; i < reward.AllItems.Length; i++)
-                    {
-                        var item = reward.AllItems[i];
-                        list.Add((item.Item.Name, item.Amount));
-                    }
-
+                    var list = reward.AllItems.GroupBy(o => (o.Type, o.Id, o.Name), o => o)
+                        .Select(group => (group.Key.Name, group.Count())).ToList();
                     list.Add(("包裹", reward.Packages.Length));
                     RewardView.SetViewReward(0, list.ToArray());
                     RewardView.Display(true);
