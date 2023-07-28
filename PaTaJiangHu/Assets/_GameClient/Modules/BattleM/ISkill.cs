@@ -18,7 +18,7 @@ namespace GameClient.Modules.BattleM
         ISkillLevelConfig GetLevelMap(int nextLevel);
         ISkill GetSkill();
     }
-// 技能等级映射
+    // 技能等级映射
     public interface ISkillMap<out T> where T : ISkillInfo
     {
         int Level { get; }

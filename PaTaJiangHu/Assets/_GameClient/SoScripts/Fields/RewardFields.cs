@@ -23,7 +23,7 @@ namespace GameClient.SoScripts.Fields
     [Serializable]
     internal class RewardField : IGameReward
     {
-        [SerializeField] private AdvPackage[] 奖励包;
+        [SerializeField] private ItemPackage[] 奖励包;
         [SerializeField] private WeaponItem[] 武器;
         [SerializeField] private ArmorItem[] 防具;
         [SerializeField] private ShoesItem[] 鞋子;
@@ -31,9 +31,9 @@ namespace GameClient.SoScripts.Fields
         [SerializeField] private MedicineItem[] 丹药;
         [SerializeField] private BookItem[] 秘籍;
         [SerializeField] private StoryPropItem[] 故事道具;
-        [SerializeField] private FunctionPropItem[] 功能道具;
+        [SerializeField] private FunctionAdvItem[] 功能道具;
 
-        public IAdvPackage[] Packages => 奖励包;
+        public IItemPackage[] Packages => 奖励包;
         public IGameItem[] Weapons => 武器;
         public IGameItem[] Armor => 防具;
         public IGameItem[] Medicines => 丹药;
@@ -61,7 +61,7 @@ namespace GameClient.SoScripts.Fields
     }
 
     [Serializable]
-    internal class AdvPackage : IAdvPackage, IAdvResPackage
+    internal class ItemPackage : IItemPackage, IResPackage
     {
         private enum PackageResources
         {
@@ -109,7 +109,7 @@ namespace GameClient.SoScripts.Fields
             .Concat(Book)
             .ToArray();
 
-        public IAdvResPackage Package => this;
+        public IResPackage Package => this;
         public int Food => Resources.SingleOrDefault(r => r.Resource == PackageResources.Food)?.Value ?? 0;
         public int Wine => Resources.SingleOrDefault(r => r.Resource == PackageResources.Wine)?.Value ?? 0;
         public int Herb => Resources.SingleOrDefault(r => r.Resource == PackageResources.Herb)?.Value ?? 0;
@@ -216,8 +216,7 @@ namespace GameClient.SoScripts.Fields
         public ICombatSet GetCombatSet() => A.GetCombatSet();
     }
 
-    [Serializable]
-    internal class DecorationItem : GameItemField, IShoes
+    [Serializable] internal class DecorationItem : GameItemField, IShoes
     {
         [ConditionalField(true, nameof(TryUseSo))]
         [SerializeField]
@@ -236,20 +235,15 @@ namespace GameClient.SoScripts.Fields
     }
 
     [Serializable]
-    internal class MedicineItem : GameItemField
+    internal class MedicineItem : FunctionItem
     {
-        [ConditionalField(true, nameof(TryUseSo))]
-        [SerializeField]
-        private MedicineFieldSo 丹药;
-
-        public override ItemType Type => ItemType.Medicine;
-        public override Sprite Icon => Gi.Icon;
+        [ConditionalField(true, nameof(TryUseSo))] [SerializeField] private MedicineFieldSo 丹药;
+        public override FunctionItemType FunctionType => FunctionItemType.Medicine;
         protected override ScriptableObject So => 丹药;
         protected override IGameItem Gi => 丹药;
     }
 
-    [Serializable]
-    internal class BookItem : GameItemField
+    [Serializable] internal class BookItem : GameItemField
     {
         [ConditionalField(true, nameof(TryUseSo))]
         [FormerlySerializedAs("残卷")][SerializeField]
@@ -261,22 +255,27 @@ namespace GameClient.SoScripts.Fields
         protected override IGameItem Gi => 书籍;
     }
 
-    [Serializable]
-    internal class StoryPropItem : GameItemField
+    [Serializable] internal class StoryPropItem : FunctionItem
     {
-        public override ItemType Type => ItemType.StoryProps;
-        public override Sprite Icon => Gi.Icon;
         protected override ScriptableObject So { get; }
         protected override IGameItem Gi { get; }
+        public override FunctionItemType FunctionType => FunctionItemType.StoryProps;
     }
 
     [Serializable]
-    internal class FunctionPropItem : GameItemField
+    internal class FunctionAdvItem : FunctionItem
     {
         public override ItemType Type => ItemType.FunctionItem;
         public override Sprite Icon => Gi.Icon;
         protected override ScriptableObject So { get; }
         protected override IGameItem Gi { get; }
+        public override FunctionItemType FunctionType { get; } = FunctionItemType.AdvItem;
+    }
+    internal abstract class FunctionItem : GameItemField, IFunctionItem
+    {
+        public override ItemType Type => ItemType.FunctionItem;
+        public override Sprite Icon => Gi.Icon;
+        public abstract FunctionItemType FunctionType { get; }
     }
 
     [Serializable]

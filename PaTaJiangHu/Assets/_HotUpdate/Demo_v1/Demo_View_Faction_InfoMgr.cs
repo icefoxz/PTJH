@@ -39,7 +39,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 bag => View_faction_info.SetPill(bag.GetInt(0)));
             Game.MessagingManager.RegEvent(EventString.Faction_HerbUpdate,
                 bag => View_faction_info.SetHerb(bag.GetInt(0)));
-            Game.MessagingManager.RegEvent(EventString.Faction_Params_ActionLingUpdate,
+            Game.MessagingManager.RegEvent(EventString.Faction_ActionLing_Update,
                 bag => View_faction_info.SetActionToken(bag.GetInt(0), bag.GetInt(1), bag.GetInt(2), bag.GetInt(3)));
         }
 

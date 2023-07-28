@@ -4,8 +4,6 @@ using AOT.Core;
 using AOT.Core.Systems.Messaging;
 using AOT.Utls;
 using AOT.Views.Abstract;
-using GameClient.Controllers;
-using GameClient.Models;
 using GameClient.System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -44,6 +42,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
         {
             private View_challenge view_challenge { get; }
             private Button btn_diziHouse { get; }
+            private Button btn_treasureHouse { get; }
             private View_visitor view_visitor { get; }
             
             private Demo_v1Agent Agent { get; }
@@ -54,7 +53,9 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 view_challenge = new View_challenge(v.GetObject<View>("view_challenge"));
                 view_visitor = new View_visitor(v.GetObject<View>("view_visitor"), Agent.ShowVisitor, false);
                 btn_diziHouse = v.GetObject<Button>("btn_diziHouse");
+                btn_treasureHouse = v.GetObject<Button>("btn_treasureHouse");
                 btn_diziHouse.OnClickAdd(agent.ShowDiziHouse);
+                btn_treasureHouse.OnClickAdd(agent.ShowTreasureHouse);
             }
 
             /** 根据不同的状态,点击效果会不一样.

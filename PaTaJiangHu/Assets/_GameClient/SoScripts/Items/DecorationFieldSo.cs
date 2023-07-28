@@ -15,7 +15,7 @@ namespace GameClient.SoScripts.Items
             new DecorationField(Id, Name, Icon, About, Grade, Quality, GetAddOn, GetCombatSet);
 
 
-        private class DecorationField : EquipmentBaseField,IDecoration
+        private record DecorationField : EquipmentBaseField,IDecoration
         {
             public override EquipKinds EquipKind => EquipKinds.Decoration;
 

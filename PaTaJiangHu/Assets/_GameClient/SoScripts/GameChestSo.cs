@@ -19,7 +19,7 @@ namespace GameClient.SoScripts
     {
         [SerializeField] private RewardField 奖励;
         private RewardField Reward => 奖励;
-        public IAdvPackage[] Packages => Reward.Packages;
+        public IItemPackage[] Packages => Reward.Packages;
         public IGameItem[] AllItems => Reward.AllItems;
 
         public override IGameChest GetChest() => new GameChest(Id, Name, Packages, AllItems);
@@ -31,11 +31,11 @@ namespace GameClient.SoScripts
     internal abstract class GameChestSoBase : AutoAtNamingObject
     {
         public abstract IGameChest GetChest();
-        internal record GameChest(int Id, string Name, IAdvPackage[] Packages, IGameItem[] AllItems) : IGameChest
+        internal record GameChest(int Id, string Name, IItemPackage[] Packages, IGameItem[] AllItems) : IGameChest
         {
             public int Id { get; } = Id;
             public string Name { get; } = Name;
-            public IAdvPackage[] Packages { get; } = Packages;
+            public IItemPackage[] Packages { get; } = Packages;
             public IGameItem[] AllItems { get; } = AllItems;
         }
     }

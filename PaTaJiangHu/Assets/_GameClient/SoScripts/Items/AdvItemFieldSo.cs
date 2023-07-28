@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GameClient.SoScripts.Items
 {
-    public interface IAdvItem : IGameItem
+    public interface IAdvItem : IFunctionItem
     {
         int GetValue(int max);
     }
@@ -20,12 +20,14 @@ namespace GameClient.SoScripts.Items
         public int Value => 体力恢复;
         public Sprite Icon => 图标;
         public string About => 说明;
-        public ItemType Type => ItemType.AdvProps;
+        public ItemType Type => ItemType.FunctionItem;
+        public FunctionItemType FunctionType => FunctionItemType.AdvItem;
 
         public int GetValue(int max)
         {
             if (!Percentage) return Value;
             return Value / max * 100;
         }
+
     }
 }

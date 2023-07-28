@@ -5,6 +5,7 @@ using AOT.Utls;
 using GameClient.Controllers;
 using GameClient.Models.States;
 using GameClient.SoScripts.Adventures;
+using GameClient.SoScripts.Items;
 using GameClient.System;
 
 namespace GameClient.Models
@@ -153,13 +154,13 @@ namespace GameClient.Models
         public IGameItem Item { get; private set; }
         public Kinds Kind { get; private set; }
 
-        internal AdvItemModel(IGameItem item)
+        internal AdvItemModel(IAdvItem item)
         {
-            Kind = item.Type switch
+            Kind = item.FunctionType switch
             {
-                ItemType.Medicine => Kinds.Medicine,
-                ItemType.StoryProps => Kinds.StoryProp,
-                ItemType.AdvProps => Kinds.Horse,
+                FunctionItemType.Medicine => Kinds.Medicine,
+                FunctionItemType.AdvItem => Kinds.Horse,
+                FunctionItemType.StoryProps => Kinds.StoryProp,
                 _ => throw new ArgumentOutOfRangeException($"物品{item.Type}不支持! ")
             };
             Item = item;

@@ -134,36 +134,36 @@ namespace HotUpdate._HotUpdate.Demo_v1
                     case ItemTypes.Weapon:
                         IsDiziEquipped = selectedDizi.Equipment.Weapon != null;
                         if(IsDiziEquipped) items.Add((selectedDizi.Equipment.Weapon.Name, selectedDizi.Equipment.Weapon.About, -1, 1, (int) selectedDizi.Equipment.Weapon.Grade));
-                        for(var i = 0; i < faction.Weapons.Count; i++)
+                        for(var i = 0; i < faction.GetWeapons().Count; i++)
                         {
-                            var item = faction.Weapons[i];
+                            var item = faction.GetWeapons()[i];
                             items.Add((item.Name, item.About, i, 1, (int)item.Grade));
                         }
                         break;
                     case ItemTypes.Armor:
                         IsDiziEquipped = selectedDizi.Equipment.Armor != null;
                         if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Armor.Name, selectedDizi.Equipment.Armor.About, -1, 1, (int)selectedDizi.Equipment.Armor.Grade));
-                        for(var i = 0; i < faction.Armors.Count; i++)
+                        for(var i = 0; i < faction.GetArmors().Count; i++)
                         {
-                            var item = faction.Armors[i];
+                            var item = faction.GetArmors()[i];
                             items.Add((item.Name, item.About, i , 1, (int)item.Grade));
                         }
                         break;
                     case ItemTypes.Shoes:
                         IsDiziEquipped = selectedDizi.Equipment.Shoes != null;
                         if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Shoes.Name, selectedDizi.Equipment.Shoes.About, -1, 1, (int)selectedDizi.Equipment.Shoes.Grade));
-                        for (var i = 0; i < faction.Shoes.Count; i++)
+                        for (var i = 0; i < faction.GetShoes().Count; i++)
                         {
-                            var item = faction.Shoes[i];
+                            var item = faction.GetShoes()[i];
                             items.Add((item.Name, item.About, i, 1, (int)item.Grade));
                         }
                         break;
                     case ItemTypes.Decoration:
                         IsDiziEquipped = selectedDizi.Equipment.Decoration != null;
                         if (IsDiziEquipped) items.Add((selectedDizi.Equipment.Decoration.Name, selectedDizi.Equipment.Decoration.About, -1, 1, (int)selectedDizi.Equipment.Decoration.Grade));
-                        for (var i = 0; i < faction.Decorations.Count; i++)
+                        for (var i = 0; i < faction.GetDecorations().Count; i++)
                         {
-                            var item = faction.Decorations[i];
+                            var item = faction.GetDecorations()[i];
                             items.Add((item.Name, item.About, i, 1, (int)item.Grade));
                         }
                         break;

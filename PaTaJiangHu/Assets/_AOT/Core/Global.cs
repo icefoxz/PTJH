@@ -86,11 +86,12 @@ namespace AOT.Core
         public const string Faction_WineUpdate = "Faction_WineUpdate"; //门派酒更新
         public const string Faction_PillUpdate = "Faction_PillUpdate"; //门派丹药更新
         public const string Faction_HerbUpdate = "Faction_HerbUpdate"; //门派草药更新
-        public const string Faction_Params_ActionLingUpdate = "Faction_ActionLingUpdate";//门派行动令更新
-        public const string Faction_AdvItemsUpdate = "Faction_AdvItemsUpdate";//门派历练道具更新
-        public const string Faction_AdvPackageUpdate = "Faction_AdvPackageUpdate";//门派包裹更新
-        public const string Faction_BookUpdate = "Faction_BookUpdate";//门派书籍更新
-        public const string Faction_FunctionItemUpdate = "Faction_FunctionItemUpdate";//门派功能道具更新
+        public const string Faction_ActionLing_Update = "Faction_ActionLing_Update";//门派行动令更新
+        public const string Faction_Equipment_Update = "Faction_Equipment_Update"; // 门派装备更新
+        public const string Faction_Package_Update = "Faction_Package_Update";//门派包裹更新
+        public const string Faction_Book_Update = "Faction_Book_Update";//门派书籍更新
+        public const string Faction_FunctionItem_Update = "Faction_FunctionItem_Update";//门派功能道具更新
+        public const string Faction_TempItem_Update = "Faction_TempItem_Update";
         public const string Faction_Challenge_Update = "Faction_Challenge_Update";//门派挑战进度更新
         public const string Faction_Challenge_BattleEnd = "Faction_Challenge_BattleEnd";//门派挑战战斗结束
         public const string Faction_Stage_update = "Faction_Stage_update"; //门派关卡更新

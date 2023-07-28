@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
+using AOT.Core;
 using GameClient.SoScripts.Items;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace GameClient.SoScripts
 {
@@ -13,7 +17,7 @@ namespace GameClient.SoScripts
         [SerializeField] private MedicineFieldSo[] 药品;
         [SerializeField] private BookFieldSo[] 书籍;
         [SerializeField] private AdvItemFieldSo[] 历练道具;
-        [SerializeField] private ComprehendItemSo[] 功能道具;
+        [FormerlySerializedAs("功能道具")][SerializeField] private ComprehendItemSo[] 领悟道具;
 
         public WeaponFieldSo[] Weapons => 武器;
         public ArmorFieldSo[] Armors => 防具;
@@ -22,7 +26,7 @@ namespace GameClient.SoScripts
         public MedicineFieldSo[] Medicines => 药品;
         public BookFieldSo[] Books => 书籍;
         public AdvItemFieldSo[] AdvItems => 历练道具;
-
-        public ComprehendItemSo[] FunctionItems => 功能道具;
+        public ComprehendItemSo[] ComprehendItems => 领悟道具;
+        public ICollection<IFunctionItem> StoryItems => Array.Empty<IFunctionItem>();//暂时没有故事道具
     }
 }

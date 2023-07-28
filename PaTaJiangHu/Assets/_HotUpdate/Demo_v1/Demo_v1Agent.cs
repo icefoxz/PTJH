@@ -38,6 +38,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
         private Demo_Page_Skill Demo_Page_Skill { get; }
         private Demo_Page_Faction Demo_Page_Faction { get; }
         private Demo_Page_Battle Demo_Page_Battle { get; }
+        private Demo_Page_TreasureHouse Demo_Page_TreasureHouse { get; }
 
         //window
         private Demo_Win_RewardMgr Demo_Win_RewardMgr { get; }
@@ -73,6 +74,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
             Demo_Page_Faction = new Demo_Page_Faction(this);
             Demo_Page_Battle = new Demo_Page_Battle(this);
             DiziRecruitManager = new DiziRecruitManager(this);
+            Demo_Page_TreasureHouse = new Demo_Page_TreasureHouse(this);
 
             //窗口 Windows
             Demo_Win_RewardMgr = new Demo_Win_RewardMgr(this);
@@ -249,5 +251,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
             var visitor = Game.World.Recruiter.CurrentVisitor;
             Demo_Win_VisitorDizi.Set(visitor.Dizi, visitor.Set);
         }
+
+        public void ShowTreasureHouse()=>Demo_Page_TreasureHouse.Show();
     }
 }

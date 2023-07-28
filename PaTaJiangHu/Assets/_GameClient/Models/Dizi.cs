@@ -7,6 +7,7 @@ using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Adventures;
 using GameClient.SoScripts.BattleSimulation;
 using GameClient.SoScripts.Characters;
+using GameClient.SoScripts.Items;
 using GameClient.System;
 using UnityEngine;
 using UnityEngine.Analytics;
@@ -182,7 +183,7 @@ namespace GameClient.Models
             SendEvent(EventString.Dizi_ConditionUpdate, Guid, type, value);
         }
 
-        internal void SetAdvItem(int slot, IGameItem item)
+        internal void SetAdvItem(int slot, IAdvItem item)
         {
             _advItems[slot] = new AdvItemModel(item);
             Game.MessagingManager.Send(EventString.Dizi_Adv_SlotUpdate, Guid);

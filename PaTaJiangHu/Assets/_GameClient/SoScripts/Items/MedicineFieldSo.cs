@@ -1,41 +1,11 @@
 using System;
 using AOT.Core;
 using AOT.Core.Dizi;
-using GameClient.Modules.DiziM;
 using MyBox;
 using UnityEngine;
 
 namespace GameClient.SoScripts.Items
 {
-    public enum Treatments
-    {
-        [InspectorName("体力")] Stamina,
-        [InspectorName("食物")] Food,
-        [InspectorName("精神")] Emotion,
-        [InspectorName("外伤")] Injury,
-        [InspectorName("内伤")] Inner
-    }
-
-    public enum MedicineKinds
-    {
-        [InspectorName("体力类")] StaminaDrug,
-        [InspectorName("食物类")] Food,
-        [InspectorName("精神类")] EmoDrug,
-        [InspectorName("外伤类")] InjuryDrug,
-        [InspectorName("内伤类")] InnerDrug,
-    }
-    public interface ITreatment
-    {
-        Treatments Treatment { get; }
-        int GetValue(int max);
-    }
-    public interface IMedicine : IGameItem
-    {
-        MedicineKinds Kind { get; }
-        int Grade { get; }
-        ITreatment[] Treatments { get; }
-    }
-
     [CreateAssetMenu(fileName = "id_medicine", menuName = "物件/药品")]
     public class MedicineFieldSo : AutoUnderscoreNamingObject, IMedicine
     {
@@ -44,7 +14,7 @@ namespace GameClient.SoScripts.Items
         [SerializeField] private TreatmentMap[] 药效;
         [SerializeField] private Sprite 图标;
         [SerializeField][TextArea] private string 说明;
-
+        public FunctionItemType FunctionType => FunctionItemType.Medicine;
         protected override string Suffix => Kind switch
         {
             MedicineKinds.StaminaDrug => "@体力",
@@ -59,7 +29,7 @@ namespace GameClient.SoScripts.Items
         public int Grade => (int)品级;
         public Sprite Icon => 图标;
         public string About => 说明;
-        public ItemType Type => ItemType.Medicine;
+        public ItemType Type => ItemType.FunctionItem;
         public IMedicine Instance()=> new Medicine(Id, Name, Kind, Grade, Treatments, About, Icon);
 
         [Serializable]
@@ -75,11 +45,11 @@ namespace GameClient.SoScripts.Items
             {
                 var treatmentText = Treatment switch
                 {
-                    Items.Treatments.Stamina => StaminaText,
-                    Items.Treatments.Food => FoodText,
-                    Items.Treatments.Emotion => EmotionText,
-                    Items.Treatments.Injury => InjuryText,
-                    Items.Treatments.Inner => InnerText,
+                    AOT.Core.Treatments.Stamina => StaminaText,
+                    AOT.Core.Treatments.Food => FoodText,
+                    AOT.Core.Treatments.Emotion => EmotionText,
+                    AOT.Core.Treatments.Injury => InjuryText,
+                    AOT.Core.Treatments.Inner => InnerText,
                     _ => string.Empty
                 };
                 string valueText;
@@ -112,8 +82,9 @@ namespace GameClient.SoScripts.Items
             public Sprite Icon { get; }
             public string Name { get; }
             public string About { get; }
-            public ItemType Type => ItemType.Medicine;
+            public ItemType Type => ItemType.FunctionItem;
             public MedicineKinds Kind { get; }
+            public FunctionItemType FunctionType => FunctionItemType.Medicine;
             public int Grade { get; }
             public ITreatment[] Treatments { get; }
 

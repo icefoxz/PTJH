@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using AOT.Core;
-using GameClient.Modules.DiziM;
-using NotImplementedException = System.NotImplementedException;
 
 namespace GameClient.Models
 {
@@ -14,7 +12,6 @@ namespace GameClient.Models
         public void Add(T item) => _items.Add(item);
         public void AddRange(IEnumerable<T> items) => _items.AddRange(items);
         public bool Remove(T item) => _items.Remove(item);
-        public IEnumerable<T> GetAllItems() => _items;
         public IEnumerator<T> GetEnumerator()=> _items.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public int Count => _items.Count;

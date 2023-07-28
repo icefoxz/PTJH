@@ -28,8 +28,10 @@ namespace GameClient.Controllers
         public IShoes GetShoes(int id) => GetFromData(id, Data.Shoes).Instance();
         public IDecoration GetDecoration(int id) => GetFromData(id, Data.Decorations).Instance();
         public IBook GetBook(int id) => GetFromData(id, Data.Books);
-        public IAdvItem GetAdvProp(int id) => GetFromData(id, Data.AdvItems);
-        public IFunctionItem GetFunctionItem(int id) => GetFromData(id, Data.FunctionItems);
+        public IAdvItem GetAdvItem(int id) => GetFromData(id, Data.AdvItems);
+        public IFunctionItem GetComprehendItem(int id) => GetFromData(id, Data.ComprehendItems);
+        public IFunctionItem GetStoryItem(int id) => GetFromData(id, Data.StoryItems);
+
         private T GetFromData<T>(int id, ICollection<T> list) where T : IGameItem
         {
             if (id == 0)
@@ -44,7 +46,6 @@ namespace GameClient.Controllers
             }
             return items[0];
         }
-
     }
 
     /// <summary>

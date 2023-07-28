@@ -1,27 +1,10 @@
 using AOT.Core;
 using AOT.Core.Dizi;
-using GameClient.Modules.DiziM;
 using MyBox;
 using UnityEngine;
 
 namespace GameClient.SoScripts.Items
 {
-    public enum FunctionItemType
-    {
-        Comprehend
-    }
-
-    public interface IComprehendItem : IFunctionItem
-    {
-        ColorGrade Grade { get; }
-        float Rate { get; }
-        bool IsLevelAvailable(int level);
-    }
-    public interface IFunctionItem : IGameItem
-    {
-        FunctionItemType FunctionType { get; }
-    }
-
     [CreateAssetMenu(fileName = "领悟道具", menuName = "物件/功能/领悟道具")]
     public class ComprehendItemSo : FunctionItemBase , IComprehendItem
     {

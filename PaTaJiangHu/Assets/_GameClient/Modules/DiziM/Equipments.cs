@@ -40,14 +40,14 @@ namespace GameClient.Modules.DiziM
     }
 
 
-    public interface IAdvPackage
+    public interface IItemPackage
     {
         int Grade { get; }
         IGameItem[] AllItems { get; }
-        IAdvResPackage Package { get; }
+        IResPackage Package { get; }
     }
 
-    public interface IAdvResPackage
+    public interface IResPackage
     {
         int Food { get; }
         int Wine { get; }
@@ -61,7 +61,7 @@ namespace GameClient.Modules.DiziM
     /// </summary>
     public interface IGameReward
     {
-        IAdvPackage[] Packages { get; }
+        IItemPackage[] Packages { get; }
         IGameItem[] AllItems { get; }
     }
 

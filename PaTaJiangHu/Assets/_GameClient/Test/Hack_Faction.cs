@@ -40,12 +40,12 @@ namespace GameClient.Test
         public void AddItemToFaction()
         {
             var faction = Game.World.Faction;
-            AddItem(Weapons, i => faction.AddWeapon(i.Instance()));
-            AddItem(Armors, i => faction.AddArmor(i.Instance()));
-            AddItem(Shoes, i => faction.AddShoes(i.Instance()));
-            AddItem(Decorations, i => faction.AddDecoration(i.Instance()));
-            AddItem(Books, i => faction.AddBook(i.Instance()));
-            AddItem(Medicines, i => faction.AddMedicine(i.Instance()));
+            AddItem(Weapons, i => faction.AddGameItem(i.Instance()));
+            AddItem(Armors, i => faction.AddGameItem(i.Instance()));
+            AddItem(Shoes, i => faction.AddGameItem(i.Instance()));
+            AddItem(Decorations, i => faction.AddGameItem(i.Instance()));
+            AddItem(Books, i => faction.AddGameItem(i.Instance()));
+            AddItem(Medicines, i => faction.AddGameItem(i.Instance()));
         }
 
         private void AddItem<T>(ItemToAdd<T>[] items, Action<T> addAction) where T : ScriptableObject

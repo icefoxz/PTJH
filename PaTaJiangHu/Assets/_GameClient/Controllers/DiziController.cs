@@ -71,37 +71,37 @@ namespace GameClient.Controllers
                 case 0:
                 {
                     var diziWeapon = dizi._equipment.Weapon;
-                    var weapon = Faction.Weapons[index];
+                    var weapon = Faction.GetWeapons()[index];
                     dizi.SetWeapon(weapon);
-                    Faction.RemoveWeapon(weapon);
-                    if (diziWeapon != null) Faction.AddWeapon(diziWeapon);
+                    Faction.RemoveGameItem(weapon);
+                    if (diziWeapon != null) Faction.AddGameItem(diziWeapon, false);
                     break;
                 }
                 case 1:
                 {
                     var diziArmor = dizi._equipment.Armor;
-                    var armor = Faction.Armors[index];
+                    var armor = Faction.GetArmors()[index];
                     dizi.SetArmor(armor);
-                    Faction.RemoveArmor(armor);
-                    if (diziArmor!= null) Faction.AddArmor(diziArmor);
+                    Faction.RemoveGameItem(armor);
+                    if (diziArmor != null) Faction.AddGameItem(diziArmor, false);
                     break;
                 }
                 case 2:
                 {
                     var diziShoes = dizi._equipment.Shoes;
-                    var shoes = Faction.Shoes[index];
+                    var shoes = Faction.GetShoes()[index];
                     dizi.SetShoes(shoes);
-                    Faction.RemoveShoes(shoes);
-                    if (diziShoes != null) Faction.AddShoes(diziShoes);
+                    Faction.RemoveGameItem(shoes);
+                    if (diziShoes != null) Faction.AddGameItem(diziShoes, false);
                     break;
                 }
                 case 3:
                 {
                     var diziDecoration = dizi._equipment.Decoration;
-                    var decoration = Faction.Decorations[index];
+                    var decoration = Faction.GetDecorations()[index];
                     dizi.SetDecoration(decoration);
-                    Faction.RemoveDecoration(decoration);
-                    if (diziDecoration != null) Faction.AddDecoration(diziDecoration);
+                    Faction.RemoveGameItem(decoration);
+                    if (diziDecoration != null) Faction.AddGameItem(diziDecoration, false);
                     break;
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
@@ -116,28 +116,28 @@ namespace GameClient.Controllers
                 {
                     var weapon = dizi._equipment.Weapon;
                     dizi.SetWeapon(null);
-                    Faction.AddWeapon(weapon);
+                    Faction.AddGameItem(weapon, false);
                     break;
                 }
                 case 1:
                 {
                     var armor = dizi._equipment.Armor;
                     dizi.SetArmor(null);
-                    Faction.AddArmor(armor);
+                    Faction.AddGameItem(armor, false);
                     break;
                 }
                 case 2:
                 {
                     var shoes = dizi._equipment.Shoes;
                     dizi.SetShoes(null);
-                    Faction.AddShoes(shoes);
+                    Faction.AddGameItem(shoes, false);
                     break;
                 }
                 case 3:
                 {
                     var decoration = dizi._equipment.Decoration;
                     dizi.SetDecoration(null);
-                    Faction.AddDecoration(decoration);
+                    Faction.AddGameItem(decoration, false);
                     break;
                 }
                 default: throw new ArgumentOutOfRangeException(nameof(itemType));
@@ -170,7 +170,7 @@ namespace GameClient.Controllers
         public void UseMedicine(string guid, int index)
         {
             var med = Faction.GetAllMedicines()[index];
-            Faction.RemoveMedicine(med, 1);
+            Faction.RemoveGameItem(med);
             var dizi = Faction.GetDizi(guid);
             foreach (var treatment in med.Treatments)
             {

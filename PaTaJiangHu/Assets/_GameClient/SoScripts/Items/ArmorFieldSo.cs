@@ -14,7 +14,7 @@ namespace GameClient.SoScripts.Items
         public IArmor Instance() =>
             new ArmorField(Id, Name, Icon, About, Grade, Quality, GetAddOn, GetCombatSet);
 
-        private class ArmorField : EquipmentBaseField, IArmor
+        private record ArmorField : EquipmentBaseField, IArmor
         {
             public override EquipKinds EquipKind => EquipKinds.Armor;
 

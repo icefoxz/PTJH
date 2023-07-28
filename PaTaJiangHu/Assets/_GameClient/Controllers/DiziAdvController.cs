@@ -64,11 +64,10 @@ namespace GameClient.Controllers
         public void SetDiziAdvItem(string guid,int itemIndex,int slot)
         {
             var dizi = Faction.GetDizi(guid);
-            var items = Faction.GetAllSupportedAdvItems();
-            var item = items[itemIndex];
-            Faction.RemoveAdvItem(item);
+            var item = Faction.GetAdventureItems()[itemIndex];
+            Faction.RemoveGameItem(item);
             var replaceItem = dizi.AdvItems[slot];
-            if (replaceItem != null) Faction.AddAdvItem(replaceItem.Item);
+            if (replaceItem != null) Faction.AddGameItem(replaceItem.Item, false);
             dizi.SetAdvItem(slot, item);
         }
 
@@ -76,7 +75,7 @@ namespace GameClient.Controllers
         {
             var dizi = Faction.GetDizi(guid);
             var item = dizi.RemoveAdvItem(slot);
-            Faction.AddAdvItem(item);
+            Faction.AddGameItem(item, false);
         }
         //历练开始
         public void AdventureStart(string guid, int mapId)

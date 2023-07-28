@@ -33,7 +33,7 @@ namespace GameClient.Controllers
         {
             var dizi = Faction.GetDizi(diziGuid);
             var book = DataController.GetBook(bookId);
-            Faction.RemoveBook(book);
+            Faction.RemoveGameItem(book);
             var skill = book.GetSkill();
             var currentLevel = dizi.Skill.GetLevel(skill);
             var nextLevel = currentLevel + 1;
@@ -59,7 +59,7 @@ namespace GameClient.Controllers
             if (invalidItems.Length > 0)
                 throw new InvalidOperationException($"不合法物品: {string.Join(",", invalidItems.Select(a => $"{a.item.Id}.{a.item.Name}"))}");
             foreach (var (id, amount) in arg)
-                items.Add(((IComprehendItem)DataController.GetFunctionItem(id), amount));
+                items.Add(((IComprehendItem)DataController.GetComprehendItem(id), amount));
             return items.Sum(a => a.item.Rate * a.quantity);
         }
 

@@ -20,7 +20,7 @@ namespace GameClient.SoScripts.Items
         public override EquipKinds EquipKind => EquipKinds.Weapon;
         public IWeapon Instance() =>
             new WeaponField(Id, Name, Armed, Icon, About, Grade, Quality, GetAddOn, GetCombatSet);
-        private class WeaponField : EquipmentBaseField, IWeapon
+        private record WeaponField : EquipmentBaseField, IWeapon
         {
             public WeaponArmed Armed { get; }
             public override EquipKinds EquipKind => EquipKinds.Weapon;
@@ -103,7 +103,7 @@ namespace GameClient.SoScripts.Items
 
         public ICombatSet GetCombatSet() => AdvanceProps.Select(a=>a.GetCombatSet()).Combine();
 
-        protected abstract class EquipmentBaseField : IEquipment
+        protected abstract record EquipmentBaseField : IEquipment
         {
             public int Id { get; }
             public Sprite Icon { get; }

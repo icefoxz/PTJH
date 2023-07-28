@@ -2,6 +2,7 @@
 using AOT.Core;
 using AOT.Utls;
 using GameClient.Models;
+using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Adventures;
 using GameClient.SoScripts.Factions;
 using GameClient.System;
@@ -42,7 +43,7 @@ namespace GameClient.Controllers
             dizi.ConAdd(con, 1);
         }
 
-        public void OpenAdvPackage(int index)
+        public void OpenPackage(int index)
         {
             var package = Faction.Packages[index];
             Faction.RemovePackages(package);
@@ -63,5 +64,7 @@ namespace GameClient.Controllers
             dizi.Dismiss();
             Faction.RemoveDizi(dizi);
         }
+
+        public void DisposeItem(IGameItem item) => Faction.RemoveGameItem(item);
     }
 }

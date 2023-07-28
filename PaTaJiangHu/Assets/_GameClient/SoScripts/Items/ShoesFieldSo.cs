@@ -15,9 +15,9 @@ namespace GameClient.SoScripts.Items
             new ShoesField(Id, Name, Icon, About, Grade, Quality, GetAddOn, GetCombatSet);
 
 
-        private class ShoesField : EquipmentBaseField,IShoes
+        private record ShoesField : EquipmentBaseField,IShoes
         {
-            public override EquipKinds EquipKind => EquipKinds.Armor;
+            public override EquipKinds EquipKind => EquipKinds.Shoes;
 
             public ShoesField(int id, string name, Sprite icon, string about, ColorGrade grade, int quality,
                 Func<DiziProps, float> getAddOnFunc, Func<ICombatSet> getCombatSetFunc) : base(id, name, icon,
