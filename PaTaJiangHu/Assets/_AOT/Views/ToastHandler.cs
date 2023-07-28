@@ -15,7 +15,7 @@ namespace AOT.Views
         [SerializeField] private RectTransform _slidingArea;
         [SerializeField] private AnimationCurve _moveCurve;  // 动画曲线
 
-        private Queue<Toast> messageQueue { get; } = new Queue<Toast>(); // 存储所有消息气泡的队列
+        private List<Toast> messageQueue { get; } = new List<Toast>(); // 存储所有消息气泡的队列
 
         private void Update()
         {
@@ -25,14 +25,18 @@ namespace AOT.Views
 
             if (messageQueue.Count == 0) return;
 
-            // 如果消息数量超过最大值或者最旧的消息显示时间超过了设定的持续时间，则移除最旧的消息
-            while (messageQueue.Count > 0 &&
-                   (messageQueue.Count > maxMessages ||
-                    (DateTime.Now - messageQueue.Peek().CreateTime).TotalSeconds > messageDuration))
+            // 如果消息数量超过最大值, 删除第一个消息.
+            while (messageQueue.Count > maxMessages)
             {
-                var toast = messageQueue.Dequeue();
-                DestroyToast(toast);
+                var toast = messageQueue.First();
+                DestroyToast(toast.View);
             }
+
+            // 显示时间超过了设定的持续时间，移除消息
+            foreach (var toast in messageQueue
+                         .Where(toast => (DateTime.Now - toast.CreateTime).TotalSeconds > messageDuration)
+                         .ToArray())
+                DestroyToast(toast.View);
 
             // 更新所有气泡的目标位置
             UpdateTargetPositions();
@@ -42,11 +46,9 @@ namespace AOT.Views
         {
             var toast = messageQueue.FirstOrDefault(t => t.GameObject == view.GameObject);
             if (toast == null) return;
-            messageQueue.Dequeue();
-            DestroyToast(toast);
+            messageQueue.Remove(toast);
+            Destroy(toast.GameObject);
         }
-
-        private void DestroyToast(Toast toast) => Destroy(toast.GameObject);
 
         private void UpdateTargetPositions()
         {
@@ -54,7 +56,7 @@ namespace AOT.Views
             // 遍历所有的气泡
             for (int i = 0; i < messageQueue.Count; i++)
             {
-                Toast toast = messageQueue.ElementAt(i);
+                var toast = messageQueue.ElementAt(i);
 
                 // 计算气泡的新目标位置，气泡从上到下排列，每个气泡之间有gap的间隙
                 var yAlign = i * toast.rectTransform.sizeDelta.y + i * gap;
@@ -88,7 +90,7 @@ namespace AOT.Views
                 toast.transform.position.z));
 
             // 将新的消息气泡添加到队列
-            messageQueue.Enqueue(toast);
+            messageQueue.Add(toast);
 
             // 更新所有气泡的目标位置
             UpdateTargetPositions();
