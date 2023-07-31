@@ -84,7 +84,7 @@ namespace GameClient.Models
             // 如果还有同类物件，用第一个暂存物品存入物品栏
             AddItem(temp, out var isPutToTemp);
             if (isPutToTemp)
-                throw new NotImplementedException($"暂存物件{temp.Name}({item.Type})提取了, 但又放回暂存栏里.");
+                throw new NotImplementedException($"暂存物件{temp?.Name}({item.Type})提取了, 但又放回暂存栏里.");
             TempItems.Remove(temp);
         }
 

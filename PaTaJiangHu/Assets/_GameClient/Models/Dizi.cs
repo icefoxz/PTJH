@@ -136,7 +136,7 @@ namespace GameClient.Models
                 DiziProps.Mp => Capable.Mp.Value,
                 _ => throw new ArgumentOutOfRangeException(nameof(prop), prop, null)
             };
-            var leveledValue = propValue + LevelCfg.GetLeveledBonus(prop, propValue, Level);
+            var leveledValue = LevelCfg.GetLeveledBonus(prop, propValue, Level);
             return leveledValue;
         }
 
