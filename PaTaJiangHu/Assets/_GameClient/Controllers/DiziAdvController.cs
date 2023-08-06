@@ -28,6 +28,9 @@ namespace GameClient.Controllers
         private AdventureMapSo[] AdvMaps => AdventureCfg.AdvMaps;//回城秒数
         private Faction Faction => Game.World.Faction;
         private RewardController RewardController => Game.Controllers.Get<RewardController>();
+        private DiziAdventure Adventure => Game.World.Adventure;
+        private DiziProduction Production => Game.World.Production;
+        private DiziLost Lost => Game.World.Lost;
 
         /// <summary>
         /// 获取所有可历练的地图,
@@ -92,6 +95,9 @@ namespace GameClient.Controllers
                 XDebug.Log($"状态切换异常! : {dizi.State.Current}");
             dizi.StopIdle();
             dizi.AdventureStart(map, SysTime.UnixNow, EventLogSecs, isProduction);
+
+            DiziStateModel stateModel = isProduction ? Production : Adventure;
+            stateModel.AddDizi(dizi);
         }
 
         //让弟子回程
@@ -152,10 +158,12 @@ namespace GameClient.Controllers
                 XDebug.Log($"弟子当前状态异常! : {dizi.State.Current}");
             if (dizi.State.Adventure.State != AutoAdventure.States.End)
                 XDebug.Log($"操作异常!弟子状态 = {dizi.State.Adventure?.State}");
-
             RewardController.SetRewards(dizi.State.Adventure.Rewards.ToArray());
             dizi.AdventureFinalize();
             dizi.StartIdle(SysTime.UnixNow);
+            if(Adventure.Contains(dizi))
+                Adventure.RemoveDizi(dizi);
+            else Production.RemoveDizi(dizi);
         }
 
         /// <summary>
@@ -290,6 +298,7 @@ namespace GameClient.Controllers
             var now = SysTime.UnixNow;
             dizi.AdventureTerminate(now, lastLog.LastMiles);
             dizi.StartLostState(now, lastLog);
+            Lost.AddDizi(dizi);
         }
     }
 

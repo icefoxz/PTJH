@@ -83,9 +83,9 @@ namespace GameClient.SoScripts
         }
 
         //历练配置
-        [SerializeField] private Adventure 历练配置;
-        public Adventure AdvCfg => 历练配置;
-        [Serializable] public class Adventure
+        [SerializeField] private AdventureConfig 历练配置;
+        public AdventureConfig AdvCfg => 历练配置;
+        [Serializable] public class AdventureConfig
         {
             [SerializeField] private AdventureConfigSo 历练配置;
             [SerializeField] private BattleSimulatorConfigSo 战斗模拟器;
