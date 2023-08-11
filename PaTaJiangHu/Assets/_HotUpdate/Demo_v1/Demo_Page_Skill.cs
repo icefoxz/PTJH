@@ -24,6 +24,8 @@ namespace HotUpdate._HotUpdate.Demo_v1
         private View_skillDev view_skillDev { get; set; }
         private View_DiziList view_diziList { get; set; }
 
+        private static GameWorld.DiziState WorldState => Game.World.State;
+
         public Demo_Page_Skill(Demo_v1Agent uiAgent) : base(uiAgent)
         {
             Agent = uiAgent;
@@ -865,23 +867,21 @@ namespace HotUpdate._HotUpdate.Demo_v1
             }
 
             private Dizi[] GetLostDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.Lost)
+                .Where(d => d.Activity == DiziActivities.Lost)
                 .ToArray();
 
             private Dizi[] GetProductionDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.AdvProduction)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Production)
                 .ToArray();
 
             private Dizi[] GetAdventureDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.AdvProgress ||
-                            d.State.Current == DiziStateHandler.States.AdvReturning)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Adventure)
                 .ToArray();
 
             private Dizi[] GetAllDizi() => Game.World.Faction.DiziList.ToArray();
 
             private Dizi[] GetIdleDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.AdvWaiting ||
-                            d.State.Current == DiziStateHandler.States.Idle)
+                .Where(d => d.Activity == DiziActivities.Idle)
                 .ToArray();
 
             private void SetFilterSelected(Element element)

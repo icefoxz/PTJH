@@ -18,16 +18,13 @@ namespace GameClient.SoScripts.Adventures
         //public override int Id => _id;
         public override string Name => 事件名;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
-            OnLogsTrigger?.Invoke(Story.Select(m => string.Format(m, arg.DiziName)).ToArray());
-            OnNextEvent?.Invoke(Next);
+            ProcessLogs(Story.Select(m => string.Format(m, arg.DiziName)).ToArray());
+            return Next;
         }
-
-        public override event Action<IAdvEvent> OnNextEvent;
 
         public override IAdvEvent[] AllEvents => new[] { Next };
         public override AdvTypes AdvType => AdvTypes.Story;
-        public override event Action<string[]> OnLogsTrigger;
     }
 }

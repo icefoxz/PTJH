@@ -8,6 +8,7 @@ using AOT.Views.Abstract;
 using AOT.Views.BaseUis;
 using GameClient.Controllers;
 using GameClient.Models;
+using GameClient.Modules.Adventure;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts;
 using GameClient.SoScripts.Adventures;
@@ -33,18 +34,16 @@ namespace HotUpdate._HotUpdate.Demo_v1
 
         private Page_main_adventureView game_adventureView { get; set; }
 
-        private FactionController FactionController { get; }
-        private DiziController DiziController { get; }
-        private DiziAdvController DiziAdvController { get; }
+        private FactionController FactionController => Game.Controllers.Get<FactionController>();
+        private DiziController DiziController => Game.Controllers.Get<DiziController>();
+        private DiziAdvController DiziAdvController => Game.Controllers.Get<DiziAdvController>();
+        private static GameWorld.DiziState WorldState => Game.World.State;
 
         private Demo_v1Agent Agent { get; }
 
         public Demo_Page_Main(Demo_v1Agent uiAgent) : base(uiAgent)
         {
             Agent = uiAgent;
-            FactionController = Game.Controllers.Get<FactionController>();
-            DiziController = Game.Controllers.Get<DiziController>();
-            DiziAdvController = Game.Controllers.Get<DiziAdvController>();
         }
 
         protected override string ViewName => "demo_page_main";
@@ -92,12 +91,27 @@ namespace HotUpdate._HotUpdate.Demo_v1
             {
                 main_diziActivity = new Page_main_diziActivity(view,
                     onRecallAction: guid => DiziAdvController.AdventureRecall(guid),
-                    onMapListAction: (guid, mapType) => Dizi_AdvMapSelection(guid, mapType),
+                    onMapListAction: Dizi_AdvMapSelection,
                     onDiziForgetAction: guid => XDebug.LogWarning("当前弟子遗忘互动"),
                     onDiziBuyBackAction: guid => XDebug.LogWarning("当前弟子买回互动"),
                     onDiziReturnAction: guid => DiziAdvController.AdventureFinalize(guid),
                     onChallengeAction: UpdateChallengeSelector);
-                Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
+                Game.MessagingManager.RegEvent(EventString.Dizi_State_Update, b =>
+                {
+                    var guid = b.GetString(0);
+                    main_diziActivity.ActivityUpdate(guid);
+                });
+                Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Start, b =>
+                {
+                    var guid = b.GetString(0);
+                    main_diziActivity.ActivityUpdate(guid);
+                });
+                Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Waiting, b =>
+                {
+                    var guid = b.GetString(0);
+                    main_diziActivity.ActivityUpdate(guid);
+                });
+                Game.MessagingManager.RegEvent(EventString.Dizi_Adv_Recall, b =>
                 {
                     var guid = b.GetString(0);
                     main_diziActivity.ActivityUpdate(guid);
@@ -124,13 +138,13 @@ namespace HotUpdate._HotUpdate.Demo_v1
             {
                 main_adventureMaps = new Page_main_adventureMaps(view,
                     () => XDebug.LogWarning("更新历练地图"),
-                    onAdvStartAction: index => DiziAdvController.AdventureStart(SelectedDizi.Guid, index));
+                    onAdvStartAction: mapId => DiziAdvController.AdventureStart(SelectedDizi.Guid, mapId));
             });
             b.GetRes("page_main_diziList", rect_btm, (_, view) =>
             {
                 main_diziList = new Page_main_diziList(view, dizi => { Agent.MainPage_Show(dizi.Guid); });
                 Game.MessagingManager.RegEvent(EventString.Faction_Init, bag => main_diziList.SetElements());
-                Game.MessagingManager.RegEvent(EventString.Dizi_Params_StateUpdate, b => main_diziList.SetElements());
+                Game.MessagingManager.RegEvent(EventString.Dizi_State_Update, b => main_diziList.SetElements());
                 Game.MessagingManager.RegEvent(EventString.Faction_DiziListUpdate, bag =>
                 {
                     main_diziList.UpdateList();
@@ -355,7 +369,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
                 SetDiziElement(SelectedDizi);
                 var dizi = SelectedDizi;
-                var isIdleState = dizi.State.Current == DiziStateHandler.States.Idle;
+                var isIdleState = dizi.Activity == DiziActivities.Idle;
                 Silver.SetInteraction(isIdleState);
                 Food.SetInteraction(isIdleState);
                 Emotion.SetInteraction(isIdleState);
@@ -471,7 +485,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
                 UpdateDiziEquipment(SelectedDizi);
                 var dizi = SelectedDizi;
-                var isIdleState = dizi.State.Current == DiziStateHandler.States.Idle;
+                var isIdleState = dizi.Activity == DiziActivities.Idle;
                 element_weapon.SetInteraction(isIdleState);
                 element_armor.SetInteraction(isIdleState);
                 element_shoes.SetInteraction(isIdleState);
@@ -666,6 +680,8 @@ namespace HotUpdate._HotUpdate.Demo_v1
         {
             private ScrollContentAligner Scroll_advLog { get; }
             private View_Buttons ButtonsView { get; }
+            private Adventure_ActivityManager Adventure => Game.World.State.Adventure;
+            private Idle_ActivityManager Idle => Game.World.State.Idle;
 
             public Page_main_diziActivity(IView v,
                 Action<string> onRecallAction,
@@ -704,18 +720,37 @@ namespace HotUpdate._HotUpdate.Demo_v1
             public void ActivityUpdate(string guid)
             {
                 if (SelectedDizi == null || SelectedDizi.Guid != guid) return;
-                var mode = SelectedDizi.State.Current switch
+                View_Buttons.Modes mode;
+                switch (SelectedDizi.Activity)
                 {
-                    DiziStateHandler.States.Lost => View_Buttons.Modes.Lost,
-                    DiziStateHandler.States.Idle => View_Buttons.Modes.Idle,
-                    DiziStateHandler.States.None => View_Buttons.Modes.Idle,
-                    DiziStateHandler.States.AdvProgress => View_Buttons.Modes.Adventure,
-                    DiziStateHandler.States.AdvProduction => View_Buttons.Modes.Adventure,
-                    DiziStateHandler.States.AdvReturning => View_Buttons.Modes.Returning,
-                    DiziStateHandler.States.AdvWaiting => View_Buttons.Modes.Waiting,
-                    DiziStateHandler.States.Battle => throw new InvalidOperationException("弟子在战斗中,不允许执行其它指令!"),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                    case DiziActivities.None:
+                        mode = View_Buttons.Modes.None;
+                        break;
+                    case DiziActivities.Lost:
+                        mode = View_Buttons.Modes.Lost;
+                        break;
+                    case DiziActivities.Idle:
+                        mode = View_Buttons.Modes.Idle;
+                        break;
+                    case DiziActivities.Adventure:
+                    {
+                        var activity = Adventure.GetActivity(guid);
+                        mode = activity.State switch
+                        {
+                            AdventureActivity.States.Progress => View_Buttons.Modes.Adventure,
+                            AdventureActivity.States.Returning => View_Buttons.Modes.Returning,
+                            AdventureActivity.States.Waiting => View_Buttons.Modes.Waiting,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+                        break;
+                    }
+                    case DiziActivities.Battle:
+                        mode = View_Buttons.Modes.None;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
                 ButtonsView.SetMode(mode);
                 AdventureLogUpdate(SelectedDizi.Guid);
             }
@@ -724,20 +759,34 @@ namespace HotUpdate._HotUpdate.Demo_v1
             {
                 if (SelectedDizi == null) return;
                 if (guid != SelectedDizi.Guid) return;
-                var logs = SelectedDizi.State.LogHistory;
+                var logs = GetLog();
+                if(logs == null) return;
                 Scroll_advLog.SetList(logs.Count);
             }
 
             private IView OnLogSet(int index, View view)
             {
                 var log = new Prefab_Log(view);
-                var storyLog = SelectedDizi.State.LogHistory;
+                var storyLog = GetLog();
                 var fragment = storyLog[storyLog.Count - index - 1];
                 if (fragment.Reward != null)
                     log.SetReward(fragment.Reward);
                 else log.SetMessage(fragment.Message);
                 log.Display(true);
                 return view;
+            }
+
+            private IReadOnlyList<ActivityFragment> GetLog()
+            {
+                return SelectedDizi.Activity switch
+                {
+                    DiziActivities.None => null,
+                    DiziActivities.Lost => null,
+                    DiziActivities.Idle => Idle.GetFragments(SelectedDizi.Guid),
+                    DiziActivities.Adventure => Adventure.GetFragments(SelectedDizi.Guid),
+                    DiziActivities.Battle => null,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
 
             private void OnAdvMsgReset(IView v) => v.GameObject.SetActive(false);
@@ -1133,23 +1182,21 @@ namespace HotUpdate._HotUpdate.Demo_v1
             }
 
             private Dizi[] GetLostDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.Lost)
+                .Where(d => d.Activity == DiziActivities.Lost)
                 .ToArray();
 
             private Dizi[] GetProductionDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.AdvProduction)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Production)
                 .ToArray();
 
             private Dizi[] GetAdventureDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.AdvProgress ||
-                            d.State.Current == DiziStateHandler.States.AdvReturning)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Adventure)
                 .ToArray();
 
             private Dizi[] GetAllDizi() => Game.World.Faction.DiziList.ToArray();
 
             private Dizi[] GetIdleDizi() => Game.World.Faction.DiziList
-                .Where(d => d.State.Current == DiziStateHandler.States.AdvWaiting ||
-                            d.State.Current == DiziStateHandler.States.Idle)
+                .Where(d => d.Activity == DiziActivities.Idle)
                 .ToArray();
 
             private void SetFilterSelected(Element element)

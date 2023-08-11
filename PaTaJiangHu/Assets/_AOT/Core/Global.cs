@@ -37,8 +37,7 @@ namespace AOT.Core
         public const string Recruit_VisitorRemove = "Recruit_VisitorRemove";
 
         //弟子dizi
-        public const string Dizi_Params_StaminaUpdate = "Dizi_Params_StaminaUpdate";//弟子体力更新
-        public const string Dizi_Params_StateUpdate = "Dizi_Params_StateUpdate";//弟子状态更新
+        public const string Dizi_Stamina_Update = "Dizi_Stamina_Update";//弟子体力更新
         public const string Dizi_ConditionManagement = "Dizi_ConditionManagement";//弟子状态管理(打开窗口吃药)
         public const string Dizi_ConditionUpdate = "Dizi_ConditionUpdate";//弟子状态更新
         public const string Dizi_EquipmentManagement = "Dizi_EquipmentManagement";//装备管理
@@ -46,6 +45,10 @@ namespace AOT.Core
         //public const string Dizi_ItemUnEquipped = "Dizi_ItemUnEquipped";//卸下物品
         public const string Dizi_Props_Update = "Dizi_Props_Update";
         public const string Dizi_EquipmentUpdate = "Dizi_EquipmentUpdate";
+
+        //弟子状态 - 一些比较细化的状态, 主要用于动画
+        public const string Dizi_State_Update = "Dizi_State_Update";//弟子状态更新
+        public const string Dizi_Stateless_Start= "Dizi_Stateless_Start";//弟子开始无状态
 
         //弟子活动
         public const string Dizi_Activity_Reward = "Dizi_Activity_Reward";//弟子奖励活动
@@ -56,11 +59,10 @@ namespace AOT.Core
         public const string Dizi_Adv_EventMessage = "Dizi_Adv_Message";//弟子历练单个事件信息
         public const string Dizi_Adv_Start = "Dizi_Adv_Start";//弟子历练开始
         public const string Dizi_Adv_Recall = "Dizi_Adv_Recall";//弟子回程
-        public const string Dizi_Adv_End = "Dizi_Adv_End";//弟子历练结束
+        public const string Dizi_Adv_Waiting = "Dizi_Adv_Waiting";//弟子历练结束
         public const string Dizi_Adv_Finalize = "Dizi_Adv_Finalize";//弟子历练结算
         public const string Dizi_Adv_SlotManagement = "Dizi_Adv_SlotManagement";//弟子历练道具管理
         public const string Dizi_Adv_SlotUpdate = "Dizi_Adv_SlotUpdate";//弟子历练道具更新
-        public const string Dizi_Adv_Terminate = "Dizi_Adv_Terminate";//弟子历练被强制中断
 
         //弟子闲置
         public const string Dizi_Idle_EventMessage = "Dizi_Idle_EventMessage";//弟子闲置状态更新

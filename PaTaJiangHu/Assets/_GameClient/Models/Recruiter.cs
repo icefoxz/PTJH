@@ -59,7 +59,9 @@ namespace GameClient.Models
 
         public void RemoveVisitor()
         {
+            var dizi = CurrentVisitor.Dizi;
             CurrentVisitor = null;
+            dizi.Dispose();
             SendEvent(EventString.Recruit_VisitorRemove);
         }
 

@@ -52,6 +52,12 @@ namespace GameClient.Models
             Herb = herb;
         }
 
+        public Faction()
+        {
+            Level = 1;
+            DiziMap = new Dictionary<string, Dizi>();
+        }
+
         internal void Upgrade(int step = 1)
         {
             Level += step;
@@ -75,7 +81,6 @@ namespace GameClient.Models
             }
             DiziMap.Add(dizi.Guid, dizi);
             _diziList.Add(dizi);
-            dizi.StartIdle(SysTime.UnixNow);
             Log($"添加弟子{dizi.Name}");
             SendEvent(EventString.Faction_DiziAdd, dizi.Guid);
             SendEvent(EventString.Faction_DiziListUpdate, string.Empty);

@@ -32,7 +32,8 @@ namespace GameClient.SoScripts.Adventures
     {
     }
     /// <summary>
-    /// 事件参数, 用于影响事件导向的接口规范
+    /// 事件参数, 基于<see cref="IAdvEvent"/>实现的接口规范,<br/>
+    /// 记录参数, 并且透过<see cref="AdvEventSoBase"/>触发事件信息
     /// </summary>
     public interface IAdvEventArg
     {
@@ -42,8 +43,17 @@ namespace GameClient.SoScripts.Adventures
         ISimulationOutcome SimOutcome { get; }
         IAdjustment Adjustment { get; }
         IRewardHandler RewardHandler { get; }
+        IList<string> ExtraMessages { get; }
     }
 
+    /// <summary>
+    /// 事件接口, 作为事件触发器的规范.
+    /// <see cref="EventInvoke"/>为事件执行入,执行下列各种效果触发:<br/>
+    /// 必须触发一次 <see cref="OnNextEvent"/>: 下个事件触发器,如果没有或是结束传入(null)<br/>
+    /// 1. <see cref="OnAdjustmentEvent"/>: 调整事件触发器<br/>
+    /// 2. <see cref="OnRewardEvent"/>: 奖励事件触发器<br/>
+    /// 3. <see cref="OnLogsTrigger"/>: 文本Log事件触发器<br/>
+    /// </summary>
     public interface IAdvEvent
     {
         string Name { get; }
@@ -54,15 +64,6 @@ namespace GameClient.SoScripts.Adventures
         /// <returns></returns>
         void EventInvoke(IAdvEventArg arg);
         /// <summary>
-        /// 下个事件触发
-        /// </summary>
-        event Action<IAdvEvent> OnNextEvent;
-        /// <summary>
-        /// 调整事件触发,参数调整信息
-        /// </summary>
-        event Action<string[]> OnAdjustmentEvent;
-        event Action<IGameReward> OnRewardEvent;
-        /// <summary>
         /// 所有事件
         /// </summary>
         IAdvEvent[] AllEvents { get; }
@@ -71,7 +72,19 @@ namespace GameClient.SoScripts.Adventures
         /// </summary>
         AdvTypes AdvType { get; }
         /// <summary>
-        /// 文本Log事件, 注意: 有些事件如:选择事件, 或是玩家交互事件有可能是不执行触发的.
+        /// 下个事件触发器
+        /// </summary>
+        event Action<IAdvEvent> OnNextEvent;
+        /// <summary>
+        /// 调整事件触发器
+        /// </summary>
+        event Action<string[]> OnAdjustmentEvent;
+        /// <summary>
+        /// 奖励事件触发器
+        /// </summary>
+        event Action<IGameReward> OnRewardEvent;
+        /// <summary>
+        /// 文本Log事件触发器
         /// </summary>
         event Action<string[]> OnLogsTrigger;
     }

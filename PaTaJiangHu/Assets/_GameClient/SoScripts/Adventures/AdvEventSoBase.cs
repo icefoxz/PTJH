@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using GameClient.Modules.DiziM;
 using MyBox;
 using UnityEngine;
@@ -18,17 +19,24 @@ namespace GameClient.SoScripts.Adventures
         [ConditionalField(true, nameof(GetItem))][ReadOnly][SerializeField] private AdvEventSoBase So;
 
         public abstract string Name { get; }
-        public abstract void EventInvoke(IAdvEventArg arg);
-        public abstract event Action<IAdvEvent> OnNextEvent;
-        public virtual event Action<string[]> OnAdjustmentEvent;
-        public virtual event Action<IGameReward> OnRewardEvent;
+        protected abstract IAdvEvent OnEventInvoke(IAdvEventArg arg);
+        public void EventInvoke(IAdvEventArg arg)
+        {
+            var nextEvent = OnEventInvoke(arg);
+            if (arg.ExtraMessages.Count > 0)
+                OnLogsTrigger?.Invoke(arg.ExtraMessages.ToArray());
+            OnNextEvent?.Invoke(nextEvent);
+        }
+        public event Action<IAdvEvent> OnNextEvent;
+        public event Action<string[]> OnAdjustmentEvent;
+        public event Action<IGameReward> OnRewardEvent;
+        public event Action<string[]> OnLogsTrigger;
         public abstract IAdvEvent[] AllEvents { get; }
         public abstract AdvTypes AdvType { get; }
-        public abstract event Action<string[]> OnLogsTrigger;
 
-        protected void InvokeAdjustmentEvent(string[] adjustments) =>
-            OnAdjustmentEvent?.Invoke(adjustments);
-        protected void InvokeRewardEvent(IGameReward reward)=> OnRewardEvent?.Invoke(reward);
+        protected void ProcessAdjustment(string[] adjustments) => OnAdjustmentEvent?.Invoke(adjustments);
+        protected void ProcessReward(IGameReward reward)=> OnRewardEvent?.Invoke(reward);
+        protected void ProcessLogs(string[] logs) => OnLogsTrigger?.Invoke(logs);
     }
 
 }

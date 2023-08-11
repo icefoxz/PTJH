@@ -9,7 +9,6 @@ namespace GameClient.SoScripts.Adventures
         [SerializeField] private string 事件名;
         [SerializeField] private AdvEventSoBase 下个事件;
         [SerializeField] [TextArea] private string 文本;
-        public override event Action<string[]> OnLogsTrigger;
 
         public override AdvTypes AdvType => AdvTypes.Story;
         private IAdvEvent Next => 下个事件;
@@ -20,12 +19,10 @@ namespace GameClient.SoScripts.Adventures
 
         public override string Name => 事件名;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
-            OnLogsTrigger?.Invoke(new[] { string.Format(Text, arg.DiziName) });
-            OnNextEvent?.Invoke(Next);
+            ProcessLogs(new[] { string.Format(Text, arg.DiziName) });
+            return Next;
         }
-
-        public override event Action<IAdvEvent> OnNextEvent;
     }
 }

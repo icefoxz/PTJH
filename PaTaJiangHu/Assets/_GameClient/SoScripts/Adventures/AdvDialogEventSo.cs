@@ -13,19 +13,16 @@ namespace GameClient.SoScripts.Adventures
         [SerializeField] private DialogField[] _dialogs;
 
         public override AdvTypes AdvType => AdvTypes.Dialog;
-        public override event Action<string[]> OnLogsTrigger;
-
         //[SerializeField] private int _id;
         //public override int Id => _id;
         public override string Name => 事件名;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
-            OnLogsTrigger?.Invoke(Dialogs.Select(d => d.GetMessage(arg.DiziName)).ToArray());
-            OnNextEvent?.Invoke(NextEvent);
+            ProcessLogs(Dialogs.Select(d => d.GetMessage(arg.DiziName)).ToArray());
+            return NextEvent;
         }
 
-        public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => new[] { NextEvent };
         private IAdvEvent NextEvent => 下个事件;
         private DialogField[] Dialogs => _dialogs;

@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using AOT.Utls;
+using GameClient.Models;
 using GameClient.Modules.DiziM;
 using GameClient.SoScripts.Adventures;
 using GameClient.SoScripts.BattleSimulation;
 using GameClient.System;
-using Dizi = GameClient.Models.Dizi;
 
 namespace GameClient.Controllers
 {
@@ -25,6 +26,7 @@ namespace GameClient.Controllers
         public ISimulationOutcome SimOutcome { get; private set; }
         public IAdjustment Adjustment => this;
         public IRewardHandler RewardHandler { get; }
+        public IList<string> ExtraMessages { get; private set; } = new List<string>();
 
         public AdvArg(Dizi dizi, IRewardHandler handler)
         {
@@ -36,7 +38,6 @@ namespace GameClient.Controllers
             => SimOutcome = simulationOutcome;
 
         public void SetInteractionResult(int result) => InteractionResult = result;
-
         string IAdjustment.Set(IAdjustment.Types type, int value, bool percentage)
         {
             var controller = Game.Controllers.Get<DiziController>();

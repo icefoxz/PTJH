@@ -92,7 +92,7 @@ namespace GameClient.SoScripts.Items
         public float GetAddOn(DiziProps prop)
         {
             var value = 0f;
-            for (var i = 0; i < AddOns.Length; i++)
+            for (var i = 0; i < AddOns?.Length; i++)
             {
                 var addOn = AddOns[i];
                 if (addOn.Prop == prop) value += addOn.AddOn;

@@ -21,7 +21,7 @@ namespace GameClient.SoScripts.Adventures
         private Adjustment Adjust => 调整;
         private ConAdjustment[] ConFields => 状态;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
             var nextEvent = NextEvent;
             var list = new List<string>
@@ -30,19 +30,17 @@ namespace GameClient.SoScripts.Adventures
                 Adjust.Set(arg.Adjustment)
             };
             var adjustments = ConFields.Select(a => a.Set(arg.Adjustment, this)).ToArray();
-            InvokeAdjustmentEvent(adjustments);
+            ProcessAdjustment(adjustments);
             list.AddRange(adjustments);
             var messages = list.Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => string.Format(s, arg.DiziName))
                 .ToArray();
-            if (messages.Any()) OnLogsTrigger?.Invoke(messages);
-            OnNextEvent?.Invoke(nextEvent);
+            if (messages.Any()) ProcessLogs(messages);
+            return nextEvent;
         }
 
-        public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => new IAdvEvent[] { NextEvent };
         public override AdvTypes AdvType => AdvTypes.Adjust;
-        public override event Action<string[]> OnLogsTrigger;
 
 
         [Serializable] private class ConAdjustment

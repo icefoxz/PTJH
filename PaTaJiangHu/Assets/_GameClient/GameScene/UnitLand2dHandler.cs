@@ -28,6 +28,8 @@ namespace GameClient.GameScene
         private CharacterOperator CurrentOp => _currentOp =
             _currentOp != null ? _currentOp : AnimConfig.InstanceCharacterOp(Game.Game2DLand.Transform);
 
+        private GameWorld.DiziState WorldState => Game.World.State;
+
         internal UnitLand2dHandler(CharacterUiSyncHandler uiHandler, Config.GameAnimConfig animConfig,
             ParallaxBackgroundController backgroundController)
         {
@@ -58,35 +60,48 @@ namespace GameClient.GameScene
             var op = CurrentOp;
             var facing = Facing.Right;
             var anim = CharacterOperator.Anims.Idle;
-            switch (dizi.State.Current)
+            switch (dizi.Activity)
             {
-                case DiziStateHandler.States.Idle:
-                case DiziStateHandler.States.None:
+                case DiziActivities.Idle:
+                case DiziActivities.None:
                     ParallaxBackgroundController.StopAll();
                     break;
-                case DiziStateHandler.States.Lost:
+                case DiziActivities.Lost:
                     anim = CharacterOperator.Anims.Defeat;
                     ParallaxBackgroundController.StopAll();
                     break;
-                case DiziStateHandler.States.AdvWaiting:
-                    anim = CharacterOperator.Anims.Idle;
-                    facing = Facing.Left;
-                    ParallaxBackgroundController.StopAll();
+                case DiziActivities.Adventure:
+                {
+                    var activity = WorldState.Adventure.GetActivity(dizi.Guid);
+                    switch (activity.State)
+                    {
+                        case AdventureActivity.States.Progress:
+                            if (activity.AdvType == AdventureActivity.AdvTypes.Production)
+                            {
+                                ParallaxBackgroundController.Move(true);
+                                (anim, facing)= (CharacterOperator.Anims.Walk, Facing.Right);
+                            }
+                            else
+                            {
+                                (anim, facing) = (CharacterOperator.Anims.Run, Facing.Right);
+                                ParallaxBackgroundController.Move(true, 2);
+                            }
+                            break;
+                        case AdventureActivity.States.Returning:
+                            (anim, facing) = (CharacterOperator.Anims.Run, Facing.Left);
+                            ParallaxBackgroundController.Move(false, 1.5f);
+                            break;
+                        case AdventureActivity.States.Waiting:
+                            (anim, facing) = (CharacterOperator.Anims.Idle, Facing.Left);
+                            ParallaxBackgroundController.StopAll();
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                     break;
-                case DiziStateHandler.States.AdvProgress:
-                    anim = CharacterOperator.Anims.Run;
-                    ParallaxBackgroundController.Move(true, 2);
+                }
+                case DiziActivities.Battle:
                     break;
-                case DiziStateHandler.States.AdvProduction:
-                    anim = CharacterOperator.Anims.Walk;
-                    ParallaxBackgroundController.Move(true);
-                    break;
-                case DiziStateHandler.States.AdvReturning:
-                    facing = Facing.Left;
-                    anim = CharacterOperator.Anims.Run;
-                    ParallaxBackgroundController.Move(false, 1.5f);
-                    break;
-                case DiziStateHandler.States.Battle:
                 default:
                     throw new ArgumentOutOfRangeException();
             }

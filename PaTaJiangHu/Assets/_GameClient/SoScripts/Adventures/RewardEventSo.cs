@@ -20,17 +20,17 @@ namespace GameClient.SoScripts.Adventures
         //[SerializeField] private int _id;
         public override string Name => 事件名;
         //public override int Id => _id;
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
             var messages = GenerateRewardMessages(arg.DiziName);
             var adjustment = arg.Adjustment.Set(IAdjustment.Types.Exp, Exp, false);
             messages.Add(adjustment);
             var eventMsgs = messages.ToArray();
-            OnLogsTrigger?.Invoke(eventMsgs);
+            ProcessLogs(eventMsgs);
             arg.RewardHandler.SetReward(Reward);
-            InvokeAdjustmentEvent(new[] { adjustment });
-            InvokeRewardEvent(Reward);
-            OnNextEvent?.Invoke(Next);
+            ProcessAdjustment(new[] { adjustment });
+            ProcessReward(Reward);
+            return Next;
         }
 
         private List<string> GenerateRewardMessages(string diziName)
@@ -41,10 +41,8 @@ namespace GameClient.SoScripts.Adventures
         }
         private string GenerateLogFromItem(GameItemField item, string diziName) => $"{diziName}获得【{item.Name}】。";
 
-        public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => new[] { Next };
         public override AdvTypes AdvType => AdvTypes.Reward;
-        public override event Action<string[]> OnLogsTrigger;
         private IAdvEvent Next => 下个事件;
         public IGameReward Reward => GameReward;
     }

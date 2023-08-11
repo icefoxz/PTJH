@@ -15,16 +15,14 @@ namespace GameClient.SoScripts.Adventures
         //public override int Id => _id;
         public override string Name => 事件名;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
             var nextEvent = _options.WeightPick().Event;
-            OnNextEvent?.Invoke(nextEvent);
+            return nextEvent;
         }
 
-        public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => _options.Select(o => o.Event).ToArray();
         public override AdvTypes AdvType => AdvTypes.Pool;
-        public override event Action<string[]> OnLogsTrigger;//池事件不触发log
 
         [Serializable] public class WeightField : IWeightElement
         {

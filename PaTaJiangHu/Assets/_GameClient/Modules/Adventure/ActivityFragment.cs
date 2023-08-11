@@ -1,42 +1,12 @@
 ﻿using System.Collections.Generic;
-using GameClient.Controllers;
 using GameClient.Modules.DiziM;
 
 namespace GameClient.Modules.Adventure
 {
     /// <summary>
-    /// 弟子活动信息
+    /// 弟子活动碎片信息, 基于<see cref="DiziActivityLog"/>转化成文本碎片信息
     /// </summary>
-    public class ActivityLogWrapper
-    {
-        public Queue<string> Messages { get; set; }
-        public string DiziGuid { get; set; }
-        public long NowTicks { get; set; }
-        public int LastMiles { get; set; }
-        public Queue<string> AdjustEvents { get; set; }
-        public IGameReward Reward { get; set; }
-        public int PlayCount { get; }
-
-        public ActivityLogWrapper(DiziActivityLog diziActivityLog)
-        {
-            Messages = diziActivityLog.Messages == null
-                ? new Queue<string>()
-                : new Queue<string>(diziActivityLog.Messages);
-            AdjustEvents = diziActivityLog.AdjustEvents == null
-                ? new Queue<string>()
-                : new Queue<string>(diziActivityLog.AdjustEvents);
-            DiziGuid = diziActivityLog.DiziGuid;
-            NowTicks = diziActivityLog.NowTicks;
-            LastMiles = diziActivityLog.LastMiles;
-            Reward = diziActivityLog.Reward;
-            PlayCount = ActivityFragment.GetPlayCount(diziActivityLog);
-        }
-    }
-
-    /// <summary>
-    /// 弟子活动碎片信息
-    /// </summary>
-    public class ActivityFragment
+    public record ActivityFragment
     {
         public string Message { get; }
         public IGameReward Reward { get; }

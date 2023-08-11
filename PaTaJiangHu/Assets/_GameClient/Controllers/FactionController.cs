@@ -15,7 +15,11 @@ namespace GameClient.Controllers
     public class FactionController : IGameController
     {
         private Faction Faction => Game.World.Faction;
-
+        private GameWorld.DiziState State => Game.World.State;
+        private DiziLostController LostController => Game.Controllers.Get<DiziLostController>();
+        private DiziAdvController AdvController => Game.Controllers.Get<DiziAdvController>();
+        private DiziIdleController IdleController => Game.Controllers.Get<DiziIdleController>();
+        
         public void ConsumeResourceByStep(string diziGuid, IAdjustment.Types con)
         {
             var dizi = Faction.GetDizi(diziGuid);
@@ -61,7 +65,24 @@ namespace GameClient.Controllers
         public void DismissDizi(string guid)
         {
             var dizi = Faction.GetDizi(guid);
-            dizi.Dismiss();
+            switch (dizi.Activity)
+            {
+                case DiziActivities.None:
+                    break;
+                case DiziActivities.Lost:
+                    LostController.RestoreDizi(guid);
+                    break;
+                case DiziActivities.Idle:
+                    IdleController.StopIdle(guid);
+                    break;
+                case DiziActivities.Adventure:
+                    AdvController.Terminate(guid);
+                    break;
+                case DiziActivities.Battle:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            State.RemoveStateless(guid);
             Faction.RemoveDizi(dizi);
         }
 

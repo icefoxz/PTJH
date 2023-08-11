@@ -80,7 +80,8 @@ namespace GameClient.SoScripts.Adventures
         [SerializeField] private TermField[] 条件;
 
         public override string Name => 事件名;
-        public override void EventInvoke(IAdvEventArg arg)
+
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
             var nextEvent = _mode switch
             {
@@ -88,10 +89,8 @@ namespace GameClient.SoScripts.Adventures
                 TermField.Modes.Random => GetInTermEvents(arg.Term).RandomPick(),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            OnNextEvent?.Invoke(nextEvent);
+            return nextEvent;
         }
-
-        public override event Action<IAdvEvent> OnNextEvent;
 
         /// <summary>
         /// NoTerm = 0 index
@@ -106,7 +105,6 @@ namespace GameClient.SoScripts.Adventures
             }
         }
         public override AdvTypes AdvType => AdvTypes.Term;
-        public override event Action<string[]> OnLogsTrigger;//条件事件不触发
         private TermField[] TermFields => 条件;
         private NoTermField NoTermEvent => 无条件事件;
         public (string title, IAdvEvent advEvent)[] GetInTermEventsWithTitle(ITerm term)

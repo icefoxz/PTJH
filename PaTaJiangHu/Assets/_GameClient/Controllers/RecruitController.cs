@@ -5,7 +5,6 @@ using AOT.Core;
 using AOT.Core.Dizi;
 using AOT.Utls;
 using GameClient.Models;
-using GameClient.Modules.NameM;
 using GameClient.SoScripts;
 using GameClient.SoScripts.Characters;
 using GameClient.SoScripts.Factions;
@@ -21,6 +20,9 @@ namespace GameClient.Controllers
         private List<Dizi> TempDiziList { get; } = new List<Dizi>();
         private Config.Recruit Recruit => Game.Config.RecruitCfg;
         private Recruiter Recruiter => Game.World.Recruiter;
+        private DiziGenerator DiziGenerator => new(GradeConfig);
+        private GameWorld.DiziState WorldState => Game.World.State;
+        private DiziIdleController DiziIdleController => Game.Controllers.Get<DiziIdleController>();
         
         public bool NewDizi()
         {
@@ -30,7 +32,7 @@ namespace GameClient.Controllers
             if (!FactionTryTrade(silverCost, yuanBaoCost)) return false;
             var allGrades = Enum.GetValues(typeof(ColorGrade)).Cast<int>().ToArray();
             var randomGrade = Sys.Random.Next(allGrades.Length);
-            var dizi = GenerateDizi(randomGrade);
+            var dizi = DiziGenerator.GenerateDizi(randomGrade);
             var diziIndex = TempDiziList.Count;
             TempDiziList.Add(dizi);
             var list = new List<int> { diziIndex };
@@ -39,46 +41,27 @@ namespace GameClient.Controllers
             return true;
         }
 
-        private Dizi GenerateDizi(int grade)
-        {
-            var (name, gender) = NameGen.GenNameWithGender();
-            var (strength, agility, hp, mp, stamina, bag) = GradeConfig.GenerateFromGrade(grade);
-            var cr = GradeConfig.GetRandomConsumeResource(grade).ToDictionary(r => r.Item1, r => r.Item2);
-            var gifted = GradeConfig.GenerateGifted(grade);
-            var aptitude = GradeConfig.GenerateArmedAptitude(grade);
-            //var combatSkill = GradeConfig.GenerateCombatSkill(randomGrade);
-            //var forceSkill = GradeConfig.GenerateForceSkill(randomGrade);
-            //var dodgeSkill = GradeConfig.GenerateDodgeSkill(randomGrade);
-            var capable = new Capable(grade: grade,
-                combatSlot: 2, forceSlot: 2, dodgeSlot: 2, bag: bag,
-                strength: strength, agility: agility, hp: hp, mp: mp,
-                food: cr[ConsumeResources.Food], wine: cr[ConsumeResources.Wine],
-                herb: cr[ConsumeResources.Herb], pill: cr[ConsumeResources.Pill]);
-            var guid = Guid.NewGuid().ToString();
-            var dizi = new Dizi(guid: guid, name: name.Text, gender: gender, level: 1, stamina: stamina,
-                capable: capable, gifted, aptitude);
-            dizi.SetSkill(DiziSkill.Instance(
-                (GradeConfig.GenerateCombatSkill(grade), 1),
-                (GradeConfig.GenerateForceSkill(grade), 1),
-                (GradeConfig.GenerateDodgeSkill(grade), 1)));
-            return dizi;
-        }
-
-        public bool RecruitDizi(int index)
+        public void RecruitDizi(int index)
         {
             var dizi = TempDiziList[index];
             if (dizi == null)
             {
                 XDebug.Log($"找不到弟子! index = {index}!");
-                return false;
+                return;
             }
-            return Faction.TryAddDizi(dizi);
+            var isSuccess = Faction.TryAddDizi(dizi);
+            if (isSuccess)
+            {
+                TempDiziList.RemoveAt(index);
+                WorldState.AddStateless(dizi);
+                DiziIdleController.IdleStart(dizi.Guid);
+            }
         }
 
         public (IVisitorDizi,Dizi) GenerateVisitor()
         {
             var visitor = Recruit.Config.GetRandomVisitorDizi();
-            var dizi = GenerateDizi((int)visitor.Grade);
+            var dizi = DiziGenerator.GenerateDizi((int)visitor.Grade);
             return (visitor, dizi);
         }
 
@@ -91,6 +74,8 @@ namespace GameClient.Controllers
             if (!FactionTryTrade(0, yuanBao)) return false;
             if (!Faction.TryAddDizi(visitor.Dizi)) return false;
             Recruiter.RemoveVisitor();
+            WorldState.AddStateless(visitor.Dizi);
+            DiziIdleController.IdleStart(visitor.Dizi.Guid);
             return true;
         }
 

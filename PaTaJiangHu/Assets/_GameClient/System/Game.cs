@@ -6,7 +6,6 @@ using AOT.Core.Dizi;
 using AOT.Core.Systems;
 using AOT.Core.Systems.Coroutines;
 using AOT.Core.Systems.Messaging;
-using AOT.Core.Systems.Updaters;
 using AOT.Utls;
 using AOT.Views;
 using GameClient.Controllers;
@@ -25,14 +24,6 @@ namespace GameClient.System
         private static Canvas _sceneCanvas;
         public static UiBuilder UiBuilder { get; private set; } = new UiBuilder();
         public static IRes Res { get; private set; }
-        /// <summary>
-        /// 基于<see cref="MonoBehaviour"/>的Update方法(每帧)执行
-        /// </summary>
-        private static ObjectUpdater FrameUpdater { get; set; }
-        /// <summary>
-        /// 帧等待控制器
-        /// </summary>
-        public static UpdateAwaiterManager UpdateAwaiterMgr { get; private set; }
         public static MessagingManager MessagingManager { get; private set; }
         public static ICoroutineService CoService { get; private set; }
         public static GameControllerServiceContainer Controllers { get; private set; } 
@@ -65,9 +56,6 @@ namespace GameClient.System
             Res = res;
             CoService = CoroutineService.Instance;
             MessagingManager = new MessagingManager();
-            FrameUpdater = new ObjectUpdater();
-            HotFixHelper.Init(FrameUpdater);
-            UpdateAwaiterMgr = new UpdateAwaiterManager();
             MainUi = mainUi;
             MainUi.Init();
             Config = config;
@@ -78,6 +66,16 @@ namespace GameClient.System
             InitControllers();
             hotUpdate.StartHotReloadAssembly("App", "Run");
             //***************Init********************//
+        }
+
+        internal void InitTest(Config config)
+        {
+            Res = gameObject.AddComponent<Res>();
+            CoService = CoroutineService.Instance;
+            MessagingManager = new MessagingManager();
+            Config = config;
+            World = new GameWorld();
+            InitControllers();
         }
 
         public static Color GetColorFromGrade(int grade) => Config.Global.GradeColor.GetColor((ColorGrade)grade);
@@ -113,33 +111,19 @@ namespace GameClient.System
             Controllers.Reg(new RecruitController());
             Controllers.Reg(new DiziController());
             Controllers.Reg(new StaminaController());
-            Controllers.Reg(new DiziAdvController());
             Controllers.Reg(new RewardController());
             Controllers.Reg(new DataController());
+
+            //States
+            Controllers.Reg(new DiziAdvController());
             Controllers.Reg(new DiziIdleController());
+            Controllers.Reg(new DiziLostController());
+
             Controllers.Reg(new FactionController());
             Controllers.Reg(new GameStageController());
             Controllers.Reg(new SkillController());
             Controllers.Reg(new BattleController());
             Controllers.Reg(new ChallengeStageController());
-        }
-
-        private static void TestFactionInventory()
-        {
-            UiBuilder.Build("view_fractionInventory", v =>
-            {
-                MainUi.SetPanel(v);
-                var rect = (RectTransform)v.GameObject.transform;
-                rect.sizeDelta = Vector2.zero;
-                rect.pivot = Vector2.zero;
-                MainUi.ShowPanel();
-            }, null);
-        }
-
-        void Update()
-        {
-            FrameUpdater?.Update();
-            UpdateAwaiterMgr.GameAwaitersUpdate();
         }
     }
 }

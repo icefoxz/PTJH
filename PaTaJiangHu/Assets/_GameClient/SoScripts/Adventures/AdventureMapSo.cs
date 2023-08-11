@@ -10,7 +10,7 @@ namespace GameClient.SoScripts.Adventures
 {
     public interface IAutoAdvMap
     {
-        int ProductionReturnSec { get; }
+        int FixReturnSec { get; }
         bool IsFixReturnTime { get; }
         int ActionLingCost { get; }
         Sprite Image { get; }
@@ -36,7 +36,7 @@ namespace GameClient.SoScripts.Adventures
 
         public LostStrategySo LostStrategy => 失踪策略;
         public bool IsFixReturnTime => 固定回程秒数;
-        public int ProductionReturnSec => 回程秒数;
+        public int FixReturnSec => 回程秒数;
         //private MinorPlaceConfig MinorPlace => 随机触发配置;
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;
         private MinorPlaceConfig MinorPlace => 小故事;

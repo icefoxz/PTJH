@@ -54,5 +54,8 @@ namespace GameClient.Models
                 OnUpdate?.Invoke();
             }
         }
+
+        public void AttachObject(GameObject gameObject) =>
+            gameObject.transform.SetParent(CoInstance.GameObject.transform);
     }
 }

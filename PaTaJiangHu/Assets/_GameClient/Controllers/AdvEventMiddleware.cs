@@ -41,7 +41,7 @@ namespace GameClient.Controllers
             {
                 case AdvTypes.Option:
                 case AdvTypes.Battle:
-                    throw new NotSupportedException($"历练不支持事件={advEvent.AdvType},弟子:{dizi.Name}, 当前历练[{dizi.State.Adventure?.Map?.Id}]{dizi.State.Adventure?.Map?.Name},!");
+                    throw new NotSupportedException($"历练不支持事件={advEvent.AdvType},弟子:{dizi.Name}, 当前历练[{dizi.Activity}].");
                 case AdvTypes.Story:
                 case AdvTypes.Dialog:
                 case AdvTypes.Pool:

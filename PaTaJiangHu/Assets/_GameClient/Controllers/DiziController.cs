@@ -1,11 +1,9 @@
 ﻿using System;
 using AOT.Core;
-using AOT.Utls;
 using GameClient.Models;
 using GameClient.SoScripts;
 using GameClient.SoScripts.Adventures;
 using GameClient.SoScripts.Characters;
-using GameClient.SoScripts.Items;
 using GameClient.System;
 using UnityEngine;
 
@@ -214,17 +212,5 @@ namespace GameClient.Controllers
 
         private void SendEvent(string eventName, params object[] args) =>
             Game.MessagingManager.SendParams(eventName, args);
-
-        /// <summary>
-        /// 把失踪的弟子召唤回来
-        /// </summary>
-        /// <param name="guid"></param>
-        public void RecallDiziFromLost(string guid)
-        {
-            var dizi = Faction.GetDizi(guid);
-            if (dizi.State.Current != DiziStateHandler.States.Lost)
-                XDebug.LogError($"{dizi}状态不符! {dizi.State}");
-            dizi.RestoreFromLost();
-        }
     }
 }

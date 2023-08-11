@@ -57,7 +57,7 @@ namespace GameClient.GameScene
             MainCanvasRect = MainCanvas.transform as RectTransform;
             CharacterUiSyncHandler.Init(this, MainCanvas, Camera.main);
             UnitLandHandler = new UnitLand2dHandler(CharacterUiSyncHandler, animConfig, ParallaxBgController);
-            Game.MessagingManager?.RegEvent(EventString.Dizi_Params_StateUpdate, b =>
+            Game.MessagingManager?.RegEvent(EventString.Dizi_State_Update, b =>
             {
                 var dizi = Faction.GetDizi(b.GetString(0));
                 if (dizi == CurrentDizi)
@@ -101,7 +101,7 @@ namespace GameClient.GameScene
         public void PlayDizi(string guid)
         {
             CurrentDizi = Faction.GetDizi(guid);
-            if (CurrentDizi.State.Current == DiziStateHandler.States.Battle)
+            if (CurrentDizi.Activity == DiziActivities.Battle)
                 throw new InvalidOperationException("当前战斗未完成,不允许切换弟子！");
             UnitLandHandler.PlayDizi(CurrentDizi);
         }

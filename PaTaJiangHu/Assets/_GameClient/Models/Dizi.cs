@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using AOT.Core;
 using AOT.Core.Dizi;
 using GameClient.Modules.BattleM;
@@ -9,15 +8,41 @@ using GameClient.SoScripts.BattleSimulation;
 using GameClient.SoScripts.Characters;
 using GameClient.SoScripts.Items;
 using GameClient.System;
-using UnityEngine;
 using UnityEngine.Analytics;
 
 namespace GameClient.Models
 {
+    public enum DiziActivities
+    {
+        /// <summary>
+        /// 候着状态
+        /// </summary>
+        None,
+        /// <summary>
+        /// 失踪状态
+        /// </summary>
+        Lost,
+        /// <summary>
+        /// 发呆状态
+        /// </summary>
+        Idle,
+        /// <summary>
+        /// 历练状态
+        /// </summary>
+        Adventure,
+        /// <summary>
+        /// 生产状态
+        /// </summary>
+        //Production, todo : 暂时由Adventure代替
+        /// <summary>
+        /// 战斗状态
+        /// </summary>
+        Battle,
+    }
     /// <summary>
     /// 弟子模型
     /// </summary>
-    public partial class Dizi : ModelBase, ITerm
+    public partial class Dizi : ModelBase, ITerm, IDisposable
     {
         // 属性
         protected override string LogPrefix => Name;
@@ -97,9 +122,14 @@ namespace GameClient.Models
             MpProp = new DiziPropValue(Capable.Mp.Value, () => GetLevelBonus(DiziProps.Mp),
                 () => GetPropStateAddon(DiziProps.Mp), () => _equipment.GetPropAddon(DiziProps.Mp), null);
             StaminaManager = new DiziStaminaManager(this, stamina);
-            State = new DiziStateHandler(this, OnMessageAction, OnAdjustAction, OnRewardAction);
             Gifted = gifted;
             _armedAptitude = new DiziArmedAptitude(armedAptitude);
+        }
+
+        public void Dispose()
+        {
+            StaminaManager.StopStaminaService();
+            StaminaManager.Destroy();
         }
 
         protected void EventUpdate(string eventString) => SendEvent(eventString, Guid);
@@ -149,7 +179,7 @@ namespace GameClient.Models
         {
             if (!StaminaManager.StaminaUpdate(ticks)) return;
             Log($"体力更新 = {StaminaManager.Stamina.Con}");
-            EventUpdate(EventString.Dizi_Params_StaminaUpdate);
+            EventUpdate(EventString.Dizi_Stamina_Update);
         }
 
         internal void LevelSet(int level)

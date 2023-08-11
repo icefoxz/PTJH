@@ -18,20 +18,17 @@ namespace GameClient.SoScripts.Adventures
         private CombatNpcSo Npc => _npc;
         private BattleResult Battle => 战果;
         private string IntroLog => 战斗前文本;
-        public override event Action<string[]> OnLogsTrigger;
 
         public override string Name => 事件名;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
             var simOutcome = arg.SimOutcome;
             var logs = GetResult(simOutcome, arg.DiziName, _npc.Name);
-            OnLogsTrigger?.Invoke(logs);
+            ProcessLogs(logs);
             var nextEvent = AllEvents[simOutcome.IsPlayerWin ? 0 : 1];
-            OnNextEvent?.Invoke(nextEvent);
+            return nextEvent;
         }
-
-        public override event Action<IAdvEvent> OnNextEvent;
 
         public override IAdvEvent[] AllEvents => Battle.GetAllEvents();
         public override AdvTypes AdvType => AdvTypes.Simulation;

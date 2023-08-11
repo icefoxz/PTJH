@@ -17,14 +17,13 @@ namespace GameClient.SoScripts.Adventures
         //public override int Id => _id;
         public override string Name => 事件名;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
             if (!string.IsNullOrWhiteSpace(Message))
-                OnLogsTrigger?.Invoke(new[] { string.Format(Message, arg.DiziName) });
-            OnNextEvent?.Invoke(null);
+                ProcessLogs(new[] { string.Format(Message, arg.DiziName) });
+            return null;
         }
 
-        public override event Action<IAdvEvent> OnNextEvent;
         public override IAdvEvent[] AllEvents => Array.Empty<IAdvEvent>();
         public override AdvTypes AdvType => AdvTypes.Quit;
 
@@ -33,7 +32,5 @@ namespace GameClient.SoScripts.Adventures
         public bool IsLost => 标记失踪;
 
         private string Message => 文本;
-
-        public override event Action<string[]> OnLogsTrigger;
     }
 }

@@ -32,7 +32,7 @@ namespace GameClient.SoScripts.Adventures
 
         public override string Name => 事件名;
 
-        public override void EventInvoke(IAdvEventArg arg)
+        protected override IAdvEvent OnEventInvoke(IAdvEventArg arg)
         {
             var nextEvent = arg.InteractionResult switch
             {
@@ -42,10 +42,8 @@ namespace GameClient.SoScripts.Adventures
                 3 => NextEvent(Result.Lose, Finalized.Escaped),
                 _ => throw new ArgumentOutOfRangeException($"{nameof(arg.InteractionResult)}", arg.InteractionResult.ToString())
             };
-            OnNextEvent?.Invoke(nextEvent);
+            return nextEvent;
         }
-
-        public override event Action<IAdvEvent> OnNextEvent;
 
         /// <summary>
         /// [0].Win<br/>[1].Lose<br/>[2].Kill<br/>[3].Escape
@@ -57,7 +55,6 @@ namespace GameClient.SoScripts.Adventures
             _ => throw new ArgumentOutOfRangeException()
         };
         public override AdvTypes AdvType => AdvTypes.Battle;
-        public override event Action<string[]> OnLogsTrigger;
 
         private IAdvEvent NextEvent(Result result, Finalized finalize)
         {

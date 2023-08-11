@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using AOT.Core.Systems.Coroutines;
 using AOT.Views.Abstract;
 using GameClient.Models;
@@ -16,6 +17,7 @@ namespace HotUpdate._HotUpdate.Demo_v1
         
         private ICoroutineInstance UpdateCo { get; set; }
         private Dizi SelectedDizi { get; set; }
+        private static GameWorld.DiziState WorldState => Game.World.State;
 
         public Page_main_adventureView(IView v)
         {
@@ -35,15 +37,28 @@ namespace HotUpdate._HotUpdate.Demo_v1
 
         private void UpdateState(Dizi dizi)
         {
-            if (SelectedDizi?.State?.DiziState == null) return;
-            var state = dizi.State;
-            var map = state.DiziState.CurrentMapName;
-            var stateText = state.DiziState.StateLabel;
-            var mile = state.CurrentMile == 0 ? string.Empty
-                : state.CurrentMile == -1 ? "未知"
-                : state.CurrentMile.ToString();
-            var occasion = dizi.State.DiziState.CurrentOccasion;
-            GameView.Set(map, occasion, mile, stateText, GetTimeText(state.DiziState.CurrentProgressTime));
+            IDiziState state;
+            switch (dizi.Activity)
+            {
+                case DiziActivities.Adventure:
+                    state = WorldState.Adventure.GetActivity(dizi.Guid);
+                    break;
+                case DiziActivities.Idle:
+                    state = WorldState.Idle.GetActivity(dizi.Guid);
+                    break;
+                default:
+                    return;
+            }
+            var map = state.CurrentMapName;
+            var stateText = state.StateLabel;
+            var mile = state.LastMiles switch
+            {
+                0 => string.Empty,
+                -1 => "未知",
+                _ => state.LastMiles.ToString()
+            };
+            var occasion = state.CurrentOccasion;
+            GameView.Set(map, occasion, mile, stateText, GetTimeText(state.CurrentProgressTime));
             GameView.UpdateBag(dizi);
         }
 
@@ -98,8 +113,14 @@ namespace HotUpdate._HotUpdate.Demo_v1
             {
                 var indexes = GetIndexes(dizi.Capable.Bag);
                 DiziBagView.Set(View_diziBag.BagStates.Empty, View_diziBag.BagStates.None, indexes);
+                if (dizi.Activity is not (DiziActivities.Adventure))
+                {
+                    BagCount.Set(0, dizi.Capable.Bag);
+                    return;
+                }
                 var contents = new List<int>();
-                foreach (var reward in dizi.State.StateBags)
+                var rewards = WorldState.Adventure.GetFragments(dizi.Guid).Select(h => h.Reward).Where(r => r != null);
+                foreach (var reward in rewards)
                 {
                     var i = 0;
                     for (; i < reward.AllItems.Length; i++) contents.Add(i);
