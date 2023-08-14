@@ -35,7 +35,7 @@ namespace GameClient.Test
             var map = AdvMaps[mapIndex];
             var dizi = DiziGenerator.GenerateDizi(Random.Range(0, 5));
             Game.World.Faction.TryAddDizi(dizi);
-            var activity = new Activity(map, SysTime.UnixNow, dizi, false);
+            var activity = new Activity(map, SysTime.UnixNow, dizi);
             DiziActivity = activity;
         }
         
@@ -100,11 +100,11 @@ namespace GameClient.Test
             [ShowInInspector]public string 描述 => Description;
             [ShowInInspector]public string 地点 => CurrentOccasion;
             [ShowInInspector]public string 地图 => Map.Name;
-            [ShowInInspector]public string 活动类型 => AdvType.ToString();
+            [ShowInInspector]public string 活动类型 => Activitytype.ToString();
             [ShowInInspector]public int 里数 => LastMiles;
             [ShowInInspector]public int 记录数 => Logs.Count;
 
-            public Activity(IAutoAdvMap map, long startTime, Dizi dizi, bool isProduction) : base(map, startTime, dizi, isProduction)
+            public Activity(IAutoAdvMap map, long startTime, Dizi dizi) : base(map, startTime, dizi)
             {
             }
         }

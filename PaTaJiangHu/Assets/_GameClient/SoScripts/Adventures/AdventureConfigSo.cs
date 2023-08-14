@@ -10,7 +10,7 @@ namespace GameClient.SoScripts.Adventures
         [SerializeField] private int 事件触发秒数 = 1;
         [SerializeField] private int 回程百分比;
         [SerializeField] private AdventureMapSo[] 历练地图;
-        [SerializeField] private AdventureMapSo[] 生产地图;
+        [SerializeField] private ProductionMapSo[] 生产地图;
 
         internal AdventureMapSo[] AdvMaps => 历练地图;
         internal AdventureMapSo[] ProductionMaps => 生产地图;

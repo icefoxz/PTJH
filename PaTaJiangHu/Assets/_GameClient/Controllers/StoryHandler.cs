@@ -142,6 +142,7 @@ namespace GameClient.Controllers
 
         private void ResetCurrentEvent()
         {
+            if (CurrentEvent == null) return;
             CurrentEvent.OnLogsTrigger -= OnLogsTrigger;
             CurrentEvent.OnNextEvent -= OnNextEventTrigger;
             CurrentEvent.OnAdjustmentEvent -= OnAdjustEventTrigger;

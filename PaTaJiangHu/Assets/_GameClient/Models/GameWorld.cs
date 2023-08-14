@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using AOT.Core;
+using GameClient.SoScripts.Adventures;
 using GameClient.System;
 
 namespace GameClient.Models

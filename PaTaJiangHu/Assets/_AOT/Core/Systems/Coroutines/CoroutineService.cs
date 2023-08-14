@@ -8,10 +8,14 @@ using UnityEngine;
 
 namespace AOT.Core.Systems.Coroutines
 {
+    /// <summary>
+    /// 协程服务接口, 用于管理协程的生命周期<br/>
+    /// 协程结束后自动销毁, 千万不要在外部保存该实体的引用
+    /// </summary>
     public interface ICoroutineService : ISingletonDependency
     {
         /// <summary>
-        /// 开启协程服务
+        /// 开启协程服务, 结束后自动销毁, 千万不要在外部保存该实体的引用
         /// </summary>
         /// <param name="enumerator"></param>
         /// <param name="onFinishCallback"></param>
@@ -19,6 +23,13 @@ namespace AOT.Core.Systems.Coroutines
         /// <param name="method"></param>
         /// <returns></returns>
         ICoroutineInstance RunCo(IEnumerator enumerator, Action onFinishCallback = null, string parentName = null, [CallerMemberName] string method = null);
+        /// <summary>
+        /// 开启协程服务, 结束后自动销毁, 千万不要在外部保存该实体的引用
+        /// </summary>
+        /// <param name="enumerator"></param>
+        /// <param name="parentName"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
         ICoroutineInstance RunCo(IEnumerator enumerator, string parentName, [CallerMemberName] string method = null);
         void RemoveCoParent(string name);
     }
@@ -95,7 +106,7 @@ namespace AOT.Core.Systems.Coroutines
         private void StopCo(CoroutineInstance co)
         {
             _map.Remove(co.GetInstanceID());
-            Destroy(co.GameObject);
+            Destroy(co.gameObject);
             //_pool.Release(co);
         }
     }

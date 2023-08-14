@@ -8,6 +8,9 @@ namespace GameClient.Models
     /// </summary>
     public abstract class DiziActivityModel<TPoller> : ModelBase where TPoller : DelayedPoller
     {
+        /// <summary>
+        /// key = diziGuid, value = poller
+        /// </summary>
         private readonly Dictionary<string, TPoller> _data = new Dictionary<string, TPoller>();
         protected IReadOnlyDictionary<string, TPoller> Data => _data;
 

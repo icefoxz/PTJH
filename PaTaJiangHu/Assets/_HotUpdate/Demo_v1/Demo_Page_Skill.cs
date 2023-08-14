@@ -871,11 +871,11 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 .ToArray();
 
             private Dizi[] GetProductionDizi() => Game.World.Faction.DiziList
-                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Production)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).Activitytype is not AdvActivityTypes.Adventure)
                 .ToArray();
 
             private Dizi[] GetAdventureDizi() => Game.World.Faction.DiziList
-                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Adventure)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).Activitytype == AdvActivityTypes.Adventure)
                 .ToArray();
 
             private Dizi[] GetAllDizi() => Game.World.Faction.DiziList.ToArray();

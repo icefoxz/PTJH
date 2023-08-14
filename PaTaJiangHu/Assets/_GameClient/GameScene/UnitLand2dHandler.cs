@@ -76,16 +76,17 @@ namespace GameClient.GameScene
                     switch (activity.State)
                     {
                         case AdventureActivity.States.Progress:
-                            if (activity.AdvType == AdventureActivity.AdvTypes.Production)
-                            {
-                                ParallaxBackgroundController.Move(true);
-                                (anim, facing)= (CharacterOperator.Anims.Walk, Facing.Right);
-                            }
-                            else
+                            if (activity.Activitytype is AdvActivityTypes.Adventure)
                             {
                                 (anim, facing) = (CharacterOperator.Anims.Run, Facing.Right);
                                 ParallaxBackgroundController.Move(true, 2);
                             }
+                            else
+                            {
+                                ParallaxBackgroundController.Move(true);
+                                (anim, facing) = (CharacterOperator.Anims.Walk, Facing.Right);
+                            }
+
                             break;
                         case AdventureActivity.States.Returning:
                             (anim, facing) = (CharacterOperator.Anims.Run, Facing.Left);

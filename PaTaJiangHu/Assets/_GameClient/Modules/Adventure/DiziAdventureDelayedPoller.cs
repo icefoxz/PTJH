@@ -34,7 +34,7 @@ namespace GameClient.Modules.Adventure
             Co = Game.CoService.RunCo(ActivityPollingUpdate(), Destroy, "Activity", activity.Dizi.Name);
 
 #if UNITY_EDITOR
-            Spector = Co.GameObject.AddComponent<AdventureActivitySpector>();
+            Spector = Co.AddComponent<AdventureActivitySpector>();
             Spector.Act = Activity;
 #endif
         }

@@ -7,7 +7,8 @@ using UnityEngine;
 namespace GameClient.Models
 {
     /// <summary>
-    /// 协程更新实体, 主要利用<see cref="Game.CoService"/>来实现简单更新的处理逻辑
+    /// 协程更新实体, 主要利用<see cref="Game.CoService"/>来实现简单更新的处理逻辑<br/>
+    /// 注意, 该实体会自动销毁, 请不要在外部保存该实体的引用
     /// </summary>
     public class CoPollingInstance
     {
@@ -55,7 +56,6 @@ namespace GameClient.Models
             }
         }
 
-        public void AttachObject(GameObject gameObject) =>
-            gameObject.transform.SetParent(CoInstance.GameObject.transform);
+        public void AttachObject(GameObject gameObject) => CoInstance.SetChild(gameObject);
     }
 }

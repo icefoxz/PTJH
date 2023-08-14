@@ -33,12 +33,13 @@ namespace GameClient.Test
             Action<DiziActivityLog> onActivity,
             Action<DiziActivityLog> onLost)
         {
+            if (activity.State is not AdventureActivity.States.Progress)
+                throw new InvalidOperationException($"活动状态异常! activity.state = {activity.State}"!);
             var lastMile = activity.LastMiles;
             var lastUpdate = activity.LastUpdate;
             var now = checkTime;
             var miles = GetMiles(now, lastUpdate);
             if (miles == 0) return;
-
             var totalMiles = lastMile + miles;
             await OnAdventureProgress(now, totalMiles, activity, onActivity, onLost);
         }
@@ -61,8 +62,6 @@ namespace GameClient.Test
             var mapId = activity.Map.Id;
             var fromMiles = activity.LastMiles;
             var dizi = activity.Dizi;
-            if (activity.State is not AdventureActivity.States.Progress)
-                throw new InvalidOperationException($"活动状态异常! activity.state = {activity.State}"!);
 
             var (map, isProduction) = GetMap(mapId);
             var places = map.PickAllTriggerPlaces(fromMiles, toMiles); //根据当前路段找出故事地点
@@ -193,7 +192,7 @@ namespace GameClient.Test
         {
             var now = lastUpdateTime;
             var reachingTime = now + activity.Map.FixReturnSec * 1000; //转化成milliseconds
-            if (activity.AdvType == AdventureActivity.AdvTypes.Adventure && !activity.Map.IsFixReturnTime)
+            if (activity.Activitytype == AdvActivityTypes.Adventure && !activity.Map.IsFixReturnTime)
             {
                 var mileMilliseconds = (long)TimeSpan.FromSeconds(AdventureCfg.GetSeconds(activity.LastMiles) / 2d).TotalMilliseconds;
                 reachingTime = now + mileMilliseconds;

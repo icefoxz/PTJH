@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AOT.Utls;
+using GameClient.Models;
 using GameClient.SoScripts.Items;
 using MyBox;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace GameClient.SoScripts.Adventures
 {
     public interface IAutoAdvMap
     {
+        AdvActivityTypes ActivityType { get; }
         int FixReturnSec { get; }
         bool IsFixReturnTime { get; }
         int ActionLingCost { get; }
@@ -36,6 +38,8 @@ namespace GameClient.SoScripts.Adventures
 
         public LostStrategySo LostStrategy => 失踪策略;
         public bool IsFixReturnTime => 固定回程秒数;
+        public virtual AdvActivityTypes ActivityType => AdvActivityTypes.Adventure;
+
         public int FixReturnSec => 回程秒数;
         //private MinorPlaceConfig MinorPlace => 随机触发配置;
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;

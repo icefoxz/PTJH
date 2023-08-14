@@ -49,7 +49,5 @@ namespace GameClient.Models
             _staminaService?.StopCo();
             _staminaService = null;
         }
-
-        internal void Destroy() => _staminaService?.Destroy();
     }
 }

@@ -4,14 +4,19 @@ using UnityEngine.Events;
 
 namespace AOT.Core.Systems.Coroutines
 {
+    /// <summary>
+    /// 协程实例接口, 用于管理协程的生命周期<br/>
+    /// 实体执行完协程后自动销毁, 请不要在外部保存该实体的引用
+    /// </summary>
     public interface ICoroutineInstance
     {
         void StopCo();
         int GetInstanceID();
-        Coroutine Instance { get; }
         string name { get; set; }
-        GameObject GameObject { get; }
+        T AddComponent<T>() where T : Component;
         void Destroy();
+        void SetChild(GameObject gameObject, bool resetPos = true);
+        void SetParent(GameObject gameObject, bool resetPos = true);
     }
 
     public class CoroutineInstance : MonoBehaviour, ICoroutineInstance
@@ -22,7 +27,6 @@ namespace AOT.Core.Systems.Coroutines
             Start,
             Stop
         }
-        private Coroutine Coroutine { get; set; }
         private CoStates State { get; set; }
         private event UnityAction OnStopAction;
 
@@ -31,7 +35,7 @@ namespace AOT.Core.Systems.Coroutines
             if(State == CoStates.Start) return;
             State = CoStates.Start;
             OnStopAction = onStopAction;
-            Coroutine = StartCoroutine(CoroutineMethod(enumerator, callBackAction));
+            StartCoroutine(CoroutineMethod(enumerator, callBackAction));
         }
 
         private IEnumerator CoroutineMethod(IEnumerator co, UnityAction callBackAction)
@@ -42,14 +46,26 @@ namespace AOT.Core.Systems.Coroutines
         }
         public void StopCo()
         {
-            if(Coroutine == null || State is CoStates.Stop) return;
+            if(!gameObject || State is CoStates.Stop) return;
             State = CoStates.Stop;
-            StopAllCoroutines();
             OnStopAction?.Invoke();
+            if (gameObject)
+                Destroy();
         }
 
-        public Coroutine Instance => Coroutine;
-        public GameObject GameObject => gameObject;
+        public T AddComponent<T>() where T : Component => gameObject.AddComponent<T>();
         public void Destroy() => Destroy(gameObject);
+
+        public void SetChild(GameObject obj, bool resetPos = true)
+        {
+            obj.transform.SetParent(transform);
+            if (resetPos) obj.transform.localPosition = Vector3.zero;
+        }
+
+        public void SetParent(GameObject obj, bool resetPos = true)
+        {
+            transform.SetParent(obj.transform);
+            if (resetPos) transform.localPosition = Vector3.zero;
+        }
     }
 }

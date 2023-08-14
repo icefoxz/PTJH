@@ -129,7 +129,6 @@ namespace GameClient.Models
         public void Dispose()
         {
             StaminaManager.StopStaminaService();
-            StaminaManager.Destroy();
         }
 
         protected void EventUpdate(string eventString) => SendEvent(eventString, Guid);

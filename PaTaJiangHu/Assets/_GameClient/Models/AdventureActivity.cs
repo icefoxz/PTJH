@@ -8,17 +8,21 @@ using GameClient.SoScripts.Adventures;
 
 namespace GameClient.Models
 {
+    public enum AdvActivityTypes
+    {
+        Adventure,
+        Farming, // 务农
+        Trading, // 贸易
+        Brewing, // 酿酒
+        Alchemy, // 炼丹
+        Herbalist, // 药师
+    }
+
     /// <summary>
     /// 弟子历练(实时)活动信息
     /// </summary>
     public record AdventureActivity : IDiziState
     {
-        public enum AdvTypes
-        {
-            Adventure,
-            Production,
-        }
-
         public enum States
         {
             Progress,
@@ -32,36 +36,48 @@ namespace GameClient.Models
         public long StartTime { get; private set; }
         public long LastUpdate { get; private set; }
 
-        public string ShortTitle => AdvType switch
+        public string ShortTitle => Activitytype switch
         {
-            AdvTypes.Adventure => State switch
+            AdvActivityTypes.Adventure => State switch
             {
                 States.Progress => "历",
                 States.Returning => "回",
                 States.Waiting => "待",
                 _ => throw new ArgumentOutOfRangeException()
             },
-            AdvTypes.Production => "产",
+            AdvActivityTypes.Farming => "农",
+            AdvActivityTypes.Trading => "商",
+            AdvActivityTypes.Brewing => "酿",
+            AdvActivityTypes.Alchemy => "炼",
+            AdvActivityTypes.Herbalist => "采",
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        public string Description => AdvType switch
+        public string Description => Activitytype switch
         {
-            AdvTypes.Adventure => State switch
+            AdvActivityTypes.Adventure => State switch
             {
                 States.Progress => "历练中...",
                 States.Returning => "回程中...",
                 States.Waiting => "宗门等待...",
                 _ => throw new ArgumentOutOfRangeException()
             },
-            AdvTypes.Production => "生产中...",
+            AdvActivityTypes.Farming => "务农中...",
+            AdvActivityTypes.Trading => "经商中...",
+            AdvActivityTypes.Brewing => "酿造中...",
+            AdvActivityTypes.Alchemy => "炼丹中...",
+            AdvActivityTypes.Herbalist => "采药中...",
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        public string StateLabel => AdvType switch
+        public string StateLabel => Activitytype switch
         {
-            AdvTypes.Adventure => "历练",
-            AdvTypes.Production => "生产",
+            AdvActivityTypes.Adventure => "历练",
+            AdvActivityTypes.Farming => "务农",
+            AdvActivityTypes.Trading => "经商",
+            AdvActivityTypes.Brewing => "酿造",
+            AdvActivityTypes.Alchemy => "炼丹",
+            AdvActivityTypes.Herbalist => "采药",
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -76,7 +92,7 @@ namespace GameClient.Models
 
         public IAutoAdvMap Map { get; private set; }
         public Dizi Dizi { get; private set; }
-        public AdvTypes AdvType { get; private set; }
+        public AdvActivityTypes Activitytype { get; private set; }
 
         public States State
         {
@@ -91,19 +107,20 @@ namespace GameClient.Models
                 return States.Progress;
             }
         }
+
         public IReadOnlyList<DiziActivityLog> Logs => _logs;
         public IReadOnlyList<ActivityFragment> History => _history;
         public IEnumerable<IGameReward> Rewards => Logs.Select(l => l.Reward).Where(r => r != null);
         private readonly List<DiziActivityLog> _logs = new List<DiziActivityLog>();
         private readonly List<ActivityFragment> _history = new List<ActivityFragment>();
 
-        public AdventureActivity(IAutoAdvMap map, long startTime, Dizi dizi, bool isProduction)
+        public AdventureActivity(IAutoAdvMap map, long startTime, Dizi dizi)
         {
             Map = map;
             StartTime = startTime;
             LastUpdate = startTime;
             Dizi = dizi;
-            AdvType = isProduction ? AdvTypes.Production : AdvTypes.Adventure;
+            Activitytype = map.ActivityType;
         }
 
         public void Set(long lastUpdate, int lasMile, string occasionName, long endTime = 0)

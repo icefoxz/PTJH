@@ -22,7 +22,7 @@ namespace GameClient.Models
         public Recruiter()
         {
             RecruiterServiceCo = Game.CoService.RunCo(RecruiterService(), LogPrefix,"招募倒数器");
-            editor = RecruiterServiceCo.GameObject.AddComponent<RecruiterEditor>();
+            editor = RecruiterServiceCo.AddComponent<RecruiterEditor>();
             NextRecruitTime = SysTime.UnixTicksFromNow(TimeSpan.FromSeconds(30));
         }
 

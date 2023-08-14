@@ -90,7 +90,7 @@ namespace GameClient.Controllers
             State.RemoveStateless(guid);//确保弟子是从无状态中获取的
 
             var now = SysTime.UnixNow;
-            var activity = new AdventureActivity(map, now, dizi, isProduction);
+            var activity = new AdventureActivity(map, now, dizi);
             dizi.SetState(activity);
             Adventure.ActivityStart(activity);
         }

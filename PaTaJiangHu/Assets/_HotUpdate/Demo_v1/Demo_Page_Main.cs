@@ -847,10 +847,10 @@ namespace HotUpdate._HotUpdate.Demo_v1
                     var faction = Game.World.Faction;
                     DisplayButton(Btn_challenge, faction is { IsChallenging: true } &&
                                                  mode == Modes.Idle);
-                    //DisplayButton(Btn_challenge, mode == Modes.Idle);
-                    DisplayButton(Btn_callback, mode == Modes.Adventure);
                     DisplayButton(Btn_selectAdvMap, mode == Modes.Idle);
                     DisplayButton(Btn_selectProMap, mode == Modes.Idle);
+                    //DisplayButton(Btn_challenge, mode == Modes.Idle);
+                    DisplayButton(Btn_callback, mode == Modes.Adventure);
                     DisplayButton(Btn_forgetDizi, mode == Modes.Lost);
                     DisplayButton(Btn_buybackDizi, mode == Modes.Lost);
                     DisplayButton(Btn_returnDizi, mode == Modes.Waiting);
@@ -1186,11 +1186,11 @@ namespace HotUpdate._HotUpdate.Demo_v1
                 .ToArray();
 
             private Dizi[] GetProductionDizi() => Game.World.Faction.DiziList
-                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Production)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).Activitytype is not AdvActivityTypes.Adventure)
                 .ToArray();
 
             private Dizi[] GetAdventureDizi() => Game.World.Faction.DiziList
-                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).AdvType == AdventureActivity.AdvTypes.Adventure)
+                .Where(d => d.Activity == DiziActivities.Adventure && WorldState.Adventure.GetActivity(d.Guid).Activitytype == AdvActivityTypes.Adventure)
                 .ToArray();
 
             private Dizi[] GetAllDizi() => Game.World.Faction.DiziList.ToArray();
