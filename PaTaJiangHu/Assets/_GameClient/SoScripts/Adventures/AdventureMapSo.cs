@@ -22,34 +22,28 @@ namespace GameClient.SoScripts.Adventures
         bool PossibleLost(ITerm term);
     }
 
-    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "状态玩法/历练/历练地图")]
-    internal class AdventureMapSo : AutoHashNamingObject, IAutoAdvMap
+    internal abstract class AdventureMapSoBase : AutoHashNamingObject, IAutoAdvMap
     {
         [SerializeField] private int 执行令消耗;
         [SerializeField] private LostStrategySo 失踪策略;
         [SerializeField] private MajorPlaceConfig 固定里数触发配置;
         [SerializeField] private MinorPlaceConfig 小故事;
-        //[SerializeField] private MinorPlaceConfig 随机触发配置;
-
-        [SerializeField] private bool 固定回程秒数;
+        [SerializeField] protected bool 固定回程秒数;
         [ConditionalField(nameof(固定回程秒数))][SerializeField] private int 回程秒数 = 10;
         [SerializeField] private Sprite 图片;
         [SerializeField] [TextArea]private string 说明;
-
         public LostStrategySo LostStrategy => 失踪策略;
         public bool IsFixReturnTime => 固定回程秒数;
-        public virtual AdvActivityTypes ActivityType => AdvActivityTypes.Adventure;
-
+        public abstract AdvActivityTypes ActivityType { get; }
         public int FixReturnSec => 回程秒数;
-        //private MinorPlaceConfig MinorPlace => 随机触发配置;
         private MajorPlaceConfig MajorPlace => 固定里数触发配置;
         private MinorPlaceConfig MinorPlace => 小故事;
-
         public int ActionLingCost => 执行令消耗;
         public Sprite Image => 图片;
         public string About => 说明;
+        public int MaxMiles => MajorPlace.MaxMiles;
         public bool PossibleLost(ITerm term) => LostStrategy.IsInTerm(term);
-        //public int MinorMile => MinorPlace.Mile;
+
         public IAdvPlace[] PickMajorPlace(int fromMiles, int toMiles) => fromMiles != toMiles
             ? MajorPlace.GetRandomPlace(fromMiles, toMiles).Select(m => m.place).ToArray()
             : Array.Empty<IAdvPlace>();
@@ -69,12 +63,12 @@ namespace GameClient.SoScripts.Adventures
             return Array.Empty<IAdvPlace>();
         }
 
-        public int MaxMiles => MajorPlace.MaxMiles;
         /// <summary>
         /// 列出所有大故事的里数
         /// </summary>
         /// <returns></returns>
         public int[] ListMajorMiles() => MajorPlace.GetAllTriggerMiles();
+
         /// <summary>
         /// 列出所有小故事的里数
         /// </summary>
@@ -82,12 +76,15 @@ namespace GameClient.SoScripts.Adventures
         /// <param name="toMiles"></param>
         /// <returns></returns>
         public int[] ListMinorMiles(int fromMiles, int toMiles) => MinorPlace.GetAllTriggerMiles(fromMiles, toMiles);
+
         /// <summary>
         /// 列出所有小故事的里数
         /// </summary>
         /// <returns></returns>
         public int[] ListMinorMiles() => MinorPlace.GetAllTriggerMiles();
-        [Serializable] private class MajorPlaceConfig
+
+        [Serializable]
+        protected class MajorPlaceConfig
         {
             [SerializeField] private MilePlace[] 地点配置;
             private MilePlace[] MilePlaces => 地点配置;
@@ -97,7 +94,7 @@ namespace GameClient.SoScripts.Adventures
                 return MilePlaces.Where(p => fromMile < p.Mile && p.Mile <= toMiles)
                     .GroupBy(p => p.Mile)
                     .OrderBy(p => p.Key)
-                    .Select(places => (places.Key, (IAdvPlace)places.RandomPick().PlaceSos.RandomPick()))
+                    .Select(places => (places.Key, (IAdvPlace)places.RandomPick<MilePlace>().PlaceSos.RandomPick()))
                     .ToArray();
             }
 
@@ -121,7 +118,9 @@ namespace GameClient.SoScripts.Adventures
             }
 
         }
-        [Serializable] private class MinorPlaceConfig
+
+        [Serializable]
+        protected class MinorPlaceConfig
         {
             [SerializeField] private MilePlace[] 地点配置;
             private MilePlace[] MilePlaces => 地点配置;
@@ -187,6 +186,16 @@ namespace GameClient.SoScripts.Adventures
                 }
             }
         }
+    }
+
+    [CreateAssetMenu(fileName = "id_历练地图名", menuName = "状态玩法/历练/历练地图")]
+    internal class AdventureMapSo : AdventureMapSoBase
+    {
+        //[SerializeField] private MinorPlaceConfig 随机触发配置;
+
+        //private MinorPlaceConfig MinorPlace => 随机触发配置;
+
+        //public int MinorMile => MinorPlace.Mile;
 
         //[Serializable] private class MinorPlaceConfig
         //{
@@ -206,5 +215,6 @@ namespace GameClient.SoScripts.Adventures
         //        public AdvPlaceSo PlaceSo => 地点;
         //    }
         //}
+        public override AdvActivityTypes ActivityType { get; } = AdvActivityTypes.Adventure;
     }
 }

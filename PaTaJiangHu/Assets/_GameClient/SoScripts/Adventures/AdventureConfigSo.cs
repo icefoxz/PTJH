@@ -13,7 +13,7 @@ namespace GameClient.SoScripts.Adventures
         [SerializeField] private ProductionMapSo[] 生产地图;
 
         internal AdventureMapSo[] AdvMaps => 历练地图;
-        internal AdventureMapSo[] ProductionMaps => 生产地图;
+        internal ProductionMapSo[] ProductionMaps => 生产地图;
         public int EventLogSecs => 事件触发秒数;
         public int MinuteInMile => 分钟转化里;
         //根据总里数的回城百分比决定回程时间

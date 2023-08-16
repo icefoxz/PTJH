@@ -16,7 +16,7 @@ namespace GameClient.Test
         private AdventureConfigSo AdventureCfg { get; }
         private Config.BattleConfig BattleCfg { get; }
         private BattleSimulatorConfigSo BattleSimulation { get; }
-        private AdventureMapSo[] AdvMaps => AdventureCfg.AdvMaps; //回城秒数
+        private AdventureMapSoBase[] AdvMaps => AdventureCfg.AdvMaps; //回城秒数
 
         internal AdventureActivityHandler(AdventureConfigSo adventureCfg, Config.BattleConfig battleCfg,
             BattleSimulatorConfigSo battleSimulation)
@@ -130,7 +130,7 @@ namespace GameClient.Test
         }
 
         //获取地图信息
-        internal (AdventureMapSo map, bool isProduction) GetMap(int mapId)
+        internal (AdventureMapSoBase map, bool isProduction) GetMap(int mapId)
         {
             var map = AdvMaps.FirstOrDefault(m => m.Id == mapId);
             var isProduction = false;
@@ -146,7 +146,7 @@ namespace GameClient.Test
         }
 
         //获取故事信息
-        private StoryHandler InstanceStoryHandler(IAdvPlace place, AdventureMapSo map)
+        private StoryHandler InstanceStoryHandler(IAdvPlace place, AdventureMapSoBase map)
         {
             var story = place.WeighPickStory(); //根据权重随机故事
             var eventHandler = new AdvEventMiddleware(BattleSimulation, BattleCfg); //生成事件处理器

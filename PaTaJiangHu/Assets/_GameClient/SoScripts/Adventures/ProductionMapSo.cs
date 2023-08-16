@@ -5,7 +5,7 @@ using UnityEngine;
 namespace GameClient.SoScripts.Adventures
 {
     [CreateAssetMenu(fileName = "生产地图名", menuName = "状态玩法/生产/生产地图")]
-    internal class ProductionMapSo : AdventureMapSo
+    internal class ProductionMapSo : AdventureMapSoBase
     {
         [SerializeField] private ActivityTypes 生产类型;
         private enum ActivityTypes
